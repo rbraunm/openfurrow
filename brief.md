@@ -7,7 +7,7 @@
 
 OpenFurrow is an open-source agricultural trial management platform intended to modernize, consolidate, and preserve field, greenhouse, and efficacy research workflows that are currently trapped in legacy desktop tools, spreadsheets, proprietary databases, and ad hoc reporting pipelines.
 
-This is not intended to be a commercial ARM clone. The intent is to build open scientific infrastructure: portable data, reproducible analysis, auditable reports, and standards-based interoperability.
+This is not intended to be a clone of any existing commercial product. The intent is to build open scientific infrastructure: portable data, reproducible analysis, auditable reports, and standards-based interoperability.
 
 ---
 
@@ -19,13 +19,11 @@ Researchers should not need proprietary legacy desktop software, paid database a
 
 ## 2. Background
 
-The immediate inspiration came from a domain user mentioning that they work in a primitive-looking application called **ARM**. Investigation suggests this is **ARM by GDM Solutions**, a commercial Windows-oriented agricultural research management product used to create protocols, manage trials, analyze data, and report findings.
+The immediate inspiration came from a domain user mentioning that they work in a primitive-looking commercial agricultural research application. The broader pattern is familiar: an important scientific workflow depends on legacy desktop software, paid licensing, proprietary data assumptions, and add-on database products.
 
-GDM describes ARM as an integrated product for managing agriculture research experiments and as a recognized standard in the crop production/protection industry. Ohio State's software directory describes ARM as desktop-based software created by GDM Solutions for creating trials, analyzing data, and generating reports, with licensing and annual maintenance.
+Publicly available ecosystem research suggests this category includes tools that create protocols, manage trials, analyze data, generate reports, and support crop production/protection workflows. Some incumbent stacks appear to treat shared relational trial storage as an additional licensed product rather than the default foundation.
 
-The striking discovery is that database-backed trial storage appears to be a separate product: **ARM Trial Database (ATD)**. GDM describes ATD as a relational database for storing and retrieving trials based on ARM study definitions. Its FAQ notes tiered pricing, required annual maintenance, and an Access database option with a Microsoft-imposed 2 GB limit, estimated at approximately 2,000 trials per database.
-
-This creates a clear open-science opportunity: what should be a normal database-backed scientific workflow is instead tied to a commercial, legacy-style desktop ecosystem.
+This creates a clear open-science opportunity: what should be a normal database-backed scientific workflow is instead tied to commercial, legacy-style desktop ecosystems.
 
 ---
 
@@ -40,7 +38,7 @@ The project appears to sit in the sweet spot where:
 - the UI/architecture appears legacy-oriented;
 - data volumes are modest;
 - the math is mostly known applied statistics, not frontier theory;
-- the open ecosystem has useful pieces but not an obvious complete ARM-shaped replacement;
+- the open ecosystem has useful pieces but not an obvious complete replacement for the full workflow;
 - interoperability and reproducibility are more valuable than novelty;
 - a small, disciplined open-source project could create an escape hatch before attempting full replacement.
 
@@ -56,13 +54,13 @@ OpenFurrow should be framed publicly as:
 
 It should not be framed as:
 
-> A clone of ARM.
+> A clone of a specific incumbent product.
 
-Internally, ARM is the motivating example and comparison point. Publicly, the mission should be larger: open scientific workflow infrastructure.
+Internally, legacy proprietary tooling is the motivating example and comparison point. Publicly, the mission should be larger: open scientific workflow infrastructure.
 
 OpenFurrow should support researchers who currently live in some combination of:
 
-- ARM;
+- legacy proprietary agricultural trial software;
 - Excel;
 - Access;
 - local files;
@@ -106,7 +104,7 @@ The first priority should be open schemas and common formats:
 - Field Book-compatible paths;
 - public schemas and migration tools.
 
-ARM compatibility should only use legally accessible exports, user-owned data, and documented/public interfaces. Do not build the project around reverse engineering proprietary internals without explicit legal review.
+Compatibility with incumbent tools should only use legally accessible exports, user-owned data, and documented/public interfaces. Do not build the project around reverse engineering proprietary internals without explicit legal review.
 
 ### 5.4 Boring is good
 
@@ -176,7 +174,7 @@ The first useful version should focus on agricultural trial management and repro
 
 ### 6.3 Explicitly not first
 
-- Full ARM replacement from day one
+- Full incumbent replacement from day one
 - Proprietary format reverse engineering
 - Cloud-only architecture
 - Enterprise permission labyrinth
@@ -316,7 +314,7 @@ Use:
 
 ## 9. Storage and deployment posture
 
-The core data volumes appear to be normal business-app scale, likely on the low end. GDM's ATD FAQ estimates that an Access ATD database with a 2 GB limit can hold approximately 2,000 trials, which implies that basic structured trial data is not inherently huge.
+The core data volumes appear to be normal business-app scale, likely on the low end. Public documentation for a legacy trial database add-on indicates that an Access-backed repository can hold thousands of trials within a small file-size ceiling, which implies that basic structured trial data is not inherently huge.
 
 ### 9.1 Suggested storage modes
 
@@ -387,7 +385,7 @@ Potential validation sources include:
 - peer-reviewed agricultural statistics examples;
 - public datasets;
 - R package examples and vignettes;
-- known ARM output supplied by users from their own data, if legally usable;
+- known output from legacy tools supplied by users from their own data, if legally usable;
 - synthetic trials with analytically predictable results;
 - BrAPI sample datasets;
 - Field Book sample/export fixtures.
@@ -440,15 +438,15 @@ Existing tools cover important parts of the broader breeding and agricultural da
 - BreedersDB presents itself as a 100% open-source plant breeding management platform.
 - AgroFIMS supports standards-compliant FAIR fieldbook/metadata generation for agronomic data.
 
-The likely gap is not that nothing exists. The likely gap is that existing open tools are fragmented and often breeding-centric, while ARM-like workflows appear focused on crop production/protection efficacy trials, trial reports, and desktop-style study management.
+The likely gap is not that nothing exists. The likely gap is that existing open tools are fragmented and often breeding-centric, while the target workflows appear focused on crop production/protection efficacy trials, trial reports, and desktop-style study management.
 
 ---
 
-## 13. ARM comparison notes
+## 13. Incumbent comparison notes
 
 This section is for project context only. It should not be used for marketing language without careful review.
 
-### 13.1 What ARM appears to provide
+### 13.1 What incumbent tools appear to provide
 
 - Protocol creation
 - Trial creation/management
@@ -459,9 +457,9 @@ This section is for project context only. It should not be used for marketing la
 - Desktop application
 - Licensed distribution
 - Add-ins/sponsor customizations
-- Trial database product via ATD
+- Trial database product/add-on
 
-### 13.2 Signals that make ARM a candidate
+### 13.2 Signals that make this category a candidate
 
 - Commercial licensing and annual maintenance
 - Desktop-first posture
@@ -470,12 +468,12 @@ This section is for project context only. It should not be used for marketing la
 - Access-backed database option
 - Normal/low-end data scale
 - Domain users describe the GUI as primitive
-- No obvious complete open-source ARM replacement found yet
+- No obvious complete open-source replacement for the full workflow found yet
 
 ### 13.3 What not to do
 
-- Do not copy ARM UI.
-- Do not copy ARM proprietary code.
+- Do not copy incumbent UI.
+- Do not copy incumbent proprietary code.
 - Do not reverse engineer private formats casually.
 - Do not make compatibility promises before seeing real user-owned export files.
 - Do not publicly position the project as an attack on one vendor.
@@ -581,11 +579,11 @@ openfurrow/
 
 - Interview the domain user.
 - Collect screenshots if available.
-- Identify daily ARM pain points.
-- Identify actual exports available from ARM.
+- Identify daily pain points in the incumbent workflow.
+- Identify actual exports available from incumbent tools.
 - Identify report formats they must produce.
 - Identify statistics they use in practice.
-- Identify whether they use ATD, Access, SQL Server, EDE, Excel, or plain ARM files.
+- Identify whether they use Access, SQL Server, Excel, EDE, local project files, or other export/database paths.
 - Identify whether Field Book, BrAPI, Breedbase, BMS, or BIMS matter in their environment.
 
 ### Phase 1: Data package and schema
@@ -638,13 +636,13 @@ openfurrow/
 
 Ask the agricultural/genetics contact the following:
 
-1. What exact ARM product/version are you using?
-2. Are you using only ARM, or also ARM ST, ATD, ARM Mobile, or sponsor add-ins?
+1. What exact trial-management product/version are you using?
+2. Are you using only the core application, or also database, mobile, summary, or sponsor add-ins?
 3. What is the most painful daily workflow?
 4. What takes the most time: trial setup, data entry, reporting, analysis, exports, collaboration, or corrections?
-5. What does ARM produce that must be accepted by someone else?
-6. What export formats can you get from ARM today?
-7. Do you have direct access to ATD, Access, SQL Server, Excel exports, EDE, or other files?
+5. What does the incumbent tool produce that must be accepted by someone else?
+6. What export formats can you get from the incumbent tool today?
+7. Do you have direct access to Access, SQL Server, Excel exports, EDE, local project files, or other data paths?
 8. What statistical analyses do you actually run?
 9. Do you need GLP/GEP-style audit support?
 10. Are trials mostly crop protection, crop production, breeding, genetics, or something else?
@@ -683,7 +681,7 @@ Genetics can become a large, difficult domain. Mitigation: start with efficacy/f
 
 ### 18.6 Legal/proprietary compatibility risk
 
-ARM compatibility could create legal risk if handled carelessly. Mitigation: support user-owned exports and public standards first.
+Incumbent-tool compatibility could create legal risk if handled carelessly. Mitigation: support user-owned exports and public standards first.
 
 ### 18.7 Maintenance risk
 
@@ -758,7 +756,7 @@ The name suggests opening a path through the field: a good metaphor for creating
    - import observations
    - run basic summary
    - generate report
-8. Interview the domain user and update scope based on actual ARM pain.
+8. Interview the domain user and update scope based on actual legacy-workflow pain.
 9. Collect legally usable sample exports.
 10. Decide whether Field Book or BrAPI should be the first interoperability milestone.
 
@@ -766,25 +764,19 @@ The name suggests opening a path through the field: a good metaphor for creating
 
 ## 23. Source notes
 
-These sources were used to ground the ARM and open-ag ecosystem context. They should be revisited before public claims are made.
+These sources were used to ground the open-ag ecosystem context. Closed-incumbent research notes were intentionally omitted from this brief so the public project document stays focused on the open-science mission rather than on one vendor. Sources should be revisited before public claims are made.
 
-1. GDM ARM product page: https://gdmdata.com/products/arm
-2. GDM home page, ARM positioning: https://gdmdata.com/
-3. Ohio State software directory entry for ARM: https://softwaredirectory.osu.edu/node/146
-4. GDM ARM download/install page: https://gdmdata.com/Products/ARM/Download/
-5. GDM ARM Trial Database product page: https://gdmdata.com/Products/Trial%20Database%20%28ATD%29
-6. GDM ATD FAQ, licensing/Access 2 GB/approximately 2000 trials: https://gdmdata.com/Products/Trial%20Database%20%28ATD%29/Frequently%20Asked%20Questions
-7. BrAPI official site: https://brapi.org/
-8. BrAPI getting started: https://brapi.org/get-started/1
-9. BrAPI paper: https://pmc.ncbi.nlm.nih.gov/articles/PMC6792114/
-10. Field Book official site: https://fieldbook.phenoapps.org/
-11. Field Book GitHub: https://github.com/PhenoApps/Field-Book
-12. PhenoApps app overview: https://phenoapps.org/apps/
-13. Breedbase overview: https://cupulses.breedbase.org/
-14. Breedbase paper: https://pmc.ncbi.nlm.nih.gov/articles/PMC9258556/
-15. BMS overview: https://bmspro.io/596
-16. BMS API repository: https://github.com/IntegratedBreedingPlatform/BMSAPI
-17. BIMS paper: https://academic.oup.com/database/article/doi/10.1093/database/baab054/6355633
-18. BreedersDB: https://breedersdb.com/
-19. AgroFIMS official site: https://agrofims.org/
-20. AgroFIMS paper: https://www.frontiersin.org/journals/sustainable-food-systems/articles/10.3389/fsufs.2021.726646/full
+1. BrAPI official site: https://brapi.org/
+2. BrAPI getting started: https://brapi.org/get-started/1
+3. BrAPI paper: https://pmc.ncbi.nlm.nih.gov/articles/PMC6792114/
+4. Field Book official site: https://fieldbook.phenoapps.org/
+5. Field Book GitHub: https://github.com/PhenoApps/Field-Book
+6. PhenoApps app overview: https://phenoapps.org/apps/
+7. Breedbase overview: https://cupulses.breedbase.org/
+8. Breedbase paper: https://pmc.ncbi.nlm.nih.gov/articles/PMC9258556/
+9. BMS overview: https://bmspro.io/596
+10. BMS API repository: https://github.com/IntegratedBreedingPlatform/BMSAPI
+11. BIMS paper: https://academic.oup.com/database/article/doi/10.1093/database/baab054/6355633
+12. BreedersDB: https://breedersdb.com/
+13. AgroFIMS official site: https://agrofims.org/
+14. AgroFIMS paper: https://www.frontiersin.org/journals/sustainable-food-systems/articles/10.3389/fsufs.2021.726646/full
