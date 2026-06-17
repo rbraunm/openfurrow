@@ -6,4 +6,4 @@ The project is in its definition phase; the full brief lives in [`brief.md`](bri
 
 ---
 
-Part of the [OneSourceIT open-source projects](https://onesourceit.us/open-source.html).
+Supported in part by the work of [OneSourceIT](https://onesourceit.us/open-source.html).
