@@ -7,3 +7,7 @@ The project is in its definition phase; the full brief lives in [`brief.md`](bri
 ---
 
 Supported in part by the work of [OneSourceIT](https://onesourceit.us/open-source.html).
+
+## License
+
+Apache-2.0. See [LICENSE](LICENSE).
