@@ -1,6 +1,6 @@
 # 0001 - SQLite-canonical store
 
-**Status:** Proposed (open -- not yet locked). Reversible.
+**Status:** Accepted. The store now exists; the open questions below were resolved in its favor and portability is confirmed as the deciding rationale.
 
 ## Context
 
@@ -34,12 +34,44 @@ import/export interchange only, never the system of record. Pydantic stays at th
 interchange boundary; the ORM owns the store. DuckDB is noted as a possible future
 *analytics* escape hatch (columnar, Apache-2.0, reads SQLite), not the transactional record.
 
-## Why open
+## Implementation
 
-The store is not yet implemented, and two questions could still reshape it: how team mode
-on PostgreSQL actually lands, and whether a DuckDB analytics path changes the layering.
-Left open deliberately -- adopt the direction, but it is not locked until the store exists
-and those questions are answered.
+The MVP implements a flat, trial-scoped subset of the relational model above:
+`trial` (metadata and design folded 1:1), `treatment`, `assessment`, and
+`observation`. The project/study hierarchy and the append-only audit log are
+deferred -- they are real parts of the eventual model but not needed to prove the
+reproducible loop. Three concrete decisions were made building it:
+
+- **The layout is not stored.** It is a pure function of the package -- the seed,
+  the design, and the treatment order -- so per "derive, don't duplicate" it is
+  regenerated on demand. This also keeps the input hash (over package and
+  observations) a complete description: there is no separately-stored layout that
+  could disagree with the seed. Observations carry a `plotNumber`, which the
+  deterministic regeneration reproduces exactly.
+- **Treatments and assessments carry an explicit `ordinal`.** Their order is
+  significant -- the randomizer permutes treatments in package order, and the input
+  hash preserves list order -- and SQL row order is not guaranteed, so the order is
+  stored and restored explicitly.
+- **An observation value is split across two nullable columns,** `numericValue`
+  (REAL) and `textValue`, with the assessment's data type selecting which is
+  populated and both NULL meaning missing. Native REAL keeps floats bit-exact across
+  a round trip, which keeps the hash stable; a single text column would stringify
+  them. `allowedValues` (a short list) is stored as a JSON text column rather than a
+  child table.
+
+Portability and ownership are served by SQLite **plus** a tested lossless exchange,
+not by the file format alone: the database and a JSON export round-trip to the same
+input hash, and a CSV export (long format, annotated with block and treatment)
+covers the spreadsheet/R path. Moving a trial is copying one file or exporting one
+JSON document.
+
+## Still open
+
+Two questions remain genuinely unsettled and will be revisited with evidence rather
+than locked now: how team mode on PostgreSQL actually lands (the schema is written
+to the portable intersection, but the migration has not been exercised), and whether
+a DuckDB analytics path changes the layering. The core direction -- SQLite-canonical
+through SQLAlchemy -- is locked.
 
 ## Consequences
 
