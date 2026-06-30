@@ -5,6 +5,7 @@ from openfurrow.schema.layout import (
   PlotAssignment,
   TrialLayout,
 )
+from openfurrow.schema.observation import Observation
 from openfurrow.schema.trialPackage import (
   AssessmentDataType,
   AssessmentDefinition,
@@ -20,6 +21,7 @@ __all__ = [
   "AssessmentDefinition",
   "DesignSpecification",
   "DesignType",
+  "Observation",
   "PlotAssignment",
   "Treatment",
   "TrialLayout",
