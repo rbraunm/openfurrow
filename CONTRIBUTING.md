@@ -21,7 +21,7 @@ validation status. The oracles, strongest first:
   and the strongest anchor. The primary anchor is the Yates oats RCBD (see the registry).
 - **statsmodels** -- an independent implementation, used as a cross-check oracle and a
   test-only dependency. It validates; it is never part of the runtime analysis path
-  (decision 0005).
+  (decision 0002).
 - **agricolae** (R) -- a reference for mean-separation behavior (Fisher's Protected LSD,
   alpha 0.05), consulted for parity, not vendored.
 

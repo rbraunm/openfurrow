@@ -8,9 +8,9 @@ decisions, and the milestone trail. Nothing in `roadmap/` is load-bearing at run
 
 - `milestones.md` -- the MVP build, as a tracked checklist: what is done and what is next.
 - `decisions/` -- short decision records (ADRs). `decisions/README.md` defines the process
-  and indexes the decisions made so far: storage, the reproducibility policy,
-  native-analysis-with-oracles, scope, the missing-data policy, the import model, and the
-  field-aligned analysis conventions.
+  and holds the three records -- the SQLite-canonical store, native-analysis-with-oracles,
+  and the missing-data policy -- plus a note of the choices recorded elsewhere (scope, the
+  import model, the analysis conventions) that were not real forks and so are not ADRs.
 - `research/` -- findings gathered by exercising the field and the tools, not by
   assumption: how ARM, BrAPI, and Field Book actually work, and the test-data registry
   (`research/test-data.md`) of sourced, provenanced datasets and what each validates.

@@ -131,12 +131,15 @@ yields given as totals of 3 reps.
 
 ## C. Derived fixture (negative test)
 
-### missing-cell variant of stirret.borers
+### missing-data variants of stirret.borers
 
-A copy of B1 with **one plot x assessment cell removed**, to exercise the MVP missing-data
-policy (decision 0007): the analyzer must **reject and fail loud**, naming the missing
-cell, rather than silently analyzing an incomplete table. Documented as derived -- the
-deletion is the test condition, not real data.
+A family of copies of B1, each with cells removed in a specific pattern, exercising the MVP
+missing-data policy (decision 0003): the analyzer must **reject and fail loud**, naming the
+missing cell(s), rather than silently analyzing an incomplete table. The full pattern matrix
+-- a single cell, several scattered cells, a whole treatment absent from one block, a
+non-estimable pattern, and the complete-table control -- lives in decision 0003; the
+fixtures derive from B1 (stirret.borers) by removing cells in each pattern. Documented as
+derived -- the deletions are the test condition, not real data.
 
 - **Study type:** single-factor RCBD with an induced gap
 - **Condition:** intentionally incomplete
@@ -151,7 +154,7 @@ deletion is the test condition, not real data.
 | Yates oats (anchor)           | single-factor RCBD  | numeric         | complete, small      | yes    |
 | stirret.borers                | single-factor RCBD  | count (2 dates) | complete             | yes    |
 | minnesota.barley.yield subset | single-factor RCBD  | numeric         | complete, more trts  | yes    |
-| missing-cell variant          | RCBD + gap          | count           | incomplete (induced) | yes    |
+| missing-data variants         | RCBD + gap          | count           | incomplete (induced) | yes    |
 | beall.webworms                | factorial + subsamp | count           | complete, large      | future |
 | durban.splitplot              | split-plot          | numeric         | complete, large      | future |
 | fisher.barley                 | MET (g x e)         | numeric         | balanced across env  | future |
@@ -164,6 +167,6 @@ dataset with a treatment+block structure can be adopted later if a clean one is 
 
 For the analysis MVP, the active fixtures are the **Yates oats anchor** (published table),
 **stirret.borers** (realistic single-factor RCBD, ARM domain, multi-assessment),
-**minnesota.barley.yield subset** (mean-separation stress), and the **missing-cell
-variant** (reject path). The factorial, split-plot, and MET datasets are recorded now so
+**minnesota.barley.yield subset** (mean-separation stress), and the **missing-data
+variants** (reject path). The factorial, split-plot, and MET datasets are recorded now so
 they are ready when those study types are added.
