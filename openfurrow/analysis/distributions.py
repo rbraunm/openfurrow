@@ -87,3 +87,38 @@ def fDistributionSurvival(fStatistic: float, numeratorDf: int, denominatorDf: in
     return 1.0
   x = denominatorDf / (denominatorDf + numeratorDf * fStatistic)
   return regularizedIncompleteBeta(x, denominatorDf / 2.0, numeratorDf / 2.0)
+
+
+def tDistributionSurvival(t: float, df: int) -> float:
+  """Upper-tail probability P(T > t) for a Student t with df degrees of freedom."""
+  if df <= 0:
+    raise ValueError(f"degrees of freedom must be positive, got {df}")
+  half = 0.5 * regularizedIncompleteBeta(df / (df + t * t), df / 2.0, 0.5)
+  return half if t >= 0.0 else 1.0 - half
+
+
+def tCriticalValue(probabilityUpperTail: float, df: int) -> float:
+  """The positive t with P(T > t) = probabilityUpperTail for a t with df df.
+
+  For a two-sided test at level alpha, pass alpha / 2. The survival is strictly
+  decreasing in t, so the value is found by bracketing then bisection.
+  """
+  if df <= 0:
+    raise ValueError(f"degrees of freedom must be positive, got {df}")
+  if not 0.0 < probabilityUpperTail < 0.5:
+    raise ValueError(f"upper-tail probability must be in (0, 0.5), got {probabilityUpperTail}")
+  low = 0.0
+  high = 1.0
+  while tDistributionSurvival(high, df) > probabilityUpperTail:
+    high *= 2.0
+    if high > 1.0e12:
+      raise ValueError("failed to bracket the t critical value")
+  for _ in range(200):
+    middle = 0.5 * (low + high)
+    if tDistributionSurvival(middle, df) > probabilityUpperTail:
+      low = middle
+    else:
+      high = middle
+    if high - low < 1.0e-12 * max(1.0, high):
+      break
+  return 0.5 * (low + high)

@@ -12,6 +12,8 @@ from scipy import special, stats
 from openfurrow.analysis.distributions import (
   fDistributionSurvival,
   regularizedIncompleteBeta,
+  tCriticalValue,
+  tDistributionSurvival,
 )
 
 
@@ -63,6 +65,23 @@ def testFSurvivalMatchesScipy():
   ]
   for f, df1, df2 in cases:
     assert fDistributionSurvival(f, df1, df2) == pytest.approx(stats.f.sf(f, df1, df2), rel=1e-9, abs=1e-12)
+
+
+def testTSurvivalAtZeroIsHalf():
+  for df in (1, 5, 30):
+    assert tDistributionSurvival(0.0, df) == pytest.approx(0.5, abs=1e-12)
+
+
+def testTSurvivalMatchesScipy():
+  cases = [(0.5, 5), (2.0, 10), (-1.5, 8), (3.0, 20), (-0.25, 3), (1.96, 100)]
+  for t, df in cases:
+    assert tDistributionSurvival(t, df) == pytest.approx(stats.t.sf(t, df), rel=1e-9, abs=1e-12)
+
+
+def testTCriticalValueMatchesScipy():
+  cases = [(0.025, 10), (0.025, 6), (0.005, 20), (0.05, 3), (0.025, 100), (0.1, 4)]
+  for upperTail, df in cases:
+    assert tCriticalValue(upperTail, df) == pytest.approx(stats.t.ppf(1 - upperTail, df), rel=1e-9, abs=1e-10)
 
 
 # ---- fail-loud edges -----------------------------------------------------

@@ -8,11 +8,19 @@ from openfurrow.analysis.anova import (
   TreatmentMean,
   analyzeRcbd,
 )
+from openfurrow.analysis.meanSeparation import (
+  MeanSeparation,
+  TreatmentGroup,
+  separateMeans,
+)
 
 __all__ = [
   "AnalysisError",
   "AnovaResult",
   "AnovaSource",
+  "MeanSeparation",
+  "TreatmentGroup",
   "TreatmentMean",
   "analyzeRcbd",
+  "separateMeans",
 ]
