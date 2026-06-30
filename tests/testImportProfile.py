@@ -148,3 +148,39 @@ import:
 """)
   with pytest.raises(ValidationError, match="cannot also be an NA token"):
     loadConfig(path)
+
+
+# ---- overrides ------------------------------------------------------------
+
+def testOverrideFormat():
+  profile = ImportProfile().withOverrides(format="wide")
+  assert profile.format is ImportFormat.wide
+
+
+def testOverrideFormatAcceptsEnum():
+  profile = ImportProfile().withOverrides(format=ImportFormat.wide)
+  assert profile.format is ImportFormat.wide
+
+
+def testOverrideLongColumnLeavesOthersUnchanged():
+  profile = ImportProfile().withOverrides(long={"value": "Yield"})
+  assert profile.long.value == "Yield"
+  assert profile.long.plotNumber == "plotNumber"
+  assert profile.long.assessmentCode == "assessmentCode"
+
+
+def testOverrideParsingNaTokens():
+  profile = ImportProfile().withOverrides(parsing={"naTokens": ["", "-"]})
+  assert profile.parsing.naTokens == ["", "-"]
+
+
+def testOverrideIsRevalidated():
+  # Overriding the value column onto the plot column violates distinctness.
+  with pytest.raises(ValidationError, match="distinct columns"):
+    ImportProfile().withOverrides(long={"value": "plotNumber"})
+
+
+def testNoOverridesPreservesValues():
+  original = ImportProfile()
+  unchanged = original.withOverrides()
+  assert unchanged.model_dump() == original.model_dump()

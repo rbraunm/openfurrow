@@ -116,6 +116,31 @@ class ImportProfile(BaseModel):
   wide: WideColumns = Field(default_factory=WideColumns)
   parsing: ValueParsing = Field(default_factory=ValueParsing)
 
+  def withOverrides(
+    self,
+    *,
+    format: ImportFormat | str | None = None,
+    long: dict | None = None,
+    wide: dict | None = None,
+    parsing: dict | None = None,
+  ) -> ImportProfile:
+    """Return a copy with the given fields overridden.
+
+    Only the sections and keys actually supplied are changed; the result is
+    re-validated, so an override that produces a contradictory profile (for
+    example mapping the value column onto the plot column) fails loud here.
+    """
+    data = self.model_dump(mode="json")
+    if format is not None:
+      data["format"] = format.value if isinstance(format, ImportFormat) else format
+    if long:
+      data["long"].update(long)
+    if wide:
+      data["wide"].update(wide)
+    if parsing:
+      data["parsing"].update(parsing)
+    return ImportProfile.model_validate(data)
+
 
 class OpenFurrowConfig(BaseModel):
   """Root of the project configuration file.
