@@ -22,7 +22,7 @@ import platform
 import numpy
 
 from openfurrow import schemaVersion
-from openfurrow.analysis import AnalysisError, analyzeRcbd, separateMeans
+from openfurrow.analysis import AnalysisError, analyzeRcbd, assessAssumptions, separateMeans
 from openfurrow.schema.document import TrialDocument, contentHash
 from openfurrow.schema.layout import TrialLayout
 from openfurrow.schema.observation import Observation
@@ -149,7 +149,40 @@ def _assessmentSection(assessment, package, layout, observations, significanceLe
   if protected and not separation.treatmentSignificant:
     lines.append("- Means were not separated: the treatment effect was not significant (protected LSD).")
   lines.append("")
+
+  lines += _assumptionsSubsection(assessment.assessmentCode, package, layout, observations, significanceLevel)
   return lines
+
+
+def _assumptionsSubsection(assessmentCode, package, layout, observations, significanceLevel) -> list[str]:
+  assumptions = assessAssumptions(assessmentCode, package, layout, observations, significanceLevel)
+  lines = [
+    "### Assumption checks",
+    "",
+    f"Reported only; these do not change the analysis above (significance level alpha = {_number(significanceLevel, 2)}).",
+    "",
+    _diagnosticLine(assumptions.equalVariance),
+    _diagnosticLine(assumptions.nonAdditivity),
+    _diagnosticLine(assumptions.normality),
+    "",
+    "Residuals are from the additive block-and-treatment model and are constrained "
+    "(they sum to zero within each block and each treatment), so the normality test is approximate.",
+    "",
+  ]
+  return lines
+
+
+def _diagnosticLine(outcome) -> str:
+  if not outcome.computed:
+    return f"- {outcome.name}: {outcome.interpretation}"
+  if outcome.statisticName == "F":
+    statistic = (
+      f"F({outcome.numeratorDegreesOfFreedom}, {outcome.denominatorDegreesOfFreedom}) "
+      f"= {outcome.statistic:.2f}"
+    )
+  else:
+    statistic = f"{outcome.statisticName} = {outcome.statistic:.4f}"
+  return f"- {outcome.name}: {statistic}. {outcome.interpretation}"
 
 
 def _reproducibilitySection(package, observations, significanceLevel, protected) -> list[str]:

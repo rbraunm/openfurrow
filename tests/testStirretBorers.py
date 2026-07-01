@@ -216,3 +216,8 @@ def testReportRendersForRealCountTrial():
   assert "Borer count August 18" in report
   assert "Borer count October 19" in report
   assert "Protected" in report
+  # The report-only assumption checks (decision 0006), one block per assessment.
+  assert report.count("### Assumption checks") == 2
+  assert "Brown-Forsythe" in report
+  assert "Tukey" in report
+  assert "Shapiro-Wilk" in report

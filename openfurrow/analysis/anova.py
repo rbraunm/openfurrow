@@ -70,13 +70,20 @@ class AnovaResult(BaseModel):
   treatmentMeans: list[TreatmentMean]
 
 
-def analyzeRcbd(
+def buildRcbdMatrix(
   assessmentCode: str,
   package: TrialPackage,
   layout: TrialLayout,
   observations: list[Observation],
-) -> AnovaResult:
-  """Run the RCBD ANOVA for one numeric assessment."""
+) -> tuple[numpy.ndarray, list[str], list[int]]:
+  """Validate inputs and build the block-by-treatment value matrix for an RCBD.
+
+  Shared by the ANOVA and its assumption diagnostics so the structural and
+  completeness checks live in one place. Returns the matrix (rows = blocks,
+  columns = treatments, in package treatment order and block order 1..b), the
+  treatment codes, and the block numbers. Raises AnalysisError, naming any
+  missing cells, rather than proceeding on an incomplete or non-numeric design.
+  """
   assessment = next((a for a in package.assessments if a.assessmentCode == assessmentCode), None)
   if assessment is None:
     raise AnalysisError(f"assessment '{assessmentCode}' is not defined in the trial package")
@@ -130,6 +137,19 @@ def analyzeRcbd(
   for treatmentIndex, treatmentCode in enumerate(treatmentCodes):
     for blockIndex, block in enumerate(blocks):
       matrix[blockIndex, treatmentIndex] = cellValue[(treatmentCode, block)]
+  return matrix, treatmentCodes, blocks
+
+
+def analyzeRcbd(
+  assessmentCode: str,
+  package: TrialPackage,
+  layout: TrialLayout,
+  observations: list[Observation],
+) -> AnovaResult:
+  """Run the RCBD ANOVA for one numeric assessment."""
+  matrix, treatmentCodes, blocks = buildRcbdMatrix(assessmentCode, package, layout, observations)
+  treatmentCount = len(treatmentCodes)
+  blockCount = len(blocks)
 
   grandMean = float(matrix.mean())
   treatmentMeansArray = matrix.mean(axis=0)
