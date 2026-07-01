@@ -37,3 +37,5 @@ reproduces. CLI-first; web UI and team/Postgres mode are post-MVP.
 - [ ] Additional mean-comparison tests (Duncan's MRT, Student-Newman-Keuls, Tukey's,
       Waller-Duncan, Dunnett's).
 - [ ] Web UI; team mode on PostgreSQL.
+- [ ] ARM parity gap analysis -- research doc under `research/`: inventory ARM's capability
+      surface and tag each have / partial / missing, as the parity backlog. Long-term.
