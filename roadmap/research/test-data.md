@@ -76,7 +76,14 @@ counts are close enough to normal for a standard analysis.
   Table 2; via agridat.
 - **MVP scope:** yes -- the primary realistic ANOVA + Protected LSD case, and the
   multi-assessment import test.
-- **To confirm on pull:** exact treatment-level count and block completeness.
+- **Status:** SOURCED and IN USE. Fixture `tests/fixtures/stirretBorers.csv` (via
+  the Rdatasets agridat CSV mirror); validated by `tests/testStirretBorers.py`,
+  which reproduces the agridat published count1 means and matches statsmodels on
+  both counts at the full 4 x 15 scale.
+- **Confirmed on pull:** 4 treatments (None, Early, Late, Both), 15 blocks each,
+  complete (60/60 cells, both dates). The count1 treatment effect is significant
+  (F = 7.13, p = 0.0006), so this case also exercises the Protected LSD letter
+  separation into two groups: {Early, None} vs {Both, Late}.
 
 ### B2. minnesota.barley.yield (subset) -- variety trial (RCBD)
 
