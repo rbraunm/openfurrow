@@ -23,6 +23,9 @@ test = [
   "statsmodels>=0.14",
 ]
 
+[project.scripts]
+openfurrow = "openfurrow.cli.main:main"
+
 [tool.setuptools.packages.find]
 include = ["openfurrow*"]
 
