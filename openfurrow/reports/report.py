@@ -17,14 +17,13 @@ Output is ASCII Markdown so it is portable and renders the same everywhere.
 
 from __future__ import annotations
 
-import hashlib
-import json
 import platform
 
 import numpy
 
 from openfurrow import schemaVersion
 from openfurrow.analysis import AnalysisError, analyzeRcbd, separateMeans
+from openfurrow.schema.document import TrialDocument, contentHash
 from openfurrow.schema.layout import TrialLayout
 from openfurrow.schema.observation import Observation
 from openfurrow.schema.trialPackage import AssessmentDataType, TrialPackage
@@ -55,19 +54,11 @@ def buildReport(
 def inputHash(package: TrialPackage, observations: list[Observation]) -> str:
   """A stable SHA-256 over the canonical inputs (package and observations).
 
-  The randomization seed lives in the package, so the layout is regenerable from
-  it and need not be hashed separately. Observations are sorted so ordering does
-  not affect the hash.
+  Delegates to the shared trial-document content hash so hashing here and export
+  elsewhere cannot drift. The layout is regenerable from the package's seed and is
+  not hashed separately; observations are sorted so ordering does not affect it.
   """
-  canonical = {
-    "package": package.model_dump(mode="json"),
-    "observations": sorted(
-      (observation.model_dump(mode="json") for observation in observations),
-      key=lambda row: (row["plotNumber"], row["assessmentCode"]),
-    ),
-  }
-  payload = json.dumps(canonical, sort_keys=True, separators=(",", ":")).encode("utf-8")
-  return hashlib.sha256(payload).hexdigest()
+  return contentHash(TrialDocument(package=package, observations=list(observations)))
 
 
 def _metadataSection(package: TrialPackage) -> list[str]:
