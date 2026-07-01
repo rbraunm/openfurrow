@@ -142,6 +142,26 @@ class ImportProfile(BaseModel):
     return ImportProfile.model_validate(data)
 
 
+class MeanComparison(str, Enum):
+  """Mean-separation test applied after a significant treatment effect."""
+
+  protectedLSD = "protectedLSD"  # Fisher's LSD, only when the treatment F is significant
+  lsd = "lsd"  # unprotected Fisher's LSD, applied regardless
+
+
+class AnalysisSettings(BaseModel):
+  """Per-study analysis settings (decision 0009).
+
+  The significance level and the mean-comparison test are configurable per study;
+  the defaults match ARM's conventional choices (alpha 0.05, protected LSD).
+  """
+
+  model_config = ConfigDict(extra="forbid")
+
+  significanceLevel: float = Field(default=0.05, gt=0.0, lt=1.0)
+  meanComparison: MeanComparison = MeanComparison.protectedLSD
+
+
 class OpenFurrowConfig(BaseModel):
   """Root of the project configuration file.
 
@@ -153,3 +173,4 @@ class OpenFurrowConfig(BaseModel):
   model_config = ConfigDict(extra="forbid", populate_by_name=True)
 
   importProfile: ImportProfile = Field(default_factory=ImportProfile, alias="import")
+  analysis: AnalysisSettings = Field(default_factory=AnalysisSettings)

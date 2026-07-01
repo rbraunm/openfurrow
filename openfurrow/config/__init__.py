@@ -7,18 +7,22 @@ from openfurrow.config.loader import (
   loadConfig,
 )
 from openfurrow.config.profile import (
+  AnalysisSettings,
   ImportFormat,
   ImportProfile,
   LongColumns,
+  MeanComparison,
   OpenFurrowConfig,
   ValueParsing,
   WideColumns,
 )
 
 __all__ = [
+  "AnalysisSettings",
   "ImportFormat",
   "ImportProfile",
   "LongColumns",
+  "MeanComparison",
   "OpenFurrowConfig",
   "ValueParsing",
   "WideColumns",
