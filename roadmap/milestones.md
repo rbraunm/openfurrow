@@ -26,10 +26,14 @@ reproduces. CLI-first; web UI and team/Postgres mode are post-MVP.
       import-json -> verify, plus list, info, delete.
 - [x] Reproduce check -- `verify` round-trips a trial to the same content hash; a trial
       re-imported into a fresh database is identical.
+- [x] Worked example -- `examples/yatesOats/` runs the whole loop on the Yates oat trial
+      and reproduces its published ANOVA and a known stable input hash; guarded by a test.
+- [x] README quickstart -- install and the loop, replacing the definition-phase stub.
 
 ## Next
-- [ ] Packaging polish -- installable console script verified end to end; a worked example
-      project (design JSON + observations CSV) under `examples/`.
+- [ ] Install smoke test on Python 3.13 -- confirm the `openfurrow` console script installs
+      (`pip install .`) and runs end to end. The entry point is wired and the loop is
+      covered by tests; a real install needs a 3.13 environment (the declared target).
 
 ## Future (recorded, not built)
 - [ ] Factorial, split-plot, and multi-environment designs (see `research/test-data.md`).

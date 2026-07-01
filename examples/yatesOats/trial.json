@@ -1,0 +1,25 @@
+{
+  "schemaVersion": "0.1.0",
+  "trial": {
+    "trialCode": "yatesOats1935",
+    "title": "Yates oat variety trial",
+    "crop": "Oats",
+    "season": "1935",
+    "site": "Rothamsted",
+    "objective": "Compare grain yield of three oat varieties",
+    "investigator": "F. Yates"
+  },
+  "treatments": [
+    {"treatmentCode": "goldenRain", "name": "Golden Rain"},
+    {"treatmentCode": "marvellous", "name": "Marvellous"},
+    {"treatmentCode": "victory", "name": "Victory"}
+  ],
+  "design": {
+    "designType": "rcbd",
+    "replications": 6,
+    "randomizationSeed": 1
+  },
+  "assessments": [
+    {"assessmentCode": "yield", "name": "Grain yield", "dataType": "numeric", "unit": "qtr-lb/plot", "minValue": 0}
+  ]
+}
