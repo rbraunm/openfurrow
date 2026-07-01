@@ -6,13 +6,15 @@ decisions, and the milestone trail. Nothing in `roadmap/` is load-bearing at run
 
 ## How this folder is used
 
-- `milestones.md` -- the MVP build, as a tracked checklist: what is done and what is next.
+- `milestones.md` -- the build, as a tracked checklist: what is done and what is next.
 - `decisions/` -- short decision records (ADRs). `decisions/README.md` defines the process
-  and holds the three records -- the SQLite-canonical store, native-analysis-with-oracles,
-  and the missing-data policy -- plus a note of the choices recorded elsewhere (scope, the
-  import model, the analysis conventions) that were not real forks and so are not ADRs.
+  and holds the records: the SQLite-canonical store, native-analysis-with-oracles, and the
+  missing-data policy (accepted), plus the registry/hierarchy and privacy/IAM layer
+  (proposed, long-term) -- with a note of the choices recorded elsewhere (scope, the import
+  model, the analysis conventions) that were not real forks and so are not ADRs.
 - `research/` -- findings gathered by exercising the field and the tools, not by
-  assumption: how ARM, BrAPI, and Field Book actually work, and the test-data registry
+  assumption: how ARM, BrAPI, and Field Book actually work; the market structure and the
+  bridge opportunity (`research/landscape.md`); and the test-data registry
   (`research/test-data.md`) of sourced, provenanced datasets and what each validates.
 
 ## Build order
@@ -28,10 +30,20 @@ tables are the gold masters until OpenFurrow reproduces them.
 
 ## Current state
 
-Done: the trial-package schema, the RCBD layout generator (reproducible by seed), the
-project config and import profile, and the observation importer (long and wide). Next: the
-analysis layer -- the AOV Means Table (ANOVA, treatment means, Protected LSD, CV) --
-validated against the Yates oats published table and statsmodels.
+The v0.1 MVP is complete: schema, RCBD layout, config (with the analysis section), the
+observation importer, the analysis layer (the AOV Means Table -- ANOVA, treatment means,
+Protected LSD, CV, validated against the Yates oats published table and statsmodels),
+reporting, the SQLite canonical store, portable JSON/CSV exchange, and the CLI loop
+(`init -> add -> randomize -> import -> report -> export -> import-json -> verify`), with a
+worked example under `examples/`. See `milestones.md` for the full checklist.
+
+Direction beyond the MVP is set by `research/landscape.md`: field practice splits the trial
+workflow across a registry tool (protocols, product IDs, labels, cross-year tracking) and a
+separate cloud analysis/visualization suite, neither easily portable. OpenFurrow's goal is
+to bridge both layers on an open, portable, owned foundation, with configurable privacy the
+incumbents lack. The future tracks in `milestones.md` -- registry (decision 0004),
+visualization, interoperability, and the privacy/IAM layer (decision 0005) -- serve that
+goal.
 
 ## Graduation
 

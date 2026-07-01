@@ -15,6 +15,8 @@ This is not intended to be a clone of any existing commercial product. The inten
 
 Researchers should not need proprietary legacy desktop software, paid database add-ons, Access-backed repositories, or fragile spreadsheet glue to design, preserve, analyze, and report agricultural trial research.
 
+A companion thesis, from how these tools are used in practice (see section 24): the workflow is split between a registry tool for protocols, product IDs, and labels and a separate cloud analysis/visualization suite, and neither hands the researcher a portable copy of the whole trial. OpenFurrow's opportunity is to bridge both layers on one open, portable, owned foundation.
+
 ---
 
 ## 2. Background
@@ -725,7 +727,10 @@ Its value should come from:
 - database-backed storage as a default;
 - compatibility with real field workflows;
 - liberation from legacy desktop/data silos;
-- a careful bridge from existing workflows rather than a purity-first rewrite.
+- a careful bridge from existing workflows rather than a purity-first rewrite;
+- unifying the two-tool split -- the protocol/product/label registry and the analysis/visualization -- in one owned place (section 24);
+- portability as the wedge: import from the incumbents so adoption is not re-keying, export openly so data is never re-locked;
+- configurable data privacy the cloud incumbents provide only inside their walls.
 
 ---
 
@@ -780,3 +785,73 @@ These sources were used to ground the open-ag ecosystem context. Closed-incumben
 12. BreedersDB: https://breedersdb.com/
 13. AgroFIMS official site: https://agrofims.org/
 14. AgroFIMS paper: https://www.frontiersin.org/journals/sustainable-food-systems/articles/10.3389/fsufs.2021.726646/full
+
+---
+
+## 24. Market structure and the bridge strategy (field update)
+
+This section refines the incumbent notes (sections 12-13) with input from a working
+agricultural-research contact, corroborated by public sources. Detail and citations
+are in `roadmap/research/landscape.md`; competitor claims and one product name are
+marked to-confirm and are not for public positioning yet. It is written as market
+structure and strategy, not as an attack on any vendor (section 13.3).
+
+### 24.1 The workflow is two tools, not one
+
+In practice the trial workflow is served by two products used together:
+
+- **A registry / system of record.** The incumbent desktop tool (ARM, Gylling Data
+  Management) is used mainly to hold protocols and to associate trials with product
+  IDs and labels, so trials stay comparable and trackable across many trials and many
+  years. Its across-trial and relational features are this registry role. Public
+  signal agrees the tool is strong here and weak at analysis (users move to SAS/R and
+  ask for graphing it does not have).
+- **A separate analysis and visualization suite.** The actual statistics and graphing
+  increasingly happen in a separate, cloud-hosted application (reported as "Bits";
+  identity to-confirm). The confirmed pattern is that analysis/visualization live
+  outside the registry tool.
+
+Neither side hands the researcher a portable, self-describing copy of the whole
+trial: one is a proprietary desktop/relational store, the other is cloud-locked.
+
+### 24.2 Positioning: be the bridge, and own the data
+
+OpenFurrow's strongest position is not "a better ARM" or "a better analysis tool" in
+isolation, but the one-stop-shop that unifies both layers on a single open, portable,
+reproducible foundation the researcher owns. The wedge is exactly what neither
+incumbent offers: a trial as one portable, hash-verifiable document, analyzed
+transparently, with the cross-year/cross-trial registry that made the desktop tool
+valuable, plus privacy controls that travel with the data.
+
+### 24.3 What this adds to the plan
+
+- **Registry model** -- reusable protocols, a product/label catalog, and a
+  program/project/study/trial (+season) hierarchy (extends the data model, section 8;
+  decision 0004).
+- **Analysis and visualization** -- charts and across-trial/across-year summaries, not
+  only the tabular AOV Means Table (extends sections 10 and 14.2).
+- **Interoperability / migrate-in** -- import from the incumbent registry and analysis
+  formats so adoption is not re-keying, with open export so data is never re-locked
+  (extends the interoperability landscape, section 12).
+- **Configurable privacy / IAM** -- policy-driven data restriction enforced at the
+  access boundary, in both local and team modes (extends storage posture, section 9;
+  decision 0005).
+
+### 24.4 The privacy / reproducibility tension
+
+Restriction and portability pull against each other and the tension must be designed,
+not left implicit: a masked or redacted export no longer matches the full-record
+content hash -- it is a different, self-labeled document. Full-record reproducibility
+is preserved inside the trust boundary; a redacted artifact reproduces its redaction,
+a weaker and explicitly-labeled claim. Decision 0005 owns this.
+
+### 24.5 On ARM parity
+
+ARM feature parity is the long-term target, and with LLM-assisted development a solo
+effort can plausibly reach much of the oracle-backed statistical surface far faster
+than the incumbent took to accrete it. Parity is pursued through the differentiators
+above -- reproducibility, openness, ownership, the bridge -- and the eventual gap
+analysis (`milestones.md`) sorts ARM's surface by where the real cost lives:
+oracle-backed statistics (cheap to build and validate) versus domain- and
+regulatory-knowledge features (where validation, not code, is the cost). Some ARM
+features are deliberately out of scope.

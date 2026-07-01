@@ -1,9 +1,12 @@
 # CLAUDE.md -- OpenFurrow
 
 Open, reproducible, auditable management for agricultural trials -- field, greenhouse,
-and efficacy research -- built as a portable alternative to the Excel/Access and
-single-vendor (ARM-style) workflows these studies usually run on. One validated schema,
-open formats, reproducible by default.
+and efficacy research. In practice the workflow is split across two silos: a registry tool
+(protocols, product IDs, labels, cross-year tracking -- ARM's role) and a separate cloud
+analysis/visualization suite, neither easily portable. OpenFurrow's long-term goal is to
+bridge both on one open, portable, owned foundation, with the data portability and
+configurable privacy the incumbents lack (see `roadmap/research/landscape.md`). One
+validated schema, open formats, reproducible by default.
 
 Authoritative design and contributor rules live in `brief.md` (the design brief),
 `CONTRIBUTING.md`, `roadmap/decisions/` (the decision records), and `roadmap/README.md`.
@@ -28,6 +31,10 @@ file.
 - **Open, portable storage (decision 0001).** The canonical store is a single SQLite
   file via SQLAlchemy, schema-portable to PostgreSQL. Open formats (long-format CSV) are
   the interchange; spreadsheets and JSON are import/export, never the system of record.
+  Portability is the wedge against the cloud-locked incumbents: import from their formats
+  so adoption never means re-keying, and export openly so data is never re-locked. The
+  database and a JSON export agree on the content hash -- data is never trapped in the
+  store.
 - **Fail loud, no silent fallbacks.** Invalid data is rejected at the boundary it enters.
   Missing observation cells are rejected (decision 0003), not silently imputed. No
   second-strategy fallback runs behind a failed primary path.
@@ -46,6 +53,14 @@ and multi-environment designs are recorded as future scope (`roadmap/milestones.
 `roadmap/research/test-data.md`), not built yet. Build the exact, auditable balanced
 analysis first; reach ARM's unbalanced behavior (least-squares means) as a later, explicit
 setting.
+
+Beyond the analysis engine, the long-term direction (`roadmap/research/landscape.md`) is the
+bridge: a protocol/product/label registry with a project/study/trial hierarchy (decision
+0004), analysis-and-visualization, interoperability that imports from the incumbent tools,
+and a configurable privacy/IAM layer (decision 0005) whose redaction must be reconciled with
+the content-hash model. These are recorded and proposed, not built. ARM feature parity is the
+long-term target, filtered through the reproducibility/openness/ownership differentiators --
+some ARM features are deliberately not worth building.
 
 ## Testing
 Tests make real assertions about computed results, validated against the oracles and the

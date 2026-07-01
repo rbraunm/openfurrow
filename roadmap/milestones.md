@@ -10,7 +10,8 @@ reproduces. CLI-first; web UI and team/Postgres mode are post-MVP.
 - [x] RCBD layout generation -- deterministic by recorded seed; complete-block invariants
       enforced.
 - [x] Project config and import profile -- YAML, per-study settings, override merge; the
-      analysis section (significance level, mean-comparison test) per decision 0009.
+      analysis section (significance level, mean-comparison test) per the ARM-aligned
+      analysis conventions.
 - [x] Observation importer -- long and wide CSV, validated against the layout and package,
       missing values recorded as warnings.
 - [x] Analysis -- the AOV Means Table: RCBD ANOVA (block / treatment / error), treatment
@@ -36,10 +37,43 @@ reproduces. CLI-first; web UI and team/Postgres mode are post-MVP.
       covered by tests; a real install needs a 3.13 environment (the declared target).
 
 ## Future (recorded, not built)
+
+The long-term goal is a one-stop-shop that bridges the two-tool workflow -- the
+protocol/product/label registry and the analysis-and-visualization -- on an open,
+portable, owned foundation, with the data portability and configurable privacy the
+incumbents lack. See `research/landscape.md`. The tracks below serve that goal; ARM
+feature parity is the long-term target, filtered through it.
+
+**Analysis breadth**
 - [ ] Factorial, split-plot, and multi-environment designs (see `research/test-data.md`).
-- [ ] Unbalanced analysis: least-squares adjusted means for ARM parity; Yates missing-plot.
+- [ ] Unbalanced analysis: least-squares adjusted means for ARM parity; Yates missing-plot
+      (the decision-0003 successor).
 - [ ] Additional mean-comparison tests (Duncan's MRT, Student-Newman-Keuls, Tukey's,
       Waller-Duncan, Dunnett's).
-- [ ] Web UI; team mode on PostgreSQL.
+
+**Registry and organization (decision 0004)**
+- [ ] Reusable protocols, a product/label catalog, and a program/project/study/trial
+      (+season) hierarchy, so trials are comparable and trackable across trials and years --
+      the registry role the incumbent desktop tool actually fills.
+- [ ] Cross-trial and across-year summaries built on the registry.
+
+**Analysis and visualization UI**
+- [ ] Web UI.
+- [ ] Visualization: means with letters/error bars, interaction plots, MET and across-year
+      summaries -- reproducible views over validated results, not a new source of truth.
+
+**Interoperability (the bridge)**
+- [ ] Import from the incumbent registry and analysis formats (migrate a protocol/product
+      history in without re-keying); open export so data is never re-locked. Extends the
+      interoperability landscape in `brief.md` section 12.
+- [ ] BrAPI / Field Book alignment.
+
+**Team mode and privacy (decisions 0001, 0005)**
+- [ ] Team mode on PostgreSQL.
+- [ ] Configurable data privacy / IAM layer: policy-driven restriction enforced at the
+      access boundary, an append-only audit log, and a defined interaction with the
+      content-hash model (a redacted export is a different, self-labeled document).
+
+**Competitive**
 - [ ] ARM parity gap analysis -- research doc under `research/`: inventory ARM's capability
       surface and tag each have / partial / missing, as the parity backlog. Long-term.
