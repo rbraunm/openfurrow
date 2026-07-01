@@ -11,6 +11,8 @@ from scipy import special, stats
 
 from openfurrow.analysis.distributions import (
   fDistributionSurvival,
+  inverseNormalCdf,
+  normalCdf,
   regularizedIncompleteBeta,
   tCriticalValue,
   tDistributionSurvival,
@@ -99,3 +101,39 @@ def testBetaRejectsNonPositiveParameters():
 def testFSurvivalRejectsNonPositiveDf():
   with pytest.raises(ValueError, match="degrees of freedom must be positive"):
     fDistributionSurvival(2.0, 0, 10)
+
+
+# ---- normal CDF and its inverse (decision 0006) --------------------------
+
+def testNormalCdfAnalytic():
+  # Phi(0) = 0.5, and Phi(x) + Phi(-x) = 1 by symmetry.
+  assert normalCdf(0.0) == pytest.approx(0.5, abs=1e-15)
+  for x in (0.3, 1.0, 2.5, 4.0):
+    assert normalCdf(x) + normalCdf(-x) == pytest.approx(1.0, abs=1e-15)
+
+
+def testNormalCdfMatchesScipy():
+  for x in (-6.0, -3.0, -1.5, -0.5, 0.0, 0.3, 1.0, 2.5, 4.0, 6.0):
+    assert normalCdf(x) == pytest.approx(stats.norm.cdf(x), rel=1e-12, abs=1e-15)
+
+
+def testInverseNormalCdfAnalytic():
+  assert inverseNormalCdf(0.5) == pytest.approx(0.0, abs=1e-12)
+  # The 97.5th percentile of the standard normal.
+  assert inverseNormalCdf(0.975) == pytest.approx(1.9599639845400545, abs=1e-9)
+
+
+def testInverseNormalCdfMatchesScipy():
+  for p in (1e-8, 1e-4, 0.001, 0.01, 0.1, 0.25, 0.5, 0.75, 0.9, 0.99, 0.9999, 1 - 1e-8):
+    assert inverseNormalCdf(p) == pytest.approx(stats.norm.ppf(p), rel=1e-8, abs=1e-8)
+
+
+def testNormalRoundTrip():
+  for p in (0.001, 0.02, 0.3, 0.7, 0.98, 0.999):
+    assert normalCdf(inverseNormalCdf(p)) == pytest.approx(p, abs=1e-9)
+
+
+def testInverseNormalCdfRejectsOutOfRange():
+  for bad in (0.0, 1.0, -0.1, 1.5):
+    with pytest.raises(ValueError, match="p must be in"):
+      inverseNormalCdf(bad)
