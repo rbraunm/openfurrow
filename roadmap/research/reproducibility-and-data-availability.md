@@ -80,9 +80,9 @@ storing the analysis with the data and being able to re-run it.
   over time (handling of outliers or missing values, or database values being
   updated); workflows that require manual file manipulation, inviting error;
   uncontrolled stochastic steps such as weather generation; and software, version,
-  or compiler differences. Two studies of research using digital notebooks found
-  results often unreproducible because the executed computation steps differed from
-  the described order (Wang et al. 2021). Comparing 455 systems-biology models,
+  or compiler differences. Research using computational notebooks has often proved
+  unreproducible because the executed steps differed from the documented order (as
+  reviewed by White et al. 2025). Comparing 455 systems-biology models,
   Tiwari et al. (2021) could not reproduce half. In geoscience, Konkol et al. (2019)
   recreated analyses from 41 open-access papers and found four irreproducible and
   two only partially resolved, with 33 requiring active troubleshooting.
@@ -191,6 +191,10 @@ Data availability and decay:
 - Roche, D. G., Kruuk, L. E. B., Lanfear, R., & Binning, S. A. (2015). Public data
   archiving in ecology and evolution: how well are we doing? PLOS Biology
   13(11):e1002295. **[open]**.
+- Deeb, H., Creasey, S., Lucini de Ugarte, D., et al. (2025). The rise of open data
+  practices among bioscientists at the University of Edinburgh. PLOS ONE 20(7):e0328065.
+  doi:10.1371/journal.pone.0328065. **[open]** (the share-all-relevant-data rate rose
+  from about 7% in 2014 to about 45% in 2023).
 
 Analysis / computational reproducibility:
 - Kambouris, S., Wilkinson, D. P., Smith, E. T., & Fidler, F. (2024). Computationally
@@ -201,8 +205,6 @@ Analysis / computational reproducibility:
   of code in ecology: a call for urgent action. PLOS Biology 18(7):e3000763. **[open]**.
 - Mislan, K. A. S., Heer, J. M., & White, E. P. (2016). Elevating the status of code in
   ecology. Trends in Ecology & Evolution 31(1):4-7. **[paywalled]**.
-- Wang, J., Kuo, T., Li, L., & Zeller, A. (2021). Assessing and restoring reproducibility
-  of Jupyter notebooks. ASE 2020, 138-149. **[open]**.
 - Tiwari, K., et al. (2021). Reproducibility in systems biology modelling. Molecular
   Systems Biology 17:e9982. **[open]**.
 - Konkol, M., Kray, C., & Pfeiffer, M. (2019). Computational reproducibility in
@@ -218,10 +220,10 @@ Agriculture-specific:
   strengthening reproducibility and confirmation in research for sustainable
   agriculture. npj Sustainable Agriculture 3:27. doi:10.1038/s44264-025-00067-z.
   **[open]**. Full text reviewed.
-- Towards integration of data-driven agronomic experiments with data provenance
-  (RFlow). Computers and Electronics in Agriculture (2019),
-  doi:10.1016/j.compag.2017.xx. **[paywalled] -> obtain** (abstract and figures
-  reviewed; full text behind Elsevier).
+- da Cruz, S. M. S., & do Nascimento, J. A. P. (2019). Towards integration of
+  data-driven agronomic experiments with data provenance (RFlow). Computers and
+  Electronics in Agriculture (ScienceDirect PII S0168169917315004).
+  **[paywalled] -> obtain** (abstract and figures reviewed; full text behind Elsevier).
 - Sarabia-Sanchez and co-authors. The role of FAIR data towards sustainable
   agricultural performance: a systematic literature review. Agriculture (MDPI, 2022),
   12(2):309. **[open]**.
@@ -244,6 +246,11 @@ Context (general reproducibility):
 - Perkel, J. M. (2020). Challenge to scientists: does your ten-year-old code still run?
   Nature 584:656-658. **[paywalled]**.
 - National Academies (2019). Reproducibility and Replicability in Science. **[open]**.
+
+Web resources:
+- Regional Agronomy: Reproducibility. reagro.org/reproduce/reproducibility.html.
+  **[open]** (argues that assuring reproducibility means keeping the whole analytical
+  workflow in scripts, ideally in free software).
 
 ## Note to the owner: full texts
 
