@@ -42,7 +42,9 @@ The long-term goal is a one-stop-shop that bridges the two-tool workflow -- the
 protocol/product/label registry and the analysis-and-visualization -- on an open,
 portable, owned foundation, with the data portability and configurable privacy the
 incumbents lack. See `research/landscape.md`. The tracks below serve that goal; ARM
-feature parity is the long-term target, filtered through it.
+feature parity is the long-term target, filtered through it. Beyond these tracks, the
+project's long-term north star -- a funded, curated public archive for reproducible
+studies, as a separate institution that the tool feeds -- is recorded in `vision.md`.
 
 **Analysis breadth**
 - [ ] Factorial, split-plot, and multi-environment designs (see `research/test-data.md`).
@@ -67,6 +69,9 @@ feature parity is the long-term target, filtered through it.
       history in without re-keying); open export so data is never re-locked. Extends the
       interoperability landscape in `brief.md` section 12.
 - [ ] BrAPI / Field Book alignment.
+- [ ] Deposit into existing endowed archives (Dryad, Zenodo) and mint DOIs -- a durable
+      public home and discovery now, and the near-term first step toward the archive
+      north star (`vision.md`).
 
 **Team mode and privacy (decisions 0001, 0005)**
 - [ ] Team mode on PostgreSQL.
