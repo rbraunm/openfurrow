@@ -14,8 +14,11 @@ decisions, and the milestone trail. Nothing in `roadmap/` is load-bearing at run
   model, the analysis conventions) that were not real forks and so are not ADRs.
 - `research/` -- findings gathered by exercising the field and the tools, not by
   assumption: how ARM, BrAPI, and Field Book actually work; the market structure and the
-  bridge opportunity (`research/landscape.md`); and the test-data registry
-  (`research/test-data.md`) of sourced, provenanced datasets and what each validates.
+  bridge opportunity (`research/landscape.md`); the reproducibility and data-availability
+  evidence base (`research/reproducibility-and-data-availability.md`); the global-South
+  audience landscape and where the tool fits (`research/global-south-audience.md`); and
+  the test-data registry (`research/test-data.md`) of sourced, provenanced datasets and
+  what each validates.
 - `vision.md` -- the long-term north star: a funded, curated public archive for
   reproducible studies, a separate institution from the tool. Aspirational, not on the
   build path.
