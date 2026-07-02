@@ -62,6 +62,24 @@ the content-hash model. These are recorded and proposed, not built. ARM feature 
 long-term target, filtered through the reproducibility/openness/ownership differentiators --
 some ARM features are deliberately not worth building.
 
+## Audience and localization
+The primary early audience is resource-constrained global-South public-sector agronomy,
+efficacy, and variety-evaluation trial research -- NARS, universities, and regional centres
+-- i.e. the analysis and trial-management wedge, NOT breeding-pipeline or germplasm
+management (decision 0008). It is a design lens now, gated on partner validation, not new
+build scope on its own. Two standing consequences for any UI or output work:
+- **Offline-first, low-spec, owned, and free** -- the connectivity, infrastructure, and
+  cost constraints of the setting.
+- **Localization-ready (decision 0007):** no hardcoded user-facing strings (external keyed
+  catalogs), locale-aware number and date formatting, and translatable templates, while the
+  canonical data, the exchange, and the content hash stay locale-neutral (ISO 8601,
+  dot-decimal) so a trial hashes identically across locales. Because the target locales
+  include right-to-left languages (Arabic, Urdu, Persian) and non-Latin scripts, **the GUI
+  must be built bidirectional- and complex-script-capable: for RTL the layout mirrors, not
+  only the glyphs.** Localization is produced by an LLM-assisted, human/partner-reviewed
+  pipeline as a deliberate high-value first pass (not a shortcut); no locale is authoritative
+  until reviewed.
+
 ## Testing
 Tests make real assertions about computed results, validated against the oracles and the
 provenanced datasets in `roadmap/research/test-data.md`. No monkeypatching the logic under

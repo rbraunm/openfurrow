@@ -56,6 +56,11 @@ the suite actually validates against.
 ## Engineering norms
 
 Reproducible by default; fail loud with no silent fallbacks; own the core math (oracles
-validate only); open and portable storage; exact-and-auditable before fast-or-convenient.
+validate only); open and portable storage; exact-and-auditable before fast-or-convenient. User-facing text is externalized (no
+hardcoded strings) with locale-aware number and date formatting, while stored data, the
+exchange, and the content hash stay locale-neutral; because the target locales include
+right-to-left and non-Latin scripts, the GUI is to be built bidirectional- and
+complex-script-capable, with the layout mirrored for RTL, not only the glyphs (decisions
+0007 and 0008).
 These are stated in `CLAUDE.md` and recorded in `roadmap/decisions/`. One commit per
 logical checkpoint; work lands on the `claude` branch and is merged by the owner via PR.
