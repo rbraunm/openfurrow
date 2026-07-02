@@ -62,18 +62,45 @@ Three things shape the decision:
   comma-decimal locales (French and Brazilian write "1.234,56" or "1 234,56") -- the
   same class of bug as the pandas "None" NA-sentinel trap already caught in testing.
   Canonical stays neutral; formatting is a display layer on top.
+- **Bidirectional and complex-script capable UI.** The pulled tier includes
+  right-to-left languages (Arabic, Urdu, Persian) and non-Latin scripts (Arabic,
+  Devanagari, Bengali, and others), so right-to-left is an architecture concern, not
+  just more glyphs: the Web UI is to be built bidi-aware (the layout mirrors, not only
+  the text) and with font and line-breaking support for complex scripts. Not needed
+  now, but cheap to plan into the GUI and painful to retrofit.
 
 ### B. Candidate locales
 
+The pulled-translation tier is deliberately broad. The first-surfaced set (English
+plus Western European Romance languages) was all Latin-script and skewed to Western
+regions, under-representing the areas the global-South mission targets, so the tier
+is broadened across the Arab world and South, Southeast, and East Asia. None of this
+is first-pass; the ordering below is priority within one pulled tier.
+
 - **Committable now, no translation** (formatting plus a spelling overlay only):
   `en-US` and `en-GB`.
-- **Translation efforts, pulled** (each needs a maintained agronomic glossary and
-  human review): `fr`; `pt-BR` (Brazil is the flagship -- Embrapa, ESALQ -- and
-  Brazilian Portuguese differs from European; a tidy tie to the Brazilian
-  agronomic-provenance paper in the reproducibility note); and `es-419` (Latin
-  America, for the consortium centers CIMMYT, CIP, and CIAT). Priority order: French
-  first, then `pt-BR` and `es-419`. `es-419` is chosen over `es-ES` for the Latin
-  American research centers; revisit if Spain becomes the target.
+- **Pulled translation efforts** (each needs a maintained agronomic glossary and
+  human review, produced by the method in C), in priority order:
+  - **First wave:** `fr`; then `pt-BR` (Brazil is the flagship -- Embrapa, ESALQ --
+    and Brazilian Portuguese differs from European; a tidy tie to the Brazilian
+    agronomic-provenance paper in the reproducibility note); and `es-419` (Latin
+    America, for the consortium centers CIMMYT, CIP, and CIAT; chosen over `es-ES`,
+    revisit if Spain becomes the target).
+  - **Regional anchors** (broaden reach to the mission's core regions): `ar` (Arabic
+    -- MENA breadth and the dryland-ag research served by ICARDA; right-to-left);
+    `hi` (Hindi -- India and ICAR, one of the largest ag-research systems, though
+    Indian ag research largely operates in English, so the in-language payoff leans
+    community and extension over the analyst core); and `id` (Indonesian -- a large
+    tropical-ag nation whose research and education genuinely run in Bahasa; Latin
+    script, strong mission fit).
+  - **Secondary pool** (same tier, documented, lower priority): `bn` (Bengali --
+    Bangladesh and West Bengal, rice-critical), `vi` (Vietnamese -- major rice
+    producer), `tr` (Turkish -- Latin script, low lift), `ur` (Urdu -- Pakistan,
+    right-to-left), and `fa` (Persian -- Iran, right-to-left).
+- **Explicitly out of scope for now:** `zh-Hans` (Simplified Chinese). Enormous reach
+  (CAAS is the largest ag-research establishment), but weak mission fit: China is
+  well-resourced and already heavily internally tooled, which cuts against the
+  can't-afford-the-incumbents logic. Revisitable far later if desired; not a target.
 
 ### C. Production method: LLM-assisted, human-reviewed, build-time
 
