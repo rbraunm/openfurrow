@@ -270,7 +270,7 @@ def assessAssumptions(assessmentCode, package, layout, observations, significanc
   """
   if not 0.0 < significanceLevel < 1.0:
     raise ValueError(f"significanceLevel must be in (0, 1), got {significanceLevel}")
-  matrix, _, _ = buildRcbdMatrix(assessmentCode, package, layout, observations)
+  matrix, _, _, _ = buildRcbdMatrix(assessmentCode, package, layout, observations)
   return Assumptions(
     assessmentCode=assessmentCode,
     significanceLevel=significanceLevel,

@@ -21,9 +21,10 @@ import numpy
 from pydantic import BaseModel, ConfigDict
 
 from openfurrow.analysis.distributions import fDistributionSurvival
+from openfurrow.analysis.transforms import TransformError, applyTransform, checkTransformKind
 from openfurrow.schema.layout import TrialLayout
 from openfurrow.schema.observation import Observation
-from openfurrow.schema.trialPackage import AssessmentDataType, DesignType, TrialPackage
+from openfurrow.schema.trialPackage import AssessmentDataType, DesignType, Transform, TrialPackage
 
 
 class AnalysisError(ValueError):
@@ -60,6 +61,7 @@ class AnovaResult(BaseModel):
 
   assessmentCode: str
   designType: DesignType
+  transform: Transform
   treatmentCount: int
   blockCount: int
   grandMean: float
@@ -78,11 +80,14 @@ def buildRcbdMatrix(
 ) -> tuple[numpy.ndarray, list[str], list[int]]:
   """Validate inputs and build the block-by-treatment value matrix for an RCBD.
 
-  Shared by the ANOVA and its assumption diagnostics so the structural and
-  completeness checks live in one place. Returns the matrix (rows = blocks,
-  columns = treatments, in package treatment order and block order 1..b), the
-  treatment codes, and the block numbers. Raises AnalysisError, naming any
-  missing cells, rather than proceeding on an incomplete or non-numeric design.
+  Shared by the ANOVA and its assumption diagnostics so the structural checks and
+  the transform live in one place: the assessment's declared transform (decision
+  0006) is applied here, so both paths run on the same scale. Returns the transformed
+  matrix (rows = blocks, columns = treatments, in package treatment order and block
+  order 1..b), the treatment codes, the block numbers, and the transform that was
+  applied. Raises AnalysisError -- naming missing cells, or the offending values for a
+  transform domain or kind violation -- rather than proceeding on an incomplete,
+  non-numeric, or ill-transformed design.
   """
   assessment = next((a for a in package.assessments if a.assessmentCode == assessmentCode), None)
   if assessment is None:
@@ -137,7 +142,19 @@ def buildRcbdMatrix(
   for treatmentIndex, treatmentCode in enumerate(treatmentCodes):
     for blockIndex, block in enumerate(blocks):
       matrix[blockIndex, treatmentIndex] = cellValue[(treatmentCode, block)]
-  return matrix, treatmentCodes, blocks
+
+  # Analysis and diagnostics run on the declared scale (decision 0006): apply the
+  # assessment's transform here, at the single shared matrix boundary, so both paths
+  # see identical data. A domain or kind violation becomes an AnalysisError naming the
+  # assessment -- the same fail-loud path as a missing cell.
+  try:
+    checkTransformKind(assessment.transform, assessment.measurementKind)
+    if assessment.transform is not Transform.none:
+      transformedValues = applyTransform(assessment.transform, matrix.ravel().tolist())
+      matrix = numpy.array(transformedValues, dtype=float).reshape(matrix.shape)
+  except TransformError as error:
+    raise AnalysisError(f"assessment '{assessmentCode}': {error}") from error
+  return matrix, treatmentCodes, blocks, assessment.transform
 
 
 def analyzeRcbd(
@@ -147,7 +164,7 @@ def analyzeRcbd(
   observations: list[Observation],
 ) -> AnovaResult:
   """Run the RCBD ANOVA for one numeric assessment."""
-  matrix, treatmentCodes, blocks = buildRcbdMatrix(assessmentCode, package, layout, observations)
+  matrix, treatmentCodes, blocks, transform = buildRcbdMatrix(assessmentCode, package, layout, observations)
   treatmentCount = len(treatmentCodes)
   blockCount = len(blocks)
 
@@ -211,6 +228,7 @@ def analyzeRcbd(
   return AnovaResult(
     assessmentCode=assessmentCode,
     designType=DesignType.rcbd,
+    transform=transform,
     treatmentCount=treatmentCount,
     blockCount=blockCount,
     grandMean=grandMean,
