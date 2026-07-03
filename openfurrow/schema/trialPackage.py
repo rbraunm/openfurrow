@@ -32,6 +32,34 @@ class AssessmentDataType(str, Enum):
   ordinal = "ordinal"
 
 
+class MeasurementKind(str, Enum):
+  """What a numeric assessment measures, guiding transform choice and recommendation.
+
+  Declared, never inferred: unspecified is the default and is not second-guessed from
+  the data. It drives transform recommendation and the transform/kind sanity check.
+  """
+
+  unspecified = "unspecified"
+  count = "count"
+  proportion = "proportion"
+  continuous = "continuous"
+
+
+class Transform(str, Enum):
+  """A variance-stabilizing transform applied to a numeric assessment (decision 0006).
+
+  Declared per assessment. When set, the analysis runs on the transformed scale and
+  the transform enters the content hash. These are the plain forms with fail-loud
+  domains; offsets for zero and boundary values are a separate future slice.
+  """
+
+  none = "none"
+  sqrt = "sqrt"
+  log = "log"
+  arcsinSqrt = "arcsinSqrt"
+  logit = "logit"
+
+
 class TrialMetadata(BaseModel):
   """Descriptive metadata for a single trial.
 
@@ -113,6 +141,14 @@ class AssessmentDefinition(BaseModel):
   minValue: float | None = Field(default=None, description="Inclusive lower bound for numeric values.")
   maxValue: float | None = Field(default=None, description="Inclusive upper bound for numeric values.")
   allowedValues: list[str] | None = Field(default=None, description="Permitted values for categorical/ordinal.")
+  measurementKind: MeasurementKind = Field(
+    default=MeasurementKind.unspecified,
+    description="What a numeric assessment measures; guides transform recommendation. Declared, not inferred.",
+  )
+  transform: Transform = Field(
+    default=Transform.none,
+    description="Variance-stabilizing transform for a numeric assessment; enters the content hash (0006).",
+  )
 
   @model_validator(mode="after")
   def domainMatchesDataType(self) -> AssessmentDefinition:
@@ -125,6 +161,14 @@ class AssessmentDefinition(BaseModel):
           f"assessment '{code}': minValue {self.minValue} exceeds maxValue {self.maxValue}"
         )
     else:
+      if self.transform is not Transform.none:
+        raise ValueError(
+          f"assessment '{code}': {self.dataType.value} type cannot declare a transform"
+        )
+      if self.measurementKind is not MeasurementKind.unspecified:
+        raise ValueError(
+          f"assessment '{code}': {self.dataType.value} type cannot declare a measurementKind"
+        )
       if self.minValue is not None or self.maxValue is not None:
         raise ValueError(
           f"assessment '{code}': {self.dataType.value} type cannot define a numeric range"
