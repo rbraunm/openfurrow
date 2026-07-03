@@ -23,10 +23,11 @@ import numpy
 
 from openfurrow import schemaVersion
 from openfurrow.analysis import AnalysisError, analyzeRcbd, assessAssumptions, separateMeans
+from openfurrow.analysis.transforms import backTransformMean
 from openfurrow.schema.document import TrialDocument, contentHash
 from openfurrow.schema.layout import TrialLayout
 from openfurrow.schema.observation import Observation
-from openfurrow.schema.trialPackage import AssessmentDataType, TrialPackage
+from openfurrow.schema.trialPackage import AssessmentDataType, Transform, TrialPackage
 
 
 def buildReport(
@@ -119,6 +120,12 @@ def _assessmentSection(assessment, package, layout, observations, significanceLe
 
   lines.append("### Analysis of variance")
   lines.append("")
+  if result.transform is not Transform.none:
+    lines.append(
+      f"Analyzed on the {_scaleName(result.transform)} scale; the table, grand mean, and CV "
+      f"below are on that scale."
+    )
+    lines.append("")
   lines.append("| Source | df | SS | MS | F | P |")
   lines.append("|---|---:|---:|---:|---:|---:|")
   for row in result.table:
@@ -140,11 +147,20 @@ def _assessmentSection(assessment, package, layout, observations, significanceLe
     f"Treatment effect {significance} (P = {_probability(treatmentRow.pValue)})."
   )
   lines.append("")
-  lines.append(f"| Treatment | Mean{unit} | Group |")
+  meanHeader = f"Mean (original scale){unit}" if result.transform is not Transform.none else f"Mean{unit}"
+  lines.append(f"| Treatment | {meanHeader} | Group |")
   lines.append("|---|---:|:--:|")
   for group in separation.groups:
-    lines.append(f"| {group.treatmentCode} | {_number(group.mean, 3)} | {group.group} |")
+    displayedMean = backTransformMean(result.transform, group.mean)
+    lines.append(f"| {group.treatmentCode} | {_number(displayedMean, 3)} | {group.group} |")
   lines.append("")
+  if result.transform is not Transform.none:
+    lines.append(
+      "Means are back-transformed to the original scale as point estimates (not symmetric "
+      f"intervals); the analysis of variance and mean separation were computed on the "
+      f"{_scaleName(result.transform)} scale."
+    )
+    lines.append("")
   lines.append(f"- LSD (alpha = {_number(significanceLevel, 2)}): {_number(separation.leastSignificantDifference, 3)}")
   if protected and not separation.treatmentSignificant:
     lines.append("- Means were not separated: the treatment effect was not significant (protected LSD).")
@@ -169,6 +185,9 @@ def _assumptionsSubsection(assessmentCode, package, layout, observations, signif
     "(they sum to zero within each block and each treatment), so the normality test is approximate.",
     "",
   ]
+  if assumptions.recommendation:
+    lines.append(f"Recommendation: {assumptions.recommendation}")
+    lines.append("")
   return lines
 
 
@@ -188,15 +207,34 @@ def _diagnosticLine(outcome) -> str:
 def _reproducibilitySection(package, observations, significanceLevel, protected) -> list[str]:
   test = "Fisher's Protected LSD" if protected else "Fisher's LSD"
   method = f"RCBD ANOVA; {test} (alpha = {_number(significanceLevel, 2)})"
-  return [
+  lines = [
     "## Reproducibility",
     "",
     f"- Method: {method}",
     f"- Randomization seed: {package.design.randomizationSeed}",
-    f"- Input hash (SHA-256): {inputHash(package, observations)}",
-    f"- Versions: OpenFurrow {schemaVersion}, numpy {numpy.__version__}, Python {platform.python_version()}",
-    "",
   ]
+  transformed = [
+    f"{assessment.assessmentCode} = {assessment.transform.value}"
+    for assessment in package.assessments
+    if assessment.transform is not Transform.none
+  ]
+  if transformed:
+    lines.append(f"- Transforms: {', '.join(transformed)}")
+  lines.append(f"- Input hash (SHA-256): {inputHash(package, observations)}")
+  lines.append(
+    f"- Versions: OpenFurrow {schemaVersion}, numpy {numpy.__version__}, Python {platform.python_version()}"
+  )
+  lines.append("")
+  return lines
+
+
+def _scaleName(transform) -> str:
+  return {
+    Transform.sqrt: "square-root",
+    Transform.log: "natural-log",
+    Transform.arcsinSqrt: "arcsine-square-root",
+    Transform.logit: "logit",
+  }.get(transform, transform.value)
 
 
 def _number(value, decimals: int) -> str:

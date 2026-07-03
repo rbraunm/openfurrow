@@ -29,6 +29,15 @@ compatibleTransforms: dict[MeasurementKind, frozenset[Transform]] = {
   MeasurementKind.continuous: frozenset({Transform.sqrt, Transform.log}),
 }
 
+# The single canonical variance-stabilizing transform to suggest per measurement kind
+# when assumptions are flagged. Advisory only, never applied (decision 0006); each is a
+# member of compatibleTransforms for its kind.
+preferredTransform: dict[MeasurementKind, Transform] = {
+  MeasurementKind.count: Transform.sqrt,
+  MeasurementKind.proportion: Transform.arcsinSqrt,
+  MeasurementKind.continuous: Transform.log,
+}
+
 
 class TransformError(ValueError):
   """A transform could not be applied: a domain violation or an incompatible kind."""

@@ -16,15 +16,17 @@ from scipy import stats
 
 from openfurrow.analysis.diagnostics import (
   Assumptions,
+  DiagnosticOutcome,
   assessAssumptions,
   brownForsythe,
+  recommendTransform,
   shapiroWilk,
   shapiroWilkMinimum,
   shapiroWilkResiduals,
   tukeyNonAdditivity,
 )
 from openfurrow.design import generateRcbdLayout
-from openfurrow.schema import TrialPackage
+from openfurrow.schema import MeasurementKind, Transform, TrialPackage
 from openfurrow.schema.observation import Observation
 
 
@@ -207,3 +209,39 @@ def testAssessAssumptionsRejectsBadSignificance():
   package, layout, observations = _stirretSetup("count1")
   with pytest.raises(ValueError, match="significanceLevel must be in"):
     assessAssumptions("y", package, layout, observations, significanceLevel=1.5)
+
+
+# ---- transform recommendation (advisory, never applied) --------------------
+
+def _flaggedOutcome(pValue):
+  return DiagnosticOutcome(
+    name="check", computed=True, statisticName="F", statistic=5.0,
+    numeratorDegreesOfFreedom=3, denominatorDegreesOfFreedom=40,
+    pValue=pValue, interpretation="x")
+
+
+def testRecommendNamesCanonicalTransformForKnownKind():
+  flagged, clean = _flaggedOutcome(0.01), _flaggedOutcome(0.5)
+  countMessage = recommendTransform((flagged, clean, clean), MeasurementKind.count, Transform.none, 0.05)
+  proportionMessage = recommendTransform((clean, clean, flagged), MeasurementKind.proportion, Transform.none, 0.05)
+  continuousMessage = recommendTransform((clean, flagged, clean), MeasurementKind.continuous, Transform.none, 0.05)
+  assert "sqrt" in countMessage and "count" in countMessage
+  assert "arcsinSqrt" in proportionMessage
+  assert "log" in continuousMessage
+
+
+def testRecommendIsGenericWhenKindUnspecified():
+  flagged, clean = _flaggedOutcome(0.01), _flaggedOutcome(0.5)
+  message = recommendTransform((flagged, clean, clean), MeasurementKind.unspecified, Transform.none, 0.05)
+  assert message is not None
+  assert "measurementKind" in message
+
+
+def testNoRecommendationWhenAssumptionsHold():
+  clean = _flaggedOutcome(0.5)
+  assert recommendTransform((clean, clean, clean), MeasurementKind.count, Transform.none, 0.05) is None
+
+
+def testNoRecommendationWhenAlreadyTransformed():
+  flagged = _flaggedOutcome(0.001)
+  assert recommendTransform((flagged, flagged, flagged), MeasurementKind.count, Transform.sqrt, 0.05) is None

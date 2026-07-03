@@ -21,6 +21,8 @@ from pydantic import BaseModel, ConfigDict
 
 from openfurrow.analysis.anova import buildRcbdMatrix
 from openfurrow.analysis.distributions import fDistributionSurvival, inverseNormalCdf, normalCdf
+from openfurrow.analysis.transforms import preferredTransform
+from openfurrow.schema.trialPackage import Transform
 
 shapiroWilkMinimum = 3
 
@@ -147,6 +149,7 @@ class Assumptions(BaseModel):
   equalVariance: DiagnosticOutcome
   nonAdditivity: DiagnosticOutcome
   normality: DiagnosticOutcome
+  recommendation: str | None = None
 
 
 def _formatProbability(pValue):
@@ -261,20 +264,61 @@ def shapiroWilkResiduals(matrix, significanceLevel=0.05):
       "Residuals depart from normality", "No evidence against normal residuals"))
 
 
+def recommendTransform(outcomes, measurementKind, currentTransform, significanceLevel):
+  """An advisory transform suggestion when assumptions are flagged; never applied.
+
+  Returns None when no transform is indicated -- when the assumptions hold, or when a
+  transform is already applied. When a diagnostic is flagged and no transform is set: if
+  the measurement kind is known, the canonical transform for that kind is named; if the
+  kind is unspecified, a generic nudge to declare a kind and transform is given.
+  """
+  if currentTransform is not Transform.none:
+    return None
+  flagged = any(
+    outcome.computed and outcome.pValue is not None and outcome.pValue < significanceLevel
+    for outcome in outcomes
+  )
+  if not flagged:
+    return None
+  if measurementKind in preferredTransform:
+    suggestion = preferredTransform[measurementKind]
+    return (
+      f"assumptions were flagged and this is {measurementKind.value} data; a "
+      f"{suggestion.value} transform may help. Declare it on the assessment -- it is "
+      f"never applied automatically."
+    )
+  return (
+    "assumptions were flagged; if this is count or proportion data, declaring a "
+    "measurementKind and a variance-stabilizing transform on the assessment may help "
+    "(transforms are never applied automatically)."
+  )
+
+
 def assessAssumptions(assessmentCode, package, layout, observations, significanceLevel=0.05):
   """Compute the report-only ANOVA assumption diagnostics for one assessment.
 
-  Diagnostics never change the analysis (decision 0006). Reuses the validated
-  RCBD matrix, so a non-numeric or incomplete design raises the same
-  AnalysisError as the ANOVA.
+  Diagnostics never change the analysis (decision 0006). Reuses the validated RCBD
+  matrix, so a non-numeric or incomplete design raises the same AnalysisError as the
+  ANOVA. Includes an advisory transform recommendation when assumptions are flagged and
+  no transform is applied; the recommendation is never acted on automatically.
   """
   if not 0.0 < significanceLevel < 1.0:
     raise ValueError(f"significanceLevel must be in (0, 1), got {significanceLevel}")
-  matrix, _, _, _ = buildRcbdMatrix(assessmentCode, package, layout, observations)
+  matrix, _, _, transform = buildRcbdMatrix(assessmentCode, package, layout, observations)
+  assessment = next(a for a in package.assessments if a.assessmentCode == assessmentCode)
+  equalVariance = brownForsythe(matrix, significanceLevel)
+  nonAdditivity = tukeyNonAdditivity(matrix, significanceLevel)
+  normality = shapiroWilkResiduals(matrix, significanceLevel)
   return Assumptions(
     assessmentCode=assessmentCode,
     significanceLevel=significanceLevel,
-    equalVariance=brownForsythe(matrix, significanceLevel),
-    nonAdditivity=tukeyNonAdditivity(matrix, significanceLevel),
-    normality=shapiroWilkResiduals(matrix, significanceLevel),
+    equalVariance=equalVariance,
+    nonAdditivity=nonAdditivity,
+    normality=normality,
+    recommendation=recommendTransform(
+      (equalVariance, nonAdditivity, normality),
+      assessment.measurementKind,
+      transform,
+      significanceLevel,
+    ),
   )

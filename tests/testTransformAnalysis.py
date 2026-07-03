@@ -21,6 +21,7 @@ from scipy import stats
 from openfurrow.analysis import AnalysisError, analyzeRcbd, assessAssumptions, separateMeans
 from openfurrow.analysis.transforms import backTransformMean
 from openfurrow.design import generateRcbdLayout
+from openfurrow.reports.report import buildReport
 from openfurrow.schema import Transform, TrialPackage
 from openfurrow.schema.observation import Observation
 
@@ -140,3 +141,46 @@ def testDiagnosticsRunOnTransformedScale():
   columns = [[math.sqrt(values[(treatment, block)]) for block in blocks] for treatment in treatments]
   reference = stats.levene(*columns, center="median")
   assert transformed.equalVariance.statistic == pytest.approx(reference.statistic, abs=1e-9)
+
+
+# ---- checkpoint C: report surfacing ----------------------------------------
+
+def testReportLabelsScaleBackTransformsMeansAndRecordsTransform():
+  values = syntheticCounts()
+  package, layout, observations = buildRcbd(values, transform="sqrt", measurementKind="count")
+  report = buildReport(package, layout, observations)
+  assert "square-root scale" in report
+  assert "back-transformed to the original scale" in report
+  assert "- Transforms: Y = sqrt" in report
+  # the displayed mean is the back-transformed (original-scale) point estimate
+  result = analyzeRcbd("Y", package, layout, observations)
+  displayed = backTransformMean(Transform.sqrt, result.treatmentMeans[0].mean)
+  assert f"{displayed:.3f}" in report
+
+
+def testReportOmitsTransformArtifactsWhenNone():
+  values = syntheticCounts()
+  package, layout, observations = buildRcbd(values, transform="none")
+  report = buildReport(package, layout, observations)
+  assert "scale" not in report.lower()
+  assert "- Transforms:" not in report
+  assert "back-transformed" not in report
+
+
+def testReportSurfacesRecommendationWhenFlagged():
+  # Deliberately heteroscedastic counts: Brown-Forsythe flags, kind declared, no transform.
+  columns = {"T1": [10, 10, 11, 10, 11, 10], "T2": [2, 40, 5, 38, 3, 41],
+             "T3": [20, 20, 21, 20, 21, 20], "T4": [1, 50, 2, 49, 3, 48]}
+  values = {}
+  for treatment, series in columns.items():
+    for index, value in enumerate(series):
+      values[(treatment, index + 1)] = float(value)
+  package, layout, observations = buildRcbd(values, transform="none", measurementKind="count")
+
+  assumptions = assessAssumptions("Y", package, layout, observations)
+  assert assumptions.equalVariance.pValue < 0.05
+  assert assumptions.recommendation is not None and "sqrt" in assumptions.recommendation
+
+  report = buildReport(package, layout, observations)
+  assert "Recommendation:" in report
+  assert "sqrt" in report.split("Recommendation:", 1)[1]
