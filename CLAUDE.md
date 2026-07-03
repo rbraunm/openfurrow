@@ -14,6 +14,16 @@ Authoritative design and contributor rules live in `brief.md` (the design brief)
 registry, and the design/roadmap/decision paths. Those govern on any conflict with this
 file.
 
+## Project status: greenfield
+The repo is pre-release: no external users, and no published API or schema to preserve, so
+there is no backward compatibility to protect. Refactor freely -- change function
+signatures, rename fields, reshape the data schema, and delete superseded code outright
+rather than adding compatibility shims or migration layers. Prefer a clean rewrite to an
+accreting one; when a representation changes, update every call site and test to match and
+do not keep the old shape alongside the new. This is the operator's "no legacy without
+users" rule, in full force here: do not hesitate to rebuild from the ground up when that is
+the right design.
+
 ## Core principles (these are the project, not preferences)
 - **Reproducible by default.** Every trial layout is regenerable from a
   recorded seed, and every analysis result carries its method, library versions, input
