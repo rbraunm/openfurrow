@@ -81,9 +81,16 @@ allies, consistent with the interoperability track in `milestones.md`.
   licenses; and it has made multi-billion-dollar smallholder and climate-adaptation
   commitments.
 - **Other major donors** in developing-world agriculture are the World Bank, the FAO
-  (co-lead with Gates of a large smallholder-data program), USAID (Feed the Future),
-  IFAD, the EU, and Canada's IDRC, with research-capacity building channelled through
-  bodies such as RUFORUM and the University of Reading.
+  (co-lead with Gates of a large smallholder-data program), IFAD, the EU, and Canada's
+  IDRC, with research-capacity building channelled through bodies such as RUFORUM and the
+  University of Reading.
+- **A recent shift: USAID's closure.** USAID (which ran Feed the Future) was historically
+  a major donor in this space. It was shut down in 2025 and its remaining programs were
+  absorbed into the US State Department amid deep cuts, so US bilateral funding for
+  developing-world agricultural research contracted sharply. The other donors above remain,
+  but the landscape is materially thinner, which if anything strengthens the case for a
+  free, owned, low-cost tool and cautions against leaning on US bilateral aid as a funding
+  path.
 - **Caveat on fit.** The money concentrates on two things: CGIAR institutional
   breeding and agronomy platforms, and farmer-facing digital advisory and AI (SMS,
   apps, weather and pest alerts). Independent-researcher analysis tooling -- the
@@ -167,8 +174,10 @@ Funders:
   climate-adaptation commitments -- gatesfoundation.org. **[web]**.
 - "Big-data project aims to transform farming in world's poorest countries" -- Nature
   news (2018), the FAO-Gates USD 500-million smallholder-data program. **[web]**.
-- Top international agricultural donors overview -- fundsforNGOs (World Bank, FAO,
-  USAID, IFAD, EU, Gates, and others). **[web]**.
+- Top international agricultural donors overview -- fundsforNGOs (World Bank, FAO, IFAD,
+  EU, Gates, and others; USAID historically, until its 2025 closure). **[web]**.
+- USAID shutdown and merger into the US State Department (July 2025) -- NPR; US State
+  Department statements. **[web]**.
 
 Data sovereignty:
 - Datafying African agriculture: from data governance to farmers' rights.
