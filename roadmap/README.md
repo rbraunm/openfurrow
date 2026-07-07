@@ -7,6 +7,9 @@ decisions, and the milestone trail. Nothing in `roadmap/` is load-bearing at run
 ## How this folder is used
 
 - `milestones.md` -- the build, as a tracked checklist: what is done and what is next.
+- `platform-plan.md` -- the living master plan: the field-to-analysis platform's end-goal
+  shape, five layers, and phased lanes (engine, service, storage/sync, web UI, field
+  interop, first-party apps). Direction and intent, not a contract.
 - `decisions/` -- short decision records (ADRs). `decisions/README.md` defines the process
   and holds the records: the SQLite-canonical store, native-analysis-with-oracles, and the
   missing-data policy (accepted), plus the registry/hierarchy and privacy/IAM layer
