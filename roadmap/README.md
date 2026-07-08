@@ -10,6 +10,10 @@ decisions, and the milestone trail. Nothing in `roadmap/` is load-bearing at run
 - `platform-plan.md` -- the living master plan: the field-to-analysis platform's end-goal
   shape, five layers, and phased lanes (engine, service, storage/sync, web UI, field
   interop, first-party apps). Direction and intent, not a contract.
+- `implementation-plan.md` -- the build sequence: each lane broken into ordered,
+  independently-committable work units with settled shape, dependencies, and an acceptance
+  bar, so a session picks the next unit and executes without relitigating direction. Firmer
+  than `platform-plan.md`, revisable per build.
 - `decisions/` -- short decision records (ADRs). `decisions/README.md` defines the process
   and holds the records: the SQLite-canonical store, native-analysis-with-oracles, and the
   missing-data policy (accepted), plus the registry/hierarchy and privacy/IAM layer
