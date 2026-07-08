@@ -19,10 +19,10 @@ variance-stabilizing transform and analyze on the transformed scale.
 
 There is a real statistical fork here. The modern preference for counts is often a
 Poisson or negative-binomial GLM, and for proportions a binomial GLM, rather than
-transform-then-Gaussian ANOVA. But a GLM is a much larger native build (iteratively
+transform-then-Gaussian ANOVA. But a GLM is a separate native undertaking (iteratively
 reweighted least squares, deviance, chi-square inference) with its own
-oracle-validation surface, whereas transforms reuse the ANOVA machinery we already
-have and keep the classical, transparent workflow we are matching.
+oracle-validation surface, whereas transforms reuse the ANOVA machinery already in
+place and keep the classical, transparent workflow we are matching.
 
 ## Decision
 
@@ -30,8 +30,8 @@ Two separable capabilities, governed by one rule: neither acts silently.
 
 **Diagnostics are always-on and report-only.** They are pure information about
 whether the assumptions hold. They never alter the analysis, so adding them cannot
-hide anything. Slice 1 ships three, computed on every numeric analysis and shown in
-a report "Assumptions" block:
+hide anything. There are three, computed on every numeric analysis and shown in a
+report "Assumptions" block:
 
 - **Equal variance: Brown-Forsythe** -- Levene's test using absolute deviations
   from the per-treatment *median* (robust to non-normality). It is itself an F-test
@@ -59,9 +59,8 @@ recorded decision.
 separate future track with their own ADR. This record commits only to the classical
 transform-then-ANOVA workflow.
 
-**New native functions, under ADR 0002.** Slice 1 adds only two new special
-functions, both dependency-free and validated against oracles as test-only
-cross-checks:
+**New native functions, under ADR 0002.** Two new special functions are added, both
+dependency-free and validated against oracles as test-only cross-checks:
 
 - **Normal CDF** -- a thin wrapper over the standard library's `math.erf`, exact to
   double precision.
@@ -94,12 +93,10 @@ a pass.
   allowed and intended: the tool reports, the owner decides.
 - GLM support stays open as a separate track; nothing here forecloses it.
 
-## Slice order
+## Out of scope (deferred)
 
-1. **Distribution functions + Shapiro-Wilk**, with oracle tests: normal CDF, inverse
-   normal (AS 241), SW W and p (AS R94), validated vs scipy/statsmodels.
-2. **Diagnostics wired into the report**: Brown-Forsythe, Tukey non-additivity,
-   Shapiro-Wilk on residuals, in an always-on report-only Assumptions block.
-3. **Heavier native diagnostics** (future): Bartlett's test, needing a native
-   incomplete gamma.
-4. **GLMs** (future, separate ADR): Poisson / negative-binomial / binomial.
+- Bartlett's test for equal variance, which needs a native incomplete gamma function.
+- GLMs (Poisson, negative-binomial, binomial) -- a separate track with its own ADR.
+- Offsets for zeros and boundary values (log(y+c), the empirical logit, and count-based
+  adjustments that need the trial count), which would be an explicit, recorded transform
+  parameter, never a hidden default.
