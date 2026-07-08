@@ -139,22 +139,25 @@ when the Done-when bar is met.
 
 ### Lane A -- Core and packaging
 
-- [ ] **A1 -- Core facade**
+- [x] **A1 -- Core facade** (done)
   - **Goal:** collapse the scattered free-function surface into one facade every surface calls.
-  - **Deliverable:** a session-scoped facade exposing the trial loop as methods -- create/open
-    store; add + validate package; list; info/summary; regenerate layout; import observations;
-    analyze (ANOVA); separate means; assess assumptions; build report; export/import (JSON,
-    CSV); content hash; verify round-trip; delete. The CLI is refactored to call only the
-    facade. Analysis primitives (`analyzeRcbd`, `separateMeans`, `assessAssumptions`) stay
-    stateless and callable directly by the facade.
-  - **Touches:** new facade module; `cli/main.py` (refactor onto it); tests.
-  - **Depends:** nothing new.
-  - **Decisions:** *settled* -- one facade, surfaces never touch internals (shape #1); layout
-    derived (#2); one hash (#3). *Open* -- exact class name and method signatures (finalize at
-    build); whether the facade holds an engine+session or is opened per call.
-  - **Done when:** the CLI drives the full loop through the facade only; all existing tests
-    green; new facade tests assert each operation end to end; no CLI command imports a
-    store/analysis internal directly.
+  - **Deliverable:** `openfurrow/workspace.py` -- a `Workspace` exposing the trial loop as
+    methods: `create`/`open`; `addPackage`; `listTrials`; `loadPackage`/`loadObservations`;
+    `layoutFor`; `importObservations`; `analyze`; `separateMeans`; `assessAssumptions`;
+    `buildReport`; `contentHashFor`; `exportDocument`/`exportObservationsCsv`;
+    `importDocument`; `verifyRoundTrip`; `deleteTrial`. The core error types are re-exported
+    from the facade so surfaces catch them there. The CLI now imports only the facade plus the
+    public `TrialPackage`/config. Analysis primitives stay stateless, called by the facade.
+  - **Touches:** new `openfurrow/workspace.py`; `cli/main.py` (refactored onto it);
+    `tests/testWorkspace.py`.
+  - **Decisions:** *settled at build* -- facade class is `Workspace`; **engine-held,
+    session-per-method** (the engine is the poolable resource a long-running service reuses;
+    the session is the per-call transaction, matching one CLI command / one HTTP request);
+    path-based methods only where a portable file is moved, `addPackage` takes the domain
+    object. Plus the shape-decisions #1/#2/#3.
+  - **Done when:** met -- CLI drives the full loop through the facade only; 234 tests green
+    (217 prior + 17 facade); facade tests assert each operation end to end and cross-check the
+    composite ops against the primitives; no CLI command imports a store/analysis internal.
 
 - [ ] **A2 -- Package the core for reuse**
   - **Goal:** a stable, installable public surface other surfaces import.
@@ -293,7 +296,6 @@ raise them for a talk-first decision when a unit forces the choice.
 | Partner validation timing for the ADR 0008 audience | ADR 0008 | before heavy audience-specific build |
 | Field Book format version target; plot geometry now vs later | unit E1 | first task of E1 |
 | Auth/session model specifics | ADR 0005, unit B5 | B5 |
-| Facade lifetime (engine-held vs opened-per-call) | unit A1 | A1 build |
 
 ---
 

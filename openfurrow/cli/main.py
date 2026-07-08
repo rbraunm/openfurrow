@@ -1,15 +1,19 @@
 # SPDX-License-Identifier: Apache-2.0
 """OpenFurrow command-line interface.
 
-Ties the library into the trial loop: create a store, add a validated design,
-generate the randomized layout, import observations, analyze and report, export a
-portable copy, and re-import it. Every command fails loud -- a missing trial, a bad
-package, an import error, or a duplicate all print a clear message and exit non-zero
-rather than partially succeeding.
+A thin surface over the core facade (`openfurrow.workspace.Workspace`): it parses
+arguments, reads and writes files, and prints results. It never imports the store,
+analysis, exchange, or design internals -- every trial operation goes through the
+Workspace, so the CLI cannot drift from the core or re-implement part of it. The
+one core type it constructs directly is the public `TrialPackage`, when reading a
+design document a user hands it to add.
 
-Persistence is a single SQLite file whose path the user gives explicitly, so it is
-always visible and movable. Analysis settings come from the project config
-(decision 0009): --config points at a config file, otherwise the defaults apply.
+Every command fails loud -- a missing trial, a bad package, an import error, or a
+duplicate prints a clear message and exits non-zero rather than partially
+succeeding. Persistence is a single SQLite file whose path the user gives
+explicitly, so it is always visible and movable. Analysis settings come from the
+project config (decision 0009): --config points at a config file, otherwise the
+defaults apply.
 """
 
 from __future__ import annotations
@@ -17,25 +21,16 @@ from __future__ import annotations
 import argparse
 import json
 import sys
-import tempfile
 from pathlib import Path
 
 from openfurrow.config import MeanComparison, defaultConfig, loadConfig
-from openfurrow.design import generateRcbdLayout
-from openfurrow.exchange import ExchangeError, exportJson, exportObservationsCsv, importJson
-from openfurrow.importers import ObservationImportError, importObservations
-from openfurrow.reports import buildReport
-from openfurrow.schema import TrialDocument, TrialPackage, contentHash
-from openfurrow.store import (
+from openfurrow.schema import TrialPackage
+from openfurrow.workspace import (
+  AnalysisError,
+  ExchangeError,
+  ObservationImportError,
   StoreError,
-  createDatabase,
-  deleteTrial,
-  listTrials,
-  loadObservations,
-  loadPackage,
-  savePackage,
-  saveObservations,
-  sessionScope,
+  Workspace,
 )
 from pydantic import ValidationError
 
@@ -51,7 +46,7 @@ def main(argv: list[str] | None = None) -> int:
   try:
     return handler(args)
   except (
-    StoreError, ExchangeError, ObservationImportError, ValidationError,
+    StoreError, ExchangeError, ObservationImportError, AnalysisError, ValidationError,
     OSError, json.JSONDecodeError,
   ) as error:
     print(f"error: {error}", file=sys.stderr)
@@ -128,12 +123,6 @@ def _buildParser() -> argparse.ArgumentParser:
 
 # ---- helpers --------------------------------------------------------------
 
-def _openExisting(database: str):
-  if not Path(database).exists():
-    raise StoreError(f"database '{database}' does not exist; run 'init {database}' first")
-  return createDatabase(database)
-
-
 def _readPackage(path: str) -> TrialPackage:
   data = json.loads(Path(path).read_text(encoding="utf-8"))
   return TrialPackage.model_validate(data)
@@ -147,16 +136,15 @@ def _configFor(args) -> "object":
 # ---- commands -------------------------------------------------------------
 
 def _commandInit(args) -> int:
-  createDatabase(args.database)
+  Workspace.create(args.database)
   print(f"Initialized database at {args.database}")
   return 0
 
 
 def _commandAdd(args) -> int:
   package = _readPackage(args.package)
-  engine = createDatabase(args.database)
-  with sessionScope(engine) as session:
-    savePackage(session, package)
+  workspace = Workspace.create(args.database)
+  workspace.addPackage(package)
   print(
     f"Added trial '{package.trial.trialCode}' "
     f"({len(package.treatments)} treatments, {len(package.assessments)} assessments, {package.plotCount} plots)"
@@ -165,9 +153,7 @@ def _commandAdd(args) -> int:
 
 
 def _commandList(args) -> int:
-  engine = _openExisting(args.database)
-  with sessionScope(engine) as session:
-    trials = listTrials(session)
+  trials = Workspace.open(args.database).listTrials()
   if not trials:
     print("(no trials)")
   for trialCode, title in trials:
@@ -176,12 +162,10 @@ def _commandList(args) -> int:
 
 
 def _commandInfo(args) -> int:
-  engine = _openExisting(args.database)
-  with sessionScope(engine) as session:
-    package = loadPackage(session, args.trialCode)
-    observations = loadObservations(session, args.trialCode)
+  workspace = Workspace.open(args.database)
+  package = workspace.loadPackage(args.trialCode)
+  observations = workspace.loadObservations(args.trialCode)
   trial = package.trial
-  document = TrialDocument(package=package, observations=observations)
   print(f"Trial: {trial.trialCode} - {trial.title}")
   print(f"Crop: {trial.crop}   Season: {trial.season}   Site: {trial.site}")
   print(
@@ -191,15 +175,14 @@ def _commandInfo(args) -> int:
   print(f"Randomization seed: {package.design.randomizationSeed}")
   print(f"Assessments: {', '.join(assessment.assessmentCode for assessment in package.assessments)}")
   print(f"Observations: {len(observations)}")
-  print(f"Content hash: {contentHash(document)}")
+  print(f"Content hash: {workspace.contentHashFor(args.trialCode)}")
   return 0
 
 
 def _commandRandomize(args) -> int:
-  engine = _openExisting(args.database)
-  with sessionScope(engine) as session:
-    package = loadPackage(session, args.trialCode)
-  layout = generateRcbdLayout(package)
+  workspace = Workspace.open(args.database)
+  package = workspace.loadPackage(args.trialCode)
+  layout = workspace.layoutFor(args.trialCode)
   print(f"Layout for '{package.trial.trialCode}' (seed {package.design.randomizationSeed}):")
   print("plot\tblock\tposition\ttreatment")
   for plot in sorted(layout.plots, key=lambda plot: plot.plotNumber):
@@ -208,13 +191,9 @@ def _commandRandomize(args) -> int:
 
 
 def _commandImport(args) -> int:
-  engine = _openExisting(args.database)
+  workspace = Workspace.open(args.database)
   config = _configFor(args)
-  with sessionScope(engine) as session:
-    package = loadPackage(session, args.trialCode)
-    layout = generateRcbdLayout(package)
-    result = importObservations(args.csv, package, layout, config.importProfile)
-    saveObservations(session, args.trialCode, result.observations)
+  result = workspace.importObservations(args.trialCode, args.csv, config.importProfile)
   print(f"Imported {len(result.observations)} observations for '{args.trialCode}'")
   for warning in result.warnings:
     print(f"  warning: {warning.message}")
@@ -222,16 +201,13 @@ def _commandImport(args) -> int:
 
 
 def _commandReport(args) -> int:
-  engine = _openExisting(args.database)
+  workspace = Workspace.open(args.database)
   config = _configFor(args)
-  with sessionScope(engine) as session:
-    package = loadPackage(session, args.trialCode)
-    observations = loadObservations(session, args.trialCode)
-  layout = generateRcbdLayout(package)
   protected = config.analysis.meanComparison is MeanComparison.protectedLSD
-  report = buildReport(
-    package, layout, observations,
-    significanceLevel=config.analysis.significanceLevel, protected=protected,
+  report = workspace.buildReport(
+    args.trialCode,
+    significanceLevel=config.analysis.significanceLevel,
+    protected=protected,
   )
   if args.output:
     Path(args.output).write_text(report, encoding="utf-8")
@@ -245,58 +221,39 @@ def _commandExport(args) -> int:
   if not args.jsonPath and not args.csvPath:
     print("error: specify --json and/or --csv", file=sys.stderr)
     return 2
-  engine = _openExisting(args.database)
-  with sessionScope(engine) as session:
-    package = loadPackage(session, args.trialCode)
-    observations = loadObservations(session, args.trialCode)
-  document = TrialDocument(package=package, observations=observations)
+  workspace = Workspace.open(args.database)
   if args.jsonPath:
-    exportJson(document, args.jsonPath)
+    workspace.exportDocument(args.trialCode, args.jsonPath)
     print(f"Wrote {args.jsonPath}")
   if args.csvPath:
-    exportObservationsCsv(document, args.csvPath)
+    workspace.exportObservationsCsv(args.trialCode, args.csvPath)
     print(f"Wrote {args.csvPath}")
   return 0
 
 
 def _commandImportJson(args) -> int:
-  path = args.jsonFile
-  document = importJson(path)
-  engine = createDatabase(args.database)
-  trialCode = document.package.trial.trialCode
-  with sessionScope(engine) as session:
-    savePackage(session, document.package)
-    saveObservations(session, trialCode, document.observations)
-  print(f"Imported trial '{trialCode}' with {len(document.observations)} observations")
+  workspace = Workspace.create(args.database)
+  trialCode = workspace.importDocument(args.jsonFile)
+  count = len(workspace.loadObservations(trialCode))
+  print(f"Imported trial '{trialCode}' with {count} observations")
   return 0
 
 
 def _commandVerify(args) -> int:
-  engine = _openExisting(args.database)
-  with sessionScope(engine) as session:
-    package = loadPackage(session, args.trialCode)
-    observations = loadObservations(session, args.trialCode)
-  document = TrialDocument(package=package, observations=observations)
-  storedHash = contentHash(document)
-  with tempfile.TemporaryDirectory() as directory:
-    jsonPath = str(Path(directory) / "roundtrip.json")
-    exportJson(document, jsonPath)
-    reimported = importJson(jsonPath)
-  roundTripHash = contentHash(reimported)
-  if storedHash == roundTripHash:
+  workspace = Workspace.open(args.database)
+  check = workspace.verifyRoundTrip(args.trialCode)
+  if check.matches:
     print(f"PASS reproducibility check for '{args.trialCode}'")
-    print(f"  content hash: {storedHash}")
+    print(f"  content hash: {check.storedHash}")
     return 0
   print(f"FAIL reproducibility check for '{args.trialCode}'", file=sys.stderr)
-  print(f"  stored:     {storedHash}", file=sys.stderr)
-  print(f"  round-trip: {roundTripHash}", file=sys.stderr)
+  print(f"  stored:     {check.storedHash}", file=sys.stderr)
+  print(f"  round-trip: {check.roundTripHash}", file=sys.stderr)
   return 1
 
 
 def _commandDelete(args) -> int:
-  engine = _openExisting(args.database)
-  with sessionScope(engine) as session:
-    deleteTrial(session, args.trialCode)
+  Workspace.open(args.database).deleteTrial(args.trialCode)
   print(f"Deleted trial '{args.trialCode}'")
   return 0
 
