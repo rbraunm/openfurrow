@@ -189,10 +189,14 @@ when the Done-when bar is met.
     `importers/observations.py`, `exchange.py`; tests + fixtures.
   - **Depends:** the core (A1 preferred so it rides the facade, but E1 can start against the
     current functions and move onto the facade when A1 lands).
-  - **Decisions:** *settled* -- file-first (shape #7), reuse the importer not a parallel path.
-    *Open* -- **first task of the unit is to pin the exact Field Book file formats against a
-    real Field Book export sample** (do not invent columns); whether to model plot row/column
-    geometry now or defer.
+  - **Decisions:** *settled* -- file-first (shape #7), reuse the importer not a parallel path;
+    **formats are pinned in `roadmap/research/fieldbook-formats.md`** against Field Book 5.4 /
+    current source (field-import CSV; legacy `.trt`; database long export). Ingest the database
+    (long) export, map unique-id -> plotNumber, `trait` -> assessmentCode, `value` -> value.
+    Field Book is GPL-2.0, so committed fixtures are OpenFurrow-authored files conforming to
+    the format, not vendored Field Book samples. *Open* -- whether to emit plot row/column
+    geometry now or defer; how to carry the export's provenance columns (timestamp/person/etc.)
+    on ingest.
   - **Done when:** a known trial exports to Field Book files, a representative collected CSV
     ingests to observations, and the resulting document's content hash is stable across the
     round-trip; formats validated against a real Field Book sample recorded as a fixture.
@@ -294,7 +298,7 @@ raise them for a talk-first decision when a unit forces the choice.
 | Mobile framework (cross-platform vs native) | ADR 0014, unit F1 | F1 |
 | Marketplace-vs-CloudFormation timing | ADR 0011, unit C5 | C5 |
 | Partner validation timing for the ADR 0008 audience | ADR 0008 | before heavy audience-specific build |
-| Field Book format version target; plot geometry now vs later | unit E1 | first task of E1 |
+| Plot geometry (row/column) now vs later; how to carry export provenance columns on ingest | unit E1 | E1 build |
 | Auth/session model specifics | ADR 0005, unit B5 | B5 |
 
 ---

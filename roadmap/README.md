@@ -26,7 +26,8 @@ decisions, and the milestone trail. Nothing in `roadmap/` is load-bearing at run
   audience landscape and where the tool fits (`research/global-south-audience.md`); the
   platform and interoperability grounding (`research/platform-and-interop.md`); and the
   test-data registry (`research/test-data.md`) of sourced, provenanced datasets and
-  what each validates.
+  what each validates; and the Field Book interop format spec
+  (`research/fieldbook-formats.md`) pinning the import/trait/export layouts unit E1 targets.
 - `vision.md` -- the long-term north star: a funded, curated public archive for
   reproducible studies, a separate institution from the tool. Aspirational, not on the
   build path.
