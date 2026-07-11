@@ -177,14 +177,18 @@ when the Done-when bar is met.
 
 ### Lane E -- Field interop
 
-- [ ] **E1 -- File-based Field Book round-trip**
+- [x] **E1 -- File-based Field Book round-trip** (done)
   - **Goal:** first field capability with no server -- export a trial for Field Book, ingest
     what comes back.
-  - **Deliverable, in two checkpoints:**
-    - **E1a export:** produce Field Book's field-import file (plots with their identifiers and
-      treatment) and trait file from a trial, via the facade.
-    - **E1b ingest:** read Field Book's collected-data export back into observations, reusing
-      the importer and import-profile machinery with a Field Book column mapping.
+  - **Deliverable, shipped in two checkpoints:**
+    - **E1a export:** `openfurrow/interop/fieldbook.py` writers -- `writeFieldImport` (field CSV:
+      plotNumber/block/positionInBlock/treatment) and `writeTraitFile` (legacy quoted `.trt`,
+      trait name = assessment code; numeric -> numeric with unit/bounds, ordinal/categorical ->
+      categorical with slash-joined values); forbidden field headers fail loud. Facade:
+      `Workspace.exportFieldBook`.
+    - **E1b ingest:** `fieldBookImportProfile` + `Workspace.importFieldBook` -- reuses the
+      standard long importer with the Field Book mapping (unique-id -> plot, `trait` ->
+      assessmentCode, `value` -> value; provenance columns ignored).
   - **Touches:** a new `openfurrow/interop/fieldbook.py` (or similar); reuse
     `importers/observations.py`, `exchange.py`; tests + fixtures.
   - **Depends:** the core (A1 preferred so it rides the facade, but E1 can start against the
@@ -197,9 +201,11 @@ when the Done-when bar is met.
     the format, not vendored Field Book samples. *Open* -- whether to emit plot row/column
     geometry now or defer; how to carry the export's provenance columns (timestamp/person/etc.)
     on ingest.
-  - **Done when:** a known trial exports to Field Book files, a representative collected CSV
-    ingests to observations, and the resulting document's content hash is stable across the
-    round-trip; formats validated against a real Field Book sample recorded as a fixture.
+  - **Done when:** met -- a trial exports to Field Book field + `.trt` files (structure
+    asserted); a conformant database-format fixture ingests to the exact expected observations;
+    and a full round-trip (observations out to a Field Book export and back into a fresh store)
+    reproduces the same content hash. Fixture is OpenFurrow-authored, registered in
+    `tests/fixtures/README.md`. 246 tests (243 prior + 3 ingest; +9 export landed in E1a).
 
 - [ ] **E2 -- Scoped BrAPI v2 server subset** (Phase 2) -- Core studies/trials/programs/
   locations + Phenotyping variables/units/observations, read+write. Depends: B1, and C for

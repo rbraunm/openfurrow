@@ -32,3 +32,21 @@ significant, the Protected LSD letter separation into multiple groups.
   61.13333, Early 62.93333, Late 40.93333, Both 47.86667.
 - Cross-check: statsmodels on the same data reproduces the analyzer's full ANOVA
   table for both counts (block/treatment/error SS, df, F, p).
+
+## fieldbook_database_export.csv
+
+A Field Book database (long) format data export for the Field Book ingest test
+(E1b). One row per observation for a 4-treatment, 3-block trial: YIELD (numeric)
+for all 12 plots and SEV (ordinal) for the first 3. The row layout matches Field
+Book's database export exactly -- entry attribute columns (`plotNumber, block,
+treatment`) followed by `trait, value, timestamp, person, location, number,
+attached_photo, attached_video, attached_audio, device_name` -- per
+`roadmap/research/fieldbook-formats.md`.
+
+- Source: OpenFurrow-authored, not vendored. Field Book is GPL-2.0, so we do not
+  commit its shipped samples; this file is our own, written to conform to the
+  documented format. It exists to pin the ingest column mapping (unique-id -> plot,
+  `trait` -> assessmentCode, `value` -> value; provenance columns ignored).
+- Known answer: 15 observations -- YIELD value equal to the plot number for the 12
+  plots (101-104, 201-204, 301-304), and SEV low, moderate, high for plots 101,
+  102, 103. Plot numbers are block*100 + position, per the RCBD layout.

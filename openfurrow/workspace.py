@@ -56,6 +56,7 @@ from openfurrow.importers import (
   importObservations as _importObservations,
 )
 from openfurrow.interop.fieldbook import (
+  fieldBookImportProfile as _fieldBookImportProfile,
   writeFieldImport as _writeFieldImport,
   writeTraitFile as _writeTraitFile,
 )
@@ -271,6 +272,20 @@ class Workspace:
     package, layout, _ = self._loadContext(trialCode)
     _writeFieldImport(package, layout, fieldPath)
     _writeTraitFile(package, traitPath)
+
+  def importFieldBook(self, trialCode: str, databaseCsvPath: str) -> ImportResult:
+    """Ingest a Field Book database (long) export into the trial's observations.
+
+    Reuses the standard importer with the Field Book column mapping: the export's
+    unique-id column is the plot, `trait` the assessment code, `value` the value;
+    the provenance columns (timestamp, person, device_name, ...) are ignored.
+    """
+    with _sessionScope(self._engine) as session:
+      package = _loadPackage(session, trialCode)
+      layout = _generateRcbdLayout(package)
+      result = _importObservations(databaseCsvPath, package, layout, _fieldBookImportProfile())
+      _saveObservations(session, trialCode, result.observations)
+    return result
 
   # ---- internals ----------------------------------------------------------
 
