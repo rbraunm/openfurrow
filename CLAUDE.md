@@ -96,9 +96,32 @@ provenanced datasets in `roadmap/research/test-data.md`. No monkeypatching the l
 test. Tests verify behavior; they never drive design. Known-answer fixtures pin results
 against published tables; statsmodels is the independent cross-check.
 
+## Environment: bootstrap first, every session
+The project targets **Python 3.13** (`pyproject`: `requires-python = ">=3.13"`). A fresh
+sandbox ships 3.12, which refuses `pip install -e .` outright. Do not work around that by
+hand-installing packages against 3.12 -- that silently runs the suite on an interpreter the
+project does not target, with a guessed dependency set.
+
+**Run this before doing anything else:**
+
+```bash
+bash scripts/bootstrap.sh
+source .venv/bin/activate
+```
+
+It installs Python 3.13 (deadsnakes), creates `.venv`, installs the project editable with
+its test extras (the real dependency set from `pyproject`, never a guessed one), and
+verifies by running the suite. It is idempotent -- safe to re-run, and a no-op once the
+environment is in place. After activation, `python`, `pytest`, and the `openfurrow` console
+script are the 3.13 venv's.
+
+If a new runtime or tool dependency becomes necessary, add it to `pyproject` and, if it
+needs system packages, to `scripts/bootstrap.sh` -- so the next session gets it
+automatically rather than rediscovering the gap.
+
 ## Python
-Invoke as `python`, not `python3`. Inside Debian containers and provisioning scripts the
-system interpreter is `python3`.
+Invoke as `python`, not `python3` (inside the activated venv this is 3.13). Inside Debian
+containers and provisioning scripts the system interpreter is `python3`.
 
 ---
 Global engineering standards (git workflow, fail-loud philosophy, no dead code, naming

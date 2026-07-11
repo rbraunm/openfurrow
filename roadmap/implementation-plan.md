@@ -15,13 +15,16 @@ history.
 
 ## How a session uses this
 
-1. Read `CLAUDE.md`, then this file. The ADRs and `platform-plan.md` are the layers above;
+1. **Bootstrap the environment first:** `bash scripts/bootstrap.sh && source .venv/bin/activate`.
+   The project targets Python 3.13; a fresh sandbox ships 3.12 and cannot install it. See
+   `CLAUDE.md`.
+2. Read `CLAUDE.md`, then this file. The ADRs and `platform-plan.md` are the layers above;
    this is where they turn into work.
-2. Pick the next unit whose **Depends** are all done (see "Build spine" for the intended
+3. Pick the next unit whose **Depends** are all done (see "Build spine" for the intended
    order). Prefer the spine unless told otherwise.
-3. Build it to its **Done when** bar. One logical commit to `claude` per unit; a large unit
+4. Build it to its **Done when** bar. One logical commit to `claude` per unit; a large unit
    commits per checkpoint within it.
-4. Check the unit off in this file in the same commit, and note anything the build changed
+5. Check the unit off in this file in the same commit, and note anything the build changed
    about the plan.
 
 ## Relationship to the other roadmap docs
@@ -170,7 +173,9 @@ when the Done-when bar is met.
   - **Decisions:** *settled* -- public surface = facade + schema + result types. *Open* --
     deployment shape (library vs service-embedded vs on-device) stays open per ADR 0010 (A3).
   - **Done when:** `from openfurrow import <facade>, <schema types>` works; a test imports only
-    the public surface and runs the loop; install smoke passes on 3.13.
+    the public surface and runs the loop; install smoke passes on 3.13. (The 3.13 environment
+    is no longer a blocker: `scripts/bootstrap.sh` installs it and already proves the editable
+    install and full suite pass under 3.13.)
 
 - [ ] **A3 -- Keep deployment shapes open** -- a standing stance (ADR 0010), not a build.
   Honor it: do not hardwire a single packaging/deployment assumption into A1/A2/B1.

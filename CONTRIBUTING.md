@@ -11,6 +11,20 @@ policy, the no-silent-fallback rule, and the field conventions (ARM's AOV Means 
 BrAPI/Field Book import). This file covers the norm that is easiest to forget: keeping
 validation and its test data honest.
 
+## Setup
+
+OpenFurrow targets Python 3.13. Bootstrap the environment before anything else:
+
+```bash
+bash scripts/bootstrap.sh
+source .venv/bin/activate
+pytest
+```
+
+The script installs Python 3.13 if it is missing, creates `.venv`, and installs the project
+editable with its test extras. It is idempotent. New system-level dependencies belong in
+that script, and new Python dependencies in `pyproject.toml`.
+
 ## Oracles: every reported number is validated
 
 OpenFurrow never presents an unvalidated statistic as a fact. Each analysis result is
