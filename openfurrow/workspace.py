@@ -55,6 +55,10 @@ from openfurrow.importers import (
   ObservationImportError,
   importObservations as _importObservations,
 )
+from openfurrow.interop.fieldbook import (
+  writeFieldImport as _writeFieldImport,
+  writeTraitFile as _writeTraitFile,
+)
 from openfurrow.reports import buildReport as _buildReport
 from openfurrow.schema import (
   Observation,
@@ -259,6 +263,14 @@ class Workspace:
       storedHash=storedHash,
       roundTripHash=roundTripHash,
     )
+
+  # ---- Field Book interop -------------------------------------------------
+
+  def exportFieldBook(self, trialCode: str, fieldPath: str, traitPath: str) -> None:
+    """Write the trial's Field Book field-import CSV and legacy `.trt` trait file."""
+    package, layout, _ = self._loadContext(trialCode)
+    _writeFieldImport(package, layout, fieldPath)
+    _writeTraitFile(package, traitPath)
 
   # ---- internals ----------------------------------------------------------
 
