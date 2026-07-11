@@ -162,20 +162,27 @@ when the Done-when bar is met.
     (217 prior + 17 facade); facade tests assert each operation end to end and cross-check the
     composite ops against the primitives; no CLI command imports a store/analysis internal.
 
-- [ ] **A2 -- Package the core for reuse**
+- [x] **A2 -- Package the core for reuse** (done)
   - **Goal:** a stable, installable public surface other surfaces import.
-  - **Deliverable:** a defined public API boundary (explicit exports; the facade + the schema
-    types + the analysis result types are public, internals are not), documented, versioned
-    with the schema. Install smoke path (`pip install .`) confirmed on the 3.13 target.
-  - **Touches:** `openfurrow/__init__.py` exports; `pyproject.toml` if needed; a short
-    "public API" note.
+  - **Deliverable:** `openfurrow/__init__.py` is now the explicit public API and the
+    compatibility boundary: the `Workspace` facade, the schema types, the result types
+    (`AnovaResult`, `MeanSeparation`, `Assumptions`, `ImportResult`), the config that
+    parameterizes import/analysis, and the error types -- 42 names in `__all__`. The store,
+    randomizer, exchange writers, report builder, observation importer, Field Book writers,
+    and the analysis primitives stay internal, reached only through the facade. A new leaf
+    `openfurrow/version.py` holds `schemaVersion` so internals never import the package root.
+  - **Touches:** `openfurrow/__init__.py`; new `openfurrow/version.py`; `reports/report.py`
+    (imports the version from the leaf); `tests/testPublicApi.py`.
   - **Depends:** A1.
-  - **Decisions:** *settled* -- public surface = facade + schema + result types. *Open* --
-    deployment shape (library vs service-embedded vs on-device) stays open per ADR 0010 (A3).
-  - **Done when:** `from openfurrow import <facade>, <schema types>` works; a test imports only
-    the public surface and runs the loop; install smoke passes on 3.13. (The 3.13 environment
-    is no longer a blocker: `scripts/bootstrap.sh` installs it and already proves the editable
-    install and full suite pass under 3.13.)
+  - **Decisions:** *settled* -- public surface = facade + schema + result types + config +
+    errors. Config is public because `Workspace.importObservations` takes an `ImportProfile`.
+    Analysis primitives are internal: the numbers a caller sees must come from the one
+    validated path. *Open* -- deployment shape stays open per ADR 0010 (A3).
+  - **Done when:** met -- `tests/testPublicApi.py` drives the full loop (author, layout,
+    import, analyze, separate, assess, report, export, verify, Field Book, delete) importing
+    only from `openfurrow`, and pins both what is exported and what is deliberately not.
+    Install smoke passes on 3.13: the wheel builds, installs into a clean venv, and imports
+    from site-packages outside the source tree with the console script working.
 
 - [ ] **A3 -- Keep deployment shapes open** -- a standing stance (ADR 0010), not a build.
   Honor it: do not hardwire a single packaging/deployment assumption into A1/A2/B1.

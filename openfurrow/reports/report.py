@@ -21,7 +21,7 @@ import platform
 
 import numpy
 
-from openfurrow import schemaVersion
+from openfurrow.version import schemaVersion
 from openfurrow.analysis import AnalysisError, analyzeRcbd, assessAssumptions, separateMeans
 from openfurrow.analysis.transforms import backTransformMean
 from openfurrow.schema.document import TrialDocument, contentHash
