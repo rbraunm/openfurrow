@@ -28,9 +28,11 @@ from openfurrow.schema import TrialPackage
 from openfurrow.workspace import (
   AnalysisError,
   ExchangeError,
+  MessageError,
   ObservationImportError,
   StoreError,
   Workspace,
+  sourceLocale,
 )
 from pydantic import ValidationError
 
@@ -46,8 +48,8 @@ def main(argv: list[str] | None = None) -> int:
   try:
     return handler(args)
   except (
-    StoreError, ExchangeError, ObservationImportError, AnalysisError, ValidationError,
-    OSError, json.JSONDecodeError,
+    StoreError, ExchangeError, ObservationImportError, AnalysisError, MessageError,
+    ValidationError, OSError, json.JSONDecodeError,
   ) as error:
     print(f"error: {error}", file=sys.stderr)
     return 1
@@ -94,6 +96,10 @@ def _buildParser() -> argparse.ArgumentParser:
   reportParser.add_argument("trialCode")
   reportParser.add_argument("--output", help="write the report to this file instead of stdout")
   reportParser.add_argument("--config", help="path to a project config file")
+  reportParser.add_argument(
+    "--locale", default=sourceLocale,
+    help=f"locale for the report's display text and numbers (default: {sourceLocale})",
+  )
   reportParser.set_defaults(handler=_commandReport)
 
   exportParser = sub.add_parser("export", help="export a trial to JSON and/or CSV")
@@ -208,6 +214,7 @@ def _commandReport(args) -> int:
     args.trialCode,
     significanceLevel=config.analysis.significanceLevel,
     protected=protected,
+    locale=args.locale,
   )
   if args.output:
     Path(args.output).write_text(report, encoding="utf-8")

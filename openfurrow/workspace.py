@@ -50,6 +50,7 @@ from openfurrow.exchange import (
   exportObservationsCsv as _exportObservationsCsv,
   importJson as _importJson,
 )
+from openfurrow.i18n import MessageError, availableLocales, sourceLocale
 from openfurrow.importers import (
   ImportResult,
   ObservationImportError,
@@ -85,10 +86,13 @@ from openfurrow.store import (
 __all__ = [
   "AnalysisError",
   "ExchangeError",
+  "MessageError",
   "ObservationImportError",
   "RoundTripCheck",
   "StoreError",
   "Workspace",
+  "availableLocales",
+  "sourceLocale",
 ]
 
 
@@ -219,12 +223,17 @@ class Workspace:
     trialCode: str,
     significanceLevel: float = 0.05,
     protected: bool = True,
+    locale: str = sourceLocale,
   ) -> str:
-    """Build the full Markdown trial report (the AOV Means Table and provenance)."""
+    """Build the full Markdown trial report (the AOV Means Table and provenance).
+
+    `locale` is a display choice only: it selects the message catalog and number
+    formatting. It does not touch the stored data, the exchange, or the content hash.
+    """
     package, layout, observations = self._loadContext(trialCode)
     return _buildReport(
       package, layout, observations,
-      significanceLevel=significanceLevel, protected=protected,
+      significanceLevel=significanceLevel, protected=protected, locale=locale,
     )
 
   # ---- exchange, hashing, verification ------------------------------------

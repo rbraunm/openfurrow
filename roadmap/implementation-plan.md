@@ -123,22 +123,35 @@ when the Done-when bar is met.
 
 ### Foundation
 
-- [ ] **L0 -- Localization scaffolding**
+- [x] **L0 -- Localization scaffolding** (done)
   - **Goal:** honor ADR 0007 before any user-facing surface exists, so strings are never
     hardcoded then retrofitted.
-  - **Deliverable:** a keyed message-catalog mechanism (external catalogs, keyed lookups),
-    locale-aware number/date formatting helpers (CLDR-style; dot-decimal and ISO 8601 stay
-    canonical), and a string-status convention (source / machine-draft / human-approved).
-    en-US committable with no translation.
-  - **Touches:** a new `openfurrow/i18n/` (or similar) module; report/document text routed
-    through it where a researcher reads it.
-  - **Depends:** nothing new.
-  - **Decisions:** *settled* -- keyed catalogs, display-only, build-time only (no runtime
-    translation call, ADR 0002). *Open* -- catalog file format and the glossary tooling
-    (defer to first real locale pull).
-  - **Done when:** report/document researcher-facing text resolves through the catalog; a
-    formatting test shows the same trial hashes identically across two locales; no user-facing
-    string is a bare literal in the routed paths.
+  - **Deliverable:** `openfurrow/i18n/` -- keyed JSON message catalogs (UTF-8, per locale,
+    each string carrying a `source` / `machineDraft` / `humanApproved` status), a `Translator`
+    that resolves text and formats numbers/dates, and a locale formatting boundary. Shipped
+    locales: `en-US` (source) and `en-GB` (spelling overlay, human-approved). `report.py` is
+    fully routed: Markdown structure stays in code, every researcher-facing string comes from
+    the catalog, every number through the translator. `--locale` on the CLI `report` command;
+    `locale` on `Workspace.buildReport`. Catalogs ship as package data.
+  - **Decisions:** *settled at build* -- **no new runtime dependency.** ADR 0007 requires
+    CLDR-backed formatting but explicitly defers the i18n library to the GUI-stack choice, so
+    L0 does not pick one: `LocaleFormat` is the seam a CLDR-backed implementation (Babel/ICU)
+    drops into, behind a deliberately small interim locale table. Everything fails loud --
+    unknown locale, missing key, placeholder mismatch -- with **no fallback to English**, since
+    a half-translated locale quietly rendering the source language is exactly the invisible
+    wrongness the project refuses. A locale is complete or it is not shipped.
+  - **Done when:** met -- 267 tests. The canonical guardrail is asserted directly: the content
+    hash (and the hash printed inside the report) is identical across locales, and the CSV/JSON
+    exchange stays dot-decimal and locale-neutral even after a comma-decimal locale formats
+    display. Catalog completeness and cross-locale placeholder parity are enforced, every
+    shipped locale is authoritative, and the wheel actually carries the catalogs (it did not at
+    first -- a source checkout passed while an installed OpenFurrow would have built no report
+    at all).
+  - **Remaining (follow-on, not blocking):** the analysis layer still emits diagnostic `name`
+    and `interpretation` sentences as English literals; `report.py` formats the numbers around
+    them but passes the prose through. Routing generated analysis sentences through the catalog
+    is its own unit. The interim locale table must not grow -- adding locales beyond those
+    shipped is the signal the real CLDR mechanism is overdue.
 
 ### Lane A -- Core and packaging
 

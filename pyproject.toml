@@ -29,6 +29,12 @@ openfurrow = "openfurrow.cli.main:main"
 [tool.setuptools.packages.find]
 include = ["openfurrow*"]
 
+# The message catalogs are data, not code, so setuptools does not pick them up by
+# default -- without this an installed OpenFurrow builds no report at all, even though
+# a source checkout passes its tests.
+[tool.setuptools.package-data]
+openfurrow = ["i18n/locales/*.json"]
+
 [tool.pytest.ini_options]
 pythonpath = ["."]
 testpaths = ["tests"]

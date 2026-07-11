@@ -1,0 +1,281 @@
+{
+  "locale": "en-GB",
+  "messages": {
+    "report.heading.trialReport": {
+      "text": "Trial Report: {title}",
+      "status": "humanApproved"
+    },
+    "report.field.trialCode": {
+      "text": "Trial code",
+      "status": "humanApproved"
+    },
+    "report.field.crop": {
+      "text": "Crop",
+      "status": "humanApproved"
+    },
+    "report.field.season": {
+      "text": "Season",
+      "status": "humanApproved"
+    },
+    "report.field.site": {
+      "text": "Site",
+      "status": "humanApproved"
+    },
+    "report.field.objective": {
+      "text": "Objective",
+      "status": "humanApproved"
+    },
+    "report.field.investigator": {
+      "text": "Investigator",
+      "status": "humanApproved"
+    },
+    "report.field.organization": {
+      "text": "Organisation",
+      "status": "humanApproved"
+    },
+    "report.heading.design": {
+      "text": "Design",
+      "status": "humanApproved"
+    },
+    "report.design.design": {
+      "text": "Design",
+      "status": "humanApproved"
+    },
+    "report.design.rcbd": {
+      "text": "Randomised complete block design",
+      "status": "humanApproved"
+    },
+    "report.design.treatments": {
+      "text": "Treatments",
+      "status": "humanApproved"
+    },
+    "report.design.blocks": {
+      "text": "Blocks (replications)",
+      "status": "humanApproved"
+    },
+    "report.design.plots": {
+      "text": "Plots",
+      "status": "humanApproved"
+    },
+    "report.design.seed": {
+      "text": "Randomisation seed",
+      "status": "humanApproved"
+    },
+    "report.heading.treatments": {
+      "text": "Treatments",
+      "status": "humanApproved"
+    },
+    "report.treatments.column.code": {
+      "text": "Code",
+      "status": "humanApproved"
+    },
+    "report.treatments.column.name": {
+      "text": "Name",
+      "status": "humanApproved"
+    },
+    "report.treatments.column.product": {
+      "text": "Product",
+      "status": "humanApproved"
+    },
+    "report.treatments.column.rate": {
+      "text": "Rate",
+      "status": "humanApproved"
+    },
+    "report.treatments.column.timing": {
+      "text": "Timing",
+      "status": "humanApproved"
+    },
+    "report.treatments.untreatedControl": {
+      "text": "(untreated control)",
+      "status": "humanApproved"
+    },
+    "report.heading.assessment": {
+      "text": "Assessment: {name} ({code})",
+      "status": "humanApproved"
+    },
+    "report.assessment.notNumeric": {
+      "text": "Not analysed: AOV requires a numeric assessment (this assessment is {dataType}).",
+      "status": "humanApproved"
+    },
+    "report.assessment.notAnalyzed": {
+      "text": "Not analysed: {reason}",
+      "status": "humanApproved"
+    },
+    "report.heading.anova": {
+      "text": "Analysis of variance",
+      "status": "humanApproved"
+    },
+    "report.anova.transformedScale": {
+      "text": "Analysed on the {scale} scale; the table, grand mean, and CV below are on that scale.",
+      "status": "humanApproved"
+    },
+    "report.anova.column.source": {
+      "text": "Source",
+      "status": "humanApproved"
+    },
+    "report.anova.column.degreesOfFreedom": {
+      "text": "df",
+      "status": "humanApproved"
+    },
+    "report.anova.column.sumOfSquares": {
+      "text": "SS",
+      "status": "humanApproved"
+    },
+    "report.anova.column.meanSquare": {
+      "text": "MS",
+      "status": "humanApproved"
+    },
+    "report.anova.column.fStatistic": {
+      "text": "F",
+      "status": "humanApproved"
+    },
+    "report.anova.column.probability": {
+      "text": "P",
+      "status": "humanApproved"
+    },
+    "report.anova.source.block": {
+      "text": "Block",
+      "status": "humanApproved"
+    },
+    "report.anova.source.treatment": {
+      "text": "Treatment",
+      "status": "humanApproved"
+    },
+    "report.anova.source.error": {
+      "text": "Error",
+      "status": "humanApproved"
+    },
+    "report.anova.source.total": {
+      "text": "Total",
+      "status": "humanApproved"
+    },
+    "report.anova.grandMean": {
+      "text": "Grand mean",
+      "status": "humanApproved"
+    },
+    "report.anova.coefficientOfVariation": {
+      "text": "Coefficient of variation",
+      "status": "humanApproved"
+    },
+    "report.heading.treatmentMeans": {
+      "text": "Treatment means",
+      "status": "humanApproved"
+    },
+    "report.means.separation": {
+      "text": "Mean separation: {method} (alpha = {alpha}). Treatment effect {significance} (P = {probability}).",
+      "status": "humanApproved"
+    },
+    "report.means.significant": {
+      "text": "significant",
+      "status": "humanApproved"
+    },
+    "report.means.notSignificant": {
+      "text": "not significant",
+      "status": "humanApproved"
+    },
+    "report.means.column.treatment": {
+      "text": "Treatment",
+      "status": "humanApproved"
+    },
+    "report.means.column.mean": {
+      "text": "Mean{unit}",
+      "status": "humanApproved"
+    },
+    "report.means.column.meanOriginalScale": {
+      "text": "Mean (original scale){unit}",
+      "status": "humanApproved"
+    },
+    "report.means.column.group": {
+      "text": "Group",
+      "status": "humanApproved"
+    },
+    "report.means.backTransformNote": {
+      "text": "Means are back-transformed to the original scale as point estimates (not symmetric intervals); the analysis of variance and mean separation were computed on the {scale} scale.",
+      "status": "humanApproved"
+    },
+    "report.means.leastSignificantDifference": {
+      "text": "LSD (alpha = {alpha})",
+      "status": "humanApproved"
+    },
+    "report.means.notSeparated": {
+      "text": "Means were not separated: the treatment effect was not significant (protected LSD).",
+      "status": "humanApproved"
+    },
+    "report.heading.assumptions": {
+      "text": "Assumption checks",
+      "status": "humanApproved"
+    },
+    "report.assumptions.note": {
+      "text": "Reported only; these do not change the analysis above (significance level alpha = {alpha}).",
+      "status": "humanApproved"
+    },
+    "report.assumptions.residualsNote": {
+      "text": "Residuals are from the additive block-and-treatment model and are constrained (they sum to zero within each block and each treatment), so the normality test is approximate.",
+      "status": "humanApproved"
+    },
+    "report.assumptions.recommendation": {
+      "text": "Recommendation: {recommendation}",
+      "status": "humanApproved"
+    },
+    "report.heading.reproducibility": {
+      "text": "Reproducibility",
+      "status": "humanApproved"
+    },
+    "report.reproducibility.method": {
+      "text": "Method",
+      "status": "humanApproved"
+    },
+    "report.reproducibility.methodValue": {
+      "text": "RCBD ANOVA; {test} (alpha = {alpha})",
+      "status": "humanApproved"
+    },
+    "report.reproducibility.protectedLeastSignificantDifference": {
+      "text": "Fisher's Protected LSD",
+      "status": "humanApproved"
+    },
+    "report.reproducibility.leastSignificantDifference": {
+      "text": "Fisher's LSD",
+      "status": "humanApproved"
+    },
+    "report.reproducibility.seed": {
+      "text": "Randomisation seed",
+      "status": "humanApproved"
+    },
+    "report.reproducibility.transforms": {
+      "text": "Transforms",
+      "status": "humanApproved"
+    },
+    "report.reproducibility.inputHash": {
+      "text": "Input hash (SHA-256)",
+      "status": "humanApproved"
+    },
+    "report.reproducibility.versions": {
+      "text": "Versions: OpenFurrow {openfurrow}, numpy {numpy}, Python {python}",
+      "status": "humanApproved"
+    },
+    "report.scale.sqrt": {
+      "text": "square-root",
+      "status": "humanApproved"
+    },
+    "report.scale.log": {
+      "text": "natural-log",
+      "status": "humanApproved"
+    },
+    "report.scale.arcsinSqrt": {
+      "text": "arcsine-square-root",
+      "status": "humanApproved"
+    },
+    "report.scale.logit": {
+      "text": "logit",
+      "status": "humanApproved"
+    },
+    "report.value.absent": {
+      "text": "-",
+      "status": "humanApproved"
+    },
+    "report.value.probabilityBelowThreshold": {
+      "text": "<0.0001",
+      "status": "humanApproved"
+    }
+  }
+}
