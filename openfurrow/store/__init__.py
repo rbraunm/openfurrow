@@ -4,6 +4,8 @@
 from openfurrow.store.database import createDatabase
 from openfurrow.store.repository import (
   StoreError,
+  TrialExistsError,
+  TrialNotFoundError,
   deleteTrial,
   listTrials,
   loadObservations,
@@ -15,6 +17,8 @@ from openfurrow.store.repository import (
 
 __all__ = [
   "StoreError",
+  "TrialExistsError",
+  "TrialNotFoundError",
   "createDatabase",
   "deleteTrial",
   "listTrials",

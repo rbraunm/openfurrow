@@ -162,6 +162,63 @@ class AnalysisSettings(BaseModel):
   meanComparison: MeanComparison = MeanComparison.protectedLSD
 
 
+class TLSSettings(BaseModel):
+  """HTTPS for the service (optional; off by default).
+
+  HTTPS is opt-in because the first target is a local, single-user analyst tool bound
+  to loopback, where TLS buys nothing and a mandatory certificate would be pure
+  friction. It becomes necessary the moment the service is reachable from another
+  machine -- the self-hostable server of decision 0011 -- so the configuration exists
+  now and the switch is one setting, not a rebuild.
+
+  Certificates are supplied by the operator. Automatic certificate issuance
+  (Let's Encrypt / ACME) is deliberately NOT implemented: it needs a public DNS name,
+  inbound reachability, and a renewal daemon -- none of which a local or LAN
+  deployment has. It belongs with the internet-facing server, and this shape does not
+  block it: an ACME-obtained certificate is just a certificate/key pair pointed at
+  here.
+  """
+
+  model_config = ConfigDict(extra="forbid")
+
+  enabled: bool = False
+  certificateFile: str | None = Field(
+    default=None, description="Path to the PEM certificate (chain) file."
+  )
+  privateKeyFile: str | None = Field(
+    default=None, description="Path to the PEM private key file."
+  )
+
+  @model_validator(mode="after")
+  def certificateRequiredWhenEnabled(self) -> "TLSSettings":
+    # Fail at construction, not at the first request: a service that believes it is
+    # serving HTTPS but silently fell back to HTTP is a security bug, not a warning.
+    if not self.enabled:
+      return self
+    missing = [
+      name for name, value in
+      (("certificateFile", self.certificateFile), ("privateKeyFile", self.privateKeyFile))
+      if not value
+    ]
+    if missing:
+      raise ValueError(f"tls.enabled is true but {', '.join(missing)} is not set")
+    return self
+
+
+class ServiceSettings(BaseModel):
+  """How the HTTP service binds (decision 0009).
+
+  The default binds to loopback: a local analyst tool must not become a network
+  service by accident. Serving beyond this machine is a deliberate change of `host`.
+  """
+
+  model_config = ConfigDict(extra="forbid")
+
+  host: str = Field(default="127.0.0.1", min_length=1)
+  port: int = Field(default=8420, gt=0, lt=65536)
+  tls: TLSSettings = Field(default_factory=TLSSettings)
+
+
 class OpenFurrowConfig(BaseModel):
   """Root of the project configuration file.
 
@@ -174,3 +231,4 @@ class OpenFurrowConfig(BaseModel):
 
   importProfile: ImportProfile = Field(default_factory=ImportProfile, alias="import")
   analysis: AnalysisSettings = Field(default_factory=AnalysisSettings)
+  service: ServiceSettings = Field(default_factory=ServiceSettings)

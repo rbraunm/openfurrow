@@ -240,17 +240,34 @@ when the Done-when bar is met.
 
 ### Lane B -- Service and entry points
 
-- [ ] **B1 -- Flask app wrapping the facade as the one HTTP API**
+- [x] **B1 -- Flask app wrapping the facade as the one HTTP API** (done)
   - **Goal:** the single HTTP interface behind every non-CLI surface.
-  - **Deliverable:** a Flask app with thin controllers over the facade (no math in the
-    controllers, ADR 0002); fail-loud errors mapped to HTTP status; JSON in/out for the trial
-    loop operations.
-  - **Touches:** a new `openfurrow/service/` package; tests via Flask test client.
-  - **Depends:** A1 (A2 preferred).
-  - **Decisions:** *settled* -- Flask, one API, thin over the facade. *Open* -- auth/session
-    (deferred to B5 / ADR 0005; local single-user needs none).
-  - **Done when:** the loop runs over HTTP against the test client; a controller-touches-no-
-    internal check holds; errors return non-2xx with a clear message.
+  - **Deliverable:** `openfurrow/service/` -- `createApp(databasePath, config)` returns a Flask
+    app whose controllers call one `Workspace` method and serialize the result: trials
+    (list/add/get/delete), layout, observations (CSV body, plus a Field Book endpoint),
+    analysis/means/assumptions, report (`?locale=`), hash, verify, document export/import,
+    health. `runner.py` holds the bind/TLS layer, separate so the app is testable without a
+    socket. Flask is an optional `service` extra, not a core dependency (A3).
+  - **Decisions:** *settled at build* -- **errors map by exception type, never by message
+    text.** That forced a correction in the store: `StoreError` was raised for both "not
+    found" and "already exists", so it now has `TrialNotFoundError` (404) and
+    `TrialExistsError` (409) subclasses; anything else store-related is 400. **HTTPS is
+    optional config** (`service.tls.enabled` + `certificateFile`/`privateKeyFile`), off by
+    default because the first target is a local single-user tool on loopback; it fails loud if
+    enabled without a usable certificate rather than silently degrading to HTTP. Default bind
+    is loopback so a local tool cannot become a network service by accident.
+    **Let's Encrypt / ACME is deliberately not implemented** -- it needs a public DNS name,
+    inbound reachability, and a renewal daemon, none of which a local or LAN deployment has;
+    it belongs with the internet-facing self-hostable server (C3/C4), and this shape does not
+    block it, since an ACME-obtained certificate is just a cert/key pair pointed at by the
+    same two settings. Auth remains deferred to B5 / ADR 0005: this app must not be exposed to
+    a network until then.
+  - **Done when:** met -- 284 tests. The full loop runs over HTTP; analysis, means,
+    assumptions, and the report are asserted identical to the facade's own output (proving the
+    controllers compute nothing); the status mapping is asserted per error type; the report's
+    `?locale=` is proven display-only against the content hash; and TLS is proven off by
+    default, rejected at construction when enabled without a certificate, and fail-loud when a
+    certificate file is missing.
 
 - [ ] **B2 -- Web-GUI entry point** -- the entry point wiring for the server-rendered UI
   (pages are Lane D). Depends: B1, L0.

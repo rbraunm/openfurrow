@@ -161,12 +161,12 @@ createVirtualEnvironment() {
 }
 
 installProject() {
-  # Editable install with the test extra: this is the real dependency set from
-  # pyproject (pydantic, sqlalchemy, numpy, pyyaml + pytest, statsmodels), never a
-  # hand-guessed list. It also puts the `openfurrow` console script on PATH.
-  log "installing openfurrow (editable, with test extras)"
+  # Editable install with the test and service extras: this is the real dependency set
+  # from pyproject (pydantic, sqlalchemy, numpy, pyyaml + pytest, statsmodels, flask),
+  # never a hand-guessed list. It also puts the `openfurrow` console script on PATH.
+  log "installing openfurrow (editable, with the test and service extras)"
   "${venvPath}/bin/pip" install --quiet --upgrade pip
-  "${venvPath}/bin/pip" install --quiet --editable "${repoRoot}[test]"
+  "${venvPath}/bin/pip" install --quiet --editable "${repoRoot}[test,service]"
 }
 
 verify() {

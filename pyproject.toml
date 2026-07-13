@@ -18,9 +18,15 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+# Flask is an extra, not a core dependency: the core is usable as a plain library, and
+# decision 0010 keeps the deployment shape open. Installing the service is a choice.
+service = [
+  "flask>=3",
+]
 test = [
   "pytest>=8",
   "statsmodels>=0.14",
+  "flask>=3",
 ]
 
 [project.scripts]

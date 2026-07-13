@@ -13,6 +13,8 @@ from openfurrow.config.profile import (
   LongColumns,
   MeanComparison,
   OpenFurrowConfig,
+  ServiceSettings,
+  TLSSettings,
   ValueParsing,
   WideColumns,
 )
@@ -24,6 +26,8 @@ __all__ = [
   "LongColumns",
   "MeanComparison",
   "OpenFurrowConfig",
+  "ServiceSettings",
+  "TLSSettings",
   "ValueParsing",
   "WideColumns",
   "defaultConfig",

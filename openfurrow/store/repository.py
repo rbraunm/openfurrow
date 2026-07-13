@@ -35,6 +35,20 @@ class StoreError(RuntimeError):
   """A store operation could not be completed as requested."""
 
 
+class TrialNotFoundError(StoreError):
+  """The named trial is not in the store.
+
+  A distinct type because callers need to tell "you asked for something that is not
+  here" apart from "what you asked for conflicts with what is here" -- an HTTP surface
+  maps these to 404 and 409 respectively, and sniffing the message text to tell them
+  apart would be exactly the kind of fragile guessing this project rejects.
+  """
+
+
+class TrialExistsError(StoreError):
+  """The trial (or observation) being written is already present."""
+
+
 @contextmanager
 def sessionScope(engine: Engine) -> Iterator[Session]:
   """A transactional session: commit on success, roll back on error, always close."""
@@ -53,7 +67,7 @@ def savePackage(session: Session, package: TrialPackage) -> None:
   """Persist a trial package. Raises if the trial code is already present."""
   trialCode = package.trial.trialCode
   if session.get(TrialRow, trialCode) is not None:
-    raise StoreError(f"trial '{trialCode}' already exists; delete it first to replace it")
+    raise TrialExistsError(f"trial '{trialCode}' already exists; delete it first to replace it")
 
   trial = TrialRow(
     trialCode=trialCode,
@@ -105,7 +119,7 @@ def loadPackage(session: Session, trialCode: str) -> TrialPackage:
   """
   trial = session.get(TrialRow, trialCode)
   if trial is None:
-    raise StoreError(f"trial '{trialCode}' not found")
+    raise TrialNotFoundError(f"trial '{trialCode}' not found")
 
   treatments = [
     Treatment(
@@ -156,11 +170,11 @@ def loadPackage(session: Session, trialCode: str) -> TrialPackage:
 def saveObservations(session: Session, trialCode: str, observations: list[Observation]) -> None:
   """Persist observations for an existing trial. Raises on a missing trial or a collision."""
   if session.get(TrialRow, trialCode) is None:
-    raise StoreError(f"trial '{trialCode}' not found; save the package first")
+    raise TrialNotFoundError(f"trial '{trialCode}' not found; save the package first")
   for observation in observations:
     key = (trialCode, observation.plotNumber, observation.assessmentCode)
     if session.get(ObservationRow, key) is not None:
-      raise StoreError(
+      raise TrialExistsError(
         f"observation already exists for plot {observation.plotNumber}, "
         f"assessment '{observation.assessmentCode}' in trial '{trialCode}'"
       )
@@ -178,7 +192,7 @@ def saveObservations(session: Session, trialCode: str, observations: list[Observ
 def loadObservations(session: Session, trialCode: str) -> list[Observation]:
   """Load observations for a trial, ordered by plot then assessment. Raises if absent."""
   if session.get(TrialRow, trialCode) is None:
-    raise StoreError(f"trial '{trialCode}' not found")
+    raise TrialNotFoundError(f"trial '{trialCode}' not found")
   rows = session.execute(
     select(ObservationRow)
     .where(ObservationRow.trialCode == trialCode)
@@ -206,7 +220,7 @@ def deleteTrial(session: Session, trialCode: str) -> None:
   """Delete a trial and all its treatments, assessments, and observations."""
   trial = session.get(TrialRow, trialCode)
   if trial is None:
-    raise StoreError(f"trial '{trialCode}' not found")
+    raise TrialNotFoundError(f"trial '{trialCode}' not found")
   session.delete(trial)
   session.flush()
 
