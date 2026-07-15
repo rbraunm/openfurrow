@@ -271,7 +271,13 @@ when the Done-when bar is met.
 
 - [ ] **B2 -- Web-GUI entry point** -- the entry point wiring for the server-rendered UI
   (pages are Lane D). Depends: B1, L0.
-- [ ] **B3 -- `serve` command** -- run the web app locally. Depends: B1.
+- [x] **B3 -- `serve` command** (done) -- `openfurrow serve <db> [--config --host --port]`
+  builds the app via `createApp` and binds through `runService`; `--host/--port` override the
+  config. The service extra is imported inside the handler so every other command works without
+  Flask and `serve` gives a clear "install openfurrow[service]" hint instead of an opaque
+  ImportError. `Workspace.open` fails loud on a missing database before binding. Tested with a
+  real server started in a thread answering `/health` on an ephemeral port (a genuine bind,
+  which a test client cannot show). Depends: B1.
 - [ ] **B4 -- Cross-OS service install/uninstall** (Phase 2) -- Windows service via
   PowerShell 5.1, systemd on Linux, launchd on macOS. Depends: B3.
 - [ ] **B5 -- Auth + session scaffolding** (Phase 2) -- arrives with service mode; ties ADR 0005.

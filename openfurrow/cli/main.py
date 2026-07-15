@@ -124,6 +124,13 @@ def _buildParser() -> argparse.ArgumentParser:
   deleteParser.add_argument("trialCode")
   deleteParser.set_defaults(handler=_commandDelete)
 
+  serveParser = sub.add_parser("serve", help="run the HTTP service over a trial database")
+  serveParser.add_argument("database")
+  serveParser.add_argument("--config", help="path to a project config file")
+  serveParser.add_argument("--host", help="bind address (overrides config; default from config)")
+  serveParser.add_argument("--port", type=int, help="bind port (overrides config)")
+  serveParser.set_defaults(handler=_commandServe)
+
   return parser
 
 
@@ -262,6 +269,36 @@ def _commandVerify(args) -> int:
 def _commandDelete(args) -> int:
   Workspace.open(args.database).deleteTrial(args.trialCode)
   print(f"Deleted trial '{args.trialCode}'")
+  return 0
+
+
+def _commandServe(args) -> int:
+  # The service lives behind the optional 'service' extra (Flask). Import it here, not
+  # at module load, so every other command works without Flask installed and 'serve'
+  # gives a clear install hint instead of an opaque ImportError at startup.
+  try:
+    from openfurrow.service import createApp, runService, serviceUrl
+  except ImportError as error:
+    print(
+      f"error: the HTTP service requires Flask, which is not installed ({error}). "
+      f"Install it with: pip install 'openfurrow[service]'",
+      file=sys.stderr,
+    )
+    return 1
+
+  config = _configFor(args)
+  # --host/--port override the config so an operator can bind without editing a file.
+  if args.host or args.port is not None:
+    service = config.service.model_copy(update={
+      key: value for key, value in (("host", args.host), ("port", args.port))
+      if value is not None
+    })
+    config = config.model_copy(update={"service": service})
+
+  # Workspace.open fails loud here if the database does not exist, before we bind.
+  application = createApp(args.database, config)
+  print(f"Serving OpenFurrow on {serviceUrl(config)} (Ctrl-C to stop)")
+  runService(application, config)
   return 0
 
 
