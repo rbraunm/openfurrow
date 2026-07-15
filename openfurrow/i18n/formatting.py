@@ -114,3 +114,16 @@ def formatDate(value: date, locale: str) -> str:
   if rules.dateOrder == "YMD":
     return f"{year}-{month}-{day}"
   raise FormattingError(f"locale '{locale}' has an unknown date order '{rules.dateOrder}'")
+
+
+# Scripts that read right-to-left. Decision 0007 requires the UI to mirror its layout,
+# not just its glyphs, for these -- so direction is derived from the locale's language
+# subtag and set on the document, structurally, from the first UI code. None of these
+# locales ships yet; the mechanism is here so RTL is designed in, not retrofitted.
+_rightToLeftLanguages = {"ar", "fa", "ur", "he", "ps", "sd", "ug", "yi"}
+
+
+def textDirection(locale: str) -> str:
+  """The base text direction for `locale`: 'rtl' for right-to-left scripts, else 'ltr'."""
+  language = locale.replace("_", "-").split("-")[0].lower()
+  return "rtl" if language in _rightToLeftLanguages else "ltr"

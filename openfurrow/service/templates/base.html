@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="{{ locale }}" dir="{{ direction }}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{{ t.text('web.app.name') }}{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('web.static', filename='openfurrow.css') }}">
+</head>
+<body>
+  <a class="skip-link" href="#main">{{ t.text('web.nav.trials') }}</a>
+  <header class="masthead">
+    <div class="masthead-inner">
+      <a class="brand" href="{{ url_for('web.index', locale=locale if locale != 'en-US' else none) }}">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <span class="brand-text">
+          <span class="brand-name">{{ t.text('web.app.name') }}</span>
+          <span class="brand-tagline">{{ t.text('web.app.tagline') }}</span>
+        </span>
+      </a>
+      <nav class="masthead-nav" aria-label="{{ t.text('web.nav.trials') }}">
+        <a href="{{ url_for('web.index', locale=locale if locale != 'en-US' else none) }}">{{ t.text('web.nav.trials') }}</a>
+        <a class="nav-action" href="{{ url_for('web.newTrial', locale=locale if locale != 'en-US' else none) }}">{{ t.text('web.nav.addTrial') }}</a>
+        {% if locales | length > 1 %}
+        <form class="locale-switch" method="get" action="">
+          <label class="visually-hidden" for="locale">{{ t.text('web.locale.label') }}</label>
+          <select id="locale" name="locale" onchange="this.form.submit()">
+            {% for option in locales %}
+            <option value="{{ option }}" {% if option == locale %}selected{% endif %}>{{ option }}</option>
+            {% endfor %}
+          </select>
+        </form>
+        {% endif %}
+      </nav>
+    </div>
+  </header>
+
+  <main id="main" class="content">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="footer">
+    <p>{{ t.text('web.footer.offline') }}</p>
+  </footer>
+</body>
+</html>

@@ -276,6 +276,134 @@
     "report.value.probabilityBelowThreshold": {
       "text": "<0.0001",
       "status": "humanApproved"
+    },
+    "web.app.name": {
+      "text": "OpenFurrow",
+      "status": "humanApproved"
+    },
+    "web.app.tagline": {
+      "text": "Reproducible agricultural trials",
+      "status": "humanApproved"
+    },
+    "web.nav.trials": {
+      "text": "Trials",
+      "status": "humanApproved"
+    },
+    "web.nav.addTrial": {
+      "text": "Add trial",
+      "status": "humanApproved"
+    },
+    "web.locale.label": {
+      "text": "Language",
+      "status": "humanApproved"
+    },
+    "web.footer.offline": {
+      "text": "Runs offline. Your data stays on this machine.",
+      "status": "humanApproved"
+    },
+    "web.trials.heading": {
+      "text": "Trials",
+      "status": "humanApproved"
+    },
+    "web.trials.empty": {
+      "text": "No trials yet. Add one to get started.",
+      "status": "humanApproved"
+    },
+    "web.trials.count": {
+      "text": "{count} trials",
+      "status": "humanApproved"
+    },
+    "web.trials.column.code": {
+      "text": "Code",
+      "status": "humanApproved"
+    },
+    "web.trials.column.title": {
+      "text": "Title",
+      "status": "humanApproved"
+    },
+    "web.trials.column.crop": {
+      "text": "Crop",
+      "status": "humanApproved"
+    },
+    "web.trials.column.plots": {
+      "text": "Plots",
+      "status": "humanApproved"
+    },
+    "web.trials.open": {
+      "text": "Open",
+      "status": "humanApproved"
+    },
+    "web.add.heading": {
+      "text": "Add a trial",
+      "status": "humanApproved"
+    },
+    "web.add.intro": {
+      "text": "Paste a trial package as JSON, or choose a file. This is the trial's canonical design; the layout is randomized from its seed.",
+      "status": "humanApproved"
+    },
+    "web.add.pasteLabel": {
+      "text": "Trial package (JSON)",
+      "status": "humanApproved"
+    },
+    "web.add.fileLabel": {
+      "text": "or choose a .json file",
+      "status": "humanApproved"
+    },
+    "web.add.loadExample": {
+      "text": "Load example",
+      "status": "humanApproved"
+    },
+    "web.add.submit": {
+      "text": "Create trial",
+      "status": "humanApproved"
+    },
+    "web.add.error": {
+      "text": "Could not create the trial: {reason}",
+      "status": "humanApproved"
+    },
+    "web.trial.back": {
+      "text": "Back to trials",
+      "status": "humanApproved"
+    },
+    "web.trial.notFound": {
+      "text": "No trial with code {code}.",
+      "status": "humanApproved"
+    },
+    "web.trial.summary": {
+      "text": "Summary",
+      "status": "humanApproved"
+    },
+    "web.trial.observations": {
+      "text": "Observations",
+      "status": "humanApproved"
+    },
+    "web.trial.contentHash": {
+      "text": "Content hash",
+      "status": "humanApproved"
+    },
+    "web.trial.viewReport": {
+      "text": "View report",
+      "status": "humanApproved"
+    },
+    "web.trial.layoutHeading": {
+      "text": "Field layout",
+      "status": "humanApproved"
+    },
+    "web.trial.layoutIntro": {
+      "text": "Plots as drilled in the field, grouped by block. Randomised from seed {seed}.",
+      "status": "humanApproved"
+    },
+    "web.trial.plot": {
+      "text": "Plot",
+      "status": "humanApproved"
+    },
+    "web.trial.blockLabel": {
+      "text": "Block {block}",
+      "status": "humanApproved"
+    },
+    "web.trial.legendHeading": {
+      "text": "Treatments",
+      "status": "humanApproved"
     }
   }
 }

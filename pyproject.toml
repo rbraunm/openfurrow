@@ -39,7 +39,11 @@ include = ["openfurrow*"]
 # default -- without this an installed OpenFurrow builds no report at all, even though
 # a source checkout passes its tests.
 [tool.setuptools.package-data]
-openfurrow = ["i18n/locales/*.json"]
+openfurrow = [
+  "i18n/locales/*.json",
+  "service/templates/*.html",
+  "service/static/*.css",
+]
 
 [tool.pytest.ini_options]
 pythonpath = ["."]

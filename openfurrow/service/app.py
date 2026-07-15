@@ -32,6 +32,7 @@ from pydantic import BaseModel, ValidationError
 from openfurrow.config import ImportProfile, OpenFurrowConfig, MeanComparison, defaultConfig
 from openfurrow.i18n import MessageError, availableLocales, sourceLocale
 from openfurrow.schema import TrialPackage
+from openfurrow.service.web import createWebBlueprint
 from openfurrow.store import TrialExistsError, TrialNotFoundError
 from openfurrow.workspace import (
   AnalysisError,
@@ -56,6 +57,7 @@ def createApp(databasePath: str, config: OpenFurrowConfig | None = None) -> Flas
 
   _registerErrorHandlers(application)
   _registerRoutes(application, workspace, settings)
+  application.register_blueprint(createWebBlueprint(workspace))
   return application
 
 

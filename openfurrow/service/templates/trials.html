@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="page-head">
+  <h1>{{ t.text('web.trials.heading') }}</h1>
+  {% if trials %}<p class="count">{{ t.text('web.trials.count', count=t.integer(trials | length)) }}</p>{% endif %}
+</div>
+
+{% if not trials %}
+<div class="empty">
+  <p>{{ t.text('web.trials.empty') }}</p>
+  <a class="button" href="{{ url_for('web.newTrial', locale=locale if locale != 'en-US' else none) }}">{{ t.text('web.nav.addTrial') }}</a>
+</div>
+{% else %}
+<table class="trials">
+  <thead>
+    <tr>
+      <th>{{ t.text('web.trials.column.code') }}</th>
+      <th>{{ t.text('web.trials.column.title') }}</th>
+      <th>{{ t.text('web.trials.column.crop') }}</th>
+      <th class="num">{{ t.text('web.trials.column.plots') }}</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for row in trials %}
+    <tr>
+      <td class="code">{{ row.trialCode }}</td>
+      <td>{{ row.title }}</td>
+      <td>{{ row.package.trial.crop }}</td>
+      <td class="num code">{{ t.integer(row.package.plotCount) }}</td>
+      <td class="row-action"><a href="{{ url_for('web.trial', trialCode=row.trialCode, locale=locale if locale != 'en-US' else none) }}">{{ t.text('web.trials.open') }}</a></td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+{% endblock %}

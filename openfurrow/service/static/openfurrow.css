@@ -1,0 +1,230 @@
+/* SPDX-License-Identifier: Apache-2.0
+ *
+ * OpenFurrow analyst UI. One stylesheet, served locally (decision 0012: offline, no
+ * CDN). Layout uses CSS logical properties (margin-inline, padding-inline, start/end)
+ * throughout, so a right-to-left locale mirrors correctly from the same rules
+ * (decision 0007) -- direction comes from the document's dir attribute, set per locale.
+ *
+ * Palette is grounded in the field-book world, not a marketing template: warm paper,
+ * a green-slate ink (not pure black), a muted furrow grey for secondary text, and a
+ * single petrol accent for interaction and focus. Treatment colours live only in the
+ * plot map and are the colorblind-safe Okabe-Ito set, applied as a redundant cue
+ * beside the always-present treatment code.
+ */
+
+:root {
+  --paper: #FBFAF7;
+  --panel: #FFFFFF;
+  --ink: #17231D;
+  --furrow: #56655B;
+  --line: #E4E0D6;
+  --accent: #2F6E7E;
+  --accent-ink: #21525E;
+  --error: #9B2C2C;
+  --error-bg: #FBEDEC;
+
+  --serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+  --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --mono: "SF Mono", "Cascadia Mono", "JetBrains Mono", "Roboto Mono", Consolas, ui-monospace, monospace;
+
+  --measure: 68ch;
+  --radius: 3px;
+}
+
+* { box-sizing: border-box; }
+
+html { font-size: 17px; }
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--sans);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: var(--accent-ink); text-underline-offset: 2px; }
+a:hover { color: var(--accent); }
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+.code, .code * { font-family: var(--mono); font-feature-settings: "tnum" 1; }
+
+.visually-hidden {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap;
+}
+
+.skip-link {
+  position: absolute; inset-inline-start: -999px;
+  background: var(--ink); color: var(--paper); padding: 0.5rem 0.75rem;
+}
+.skip-link:focus { inset-inline-start: 0.5rem; inset-block-start: 0.5rem; z-index: 10; }
+
+/* Masthead ---------------------------------------------------------------- */
+
+.masthead {
+  border-block-end: 1px solid var(--line);
+  background: var(--panel);
+}
+.masthead-inner {
+  max-width: 68rem; margin-inline: auto;
+  padding: 0.9rem 1.4rem;
+  display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+  flex-wrap: wrap;
+}
+.brand { display: inline-flex; align-items: center; gap: 0.7rem; text-decoration: none; color: var(--ink); }
+/* The mark is a small four-plot block -- the trial's own artifact, in miniature. */
+.brand-mark {
+  width: 22px; height: 22px; flex: none;
+  background:
+    linear-gradient(var(--accent), var(--accent)) 0 0 / 9px 9px no-repeat,
+    linear-gradient(var(--furrow), var(--furrow)) 13px 0 / 9px 9px no-repeat,
+    linear-gradient(var(--furrow), var(--furrow)) 0 13px / 9px 9px no-repeat,
+    linear-gradient(var(--accent), var(--accent)) 13px 13px / 9px 9px no-repeat;
+}
+.brand-text { display: flex; flex-direction: column; line-height: 1.15; }
+.brand-name { font-family: var(--serif); font-size: 1.2rem; font-weight: 600; letter-spacing: 0.01em; }
+.brand-tagline { font-size: 0.72rem; color: var(--furrow); letter-spacing: 0.02em; }
+
+.masthead-nav { display: flex; align-items: center; gap: 1.1rem; }
+.masthead-nav a { text-decoration: none; font-size: 0.92rem; }
+.nav-action {
+  border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 0.35rem 0.8rem; color: var(--ink);
+}
+.nav-action:hover { border-color: var(--accent); color: var(--accent); }
+.locale-switch select {
+  font: inherit; font-size: 0.85rem; color: var(--ink);
+  background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 0.3rem 0.5rem;
+}
+
+/* Content ----------------------------------------------------------------- */
+
+.content { max-width: 68rem; margin-inline: auto; padding: 2.2rem 1.4rem 3rem; }
+
+.page-head { display: flex; align-items: baseline; gap: 1rem; flex-wrap: wrap; }
+h1 { font-family: var(--serif); font-weight: 600; font-size: 1.9rem; margin: 0; letter-spacing: -0.01em; }
+h2 { font-family: var(--serif); font-weight: 600; font-size: 1.3rem; margin: 2.2rem 0 0.6rem; }
+.count { color: var(--furrow); font-size: 0.9rem; margin: 0; }
+.intro { color: var(--furrow); max-width: var(--measure); }
+
+.button {
+  display: inline-block; font: inherit; font-size: 0.95rem; cursor: pointer;
+  background: var(--accent); color: #fff; border: 1px solid var(--accent-ink);
+  border-radius: var(--radius); padding: 0.5rem 1.1rem; text-decoration: none;
+}
+.button:hover { background: var(--accent-ink); color: #fff; }
+
+.empty {
+  border: 1px dashed var(--line); border-radius: var(--radius);
+  padding: 2.5rem; text-align: center; color: var(--furrow);
+}
+.empty .button { margin-block-start: 1rem; }
+
+.error {
+  background: var(--error-bg); color: var(--error);
+  border: 1px solid var(--error); border-radius: var(--radius);
+  padding: 0.7rem 0.9rem; margin-block: 1rem; max-width: var(--measure);
+}
+
+/* Trials table ------------------------------------------------------------ */
+
+table.trials { width: 100%; border-collapse: collapse; margin-block-start: 1.4rem; }
+table.trials th, table.trials td {
+  text-align: start; padding: 0.6rem 0.7rem; border-block-end: 1px solid var(--line);
+}
+table.trials thead th { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--furrow); font-weight: 600; }
+table.trials .num { text-align: end; }
+table.trials .row-action { text-align: end; }
+table.trials tbody tr:hover { background: color-mix(in srgb, var(--accent) 6%, transparent); }
+
+/* Add form ---------------------------------------------------------------- */
+
+.add-form { margin-block-start: 1.4rem; max-width: 60rem; }
+.field-label { display: block; font-size: 0.82rem; color: var(--furrow); margin-block-end: 0.35rem; letter-spacing: 0.02em; }
+textarea, input[type="file"] { font: inherit; }
+textarea {
+  width: 100%; font-family: var(--mono); font-size: 0.85rem; line-height: 1.5;
+  color: var(--ink); background: var(--panel);
+  border: 1px solid var(--line); border-radius: var(--radius); padding: 0.8rem;
+  resize: vertical;
+}
+.file-row { margin-block-start: 1.1rem; }
+.form-actions { margin-block-start: 1.3rem; }
+
+/* Trial detail ------------------------------------------------------------ */
+
+.back { margin: 0 0 0.6rem; font-size: 0.9rem; }
+.trial-code { color: var(--furrow); font-size: 0.95rem; }
+
+.summary { margin-block-start: 1.4rem; }
+.summary dl {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+  gap: 0.9rem 1.6rem; margin: 0;
+  border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 1.1rem 1.3rem; background: var(--panel);
+}
+.summary dt { font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--furrow); }
+.summary dd { margin: 0.15rem 0 0; font-size: 1.05rem; }
+.hash { margin-block-start: 1rem; font-size: 0.82rem; color: var(--furrow); overflow-wrap: anywhere; }
+.hash-label { text-transform: uppercase; letter-spacing: 0.05em; }
+.hash-value { color: var(--ink); }
+
+/* Field layout: the signature. Blocks are bands; plots are drilled cells. */
+
+.legend {
+  list-style: none; padding: 0; margin: 1rem 0 1.4rem;
+  display: flex; flex-wrap: wrap; gap: 0.4rem 1.3rem; font-size: 0.9rem;
+}
+.legend li { display: inline-flex; align-items: center; gap: 0.45rem; }
+.swatch { width: 0.85rem; height: 0.85rem; border-radius: 2px; flex: none; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.12); }
+
+.field {
+  display: flex; flex-direction: column; gap: 0.5rem;
+  background:
+    repeating-linear-gradient(90deg, var(--line) 0 1px, transparent 1px 44px);
+  border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 0.9rem; overflow-x: auto;
+}
+.block { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 0.9rem; }
+.block-label {
+  writing-mode: vertical-lr; text-orientation: sideways;
+  transform: rotate(180deg);
+  font-size: 0.72rem; color: var(--furrow); letter-spacing: 0.04em; white-space: nowrap;
+  padding-inline: 0.15rem;
+}
+.plots { list-style: none; margin: 0; padding: 0; display: flex; gap: 0.4rem; flex-wrap: wrap; }
+.plot {
+  flex: none; width: 4.4rem; min-height: 3.4rem;
+  border: 1px solid var(--line); border-inline-start: 4px solid var(--treatment);
+  border-radius: var(--radius); background: var(--panel);
+  display: flex; flex-direction: column; justify-content: center; gap: 0.15rem;
+  padding: 0.4rem 0.5rem;
+}
+.plot-number { font-size: 1rem; font-weight: 600; }
+.plot-treatment { font-size: 0.78rem; color: var(--furrow); }
+
+.footer {
+  border-block-start: 1px solid var(--line);
+  color: var(--furrow); font-size: 0.8rem;
+  max-width: 68rem; margin-inline: auto; padding: 1.3rem 1.4rem 2.4rem;
+}
+
+@media (max-width: 620px) {
+  html { font-size: 16px; }
+  .masthead-inner { padding-inline: 1rem; }
+  .content { padding-inline: 1rem; }
+  .block-label { writing-mode: horizontal-tb; transform: none; }
+  .block { grid-template-columns: 1fr; gap: 0.35rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}

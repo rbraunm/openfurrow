@@ -269,8 +269,9 @@ when the Done-when bar is met.
     default, rejected at construction when enabled without a certificate, and fail-loud when a
     certificate file is missing.
 
-- [ ] **B2 -- Web-GUI entry point** -- the entry point wiring for the server-rendered UI
-  (pages are Lane D). Depends: B1, L0.
+- [x] **B2 -- Web-GUI entry point** (done, with D1) -- the server-rendered UI blueprint
+  (`openfurrow/service/web.py`, templates, one local stylesheet) registered by `createApp`, with
+  a request-scoped `Translator`, `?locale=` selection, and `lang`/`dir` set from the locale.
 - [x] **B3 -- `serve` command** (done) -- `openfurrow serve <db> [--config --host --port]`
   builds the app via `createApp` and binds through `runService`; `--host/--port` override the
   config. The service extra is imported inside the handler so every other command works without
@@ -284,8 +285,16 @@ when the Done-when bar is met.
 
 ### Lane D -- Analyst web UI
 
-- [ ] **D1 -- Design + randomize** -- author/import a package, view the randomized layout.
-  Depends: B1, B2, L0.
+- [x] **D1 -- Design + randomize** (done) -- server-rendered pages to list trials, add a trial,
+  and view the randomized field layout. **Scope call (shape #4):** "author" is submit/upload the
+  canonical package JSON (the add form is seeded with an editable example); a field-by-field
+  design form is a later unit. The randomized layout renders as a field plot map -- blocks as
+  bands, plots as mono-coded cells, treatments as an Okabe-Ito colorblind-safe *redundant* cue
+  beside the always-present code, with the seed and content hash shown as provenance. Views are
+  thin over the facade (no store/analysis access). Localized through L0 with the display-only
+  guardrail asserted (locale never changes the hash); RTL mirroring verified empirically by
+  forcing `dir=rtl` (logical-property CSS, ADR 0007). Offline: all assets local, asserted by a
+  no-external-reference test; templates and CSS ship as package data. Depends: B1, B2, L0.
 - [ ] **D2 -- Import + analyze + report** -- import observations, run analysis, read the
   report in the browser. Depends: D1.
 - [ ] **D3 -- Localization + RTL delivery** (Phase 2) -- message catalogs wired, CLDR

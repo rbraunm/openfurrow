@@ -25,7 +25,7 @@ from openfurrow.i18n.catalog import (
   loadCatalog,
   placeholdersIn,
 )
-from openfurrow.i18n.formatting import formatDate, formatInteger, formatNumber
+from openfurrow.i18n.formatting import formatDate, formatInteger, formatNumber, textDirection
 
 
 class Translator:
@@ -37,6 +37,11 @@ class Translator:
   @property
   def locale(self) -> str:
     return self._catalog.locale
+
+  @property
+  def direction(self) -> str:
+    """The base text direction for this locale: 'rtl' or 'ltr'."""
+    return textDirection(self._catalog.locale)
 
   @property
   def isAuthoritative(self) -> bool:

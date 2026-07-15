@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}{{ package.trial.trialCode }} - {{ t.text('web.app.name') }}{% endblock %}
+{% block content %}
+<p class="back"><a href="{{ url_for('web.index', locale=locale if locale != 'en-US' else none) }}">&larr; {{ t.text('web.trial.back') }}</a></p>
+
+<div class="page-head">
+  <h1>{{ package.trial.title }}</h1>
+  <p class="code trial-code">{{ package.trial.trialCode }}</p>
+</div>
+
+<section class="summary" aria-label="{{ t.text('web.trial.summary') }}">
+  <dl>
+    <div><dt>{{ t.text('report.field.crop') }}</dt><dd>{{ package.trial.crop }}</dd></div>
+    <div><dt>{{ t.text('report.field.season') }}</dt><dd>{{ package.trial.season }}</dd></div>
+    <div><dt>{{ t.text('report.field.site') }}</dt><dd>{{ package.trial.site }}</dd></div>
+    <div><dt>{{ t.text('report.design.treatments') }}</dt><dd class="code">{{ t.integer(package.treatments | length) }}</dd></div>
+    <div><dt>{{ t.text('report.design.blocks') }}</dt><dd class="code">{{ t.integer(package.design.replications) }}</dd></div>
+    <div><dt>{{ t.text('report.design.plots') }}</dt><dd class="code">{{ t.integer(package.plotCount) }}</dd></div>
+    <div><dt>{{ t.text('web.trial.observations') }}</dt><dd class="code">{{ t.integer(observationCount) }}</dd></div>
+    <div><dt>{{ t.text('report.design.seed') }}</dt><dd class="code">{{ t.integer(package.design.randomizationSeed) }}</dd></div>
+  </dl>
+  <p class="hash"><span class="hash-label">{{ t.text('web.trial.contentHash') }}</span> <span class="code hash-value">{{ contentHash }}</span></p>
+</section>
+
+<section class="layout" aria-label="{{ t.text('web.trial.layoutHeading') }}">
+  <h2>{{ t.text('web.trial.layoutHeading') }}</h2>
+  <p class="intro">{{ t.text('web.trial.layoutIntro', seed=t.integer(package.design.randomizationSeed)) }}</p>
+
+  <ul class="legend" aria-label="{{ t.text('web.trial.legendHeading') }}">
+    {% for item in legend %}
+    <li><span class="swatch" style="background: {{ item.color }}" aria-hidden="true"></span><span class="code">{{ item.code }}</span> {{ item.name }}</li>
+    {% endfor %}
+  </ul>
+
+  <div class="field">
+    {% for block in blocks %}
+    <div class="block">
+      <div class="block-label code">{{ t.text('web.trial.blockLabel', block=t.integer(block.block)) }}</div>
+      <ol class="plots">
+        {% for plot in block.plots %}
+        {% set color = (legend | selectattr('code', 'equalto', plot.treatmentCode) | first).color %}
+        <li class="plot" style="--treatment: {{ color }}">
+          <span class="plot-number code">{{ plot.plotNumber }}</span>
+          <span class="plot-treatment code">{{ plot.treatmentCode }}</span>
+        </li>
+        {% endfor %}
+      </ol>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

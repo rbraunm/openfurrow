@@ -10,7 +10,7 @@ from openfurrow.i18n.catalog import (
   placeholdersIn,
   sourceLocale,
 )
-from openfurrow.i18n.formatting import FormattingError, formatDate, formatInteger, formatNumber
+from openfurrow.i18n.formatting import FormattingError, formatDate, formatInteger, formatNumber, textDirection
 from openfurrow.i18n.translator import Translator, translatorFor
 
 __all__ = [
@@ -23,6 +23,7 @@ __all__ = [
   "formatDate",
   "formatInteger",
   "formatNumber",
+  "textDirection",
   "loadCatalog",
   "placeholdersIn",
   "sourceLocale",

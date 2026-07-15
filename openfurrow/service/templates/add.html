@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}{{ t.text('web.add.heading') }} - {{ t.text('web.app.name') }}{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>{{ t.text('web.add.heading') }}</h1>
+</div>
+<p class="intro">{{ t.text('web.add.intro') }}</p>
+
+{% if error %}
+<div class="error" role="alert">{{ t.text('web.add.error', reason=error) }}</div>
+{% endif %}
+
+<form class="add-form" method="post"
+      action="{{ url_for('web.createTrial', locale=locale if locale != 'en-US' else none) }}"
+      enctype="multipart/form-data">
+  <label class="field-label" for="package">{{ t.text('web.add.pasteLabel') }}</label>
+  <textarea id="package" name="package" rows="20" spellcheck="false"
+            aria-describedby="file-help">{{ submitted or example }}</textarea>
+
+  <div class="file-row">
+    <label id="file-help" class="field-label" for="file">{{ t.text('web.add.fileLabel') }}</label>
+    <input type="file" id="file" name="file" accept=".json,application/json">
+  </div>
+
+  <div class="form-actions">
+    <button class="button" type="submit">{{ t.text('web.add.submit') }}</button>
+  </div>
+</form>
+{% endblock %}
