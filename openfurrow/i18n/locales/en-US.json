@@ -404,6 +404,66 @@
     "web.trial.legendHeading": {
       "text": "Treatments",
       "status": "source"
+    },
+    "web.import.heading": {
+      "text": "Import observations",
+      "status": "source"
+    },
+    "web.import.intro": {
+      "text": "Upload collected data as CSV. Values are checked against the layout before anything is saved.",
+      "status": "source"
+    },
+    "web.import.formatLabel": {
+      "text": "Format",
+      "status": "source"
+    },
+    "web.import.formatOpenFurrow": {
+      "text": "OpenFurrow CSV (plot, assessment, value)",
+      "status": "source"
+    },
+    "web.import.formatFieldBook": {
+      "text": "Field Book export (database format)",
+      "status": "source"
+    },
+    "web.import.fileLabel": {
+      "text": "CSV file",
+      "status": "source"
+    },
+    "web.import.submit": {
+      "text": "Import",
+      "status": "source"
+    },
+    "web.import.result": {
+      "text": "Imported {count} observations.",
+      "status": "source"
+    },
+    "web.import.warningsHeading": {
+      "text": "Warnings",
+      "status": "source"
+    },
+    "web.import.error": {
+      "text": "Import failed: {reason}",
+      "status": "source"
+    },
+    "web.report.heading": {
+      "text": "Report",
+      "status": "source"
+    },
+    "web.report.intro": {
+      "text": "The AOV Means Table and reproducibility record for every numeric assessment.",
+      "status": "source"
+    },
+    "web.report.download": {
+      "text": "Download Markdown",
+      "status": "source"
+    },
+    "web.report.back": {
+      "text": "Back to trial",
+      "status": "source"
+    },
+    "web.trial.noObservations": {
+      "text": "No observations yet. Import some to run the analysis.",
+      "status": "source"
     }
   }
 }

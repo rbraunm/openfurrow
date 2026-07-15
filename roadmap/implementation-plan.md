@@ -295,8 +295,14 @@ when the Done-when bar is met.
   guardrail asserted (locale never changes the hash); RTL mirroring verified empirically by
   forcing `dir=rtl` (logical-property CSS, ADR 0007). Offline: all assets local, asserted by a
   no-external-reference test; templates and CSS ship as package data. Depends: B1, B2, L0.
-- [ ] **D2 -- Import + analyze + report** -- import observations, run analysis, read the
-  report in the browser. Depends: D1.
+- [x] **D2 -- Import + analyze + report** (done) -- the trial page gains an import section
+  (CSV upload, OpenFurrow or Field Book format, selected by the facade method) that shows the
+  imported count and any warnings and fails loud on bad data without losing the page; the report
+  page renders `Workspace.buildReport`'s Markdown to HTML (the `markdown` library, `tables`
+  extension, a service extra) so the AOV Means Table is a real HTML table, localized via
+  `?locale=`, with a link to download the raw Markdown from the API. The report view is
+  display-only -- opening it in any locale leaves the content hash unchanged (asserted). The
+  "View report" link appears only once observations exist. Depends: D1.
 - [ ] **D3 -- Localization + RTL delivery** (Phase 2) -- message catalogs wired, CLDR
   formatting, bidirectional layout, reviewed locale packs. Depends: D2, L0, ADR 0007.
 - [ ] **D4 -- Browse + manage trials** -- list, open, verify content hash. Depends: D2.

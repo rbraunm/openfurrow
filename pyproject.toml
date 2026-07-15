@@ -22,11 +22,13 @@ dependencies = [
 # decision 0010 keeps the deployment shape open. Installing the service is a choice.
 service = [
   "flask>=3",
+  "markdown>=3.5",
 ]
 test = [
   "pytest>=8",
   "statsmodels>=0.14",
   "flask>=3",
+  "markdown>=3.5",
 ]
 
 [project.scripts]

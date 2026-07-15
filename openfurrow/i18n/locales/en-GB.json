@@ -404,6 +404,66 @@
     "web.trial.legendHeading": {
       "text": "Treatments",
       "status": "humanApproved"
+    },
+    "web.import.heading": {
+      "text": "Import observations",
+      "status": "humanApproved"
+    },
+    "web.import.intro": {
+      "text": "Upload collected data as CSV. Values are checked against the layout before anything is saved.",
+      "status": "humanApproved"
+    },
+    "web.import.formatLabel": {
+      "text": "Format",
+      "status": "humanApproved"
+    },
+    "web.import.formatOpenFurrow": {
+      "text": "OpenFurrow CSV (plot, assessment, value)",
+      "status": "humanApproved"
+    },
+    "web.import.formatFieldBook": {
+      "text": "Field Book export (database format)",
+      "status": "humanApproved"
+    },
+    "web.import.fileLabel": {
+      "text": "CSV file",
+      "status": "humanApproved"
+    },
+    "web.import.submit": {
+      "text": "Import",
+      "status": "humanApproved"
+    },
+    "web.import.result": {
+      "text": "Imported {count} observations.",
+      "status": "humanApproved"
+    },
+    "web.import.warningsHeading": {
+      "text": "Warnings",
+      "status": "humanApproved"
+    },
+    "web.import.error": {
+      "text": "Import failed: {reason}",
+      "status": "humanApproved"
+    },
+    "web.report.heading": {
+      "text": "Report",
+      "status": "humanApproved"
+    },
+    "web.report.intro": {
+      "text": "The AOV Means Table and reproducibility record for every numeric assessment.",
+      "status": "humanApproved"
+    },
+    "web.report.download": {
+      "text": "Download Markdown",
+      "status": "humanApproved"
+    },
+    "web.report.back": {
+      "text": "Back to trial",
+      "status": "humanApproved"
+    },
+    "web.trial.noObservations": {
+      "text": "No observations yet. Import some to run the analysis.",
+      "status": "humanApproved"
     }
   }
 }

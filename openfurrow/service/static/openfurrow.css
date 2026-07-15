@@ -217,6 +217,47 @@ textarea {
   max-width: 68rem; margin-inline: auto; padding: 1.3rem 1.4rem 2.4rem;
 }
 
+/* Import section ---------------------------------------------------------- */
+
+.import { margin-block-start: 2.4rem; }
+.report-link { margin-block-start: 1.1rem; }
+.import-form { margin-block-start: 1rem; max-width: 44rem; }
+fieldset.format {
+  border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 0.7rem 1rem; margin: 0 0 1rem;
+}
+fieldset.format legend { font-size: 0.82rem; color: var(--furrow); padding-inline: 0.3rem; letter-spacing: 0.02em; }
+fieldset.format label { display: block; padding: 0.15rem 0; font-size: 0.95rem; }
+.notice {
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+  border: 1px solid var(--accent); border-radius: var(--radius);
+  padding: 0.7rem 0.9rem; margin-block: 1rem; max-width: 44rem;
+}
+.notice details { margin-block-start: 0.5rem; }
+.notice summary { cursor: pointer; color: var(--accent-ink); }
+
+/* Report view ------------------------------------------------------------- */
+
+.download { font-size: 0.9rem; }
+.report {
+  max-width: var(--measure); margin-block-start: 1.6rem;
+}
+.report h1 { font-size: 1.6rem; margin-block: 1.8rem 0.6rem; }
+.report h2 { font-size: 1.25rem; margin-block: 1.8rem 0.5rem; }
+.report h3 { font-family: var(--serif); font-weight: 600; font-size: 1.05rem; margin-block: 1.3rem 0.4rem; }
+.report ul { padding-inline-start: 1.2rem; }
+.report li { margin-block: 0.15rem; }
+.report table {
+  border-collapse: collapse; width: 100%; margin-block: 0.8rem 1.2rem;
+  font-family: var(--mono); font-size: 0.85rem; font-feature-settings: "tnum" 1;
+}
+.report th, .report td {
+  border: 1px solid var(--line); padding: 0.35rem 0.6rem; text-align: end;
+}
+.report th:first-child, .report td:first-child { text-align: start; }
+.report thead th { background: color-mix(in srgb, var(--accent) 7%, transparent); color: var(--ink); }
+.report code { font-family: var(--mono); font-size: 0.9em; }
+
 @media (max-width: 620px) {
   html { font-size: 16px; }
   .masthead-inner { padding-inline: 1rem; }

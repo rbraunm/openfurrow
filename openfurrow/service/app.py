@@ -57,7 +57,7 @@ def createApp(databasePath: str, config: OpenFurrowConfig | None = None) -> Flas
 
   _registerErrorHandlers(application)
   _registerRoutes(application, workspace, settings)
-  application.register_blueprint(createWebBlueprint(workspace))
+  application.register_blueprint(createWebBlueprint(workspace, settings))
   return application
 
 

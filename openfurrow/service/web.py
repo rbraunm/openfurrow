@@ -27,11 +27,14 @@ from __future__ import annotations
 
 import json
 
+import markdown as markdownLibrary
 from flask import Blueprint, Response, redirect, render_template, request, url_for
+from markupsafe import Markup
 
+from openfurrow.config import OpenFurrowConfig, defaultConfig
 from openfurrow.i18n import MessageError, availableLocales, sourceLocale, translatorFor
 from openfurrow.schema import TrialPackage
-from openfurrow.workspace import StoreError, Workspace
+from openfurrow.workspace import ObservationImportError, StoreError, Workspace
 from pydantic import ValidationError
 
 # Okabe-Ito, a colorblind-safe qualitative palette. Treatment colour is a *redundant*
@@ -44,8 +47,9 @@ _treatmentPalette = [
 ]
 
 
-def createWebBlueprint(workspace: Workspace) -> Blueprint:
+def createWebBlueprint(workspace: Workspace, config: OpenFurrowConfig | None = None) -> Blueprint:
   """Build the HTML UI blueprint over `workspace`. Registered by `createApp`."""
+  settings = config or defaultConfig()
   blueprint = Blueprint(
     "web", __name__,
     template_folder="templates",
@@ -66,6 +70,19 @@ def createWebBlueprint(workspace: Workspace) -> Blueprint:
       "locale": translator.locale,
       "direction": translator.direction,
       "locales": availableLocales(),
+    }
+
+  def _trialContext(trialCode: str) -> dict:
+    # Assembled once and reused by the trial page and the import handler that
+    # re-renders it, so the two cannot drift.
+    package = workspace.loadPackage(trialCode)
+    layout = workspace.layoutFor(trialCode)
+    return {
+      "package": package,
+      "observationCount": len(workspace.loadObservations(trialCode)),
+      "contentHash": workspace.contentHashFor(trialCode),
+      "blocks": _blocks(layout),
+      "legend": _legend(package),
     }
 
   @blueprint.get("/")
@@ -107,18 +124,63 @@ def createWebBlueprint(workspace: Workspace) -> Blueprint:
   @blueprint.get("/trials/<trialCode>")
   def trial(trialCode: str) -> Response:
     translator = _translator()
-    package = workspace.loadPackage(trialCode)
-    layout = workspace.layoutFor(trialCode)
-    context = {
-      "package": package,
-      "observationCount": len(workspace.loadObservations(trialCode)),
-      "contentHash": workspace.contentHashFor(trialCode),
-      "blocks": _blocks(layout),
-      "legend": _legend(package),
-    }
+    context = _trialContext(trialCode) | {"result": None, "importError": None}
     return Response(render_template("trial.html", **context, **_localeContext(translator)))
 
+  @blueprint.post("/trials/<trialCode>/observations")
+  def importObservations(trialCode: str) -> Response:
+    translator = _translator()
+    fieldFormat = request.form.get("format", "openfurrow")
+    upload = request.files.get("file")
+    result = None
+    importError = None
+    try:
+      if not upload or not upload.filename:
+        raise ObservationImportError("choose a CSV file to import")
+      data = upload.read()
+      with _temporaryCsv(data) as csvPath:
+        if fieldFormat == "fieldbook":
+          outcome = workspace.importFieldBook(trialCode, csvPath)
+        else:
+          outcome = workspace.importObservations(trialCode, csvPath, settings.importProfile)
+      result = {
+        "imported": len(outcome.observations),
+        "warnings": [warning.message for warning in outcome.warnings],
+      }
+    except ObservationImportError as error:
+      importError = str(error)
+
+    context = _trialContext(trialCode) | {"result": result, "importError": importError}
+    status = 400 if importError else 200
+    return Response(render_template("trial.html", **context, **_localeContext(translator)), status=status)
+
+  @blueprint.get("/trials/<trialCode>/report")
+  def report(trialCode: str) -> Response:
+    translator = _translator()
+    markdownReport = workspace.buildReport(
+      trialCode,
+      significanceLevel=settings.analysis.significanceLevel,
+      protected=settings.analysis.meanComparison.value == "protectedLSD",
+      locale=translator.locale,
+    )
+    context = {
+      "trialCode": trialCode,
+      "reportHtml": _renderMarkdown(markdownReport),
+    }
+    return Response(render_template("report.html", **context, **_localeContext(translator)))
+
   return blueprint
+
+
+def _renderMarkdown(text: str) -> Markup:
+  """Render the generated Markdown report to HTML for the browser view.
+
+  The input is OpenFurrow's own report output, not user free-text, and Python-Markdown
+  escapes literal HTML in the source rather than passing it through, so the result is
+  safe to render. `tables` handles the AOV Means Table's pipe tables.
+  """
+  html = markdownLibrary.markdown(text, extensions=["tables"], output_format="html")
+  return Markup(html)
 
 
 # ---- view helpers ---------------------------------------------------------
@@ -129,6 +191,24 @@ def _submittedPackage() -> str:
   if uploaded and uploaded.filename:
     return uploaded.read().decode("utf-8")
   return request.form.get("package", "")
+
+
+class _temporaryCsv:
+  """Write uploaded CSV bytes to a temp file, since the importer reads from a path."""
+
+  def __init__(self, data: bytes) -> None:
+    import tempfile
+    self._directory = tempfile.TemporaryDirectory()
+    self._data = data
+
+  def __enter__(self) -> str:
+    from pathlib import Path
+    path = Path(self._directory.name) / "upload.csv"
+    path.write_bytes(self._data)
+    return str(path)
+
+  def __exit__(self, *exception) -> None:
+    self._directory.cleanup()
 
 
 def _localized(path: str, translator) -> str:
