@@ -350,6 +350,11 @@ when the Done-when bar is met.
     on both sides.
   - **Done when:** met -- `info` reports transform and kind for every assessment (tested), and
     the store persists them (tested). 327 tests.
+  - **Follow-on guard (done):** `tests/testPersistenceCompleteness.py` prevents the whole class
+    -- a *maximal* package (every optional field non-default) must survive the store and the
+    JSON exchange exactly, and transform, measurementKind, treatment rate, and numeric bounds
+    must each change the content hash. A field not exercised there is a field that can be
+    silently lost, so adding a schema field means extending that test.
 
 ### Analysis breadth (independent side-track, Phase 0 continuing)
 
