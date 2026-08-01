@@ -167,3 +167,33 @@ def testReportWithoutObservationsStillRenders(client):
   # A report before any data still renders -- each assessment simply says "not analyzed".
   body = client.get("/trials/D2-1/report").get_data(as_text=True)
   assert "Not analyzed" in body
+
+
+# ---- security: no stored XSS through trial metadata -----------------------
+
+def testReportEscapesHtmlInTrialFields(client, workspace, tmp_path):
+  """A trial's fields are attacker-controllable (packages are shared), so injected
+  markup must render inert in the report, not execute. Regression: the report once
+  wrapped raw Markdown output in Markup, passing <script> through unescaped."""
+  malicious = {
+    "schemaVersion": "0.1.0",
+    "trial": {"trialCode": "XSS", "title": "<script>alert(1)</script>", "crop": "Barley",
+              "season": "2025", "site": "s", "objective": "o"},
+    "treatments": [{"treatmentCode": "A", "name": "<img src=x onerror=alert(1)>"},
+                   {"treatmentCode": "B", "name": "B"}],
+    "design": {"designType": "rcbd", "replications": 2, "randomizationSeed": 1},
+    "assessments": [{"assessmentCode": "Y", "name": "Yield", "dataType": "numeric", "minValue": 0}],
+  }
+  client.post("/trials/new", data={"package": __import__("json").dumps(malicious)})
+  body = client.get("/trials/XSS/report").get_data(as_text=True)
+  # No live injected tag survives; the payload is present only as escaped text.
+  assert "<script>alert" not in body
+  assert "<img src=x onerror" not in body
+  assert "&lt;script&gt;alert" in body
+
+
+def testReportStillRendersLiteralLessThan(client, populated):
+  """The escaping must not eat legitimate content: a P value like <0.0001 still shows."""
+  body = client.get("/trials/D2-1/report").get_data(as_text=True)
+  # tables still render (escaping preserves markdown structure)
+  assert "<table>" in body

@@ -25,6 +25,7 @@ report view and the analysis pages are D2.
 
 from __future__ import annotations
 
+import html
 import json
 
 import markdown as markdownLibrary
@@ -202,12 +203,21 @@ def createWebBlueprint(workspace: Workspace, config: OpenFurrowConfig | None = N
 def _renderMarkdown(text: str) -> Markup:
   """Render the generated Markdown report to HTML for the browser view.
 
-  The input is OpenFurrow's own report output, not user free-text, and Python-Markdown
-  escapes literal HTML in the source rather than passing it through, so the result is
-  safe to render. `tables` handles the AOV Means Table's pipe tables.
+  Security: a trial's fields (title, treatment names, units, ...) come from an imported
+  package and are attacker-controllable, and trial packages are meant to be shared. If
+  the raw report Markdown were rendered directly, a name like `<script>...</script>`
+  would pass through Python-Markdown as raw HTML and execute -- stored XSS, and worse
+  under the multi-user server of Phase 2.
+
+  The report Markdown contains no intended HTML -- only headings, pipe tables, and lists
+  -- so HTML metacharacters in the source are escaped before parsing. That neutralizes
+  any injected tag (it renders as inert text) while leaving every Markdown structure
+  intact; a literal like `<0.0001` still displays correctly. The result is wrapped in
+  `Markup` because it is now known-safe generated HTML.
   """
-  html = markdownLibrary.markdown(text, extensions=["tables"], output_format="html")
-  return Markup(html)
+  safeSource = html.escape(text)
+  rendered = markdownLibrary.markdown(safeSource, extensions=["tables"], output_format="html")
+  return Markup(rendered)
 
 
 # ---- view helpers ---------------------------------------------------------
