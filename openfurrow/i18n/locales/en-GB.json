@@ -464,6 +464,54 @@
     "web.trial.noObservations": {
       "text": "No observations yet. Import some to run the analysis.",
       "status": "humanApproved"
+    },
+    "web.manage.heading": {
+      "text": "Manage",
+      "status": "humanApproved"
+    },
+    "web.verify.action": {
+      "text": "Verify reproducibility",
+      "status": "humanApproved"
+    },
+    "web.verify.intro": {
+      "text": "Export the trial and re-import it; the content hash must match.",
+      "status": "humanApproved"
+    },
+    "web.verify.pass": {
+      "text": "Reproducibility check passed. The trial exports and re-imports to the same content hash.",
+      "status": "humanApproved"
+    },
+    "web.verify.fail": {
+      "text": "Reproducibility check failed: the re-imported hash does not match.",
+      "status": "humanApproved"
+    },
+    "web.verify.stored": {
+      "text": "Stored",
+      "status": "humanApproved"
+    },
+    "web.verify.roundTrip": {
+      "text": "Round-trip",
+      "status": "humanApproved"
+    },
+    "web.delete.action": {
+      "text": "Delete trial",
+      "status": "humanApproved"
+    },
+    "web.delete.confirmHeading": {
+      "text": "Delete {code}?",
+      "status": "humanApproved"
+    },
+    "web.delete.confirmIntro": {
+      "text": "This permanently removes the trial and all its observations. It cannot be undone.",
+      "status": "humanApproved"
+    },
+    "web.delete.confirm": {
+      "text": "Delete permanently",
+      "status": "humanApproved"
+    },
+    "web.delete.cancel": {
+      "text": "Cancel",
+      "status": "humanApproved"
     }
   }
 }

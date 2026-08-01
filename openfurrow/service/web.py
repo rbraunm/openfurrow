@@ -124,8 +124,35 @@ def createWebBlueprint(workspace: Workspace, config: OpenFurrowConfig | None = N
   @blueprint.get("/trials/<trialCode>")
   def trial(trialCode: str) -> Response:
     translator = _translator()
-    context = _trialContext(trialCode) | {"result": None, "importError": None}
+    context = _trialContext(trialCode) | {"result": None, "importError": None, "verifyResult": None}
     return Response(render_template("trial.html", **context, **_localeContext(translator)))
+
+  @blueprint.get("/trials/<trialCode>/verify")
+  def verify(trialCode: str) -> Response:
+    # Read-only: exports and re-imports the trial and compares hashes. A GET is correct
+    # -- it changes nothing -- and the result renders back on the trial page.
+    translator = _translator()
+    check = workspace.verifyRoundTrip(trialCode)
+    context = _trialContext(trialCode) | {"result": None, "importError": None, "verifyResult": check}
+    return Response(render_template("trial.html", **context, **_localeContext(translator)))
+
+  @blueprint.get("/trials/<trialCode>/delete")
+  def confirmDelete(trialCode: str) -> Response:
+    # A confirmation page, not a JS dialog: deletion is destructive, and a plain page
+    # works without JavaScript. Loading it fails loud (404) if the trial is unknown.
+    translator = _translator()
+    package = workspace.loadPackage(trialCode)
+    return Response(render_template(
+      "delete.html", trialCode=trialCode, title=package.trial.title, **_localeContext(translator),
+    ))
+
+  @blueprint.post("/trials/<trialCode>/delete")
+  def deleteTrial(trialCode: str) -> Response:
+    # Only a POST deletes; the GET above merely confirms. This is what keeps a crawler,
+    # a prefetch, or an accidental link-follow from destroying data.
+    translator = _translator()
+    workspace.deleteTrial(trialCode)
+    return redirect(_localized(url_for("web.index"), translator))
 
   @blueprint.post("/trials/<trialCode>/observations")
   def importObservations(trialCode: str) -> Response:
@@ -150,7 +177,7 @@ def createWebBlueprint(workspace: Workspace, config: OpenFurrowConfig | None = N
     except ObservationImportError as error:
       importError = str(error)
 
-    context = _trialContext(trialCode) | {"result": result, "importError": importError}
+    context = _trialContext(trialCode) | {"result": result, "importError": importError, "verifyResult": None}
     status = 400 if importError else 200
     return Response(render_template("trial.html", **context, **_localeContext(translator)), status=status)
 

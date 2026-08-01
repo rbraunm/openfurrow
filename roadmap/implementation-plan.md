@@ -305,7 +305,11 @@ when the Done-when bar is met.
   "View report" link appears only once observations exist. Depends: D1.
 - [ ] **D3 -- Localization + RTL delivery** (Phase 2) -- message catalogs wired, CLDR
   formatting, bidirectional layout, reviewed locale packs. Depends: D2, L0, ADR 0007.
-- [ ] **D4 -- Browse + manage trials** -- list, open, verify content hash. Depends: D2.
+- [x] **D4 -- Browse + manage trials** (done) -- the index browses trials; the trial page gains
+  a manage section with an in-browser reproducibility check (`verifyRoundTrip`, read-only GET,
+  shows pass/fail and the hash without changing the trial) and delete. Deletion is safe: the GET
+  is a confirmation page and only a POST deletes, so a crawler, prefetch, or accidental
+  link-follow cannot destroy data; both fail loud (404) on an unknown trial. Depends: D2.
 
 ### Lane C -- Storage, sync, self-hostable server
 

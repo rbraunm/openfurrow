@@ -87,4 +87,24 @@
     {% endfor %}
   </div>
 </section>
+
+<section class="manage" aria-label="{{ t.text('web.manage.heading') }}">
+  <h2>{{ t.text('web.manage.heading') }}</h2>
+
+  {% if verifyResult %}
+  <div class="{{ 'notice' if verifyResult.matches else 'error' }}" role="status">
+    {{ t.text('web.verify.pass') if verifyResult.matches else t.text('web.verify.fail') }}
+    <p class="verify-hash"><span class="hash-label">{{ t.text('web.verify.stored') }}</span> <span class="code">{{ verifyResult.storedHash }}</span></p>
+    {% if not verifyResult.matches %}
+    <p class="verify-hash"><span class="hash-label">{{ t.text('web.verify.roundTrip') }}</span> <span class="code">{{ verifyResult.roundTripHash }}</span></p>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  <p class="intro">{{ t.text('web.verify.intro') }}</p>
+  <div class="manage-actions">
+    <a class="button button-quiet" href="{{ url_for('web.verify', trialCode=package.trial.trialCode, locale=locale if locale != 'en-US' else none) }}">{{ t.text('web.verify.action') }}</a>
+    <a class="delete-link" href="{{ url_for('web.confirmDelete', trialCode=package.trial.trialCode, locale=locale if locale != 'en-US' else none) }}">{{ t.text('web.delete.action') }}</a>
+  </div>
+</section>
 {% endblock %}

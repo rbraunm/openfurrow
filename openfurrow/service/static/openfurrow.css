@@ -121,6 +121,21 @@ h2 { font-family: var(--serif); font-weight: 600; font-size: 1.3rem; margin: 2.2
   border-radius: var(--radius); padding: 0.5rem 1.1rem; text-decoration: none;
 }
 .button:hover { background: var(--accent-ink); color: #fff; }
+.button-quiet {
+  background: var(--panel); color: var(--ink); border-color: var(--line);
+}
+.button-quiet:hover { background: var(--paper); color: var(--accent-ink); border-color: var(--accent); }
+.button-danger { background: var(--error); border-color: var(--error); }
+.button-danger:hover { background: #7f2222; color: #fff; }
+
+.manage { margin-block-start: 2.4rem; }
+.manage-actions { display: flex; align-items: center; gap: 1.4rem; margin-block-start: 0.8rem; }
+.delete-link { color: var(--error); font-size: 0.92rem; }
+.delete-link:hover { color: #7f2222; }
+.verify-hash { margin: 0.3rem 0 0; font-size: 0.8rem; overflow-wrap: anywhere; }
+
+.delete-form { margin-block-start: 1.4rem; display: flex; align-items: center; gap: 1.4rem; }
+.cancel { font-size: 0.95rem; }
 
 .empty {
   border: 1px dashed var(--line); border-radius: var(--radius);

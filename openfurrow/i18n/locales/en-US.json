@@ -464,6 +464,54 @@
     "web.trial.noObservations": {
       "text": "No observations yet. Import some to run the analysis.",
       "status": "source"
+    },
+    "web.manage.heading": {
+      "text": "Manage",
+      "status": "source"
+    },
+    "web.verify.action": {
+      "text": "Verify reproducibility",
+      "status": "source"
+    },
+    "web.verify.intro": {
+      "text": "Export the trial and re-import it; the content hash must match.",
+      "status": "source"
+    },
+    "web.verify.pass": {
+      "text": "Reproducibility check passed. The trial exports and re-imports to the same content hash.",
+      "status": "source"
+    },
+    "web.verify.fail": {
+      "text": "Reproducibility check failed: the re-imported hash does not match.",
+      "status": "source"
+    },
+    "web.verify.stored": {
+      "text": "Stored",
+      "status": "source"
+    },
+    "web.verify.roundTrip": {
+      "text": "Round-trip",
+      "status": "source"
+    },
+    "web.delete.action": {
+      "text": "Delete trial",
+      "status": "source"
+    },
+    "web.delete.confirmHeading": {
+      "text": "Delete {code}?",
+      "status": "source"
+    },
+    "web.delete.confirmIntro": {
+      "text": "This permanently removes the trial and all its observations. It cannot be undone.",
+      "status": "source"
+    },
+    "web.delete.confirm": {
+      "text": "Delete permanently",
+      "status": "source"
+    },
+    "web.delete.cancel": {
+      "text": "Cancel",
+      "status": "source"
     }
   }
 }

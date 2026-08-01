@@ -29,6 +29,7 @@ test = [
   "statsmodels>=0.14",
   "flask>=3",
   "markdown>=3.5",
+  "build>=1",
 ]
 
 [project.scripts]
