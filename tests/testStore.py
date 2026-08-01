@@ -219,3 +219,33 @@ def testForeignKeyEnforcedForOrphanObservation(engine):
       session.add(ObservationRow(trialCode="GHOST", plotNumber=1, assessmentCode="YIELD",
                                  numericValue=1.0, textValue=None))
       session.commit()
+
+
+# ---- regression: transform and measurementKind must persist ---------------
+
+def testAssessmentTransformAndKindSurviveRoundTrip(engine):
+  """A declared transform and measurement kind must survive save/load.
+
+  Regression: the assessment row once had no columns for these, so a persisted
+  transform silently reverted to none on reload -- meaning a transformed analysis
+  would quietly run on the untransformed scale after the trial was stored. The default
+  round-trip test missed it because its sample used the defaults on both sides.
+  """
+  package = TrialPackage.model_validate({
+    "schemaVersion": "0.1.0",
+    "trial": {"trialCode": "TR-1", "title": "t", "crop": "Barley", "season": "2025",
+              "site": "s", "objective": "o"},
+    "treatments": [{"treatmentCode": code, "name": code} for code in ["A", "B"]],
+    "design": {"designType": "rcbd", "replications": 2, "randomizationSeed": 1},
+    "assessments": [{"assessmentCode": "CT", "name": "Insect count", "dataType": "numeric",
+                     "unit": "per m2", "minValue": 0, "transform": "sqrt",
+                     "measurementKind": "count"}],
+  })
+  with sessionScope(engine) as session:
+    savePackage(session, package)
+  with sessionScope(engine) as session:
+    loaded = loadPackage(session, "TR-1")
+  assessment = loaded.assessments[0]
+  assert assessment.transform.value == "sqrt"
+  assert assessment.measurementKind.value == "count"
+  assert loaded == package

@@ -24,7 +24,7 @@ import sys
 from pathlib import Path
 
 from openfurrow.config import MeanComparison, defaultConfig, loadConfig
-from openfurrow.schema import TrialPackage
+from openfurrow.schema import AssessmentDataType, TrialPackage
 from openfurrow.workspace import (
   AnalysisError,
   ExchangeError,
@@ -65,7 +65,11 @@ def _buildParser() -> argparse.ArgumentParser:
   initParser.add_argument("database")
   initParser.set_defaults(handler=_commandInit)
 
-  addParser = sub.add_parser("add", help="add a validated trial package from JSON")
+  addParser = sub.add_parser(
+    "add", help="add a validated trial package from JSON",
+    epilog="Each numeric assessment may declare 'transform' (none/sqrt/log/arcsinSqrt/logit) "
+           "and 'measurementKind' in the package JSON; 'info' shows the current values.",
+  )
   addParser.add_argument("database")
   addParser.add_argument("package", help="path to a trial package JSON file")
   addParser.set_defaults(handler=_commandAdd)
@@ -186,10 +190,35 @@ def _commandInfo(args) -> int:
     f"{len(package.treatments)} treatments, {package.plotCount} plots"
   )
   print(f"Randomization seed: {package.design.randomizationSeed}")
-  print(f"Assessments: {', '.join(assessment.assessmentCode for assessment in package.assessments)}")
+  print("Assessments:")
+  for assessment in package.assessments:
+    print(f"  {_assessmentLine(assessment)}")
   print(f"Observations: {len(observations)}")
   print(f"Content hash: {workspace.contentHashFor(args.trialCode)}")
   return 0
+
+
+def _assessmentLine(assessment) -> str:
+  """One line describing an assessment, including its transform and measurement kind.
+
+  transform and measurementKind are only valid on numeric assessments and are shown
+  even at their defaults (none / unspecified), so the current setting is visible from
+  the CLI rather than only by reading the trial JSON. They are set in the package JSON
+  (the canonical design); this surfaces them, it does not add a second way to set them.
+  """
+  parts = [f"{assessment.assessmentCode}  {assessment.dataType.value}"]
+  if assessment.unit:
+    parts.append(f"unit={assessment.unit}")
+  if assessment.dataType is AssessmentDataType.numeric:
+    if assessment.minValue is not None or assessment.maxValue is not None:
+      low = "" if assessment.minValue is None else assessment.minValue
+      high = "" if assessment.maxValue is None else assessment.maxValue
+      parts.append(f"range=[{low},{high}]")
+    parts.append(f"transform={assessment.transform.value}")
+    parts.append(f"kind={assessment.measurementKind.value}")
+  elif assessment.allowedValues:
+    parts.append("values=" + "/".join(assessment.allowedValues))
+  return "  ".join(parts)
 
 
 def _commandRandomize(args) -> int:

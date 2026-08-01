@@ -195,3 +195,46 @@ def testInvalidPackageRejected(project, capsys):
   capsys.readouterr()
   assert main(["add", project["db"], str(brokenPath)]) == 1
   assert "error:" in capsys.readouterr().err
+
+
+def testInfoSurfacesTransformAndMeasurementKind(tmp_path, capsys):
+  """info shows each numeric assessment's transform and measurement kind (the gap the
+  unit closes: previously visible only by reading the trial JSON), and the allowed
+  values of a categorical/ordinal assessment."""
+  packageDict = {
+    "schemaVersion": "0.1.0",
+    "trial": {"trialCode": "INFO-1", "title": "Info trial", "crop": "Barley", "season": "2025",
+              "site": "Field A", "objective": "Compare"},
+    "treatments": [{"treatmentCode": code, "name": code} for code in ["A", "B"]],
+    "design": {"designType": "rcbd", "replications": 2, "randomizationSeed": 1},
+    "assessments": [
+      {"assessmentCode": "CT", "name": "Insect count", "dataType": "numeric", "unit": "per m2",
+       "minValue": 0, "transform": "sqrt", "measurementKind": "count"},
+      {"assessmentCode": "SEV", "name": "Severity", "dataType": "ordinal",
+       "allowedValues": ["none", "low", "high"]},
+    ],
+  }
+  packagePath = tmp_path / "info.json"
+  packagePath.write_text(json.dumps(packageDict), encoding="utf-8")
+  db = str(tmp_path / "info.db")
+  assert main(["init", db]) == 0
+  assert main(["add", db, str(packagePath)]) == 0
+  capsys.readouterr()
+  assert main(["info", db, "INFO-1"]) == 0
+  out = capsys.readouterr().out
+  assert "transform=sqrt" in out
+  assert "kind=count" in out
+  assert "values=none/low/high" in out
+  # A default numeric assessment still shows its (default) transform and kind.
+  assert "unit=per m2" in out
+
+
+def testInfoShowsDefaultTransformForPlainNumeric(project, capsys):
+  """Even at defaults, transform and kind are shown, so the current setting is visible."""
+  assert main(["init", project["db"]]) == 0
+  assert main(["add", project["db"], project["package"]]) == 0
+  capsys.readouterr()
+  assert main(["info", project["db"], "DEMO"]) == 0
+  out = capsys.readouterr().out
+  assert "transform=none" in out
+  assert "kind=unspecified" in out

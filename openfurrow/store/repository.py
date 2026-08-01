@@ -25,6 +25,8 @@ from openfurrow.schema.trialPackage import (
   AssessmentDefinition,
   DesignSpecification,
   DesignType,
+  MeasurementKind,
+  Transform,
   Treatment,
   TrialMetadata,
   TrialPackage,
@@ -106,6 +108,8 @@ def savePackage(session: Session, package: TrialPackage) -> None:
       minValue=assessment.minValue,
       maxValue=assessment.maxValue,
       allowedValues=json.dumps(assessment.allowedValues) if assessment.allowedValues is not None else None,
+      measurementKind=assessment.measurementKind.value,
+      transform=assessment.transform.value,
     ))
   session.add(trial)
   session.flush()
@@ -142,6 +146,8 @@ def loadPackage(session: Session, trialCode: str) -> TrialPackage:
       minValue=row.minValue,
       maxValue=row.maxValue,
       allowedValues=json.loads(row.allowedValues) if row.allowedValues is not None else None,
+      measurementKind=MeasurementKind(row.measurementKind),
+      transform=Transform(row.transform),
     )
     for row in sorted(trial.assessments, key=lambda row: row.ordinal)
   ]

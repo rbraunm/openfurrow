@@ -334,14 +334,22 @@ when the Done-when bar is met.
 
 ### CLI polish (small, standalone)
 
-- [ ] **Surface `transform` / `measurementKind` in the CLI**
-  - **Goal:** close the flagged gap that these are only settable by editing trial JSON.
-  - **Deliverable:** `info` shows each assessment's `transform` and `measurementKind`; `add`
-    help documents them; validation errors name them clearly.
-  - **Decisions:** *settled* -- they stay package-JSON fields (shape #4); no parallel setter
-    schema. *Open* -- whether a live-override flag is genuinely wanted (do not build one
-    speculatively; add only if a real workflow needs it).
-  - **Done when:** `info` reports both for every assessment; a test asserts the reported values.
+- [x] **Surface `transform` / `measurementKind` in the CLI** (done)
+  - **Goal:** close the flagged gap that these are only settable/visible by editing trial JSON.
+  - **Deliverable:** `info` now prints each assessment on its own line with dataType, unit,
+    numeric range, `transform`, and `measurementKind` (shown even at their defaults, so the
+    current setting is visible), and allowed values for categorical/ordinal; the `add` help
+    documents the fields. They stay package-JSON fields (shape #4); no parallel setter.
+  - **Uncovered and fixed a real bug:** the store's `AssessmentRow` had no columns for
+    `transform` or `measurementKind`, so both were silently dropped on save and reloaded as
+    `none`/`unspecified`. A trial with a declared transform, once persisted (always -- every
+    surface persists then reloads), would run its analysis on the untransformed scale
+    silently. Added the columns and the save/load mapping; regression-tested at the store
+    level (a non-default transform survives a round-trip) and behaviorally (the persisted
+    transform reaches `analyze`). The default round-trip test had missed it by using defaults
+    on both sides.
+  - **Done when:** met -- `info` reports transform and kind for every assessment (tested), and
+    the store persists them (tested). 327 tests.
 
 ### Analysis breadth (independent side-track, Phase 0 continuing)
 

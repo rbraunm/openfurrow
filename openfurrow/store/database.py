@@ -99,6 +99,8 @@ class AssessmentRow(Base):
   minValue: Mapped[float | None]
   maxValue: Mapped[float | None]
   allowedValues: Mapped[str | None] = mapped_column(Text)
+  measurementKind: Mapped[str]
+  transform: Mapped[str]
 
   trial: Mapped[TrialRow] = relationship(back_populates="assessments")
 
