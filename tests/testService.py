@@ -251,3 +251,19 @@ def testTlsContextIsUsedWhenFilesExist(tmp_path):
   })
   assert tlsContext(config) == (str(certificate), str(key))
   assert serviceUrl(config) == "https://0.0.0.0:8443"
+
+
+# ---- operations: request bodies are bounded -------------------------------
+
+def testOversizeRequestIsRejectedWith413(databasePath):
+  from openfurrow.config import OpenFurrowConfig
+  config = OpenFurrowConfig.model_validate({"service": {"maxUploadBytes": 1024}})
+  client = createApp(databasePath, config).test_client()
+  response = client.post("/api/trials", data=b"x" * 2048)
+  assert response.status_code == 413
+  assert response.get_json()["error"]
+
+
+def testDefaultUploadCapIsSet(databasePath):
+  app = createApp(databasePath)
+  assert app.config["MAX_CONTENT_LENGTH"] == 16 * 1024 * 1024

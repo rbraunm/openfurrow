@@ -187,3 +187,15 @@ def testTemplatesAndStaticArePackaged(tmp_path):
   assert any(n.endswith("service/templates/base.html") for n in names)
   assert any(n.endswith("service/templates/trial.html") for n in names)
   assert any(n.endswith("service/static/openfurrow.css") for n in names)
+
+
+def testLocaleSwitchHasNoScriptFallback(client, populated):
+  """The locale switch uses onchange for JS users, but must still work without JS."""
+  body = _text(client.get("/"))
+  assert "<noscript>" in body
+  assert "this.form.submit()" in body  # JS path still present
+
+
+def testTrialsTableHeadersHaveScope(client, populated):
+  body = _text(client.get("/"))
+  assert 'scope="col"' in body

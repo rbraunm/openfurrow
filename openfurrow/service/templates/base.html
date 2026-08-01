@@ -28,6 +28,7 @@
             <option value="{{ option }}" {% if option == locale %}selected{% endif %}>{{ option }}</option>
             {% endfor %}
           </select>
+          <noscript><button type="submit">{{ t.text('web.locale.label') }}</button></noscript>
         </form>
         {% endif %}
       </nav>

@@ -28,6 +28,7 @@ from pathlib import Path
 
 from flask import Flask, Response, request
 from pydantic import BaseModel, ValidationError
+from werkzeug.exceptions import RequestEntityTooLarge
 
 from openfurrow.config import ImportProfile, OpenFurrowConfig, MeanComparison, defaultConfig
 from openfurrow.i18n import MessageError, availableLocales, sourceLocale
@@ -53,6 +54,9 @@ def createApp(databasePath: str, config: OpenFurrowConfig | None = None) -> Flas
   """
   application = Flask(__name__)
   settings = config or defaultConfig()
+  # Bound request bodies so an oversize upload is rejected with 413 before being read
+  # into memory, rather than letting it exhaust memory on a self-hosted server.
+  application.config["MAX_CONTENT_LENGTH"] = settings.service.maxUploadBytes
   workspace = Workspace.open(databasePath)
 
   _registerErrorHandlers(application)
@@ -118,6 +122,10 @@ def _registerErrorHandlers(application: Flask) -> None:
   @application.errorhandler(MessageError)
   def localeFailure(error: MessageError) -> Response:
     return _error(str(error), 400)
+
+  @application.errorhandler(RequestEntityTooLarge)
+  def tooLarge(error: RequestEntityTooLarge) -> Response:
+    return _error("request body too large", 413)
 
 
 # ---- routes ---------------------------------------------------------------

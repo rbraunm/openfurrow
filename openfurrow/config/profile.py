@@ -216,6 +216,12 @@ class ServiceSettings(BaseModel):
 
   host: str = Field(default="127.0.0.1", min_length=1)
   port: int = Field(default=8420, gt=0, lt=65536)
+  maxUploadBytes: int = Field(
+    default=16 * 1024 * 1024, gt=0,
+    description="Largest accepted request body. Bounds memory use; oversize requests "
+                "are rejected with 413 before being read. Trial packages and observation "
+                "CSVs are small, so the default (16 MiB) is generous.",
+  )
   tls: TLSSettings = Field(default_factory=TLSSettings)
 
 
