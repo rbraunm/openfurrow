@@ -6,14 +6,15 @@ Every result carries its provenance: a trial is described by a package plus its 
 
 ## Status
 
-The v0.1 MVP is complete: the full reproducible loop runs end to end for a randomized complete block design — define, randomize, import, analyze, report, export, and reproduce. See [`roadmap/milestones.md`](roadmap/milestones.md) for what is done and what is next, and [`brief.md`](brief.md) for the full brief.
+The full reproducible loop runs end to end for a randomized complete block design — define, randomize, import, analyze, report, export, and reproduce — from the command line, an HTTP API, or a local web interface. It runs offline, on your own machine, in English (en-US / en-GB). See [`roadmap/milestones.md`](roadmap/milestones.md) for what is done and what is next, [`roadmap/implementation-plan.md`](roadmap/implementation-plan.md) for the build sequence, and [`brief.md`](brief.md) for the full brief.
 
 ## Install
 
 Requires Python 3.13. From a clone of this repository:
 
 ```bash
-pip install .
+pip install .            # the core library and the openfurrow command
+pip install ".[service]" # adds the web interface and HTTP API
 ```
 
 This installs the `openfurrow` command. (To run without installing, use the module
@@ -31,10 +32,26 @@ openfurrow export trials.db MY-TRIAL --json trial.json --csv obs.csv
 openfurrow verify trials.db MY-TRIAL             # round-trip reproducibility check
 ```
 
-Other commands: `list`, `info`, `delete`, and `import-json` (import a trial document
-into the store). Analysis settings (significance level, mean-comparison test) come
+Other commands: `list`, `info` (design, transforms, and content hash), `delete`,
+`import-json` (import a trial document into the store), and `serve` (below). Analysis settings (significance level, mean-comparison test) come
 from a project config file passed with `--config`; the defaults are ARM's
 conventional alpha 0.05 and protected LSD.
+
+## The web interface
+
+```bash
+openfurrow serve trials.db     # then open http://127.0.0.1:8420
+```
+
+The same loop with a face: browse trials, add one from a package, see the randomized
+field layout as a plot map, import observations (OpenFurrow CSV or a Field Book export),
+read the AOV Means Table in the browser, and run the reproducibility check. Everything is
+served locally with no external assets, so it works offline, and the report renders in
+either shipped locale. The same process exposes a JSON API under `/api` for scripting.
+
+It binds to loopback by default and **has no authentication yet**, so it is a local
+single-user tool: do not put it on a network. HTTPS is available as configuration
+(`service.tls`) for when that changes.
 
 ## Worked example
 
@@ -63,9 +80,15 @@ in the test suite against the Yates oats published table and against statsmodels
 ## Development
 
 ```bash
-pip install -e ".[test]"   # or: pip install pytest statsmodels
+bash scripts/bootstrap.sh      # installs Python 3.13, creates .venv, installs everything
+source .venv/bin/activate
 python -m pytest
 ```
+
+The bootstrap script is idempotent and is the supported way to get a working environment;
+it exists because the project targets Python 3.13 and a bare `pip install -e .` fails on
+an older interpreter. See [`CONTRIBUTING.md`](CONTRIBUTING.md) for the engineering norms
+and the validation oracles.
 
 ---
 
