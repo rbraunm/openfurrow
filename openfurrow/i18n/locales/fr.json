@@ -1,0 +1,601 @@
+{
+  "locale": "fr",
+  "messages": {
+    "diagnostic.equalVariance.clear": {
+      "text": "Aucun signe d'inégalité des variances",
+      "status": "machineDraft"
+    },
+    "diagnostic.equalVariance.flagged": {
+      "text": "Variance d'erreur inégale entre traitements",
+      "status": "machineDraft"
+    },
+    "diagnostic.equalVariance.name": {
+      "text": "Égalité des variances entre traitements (Brown-Forsythe)",
+      "status": "machineDraft"
+    },
+    "diagnostic.nonAdditivity.clear": {
+      "text": "Aucun signe de non-additivité",
+      "status": "machineDraft"
+    },
+    "diagnostic.nonAdditivity.flagged": {
+      "text": "Non-additivité significative; le modèle additif du dispositif peut être inadéquat",
+      "status": "machineDraft"
+    },
+    "diagnostic.nonAdditivity.name": {
+      "text": "Non-additivité (Tukey à 1 ddl)",
+      "status": "machineDraft"
+    },
+    "diagnostic.normality.clear": {
+      "text": "Aucun signe contre la normalité des résidus",
+      "status": "machineDraft"
+    },
+    "diagnostic.normality.flagged": {
+      "text": "Les résidus s'écartent de la normalité",
+      "status": "machineDraft"
+    },
+    "diagnostic.normality.name": {
+      "text": "Normalité des résidus (Shapiro-Wilk)",
+      "status": "machineDraft"
+    },
+    "diagnostic.notComputed.needsTwoByTwo": {
+      "text": "non calculé: requiert au moins deux traitements et deux blocs",
+      "status": "machineDraft"
+    },
+    "diagnostic.notComputed.noDeviationVariation": {
+      "text": "non calculé: aucune variation intra-traitement des écarts absolus",
+      "status": "machineDraft"
+    },
+    "diagnostic.notComputed.noRemainderVariation": {
+      "text": "non calculé: aucune variation résiduelle après le terme de non-additivité",
+      "status": "machineDraft"
+    },
+    "diagnostic.notComputed.noTreatmentOrBlockVariation": {
+      "text": "non calculé: aucune variation des traitements ou des blocs",
+      "status": "machineDraft"
+    },
+    "diagnostic.notComputed.tooFewErrorDegreesOfFreedom": {
+      "text": "non calculé: degrés de liberté de l'erreur insuffisants pour le test à 1 ddl",
+      "status": "machineDraft"
+    },
+    "diagnostic.notComputed.tooFewResiduals": {
+      "text": "non calculé: seulement {count} résidus (au moins {minimum} requis)",
+      "status": "machineDraft"
+    },
+    "diagnostic.notComputed.zeroResidualSpread": {
+      "text": "non calculé: les résidus ont une dispersion nulle",
+      "status": "machineDraft"
+    },
+    "diagnostic.reading": {
+      "text": "{verdict} (p = {probability}).",
+      "status": "machineDraft"
+    },
+    "diagnostic.recommendation.forKind": {
+      "text": "des hypothèses ont été signalées et il s'agit de données de type {kind}; une transformation {transform} peut aider. Déclarez-la sur l'évaluation: elle n'est jamais appliquée automatiquement.",
+      "status": "machineDraft"
+    },
+    "diagnostic.recommendation.generic": {
+      "text": "des hypothèses ont été signalées; s'il s'agit de comptages ou de proportions, déclarer un measurementKind et une transformation stabilisatrice de variance sur l'évaluation peut aider (les transformations ne sont jamais appliquées automatiquement).",
+      "status": "machineDraft"
+    },
+    "report.anova.coefficientOfVariation": {
+      "text": "Coefficient de variation",
+      "status": "machineDraft"
+    },
+    "report.anova.column.degreesOfFreedom": {
+      "text": "ddl",
+      "status": "machineDraft"
+    },
+    "report.anova.column.fStatistic": {
+      "text": "F",
+      "status": "machineDraft"
+    },
+    "report.anova.column.meanSquare": {
+      "text": "CM",
+      "status": "machineDraft"
+    },
+    "report.anova.column.probability": {
+      "text": "P",
+      "status": "machineDraft"
+    },
+    "report.anova.column.source": {
+      "text": "Source",
+      "status": "machineDraft"
+    },
+    "report.anova.column.sumOfSquares": {
+      "text": "SC",
+      "status": "machineDraft"
+    },
+    "report.anova.grandMean": {
+      "text": "Moyenne générale",
+      "status": "machineDraft"
+    },
+    "report.anova.source.block": {
+      "text": "Bloc",
+      "status": "machineDraft"
+    },
+    "report.anova.source.error": {
+      "text": "Erreur",
+      "status": "machineDraft"
+    },
+    "report.anova.source.total": {
+      "text": "Total",
+      "status": "machineDraft"
+    },
+    "report.anova.source.treatment": {
+      "text": "Traitement",
+      "status": "machineDraft"
+    },
+    "report.anova.transformedScale": {
+      "text": "Analysé sur l'échelle {scale}; le tableau, la moyenne générale et le CV ci-dessous sont sur cette échelle.",
+      "status": "machineDraft"
+    },
+    "report.assessment.notAnalyzed": {
+      "text": "Non analysé: {reason}",
+      "status": "machineDraft"
+    },
+    "report.assessment.notNumeric": {
+      "text": "Non analysé: l'AOV requiert une évaluation numérique (cette évaluation est de type {dataType}).",
+      "status": "machineDraft"
+    },
+    "report.assumptions.note": {
+      "text": "À titre indicatif seulement; ne modifie pas l'analyse ci-dessus (seuil de signification alpha = {alpha}).",
+      "status": "machineDraft"
+    },
+    "report.assumptions.recommendation": {
+      "text": "Recommandation: {recommendation}",
+      "status": "machineDraft"
+    },
+    "report.assumptions.residualsNote": {
+      "text": "Les résidus proviennent du modèle additif blocs et traitements et sont contraints (leur somme est nulle dans chaque bloc et chaque traitement); le test de normalité est donc approximatif.",
+      "status": "machineDraft"
+    },
+    "report.design.blocks": {
+      "text": "Blocs (répétitions)",
+      "status": "machineDraft"
+    },
+    "report.design.design": {
+      "text": "Dispositif",
+      "status": "machineDraft"
+    },
+    "report.design.plots": {
+      "text": "Parcelles",
+      "status": "machineDraft"
+    },
+    "report.design.rcbd": {
+      "text": "Dispositif en blocs complets randomisés",
+      "status": "machineDraft"
+    },
+    "report.design.seed": {
+      "text": "Graine de randomisation",
+      "status": "machineDraft"
+    },
+    "report.design.treatments": {
+      "text": "Traitements",
+      "status": "machineDraft"
+    },
+    "report.draftNotice": {
+      "text": "Traduction provisoire (générée automatiquement, non relue): la formulation peut être imprécise. Les nombres, les identifiants et l'empreinte du contenu ne sont pas affectés.",
+      "status": "machineDraft"
+    },
+    "report.field.crop": {
+      "text": "Culture",
+      "status": "machineDraft"
+    },
+    "report.field.investigator": {
+      "text": "Chercheur responsable",
+      "status": "machineDraft"
+    },
+    "report.field.objective": {
+      "text": "Objectif",
+      "status": "machineDraft"
+    },
+    "report.field.organization": {
+      "text": "Organisme",
+      "status": "machineDraft"
+    },
+    "report.field.season": {
+      "text": "Campagne",
+      "status": "machineDraft"
+    },
+    "report.field.site": {
+      "text": "Site",
+      "status": "machineDraft"
+    },
+    "report.field.trialCode": {
+      "text": "Code de l'essai",
+      "status": "machineDraft"
+    },
+    "report.heading.anova": {
+      "text": "Analyse de variance",
+      "status": "machineDraft"
+    },
+    "report.heading.assessment": {
+      "text": "Évaluation: {name} ({code})",
+      "status": "machineDraft"
+    },
+    "report.heading.assumptions": {
+      "text": "Vérification des hypothèses",
+      "status": "machineDraft"
+    },
+    "report.heading.design": {
+      "text": "Dispositif",
+      "status": "machineDraft"
+    },
+    "report.heading.reproducibility": {
+      "text": "Reproductibilité",
+      "status": "machineDraft"
+    },
+    "report.heading.treatmentMeans": {
+      "text": "Moyennes des traitements",
+      "status": "machineDraft"
+    },
+    "report.heading.treatments": {
+      "text": "Traitements",
+      "status": "machineDraft"
+    },
+    "report.heading.trialReport": {
+      "text": "Rapport d'essai: {title}",
+      "status": "machineDraft"
+    },
+    "report.means.backTransformNote": {
+      "text": "Les moyennes sont rétro-transformées vers l'échelle d'origine comme estimations ponctuelles (et non des intervalles symétriques); l'analyse de variance et la séparation des moyennes ont été calculées sur l'échelle {scale}.",
+      "status": "machineDraft"
+    },
+    "report.means.column.group": {
+      "text": "Groupe",
+      "status": "machineDraft"
+    },
+    "report.means.column.mean": {
+      "text": "Moyenne{unit}",
+      "status": "machineDraft"
+    },
+    "report.means.column.meanOriginalScale": {
+      "text": "Moyenne (échelle d'origine){unit}",
+      "status": "machineDraft"
+    },
+    "report.means.column.treatment": {
+      "text": "Traitement",
+      "status": "machineDraft"
+    },
+    "report.means.leastSignificantDifference": {
+      "text": "PPDS (alpha = {alpha})",
+      "status": "machineDraft"
+    },
+    "report.means.notSeparated": {
+      "text": "Les moyennes n'ont pas été séparées: l'effet traitement n'était pas significatif (PPDS protégée).",
+      "status": "machineDraft"
+    },
+    "report.means.notSignificant": {
+      "text": "non significatif",
+      "status": "machineDraft"
+    },
+    "report.means.separation": {
+      "text": "Séparation des moyennes: {method} (alpha = {alpha}). Effet traitement {significance} (P = {probability}).",
+      "status": "machineDraft"
+    },
+    "report.means.significant": {
+      "text": "significatif",
+      "status": "machineDraft"
+    },
+    "report.reproducibility.inputHash": {
+      "text": "Empreinte des entrées (SHA-256)",
+      "status": "machineDraft"
+    },
+    "report.reproducibility.leastSignificantDifference": {
+      "text": "PPDS de Fisher",
+      "status": "machineDraft"
+    },
+    "report.reproducibility.method": {
+      "text": "Méthode",
+      "status": "machineDraft"
+    },
+    "report.reproducibility.methodValue": {
+      "text": "ANOVA en blocs complets randomisés; {test} (alpha = {alpha})",
+      "status": "machineDraft"
+    },
+    "report.reproducibility.protectedLeastSignificantDifference": {
+      "text": "PPDS protégée de Fisher",
+      "status": "machineDraft"
+    },
+    "report.reproducibility.seed": {
+      "text": "Graine de randomisation",
+      "status": "machineDraft"
+    },
+    "report.reproducibility.transforms": {
+      "text": "Transformations",
+      "status": "machineDraft"
+    },
+    "report.reproducibility.versions": {
+      "text": "Versions: OpenFurrow {openfurrow}, numpy {numpy}, Python {python}",
+      "status": "machineDraft"
+    },
+    "report.scale.arcsinSqrt": {
+      "text": "arc sinus-racine carrée",
+      "status": "machineDraft"
+    },
+    "report.scale.log": {
+      "text": "logarithme népérien",
+      "status": "machineDraft"
+    },
+    "report.scale.logit": {
+      "text": "logit",
+      "status": "machineDraft"
+    },
+    "report.scale.sqrt": {
+      "text": "racine carrée",
+      "status": "machineDraft"
+    },
+    "report.treatments.column.code": {
+      "text": "Code",
+      "status": "machineDraft"
+    },
+    "report.treatments.column.name": {
+      "text": "Nom",
+      "status": "machineDraft"
+    },
+    "report.treatments.column.product": {
+      "text": "Produit",
+      "status": "machineDraft"
+    },
+    "report.treatments.column.rate": {
+      "text": "Dose",
+      "status": "machineDraft"
+    },
+    "report.treatments.column.timing": {
+      "text": "Stade d'application",
+      "status": "machineDraft"
+    },
+    "report.treatments.untreatedControl": {
+      "text": "(témoin non traité)",
+      "status": "machineDraft"
+    },
+    "report.value.absent": {
+      "text": "-",
+      "status": "machineDraft"
+    },
+    "report.value.probabilityBelowThreshold": {
+      "text": "<0.0001",
+      "status": "machineDraft"
+    },
+    "web.add.error": {
+      "text": "Impossible de créer l'essai: {reason}",
+      "status": "machineDraft"
+    },
+    "web.add.fileLabel": {
+      "text": "ou choisissez un fichier .json",
+      "status": "machineDraft"
+    },
+    "web.add.heading": {
+      "text": "Ajouter un essai",
+      "status": "machineDraft"
+    },
+    "web.add.intro": {
+      "text": "Collez un paquet d'essai au format JSON ou choisissez un fichier. C'est le plan canonique de l'essai; la disposition est randomisée à partir de sa graine.",
+      "status": "machineDraft"
+    },
+    "web.add.loadExample": {
+      "text": "Charger l'exemple",
+      "status": "machineDraft"
+    },
+    "web.add.pasteLabel": {
+      "text": "Paquet d'essai (JSON)",
+      "status": "machineDraft"
+    },
+    "web.add.submit": {
+      "text": "Créer l'essai",
+      "status": "machineDraft"
+    },
+    "web.app.name": {
+      "text": "OpenFurrow",
+      "status": "machineDraft"
+    },
+    "web.app.tagline": {
+      "text": "Essais agricoles reproductibles",
+      "status": "machineDraft"
+    },
+    "web.delete.action": {
+      "text": "Supprimer l'essai",
+      "status": "machineDraft"
+    },
+    "web.delete.cancel": {
+      "text": "Annuler",
+      "status": "machineDraft"
+    },
+    "web.delete.confirm": {
+      "text": "Supprimer définitivement",
+      "status": "machineDraft"
+    },
+    "web.delete.confirmHeading": {
+      "text": "Supprimer {code}?",
+      "status": "machineDraft"
+    },
+    "web.delete.confirmIntro": {
+      "text": "Ceci supprime définitivement l'essai et toutes ses observations. Irréversible.",
+      "status": "machineDraft"
+    },
+    "web.footer.offline": {
+      "text": "Fonctionne hors ligne. Vos données restent sur cette machine.",
+      "status": "machineDraft"
+    },
+    "web.import.error": {
+      "text": "Échec de l'import: {reason}",
+      "status": "machineDraft"
+    },
+    "web.import.fileLabel": {
+      "text": "Fichier CSV",
+      "status": "machineDraft"
+    },
+    "web.import.formatFieldBook": {
+      "text": "Export Field Book (format base de données)",
+      "status": "machineDraft"
+    },
+    "web.import.formatLabel": {
+      "text": "Format",
+      "status": "machineDraft"
+    },
+    "web.import.formatOpenFurrow": {
+      "text": "CSV OpenFurrow (parcelle, évaluation, valeur)",
+      "status": "machineDraft"
+    },
+    "web.import.heading": {
+      "text": "Importer des observations",
+      "status": "machineDraft"
+    },
+    "web.import.intro": {
+      "text": "Téléversez les données collectées au format CSV. Les valeurs sont vérifiées contre le plan avant tout enregistrement.",
+      "status": "machineDraft"
+    },
+    "web.import.result": {
+      "text": "{count} observations importées.",
+      "status": "machineDraft"
+    },
+    "web.import.submit": {
+      "text": "Importer",
+      "status": "machineDraft"
+    },
+    "web.import.warningsHeading": {
+      "text": "Avertissements",
+      "status": "machineDraft"
+    },
+    "web.locale.draftNotice": {
+      "text": "Cette traduction est une ébauche automatique non relue; la formulation peut être imprécise.",
+      "status": "machineDraft"
+    },
+    "web.locale.label": {
+      "text": "Langue",
+      "status": "machineDraft"
+    },
+    "web.manage.heading": {
+      "text": "Gestion",
+      "status": "machineDraft"
+    },
+    "web.nav.addTrial": {
+      "text": "Ajouter un essai",
+      "status": "machineDraft"
+    },
+    "web.nav.trials": {
+      "text": "Essais",
+      "status": "machineDraft"
+    },
+    "web.report.back": {
+      "text": "Retour à l'essai",
+      "status": "machineDraft"
+    },
+    "web.report.download": {
+      "text": "Télécharger le Markdown",
+      "status": "machineDraft"
+    },
+    "web.report.heading": {
+      "text": "Rapport",
+      "status": "machineDraft"
+    },
+    "web.report.intro": {
+      "text": "Le tableau AOV des moyennes et le dossier de reproductibilité pour chaque évaluation numérique.",
+      "status": "machineDraft"
+    },
+    "web.trial.back": {
+      "text": "Retour aux essais",
+      "status": "machineDraft"
+    },
+    "web.trial.blockLabel": {
+      "text": "Bloc {block}",
+      "status": "machineDraft"
+    },
+    "web.trial.contentHash": {
+      "text": "Empreinte du contenu",
+      "status": "machineDraft"
+    },
+    "web.trial.layoutHeading": {
+      "text": "Plan du champ",
+      "status": "machineDraft"
+    },
+    "web.trial.layoutIntro": {
+      "text": "Parcelles telles que semées au champ, groupées par bloc. Randomisé à partir de la graine {seed}.",
+      "status": "machineDraft"
+    },
+    "web.trial.legendHeading": {
+      "text": "Traitements",
+      "status": "machineDraft"
+    },
+    "web.trial.noObservations": {
+      "text": "Aucune observation pour l'instant. Importez-en pour lancer l'analyse.",
+      "status": "machineDraft"
+    },
+    "web.trial.notFound": {
+      "text": "Aucun essai avec le code {code}.",
+      "status": "machineDraft"
+    },
+    "web.trial.observations": {
+      "text": "Observations",
+      "status": "machineDraft"
+    },
+    "web.trial.plot": {
+      "text": "Parcelle",
+      "status": "machineDraft"
+    },
+    "web.trial.summary": {
+      "text": "Résumé",
+      "status": "machineDraft"
+    },
+    "web.trial.viewReport": {
+      "text": "Voir le rapport",
+      "status": "machineDraft"
+    },
+    "web.trials.column.code": {
+      "text": "Code",
+      "status": "machineDraft"
+    },
+    "web.trials.column.crop": {
+      "text": "Culture",
+      "status": "machineDraft"
+    },
+    "web.trials.column.plots": {
+      "text": "Parcelles",
+      "status": "machineDraft"
+    },
+    "web.trials.column.title": {
+      "text": "Titre",
+      "status": "machineDraft"
+    },
+    "web.trials.count": {
+      "text": "{count} essais",
+      "status": "machineDraft"
+    },
+    "web.trials.empty": {
+      "text": "Aucun essai pour l'instant. Ajoutez-en un pour commencer.",
+      "status": "machineDraft"
+    },
+    "web.trials.heading": {
+      "text": "Essais",
+      "status": "machineDraft"
+    },
+    "web.trials.open": {
+      "text": "Ouvrir",
+      "status": "machineDraft"
+    },
+    "web.verify.action": {
+      "text": "Vérifier la reproductibilité",
+      "status": "machineDraft"
+    },
+    "web.verify.fail": {
+      "text": "Échec de la vérification de reproductibilité: l'empreinte réimportée ne correspond pas.",
+      "status": "machineDraft"
+    },
+    "web.verify.intro": {
+      "text": "Exporte l'essai puis le réimporte; l'empreinte du contenu doit correspondre.",
+      "status": "machineDraft"
+    },
+    "web.verify.pass": {
+      "text": "Vérification de reproductibilité réussie: l'essai s'exporte et se réimporte avec la même empreinte de contenu.",
+      "status": "machineDraft"
+    },
+    "web.verify.roundTrip": {
+      "text": "Aller-retour",
+      "status": "machineDraft"
+    },
+    "web.verify.stored": {
+      "text": "Stockée",
+      "status": "machineDraft"
+    }
+  }
+}

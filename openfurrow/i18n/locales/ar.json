@@ -1,0 +1,601 @@
+{
+  "locale": "ar",
+  "messages": {
+    "diagnostic.equalVariance.clear": {
+      "text": "لا يوجد دليل على عدم تجانس التباين",
+      "status": "machineDraft"
+    },
+    "diagnostic.equalVariance.flagged": {
+      "text": "تباين الخطأ غير متجانس بين المعاملات",
+      "status": "machineDraft"
+    },
+    "diagnostic.equalVariance.name": {
+      "text": "تجانس التباين بين المعاملات (Brown-Forsythe)",
+      "status": "machineDraft"
+    },
+    "diagnostic.nonAdditivity.clear": {
+      "text": "لا يوجد دليل على عدم الجمعية",
+      "status": "machineDraft"
+    },
+    "diagnostic.nonAdditivity.flagged": {
+      "text": "عدم جمعية معنوي؛ قد يكون النموذج الجمعي للتصميم غير ملائم",
+      "status": "machineDraft"
+    },
+    "diagnostic.nonAdditivity.name": {
+      "text": "عدم الجمعية (Tukey بدرجة حرية واحدة)",
+      "status": "machineDraft"
+    },
+    "diagnostic.normality.clear": {
+      "text": "لا يوجد دليل ضد اعتدالية البواقي",
+      "status": "machineDraft"
+    },
+    "diagnostic.normality.flagged": {
+      "text": "تنحرف البواقي عن الاعتدالية",
+      "status": "machineDraft"
+    },
+    "diagnostic.normality.name": {
+      "text": "اعتدالية البواقي (Shapiro-Wilk)",
+      "status": "machineDraft"
+    },
+    "diagnostic.notComputed.needsTwoByTwo": {
+      "text": "لم يُحسب: يتطلب معاملتين وقطاعين على الأقل",
+      "status": "machineDraft"
+    },
+    "diagnostic.notComputed.noDeviationVariation": {
+      "text": "لم يُحسب: لا يوجد تباين داخل المعاملات في الانحرافات المطلقة",
+      "status": "machineDraft"
+    },
+    "diagnostic.notComputed.noRemainderVariation": {
+      "text": "لم يُحسب: لا يوجد تباين متبق بعد حد عدم الجمعية",
+      "status": "machineDraft"
+    },
+    "diagnostic.notComputed.noTreatmentOrBlockVariation": {
+      "text": "لم يُحسب: لا يوجد تباين للمعاملات أو للقطاعات",
+      "status": "machineDraft"
+    },
+    "diagnostic.notComputed.tooFewErrorDegreesOfFreedom": {
+      "text": "لم يُحسب: درجات حرية الخطأ غير كافية لاختبار الدرجة الواحدة",
+      "status": "machineDraft"
+    },
+    "diagnostic.notComputed.tooFewResiduals": {
+      "text": "لم يُحسب: {count} من البواقي فقط (المطلوب {minimum} على الأقل)",
+      "status": "machineDraft"
+    },
+    "diagnostic.notComputed.zeroResidualSpread": {
+      "text": "لم يُحسب: البواقي بلا أي تشتت",
+      "status": "machineDraft"
+    },
+    "diagnostic.reading": {
+      "text": "{verdict} (p = {probability}).",
+      "status": "machineDraft"
+    },
+    "diagnostic.recommendation.forKind": {
+      "text": "أُشير إلى مخالفة الافتراضات وهذه بيانات من نوع {kind}؛ قد يفيد تحويل {transform}. صرح به في التقييم؛ فهو لا يُطبق تلقائيًا أبدًا.",
+      "status": "machineDraft"
+    },
+    "diagnostic.recommendation.generic": {
+      "text": "أُشير إلى مخالفة الافتراضات؛ إذا كانت هذه بيانات عد أو نسب، فقد يفيد تصريح measurementKind وتحويل مثبت للتباين في التقييم (لا تُطبق التحويلات تلقائيًا أبدًا).",
+      "status": "machineDraft"
+    },
+    "report.anova.coefficientOfVariation": {
+      "text": "معامل الاختلاف",
+      "status": "machineDraft"
+    },
+    "report.anova.column.degreesOfFreedom": {
+      "text": "د.ح",
+      "status": "machineDraft"
+    },
+    "report.anova.column.fStatistic": {
+      "text": "F",
+      "status": "machineDraft"
+    },
+    "report.anova.column.meanSquare": {
+      "text": "م.م",
+      "status": "machineDraft"
+    },
+    "report.anova.column.probability": {
+      "text": "P",
+      "status": "machineDraft"
+    },
+    "report.anova.column.source": {
+      "text": "مصدر التباين",
+      "status": "machineDraft"
+    },
+    "report.anova.column.sumOfSquares": {
+      "text": "مج.م",
+      "status": "machineDraft"
+    },
+    "report.anova.grandMean": {
+      "text": "المتوسط العام",
+      "status": "machineDraft"
+    },
+    "report.anova.source.block": {
+      "text": "القطاع",
+      "status": "machineDraft"
+    },
+    "report.anova.source.error": {
+      "text": "الخطأ",
+      "status": "machineDraft"
+    },
+    "report.anova.source.total": {
+      "text": "الكلي",
+      "status": "machineDraft"
+    },
+    "report.anova.source.treatment": {
+      "text": "المعاملة",
+      "status": "machineDraft"
+    },
+    "report.anova.transformedScale": {
+      "text": "حُلل على مقياس {scale}؛ الجدول والمتوسط العام ومعامل الاختلاف أدناه على ذلك المقياس.",
+      "status": "machineDraft"
+    },
+    "report.assessment.notAnalyzed": {
+      "text": "لم يُحلل: {reason}",
+      "status": "machineDraft"
+    },
+    "report.assessment.notNumeric": {
+      "text": "لم يُحلل: يتطلب تحليل التباين تقييمًا رقميًا (هذا التقييم من النوع {dataType}).",
+      "status": "machineDraft"
+    },
+    "report.assumptions.note": {
+      "text": "للاطلاع فقط؛ لا يغير التحليل أعلاه (مستوى المعنوية ألفا = {alpha}).",
+      "status": "machineDraft"
+    },
+    "report.assumptions.recommendation": {
+      "text": "التوصية: {recommendation}",
+      "status": "machineDraft"
+    },
+    "report.assumptions.residualsNote": {
+      "text": "البواقي مشتقة من النموذج الجمعي للقطاعات والمعاملات وهي مقيدة (مجموعها صفر داخل كل قطاع وكل معاملة)، لذا فإن اختبار الاعتدالية تقريبي.",
+      "status": "machineDraft"
+    },
+    "report.design.blocks": {
+      "text": "القطاعات (المكررات)",
+      "status": "machineDraft"
+    },
+    "report.design.design": {
+      "text": "التصميم",
+      "status": "machineDraft"
+    },
+    "report.design.plots": {
+      "text": "القطع التجريبية",
+      "status": "machineDraft"
+    },
+    "report.design.rcbd": {
+      "text": "تصميم القطاعات الكاملة العشوائية",
+      "status": "machineDraft"
+    },
+    "report.design.seed": {
+      "text": "بذرة العشوائية",
+      "status": "machineDraft"
+    },
+    "report.design.treatments": {
+      "text": "المعاملات",
+      "status": "machineDraft"
+    },
+    "report.draftNotice": {
+      "text": "ترجمة مسودة (آلية، لم تُراجع بعد): قد تكون الصياغة غير دقيقة. الأرقام والمعرفات وبصمة المحتوى غير متأثرة.",
+      "status": "machineDraft"
+    },
+    "report.field.crop": {
+      "text": "المحصول",
+      "status": "machineDraft"
+    },
+    "report.field.investigator": {
+      "text": "الباحث",
+      "status": "machineDraft"
+    },
+    "report.field.objective": {
+      "text": "الهدف",
+      "status": "machineDraft"
+    },
+    "report.field.organization": {
+      "text": "الجهة",
+      "status": "machineDraft"
+    },
+    "report.field.season": {
+      "text": "الموسم",
+      "status": "machineDraft"
+    },
+    "report.field.site": {
+      "text": "الموقع",
+      "status": "machineDraft"
+    },
+    "report.field.trialCode": {
+      "text": "رمز التجربة",
+      "status": "machineDraft"
+    },
+    "report.heading.anova": {
+      "text": "تحليل التباين",
+      "status": "machineDraft"
+    },
+    "report.heading.assessment": {
+      "text": "التقييم: {name} ({code})",
+      "status": "machineDraft"
+    },
+    "report.heading.assumptions": {
+      "text": "فحص الافتراضات",
+      "status": "machineDraft"
+    },
+    "report.heading.design": {
+      "text": "التصميم",
+      "status": "machineDraft"
+    },
+    "report.heading.reproducibility": {
+      "text": "قابلية إعادة الإنتاج",
+      "status": "machineDraft"
+    },
+    "report.heading.treatmentMeans": {
+      "text": "متوسطات المعاملات",
+      "status": "machineDraft"
+    },
+    "report.heading.treatments": {
+      "text": "المعاملات",
+      "status": "machineDraft"
+    },
+    "report.heading.trialReport": {
+      "text": "تقرير التجربة: {title}",
+      "status": "machineDraft"
+    },
+    "report.means.backTransformNote": {
+      "text": "أُعيد تحويل المتوسطات إلى المقياس الأصلي كتقديرات نقطية (وليست فترات متماثلة)؛ حُسب تحليل التباين وفصل المتوسطات على مقياس {scale}.",
+      "status": "machineDraft"
+    },
+    "report.means.column.group": {
+      "text": "المجموعة",
+      "status": "machineDraft"
+    },
+    "report.means.column.mean": {
+      "text": "المتوسط{unit}",
+      "status": "machineDraft"
+    },
+    "report.means.column.meanOriginalScale": {
+      "text": "المتوسط (المقياس الأصلي){unit}",
+      "status": "machineDraft"
+    },
+    "report.means.column.treatment": {
+      "text": "المعاملة",
+      "status": "machineDraft"
+    },
+    "report.means.leastSignificantDifference": {
+      "text": "أقل فرق معنوي (ألفا = {alpha})",
+      "status": "machineDraft"
+    },
+    "report.means.notSeparated": {
+      "text": "لم تُفصل المتوسطات: أثر المعاملة لم يكن معنويًا (أقل فرق معنوي محمي).",
+      "status": "machineDraft"
+    },
+    "report.means.notSignificant": {
+      "text": "غير معنوي",
+      "status": "machineDraft"
+    },
+    "report.means.separation": {
+      "text": "فصل المتوسطات: {method} (ألفا = {alpha}). أثر المعاملة {significance} (P = {probability}).",
+      "status": "machineDraft"
+    },
+    "report.means.significant": {
+      "text": "معنوي",
+      "status": "machineDraft"
+    },
+    "report.reproducibility.inputHash": {
+      "text": "بصمة المدخلات (SHA-256)",
+      "status": "machineDraft"
+    },
+    "report.reproducibility.leastSignificantDifference": {
+      "text": "أقل فرق معنوي (فيشر)",
+      "status": "machineDraft"
+    },
+    "report.reproducibility.method": {
+      "text": "الطريقة",
+      "status": "machineDraft"
+    },
+    "report.reproducibility.methodValue": {
+      "text": "تحليل التباين لتصميم القطاعات الكاملة العشوائية؛ {test} (ألفا = {alpha})",
+      "status": "machineDraft"
+    },
+    "report.reproducibility.protectedLeastSignificantDifference": {
+      "text": "أقل فرق معنوي محمي (فيشر)",
+      "status": "machineDraft"
+    },
+    "report.reproducibility.seed": {
+      "text": "بذرة العشوائية",
+      "status": "machineDraft"
+    },
+    "report.reproducibility.transforms": {
+      "text": "التحويلات",
+      "status": "machineDraft"
+    },
+    "report.reproducibility.versions": {
+      "text": "الإصدارات: OpenFurrow {openfurrow}، numpy {numpy}، Python {python}",
+      "status": "machineDraft"
+    },
+    "report.scale.arcsinSqrt": {
+      "text": "الجيب العكسي للجذر التربيعي",
+      "status": "machineDraft"
+    },
+    "report.scale.log": {
+      "text": "اللوغاريتم الطبيعي",
+      "status": "machineDraft"
+    },
+    "report.scale.logit": {
+      "text": "اللوجت",
+      "status": "machineDraft"
+    },
+    "report.scale.sqrt": {
+      "text": "الجذر التربيعي",
+      "status": "machineDraft"
+    },
+    "report.treatments.column.code": {
+      "text": "الرمز",
+      "status": "machineDraft"
+    },
+    "report.treatments.column.name": {
+      "text": "الاسم",
+      "status": "machineDraft"
+    },
+    "report.treatments.column.product": {
+      "text": "المنتج",
+      "status": "machineDraft"
+    },
+    "report.treatments.column.rate": {
+      "text": "المعدل",
+      "status": "machineDraft"
+    },
+    "report.treatments.column.timing": {
+      "text": "التوقيت",
+      "status": "machineDraft"
+    },
+    "report.treatments.untreatedControl": {
+      "text": "(شاهد بدون معاملة)",
+      "status": "machineDraft"
+    },
+    "report.value.absent": {
+      "text": "-",
+      "status": "machineDraft"
+    },
+    "report.value.probabilityBelowThreshold": {
+      "text": "<0.0001",
+      "status": "machineDraft"
+    },
+    "web.add.error": {
+      "text": "تعذر إنشاء التجربة: {reason}",
+      "status": "machineDraft"
+    },
+    "web.add.fileLabel": {
+      "text": "أو اختر ملف .json",
+      "status": "machineDraft"
+    },
+    "web.add.heading": {
+      "text": "إضافة تجربة",
+      "status": "machineDraft"
+    },
+    "web.add.intro": {
+      "text": "الصق حزمة التجربة بصيغة JSON أو اختر ملفًا. هذا هو التصميم المرجعي للتجربة؛ ويُنشأ التوزيع عشوائيًا من بذرتها.",
+      "status": "machineDraft"
+    },
+    "web.add.loadExample": {
+      "text": "تحميل مثال",
+      "status": "machineDraft"
+    },
+    "web.add.pasteLabel": {
+      "text": "حزمة التجربة (JSON)",
+      "status": "machineDraft"
+    },
+    "web.add.submit": {
+      "text": "إنشاء التجربة",
+      "status": "machineDraft"
+    },
+    "web.app.name": {
+      "text": "OpenFurrow",
+      "status": "machineDraft"
+    },
+    "web.app.tagline": {
+      "text": "تجارب زراعية قابلة لإعادة الإنتاج",
+      "status": "machineDraft"
+    },
+    "web.delete.action": {
+      "text": "حذف التجربة",
+      "status": "machineDraft"
+    },
+    "web.delete.cancel": {
+      "text": "إلغاء",
+      "status": "machineDraft"
+    },
+    "web.delete.confirm": {
+      "text": "حذف نهائي",
+      "status": "machineDraft"
+    },
+    "web.delete.confirmHeading": {
+      "text": "حذف {code}؟",
+      "status": "machineDraft"
+    },
+    "web.delete.confirmIntro": {
+      "text": "سيؤدي هذا إلى إزالة التجربة وجميع مشاهداتها نهائيًا. لا يمكن التراجع.",
+      "status": "machineDraft"
+    },
+    "web.footer.offline": {
+      "text": "يعمل دون اتصال. تبقى بياناتك على هذا الجهاز.",
+      "status": "machineDraft"
+    },
+    "web.import.error": {
+      "text": "فشل الاستيراد: {reason}",
+      "status": "machineDraft"
+    },
+    "web.import.fileLabel": {
+      "text": "ملف CSV",
+      "status": "machineDraft"
+    },
+    "web.import.formatFieldBook": {
+      "text": "تصدير Field Book (صيغة قاعدة البيانات)",
+      "status": "machineDraft"
+    },
+    "web.import.formatLabel": {
+      "text": "الصيغة",
+      "status": "machineDraft"
+    },
+    "web.import.formatOpenFurrow": {
+      "text": "CSV الخاص بـ OpenFurrow (قطعة، تقييم، قيمة)",
+      "status": "machineDraft"
+    },
+    "web.import.heading": {
+      "text": "استيراد المشاهدات",
+      "status": "machineDraft"
+    },
+    "web.import.intro": {
+      "text": "ارفع البيانات المجموعة بصيغة CSV. تُفحص القيم مقابل التخطيط قبل حفظ أي شيء.",
+      "status": "machineDraft"
+    },
+    "web.import.result": {
+      "text": "تم استيراد {count} من المشاهدات.",
+      "status": "machineDraft"
+    },
+    "web.import.submit": {
+      "text": "استيراد",
+      "status": "machineDraft"
+    },
+    "web.import.warningsHeading": {
+      "text": "تحذيرات",
+      "status": "machineDraft"
+    },
+    "web.locale.draftNotice": {
+      "text": "هذه الترجمة مسودة آلية لم تُراجع؛ قد تكون الصياغة غير دقيقة.",
+      "status": "machineDraft"
+    },
+    "web.locale.label": {
+      "text": "اللغة",
+      "status": "machineDraft"
+    },
+    "web.manage.heading": {
+      "text": "الإدارة",
+      "status": "machineDraft"
+    },
+    "web.nav.addTrial": {
+      "text": "إضافة تجربة",
+      "status": "machineDraft"
+    },
+    "web.nav.trials": {
+      "text": "التجارب",
+      "status": "machineDraft"
+    },
+    "web.report.back": {
+      "text": "العودة إلى التجربة",
+      "status": "machineDraft"
+    },
+    "web.report.download": {
+      "text": "تنزيل Markdown",
+      "status": "machineDraft"
+    },
+    "web.report.heading": {
+      "text": "التقرير",
+      "status": "machineDraft"
+    },
+    "web.report.intro": {
+      "text": "جدول تحليل التباين والمتوسطات وسجل قابلية إعادة الإنتاج لكل تقييم رقمي.",
+      "status": "machineDraft"
+    },
+    "web.trial.back": {
+      "text": "العودة إلى التجارب",
+      "status": "machineDraft"
+    },
+    "web.trial.blockLabel": {
+      "text": "القطاع {block}",
+      "status": "machineDraft"
+    },
+    "web.trial.contentHash": {
+      "text": "بصمة المحتوى",
+      "status": "machineDraft"
+    },
+    "web.trial.layoutHeading": {
+      "text": "تخطيط الحقل",
+      "status": "machineDraft"
+    },
+    "web.trial.layoutIntro": {
+      "text": "القطع كما تُزرع في الحقل، مجمعة حسب القطاع. وُزعت عشوائيًا من البذرة {seed}.",
+      "status": "machineDraft"
+    },
+    "web.trial.legendHeading": {
+      "text": "المعاملات",
+      "status": "machineDraft"
+    },
+    "web.trial.noObservations": {
+      "text": "لا توجد مشاهدات بعد. استورد بعضها لتشغيل التحليل.",
+      "status": "machineDraft"
+    },
+    "web.trial.notFound": {
+      "text": "لا توجد تجربة بالرمز {code}.",
+      "status": "machineDraft"
+    },
+    "web.trial.observations": {
+      "text": "المشاهدات",
+      "status": "machineDraft"
+    },
+    "web.trial.plot": {
+      "text": "قطعة",
+      "status": "machineDraft"
+    },
+    "web.trial.summary": {
+      "text": "الملخص",
+      "status": "machineDraft"
+    },
+    "web.trial.viewReport": {
+      "text": "عرض التقرير",
+      "status": "machineDraft"
+    },
+    "web.trials.column.code": {
+      "text": "الرمز",
+      "status": "machineDraft"
+    },
+    "web.trials.column.crop": {
+      "text": "المحصول",
+      "status": "machineDraft"
+    },
+    "web.trials.column.plots": {
+      "text": "القطع",
+      "status": "machineDraft"
+    },
+    "web.trials.column.title": {
+      "text": "العنوان",
+      "status": "machineDraft"
+    },
+    "web.trials.count": {
+      "text": "{count} تجارب",
+      "status": "machineDraft"
+    },
+    "web.trials.empty": {
+      "text": "لا توجد تجارب بعد. أضف واحدة للبدء.",
+      "status": "machineDraft"
+    },
+    "web.trials.heading": {
+      "text": "التجارب",
+      "status": "machineDraft"
+    },
+    "web.trials.open": {
+      "text": "فتح",
+      "status": "machineDraft"
+    },
+    "web.verify.action": {
+      "text": "التحقق من قابلية إعادة الإنتاج",
+      "status": "machineDraft"
+    },
+    "web.verify.fail": {
+      "text": "فشل فحص قابلية إعادة الإنتاج: بصمة إعادة الاستيراد غير مطابقة.",
+      "status": "machineDraft"
+    },
+    "web.verify.intro": {
+      "text": "تُصدر التجربة ثم يُعاد استيرادها؛ ويجب أن تتطابق بصمة المحتوى.",
+      "status": "machineDraft"
+    },
+    "web.verify.pass": {
+      "text": "نجح فحص قابلية إعادة الإنتاج: تُصدر التجربة ويُعاد استيرادها بنفس بصمة المحتوى.",
+      "status": "machineDraft"
+    },
+    "web.verify.roundTrip": {
+      "text": "بعد الإرجاع",
+      "status": "machineDraft"
+    },
+    "web.verify.stored": {
+      "text": "المخزن",
+      "status": "machineDraft"
+    }
+  }
+}

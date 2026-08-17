@@ -35,6 +35,10 @@
     </div>
   </header>
 
+  {% if not t.isAuthoritative %}
+  <div class="draft-banner" role="note">{{ t.text('web.locale.draftNotice') }}</div>
+  {% endif %}
+
   <main id="main" class="content">
     {% block content %}{% endblock %}
   </main>

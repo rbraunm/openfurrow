@@ -88,6 +88,11 @@ def _field(translator: Translator, key: str, value: object) -> str:
 def _metadataSection(package: TrialPackage, translator: Translator) -> list[str]:
   trial = package.trial
   lines = [f"# {translator.text('report.heading.trialReport', title=trial.title)}", ""]
+  if not translator.isAuthoritative:
+    # Decision 0007: a surface showing a non-authoritative locale must say so. The
+    # notice is display text like everything else here; the data and hash are untouched.
+    lines.append(f"_{translator.text('report.draftNotice')}_")
+    lines.append("")
   lines.append(_field(translator, "report.field.trialCode", trial.trialCode))
   lines.append(_field(translator, "report.field.crop", trial.crop))
   lines.append(_field(translator, "report.field.season", trial.season))

@@ -6,7 +6,7 @@ Every result carries its provenance: a trial is described by a package plus its 
 
 ## Status
 
-The full reproducible loop runs end to end for a randomized complete block design — define, randomize, import, analyze, report, export, and reproduce — from the command line, an HTTP API, or a local web interface. It runs offline, on your own machine, in English (en-US / en-GB). See [`roadmap/milestones.md`](roadmap/milestones.md) for what is done and what is next, [`roadmap/implementation-plan.md`](roadmap/implementation-plan.md) for the build sequence, and [`brief.md`](brief.md) for the full brief.
+The full reproducible loop runs end to end for a randomized complete block design — define, randomize, import, analyze, report, export, and reproduce — from the command line, an HTTP API, or a local web interface. It runs offline, on your own machine. English (en-US / en-GB) is fully reviewed; Spanish, French, and Arabic ship as clearly-marked machine drafts pending native review, with the Arabic interface rendered right-to-left. See [`roadmap/milestones.md`](roadmap/milestones.md) for what is done and what is next, [`roadmap/implementation-plan.md`](roadmap/implementation-plan.md) for the build sequence, and [`brief.md`](brief.md) for the full brief.
 
 ## Install
 

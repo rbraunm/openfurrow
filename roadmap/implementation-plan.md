@@ -152,9 +152,14 @@ when the Done-when bar is met.
     `notComputedDetail`, `recommendationKey` with the suggested transform and kind) and the
     report resolves them, so assumption checks and the transform recommendation render in the
     reader's locale instead of always in English. Proven with a temporary catalog: the text
-    follows the locale, no English leaks, the content hash is unchanged. The interim locale
-    table must still not grow -- adding locales beyond those shipped is the signal the real
-    CLDR mechanism is overdue.
+    follows the locale, no English leaks, the content hash is unchanged. **Draft locales shipped:** es, fr, and
+    ar (the first real RTL locale) as machine drafts via `scripts/seed-draft-locales.py` --
+    every string machineDraft, surfaced by a draft notice in the report and a banner in the
+    UI, pending native/partner review per 0007. The interim formatting table grew to cover
+    them, which is exactly the signal the L0 note defined: **adopting the CLDR mechanism
+    (Babel) is now due as its own unit**, after which the table is deleted and `LocaleFormat`
+    remains the seam. Known draft conventions pending review: ar uses Western digits with dot
+    decimal; French punctuation spacing is anglicized.
 
 ### Lane A -- Core and packaging
 

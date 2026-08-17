@@ -588,6 +588,14 @@
     "diagnostic.recommendation.generic": {
       "text": "assumptions were flagged; if this is count or proportion data, declaring a measurementKind and a variance-stabilizing transform on the assessment may help (transforms are never applied automatically).",
       "status": "humanApproved"
+    },
+    "report.draftNotice": {
+      "text": "Draft translation (machine-generated, not yet reviewed): wording may be imprecise. Numbers, identifiers, and the content hash are unaffected.",
+      "status": "humanApproved"
+    },
+    "web.locale.draftNotice": {
+      "text": "This translation is an unreviewed machine draft; wording may be imprecise.",
+      "status": "humanApproved"
     }
   }
 }

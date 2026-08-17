@@ -66,6 +66,13 @@ a:hover { color: var(--accent); }
 }
 .skip-link:focus { inset-inline-start: 0.5rem; inset-block-start: 0.5rem; z-index: 10; }
 
+.draft-banner {
+  max-width: 68rem; margin-inline: auto;
+  padding: 0.45rem 1.4rem; font-size: 0.82rem; color: var(--furrow);
+  border-block-end: 1px dashed var(--line);
+  background: color-mix(in srgb, var(--accent) 4%, transparent);
+}
+
 /* Masthead ---------------------------------------------------------------- */
 
 .masthead {

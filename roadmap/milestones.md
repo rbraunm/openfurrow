@@ -43,8 +43,10 @@ this file is the coarse "what exists" ledger.
       schema types, result types, config, errors); internals stay internal.
 - [x] Localization scaffolding (decision 0007) -- keyed per-locale JSON catalogs with a
       translation-status convention, locale-aware number/date formatting, and RTL-capable
-      direction handling. Ships en-US and en-GB. Display only: a trial hashes identically in
-      every locale.
+      direction handling. Ships reviewed en-US and en-GB, plus es / fr / ar as machine drafts
+      (every string status machineDraft; the UI and report display a draft notice until a
+      native review upgrades them -- ar is the first live RTL locale). Display only: a trial
+      hashes identically in every locale.
 - [x] HTTP API -- a Flask service, thin controllers over the facade, fail-loud errors mapped
       to status by exception type, optional HTTPS, bounded request bodies. No auth yet.
 - [x] `serve` command -- runs the service and web UI locally.

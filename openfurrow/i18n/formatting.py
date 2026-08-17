@@ -46,15 +46,22 @@ class FormattingError(Exception):
   """A locale has no formatting rules, or a value cannot be formatted."""
 
 
-# The locales actually in play. en-US and en-GB are the two committable-now locales
-# (decision 0007 B): they share their strings but differ in date order, which is a
-# data-integrity hazard rather than a cosmetic one. fr is present for its *formatting*
-# rules only -- it has no message catalog and is not a shipped locale -- because a
-# comma-decimal locale is what proves the canonical guardrail actually holds.
+# The locales actually in play. en-US and en-GB are the reviewed English locales; es, fr,
+# and ar carry machine-draft catalogs (decision 0007's LLM-assisted first pass) and their
+# formatting rows here follow CLDR conventions for each locale. Draft convention decision
+# for ar, pending native review: Western (ASCII) digits with dot decimal, as is common in
+# Arabic scientific writing, rather than CLDR's default Arabic-Indic digits -- this
+# formatter only swaps separators and cannot produce digit-shape substitution anyway.
+#
+# This table has now grown to the size the L0 note warned about: per the implementation
+# plan, adopting the real CLDR mechanism (Babel) is due as its own unit, at which point
+# this table is deleted and `LocaleFormat` remains the seam.
 _localeFormats: dict[str, LocaleFormat] = {
   "en-US": LocaleFormat(decimalSeparator=".", groupSeparator=",", dateOrder="MDY"),
   "en-GB": LocaleFormat(decimalSeparator=".", groupSeparator=",", dateOrder="DMY"),
+  "es": LocaleFormat(decimalSeparator=",", groupSeparator=".", dateOrder="DMY"),
   "fr": LocaleFormat(decimalSeparator=",", groupSeparator=" ", dateOrder="DMY"),
+  "ar": LocaleFormat(decimalSeparator=".", groupSeparator=",", dateOrder="DMY"),
 }
 
 

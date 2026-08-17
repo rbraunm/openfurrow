@@ -185,10 +185,32 @@ def testMachineDraftLocaleIsNotAuthoritative():
   assert catalog.statusSummary()[MessageStatus.machineDraft] == 1
 
 
-def testEveryShippedLocaleIsAuthoritative():
-  """Nothing unreviewed ships: every catalog on disk is source or human-approved."""
-  for locale in availableLocales():
+_reviewedLocales = {"en-US", "en-GB"}
+_draftLocales = {"es", "fr", "ar"}
+
+
+def testReviewedLocalesAreAuthoritative():
+  """The English locales are fully reviewed: every string is source or human-approved."""
+  for locale in sorted(_reviewedLocales):
     assert loadCatalog(locale).isAuthoritative is True, f"{locale} carries unreviewed drafts"
+
+
+def testDraftLocalesAreMarkedAsDrafts():
+  """A machine-draft locale must say so, string by string (decision 0007).
+
+  Shipping a draft is allowed; shipping it *quietly* is not. Every string in a draft
+  locale is machineDraft (a mixed catalog would mean someone approved strings without a
+  review pass), the catalog reports itself non-authoritative, and the shipped set is
+  exactly the reviewed plus the draft locales -- a new locale must be classified here.
+  """
+  for locale in sorted(_draftLocales):
+    catalog = loadCatalog(locale)
+    assert catalog.isAuthoritative is False, f"{locale} claims to be reviewed"
+    summary = catalog.statusSummary()
+    assert summary[MessageStatus.machineDraft] == len(catalog.keys), (
+      f"{locale} has strings not marked machineDraft"
+    )
+  assert set(availableLocales()) == _reviewedLocales | _draftLocales
 
 
 # ---- locale actually changes the display ----------------------------------
@@ -266,6 +288,8 @@ def testDiagnosticTextFollowsTheLocale(workspace, tmp_path):
     entry["status"] = "humanApproved"
   source["messages"]["diagnostic.equalVariance.clear"]["text"] = "VERDICT-IN-LOCALE"
   temporary = _localeDirectory / "fr.json"
+  # fr ships a real catalog now: save it and put it back, never delete it.
+  original = temporary.read_bytes()
   temporary.write_text(json.dumps(source, indent=2, ensure_ascii=False), encoding="utf-8")
   try:
     before = workspace.contentHashFor("L10N-1")
@@ -274,4 +298,27 @@ def testDiagnosticTextFollowsTheLocale(workspace, tmp_path):
     assert "No evidence of unequal variance" not in localized
     assert workspace.contentHashFor("L10N-1") == before
   finally:
-    temporary.unlink()
+    temporary.write_bytes(original)
+
+
+# ---- draft locales surface their status (decision 0007) --------------------
+
+def testReportCarriesDraftNoticeInDraftLocale(workspace):
+  """A report in a machine-draft locale says so, right under the title; a reviewed
+  locale never shows the notice. Display only: the hash is identical either way."""
+  before = workspace.contentHashFor("L10N-1")
+  spanish = workspace.buildReport("L10N-1", locale="es")
+  english = workspace.buildReport("L10N-1", locale="en-US")
+  assert "Traducción preliminar" in spanish
+  assert "Draft translation" not in english
+  assert workspace.contentHashFor("L10N-1") == before
+
+
+def testDraftReportIsFullyLocalized(workspace):
+  """No English leaks into a draft-locale report body."""
+  spanish = workspace.buildReport("L10N-1", locale="es")
+  for english in ("Randomization seed", "Analysis of variance", "Grand mean",
+                  "No evidence", "Coefficient of variation"):
+    assert english not in spanish, f"English '{english}' leaked into the es report"
+  assert "Análisis de varianza" in spanish
+  assert "Semilla de aleatorización" in spanish

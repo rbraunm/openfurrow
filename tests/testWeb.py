@@ -199,3 +199,22 @@ def testLocaleSwitchHasNoScriptFallback(client, populated):
 def testTrialsTableHeadersHaveScope(client, populated):
   body = _text(client.get("/"))
   assert 'scope="col"' in body
+
+
+# ---- draft locales in the UI (decision 0007) -------------------------------
+
+def testDraftBannerShowsForDraftLocaleOnly(client, populated):
+  spanish = _text(client.get("/?locale=es"))
+  english = _text(client.get("/"))
+  assert "borrador automático" in spanish
+  assert "draft-banner" in spanish
+  assert "draft-banner" not in english
+
+
+def testArabicLocaleMirrorsTheDocument(client, populated):
+  """ar is the first shipped RTL locale: the document direction must flip, the draft
+  banner must render in Arabic, and choosing it must not touch the trial."""
+  body = _text(client.get("/trials/WEB-1?locale=ar"))
+  assert '<html lang="ar" dir="rtl">' in body
+  assert "مسودة آلية" in body            # the Arabic draft banner
+  assert "المعاملات" in body             # treatments heading, in Arabic
