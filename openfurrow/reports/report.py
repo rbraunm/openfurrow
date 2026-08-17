@@ -270,20 +270,29 @@ def _assumptionsSubsection(
     translator.text("report.assumptions.residualsNote"),
     "",
   ]
-  if assumptions.recommendation:
-    lines.append(
-      translator.text("report.assumptions.recommendation", recommendation=assumptions.recommendation)
-    )
+  if assumptions.recommendationKey:
+    if assumptions.recommendationTransform is not None:
+      detail = translator.text(
+        assumptions.recommendationKey,
+        kind=assumptions.recommendationKind.value,
+        transform=assumptions.recommendationTransform.value,
+      )
+    else:
+      detail = translator.text(assumptions.recommendationKey)
+    lines.append(translator.text("report.assumptions.recommendation", recommendation=detail))
     lines.append("")
   return lines
 
 
 def _diagnosticLine(outcome, translator: Translator) -> str:
-  # The diagnostic's name and interpretation still arrive as English from the analysis
-  # layer; localizing those generated sentences is follow-on work (see the plan's L0
-  # note). The numbers around them are formatted for the locale here.
+  """Render one assumption check in the reader's locale.
+
+  The analysis layer hands back keys and numbers, never sentences, so the wording and
+  the number formatting are both resolved here (decision 0007).
+  """
+  name = translator.text(outcome.nameKey)
   if not outcome.computed:
-    return f"- {outcome.name}: {outcome.interpretation}"
+    return f"- {name}: {translator.text(outcome.notComputedKey, **outcome.notComputedDetail)}"
   if outcome.statisticName == "F":
     statistic = (
       f"F({translator.integer(outcome.numeratorDegreesOfFreedom)}, "
@@ -292,7 +301,12 @@ def _diagnosticLine(outcome, translator: Translator) -> str:
     )
   else:
     statistic = f"{outcome.statisticName} = {translator.number(outcome.statistic, decimals=4)}"
-  return f"- {outcome.name}: {statistic}. {outcome.interpretation}"
+  reading = translator.text(
+    "diagnostic.reading",
+    verdict=translator.text(outcome.readingKey),
+    probability=_probability(outcome.pValue, translator),
+  )
+  return f"- {name}: {statistic}. {reading}"
 
 
 def _reproducibilitySection(

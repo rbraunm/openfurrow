@@ -147,11 +147,14 @@ when the Done-when bar is met.
     shipped locale is authoritative, and the wheel actually carries the catalogs (it did not at
     first -- a source checkout passed while an installed OpenFurrow would have built no report
     at all).
-  - **Remaining (follow-on, not blocking):** the analysis layer still emits diagnostic `name`
-    and `interpretation` sentences as English literals; `report.py` formats the numbers around
-    them but passes the prose through. Routing generated analysis sentences through the catalog
-    is its own unit. The interim locale table must not grow -- adding locales beyond those
-    shipped is the signal the real CLDR mechanism is overdue.
+  - **Follow-on (done):** the analysis layer no longer emits prose. `DiagnosticOutcome` and
+    `Assumptions` carry message keys plus data (`nameKey`, `readingKey`/`notComputedKey` with
+    `notComputedDetail`, `recommendationKey` with the suggested transform and kind) and the
+    report resolves them, so assumption checks and the transform recommendation render in the
+    reader's locale instead of always in English. Proven with a temporary catalog: the text
+    follows the locale, no English leaks, the content hash is unchanged. The interim locale
+    table must still not grow -- adding locales beyond those shipped is the signal the real
+    CLDR mechanism is overdue.
 
 ### Lane A -- Core and packaging
 

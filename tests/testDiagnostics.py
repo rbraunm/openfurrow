@@ -95,7 +95,7 @@ def testBrownForsytheMatchesScipyLevene():
 def testBrownForsytheNotComputedWhenTooSmall():
   outcome = brownForsythe(np.array([[1.0, 2.0, 3.0]]))  # a single block
   assert outcome.computed is False
-  assert "at least two" in outcome.interpretation
+  assert outcome.notComputedKey == "diagnostic.notComputed.needsTwoByTwo"
 
 
 # ---- Tukey non-additivity vs statsmodels fitted-square model -------------
@@ -142,7 +142,7 @@ def testTukeyDetectsInjectedInteraction():
 def testTukeyNotComputedWhenTooFewErrorDf():
   outcome = tukeyNonAdditivity(np.array([[1.0, 2.0], [3.0, 5.0]]))  # 2 x 2 leaves no remainder df
   assert outcome.computed is False
-  assert "too few error degrees of freedom" in outcome.interpretation
+  assert outcome.notComputedKey == "diagnostic.notComputed.tooFewErrorDegreesOfFreedom"
 
 
 # ---- Shapiro-Wilk on residuals -------------------------------------------
@@ -215,33 +215,41 @@ def testAssessAssumptionsRejectsBadSignificance():
 
 def _flaggedOutcome(pValue):
   return DiagnosticOutcome(
-    name="check", computed=True, statisticName="F", statistic=5.0,
+    nameKey="diagnostic.equalVariance.name", computed=True, statisticName="F", statistic=5.0,
     numeratorDegreesOfFreedom=3, denominatorDegreesOfFreedom=40,
-    pValue=pValue, interpretation="x")
+    pValue=pValue, readingKey="diagnostic.equalVariance.flagged")
 
 
 def testRecommendNamesCanonicalTransformForKnownKind():
+  """The recommendation is returned as a key plus the suggested transform and kind --
+  data the display layer renders, never a prewritten English sentence."""
   flagged, clean = _flaggedOutcome(0.01), _flaggedOutcome(0.5)
-  countMessage = recommendTransform((flagged, clean, clean), MeasurementKind.count, Transform.none, 0.05)
-  proportionMessage = recommendTransform((clean, clean, flagged), MeasurementKind.proportion, Transform.none, 0.05)
-  continuousMessage = recommendTransform((clean, flagged, clean), MeasurementKind.continuous, Transform.none, 0.05)
-  assert "sqrt" in countMessage and "count" in countMessage
-  assert "arcsinSqrt" in proportionMessage
-  assert "log" in continuousMessage
+  countKey, countTransform, countKind = recommendTransform(
+    (flagged, clean, clean), MeasurementKind.count, Transform.none, 0.05)
+  _, proportionTransform, _ = recommendTransform(
+    (clean, clean, flagged), MeasurementKind.proportion, Transform.none, 0.05)
+  _, continuousTransform, _ = recommendTransform(
+    (clean, flagged, clean), MeasurementKind.continuous, Transform.none, 0.05)
+  assert countKey == "diagnostic.recommendation.forKind"
+  assert countTransform is Transform.sqrt
+  assert countKind is MeasurementKind.count
+  assert proportionTransform is Transform.arcsinSqrt
+  assert continuousTransform is Transform.log
 
 
 def testRecommendIsGenericWhenKindUnspecified():
   flagged, clean = _flaggedOutcome(0.01), _flaggedOutcome(0.5)
-  message = recommendTransform((flagged, clean, clean), MeasurementKind.unspecified, Transform.none, 0.05)
-  assert message is not None
-  assert "measurementKind" in message
+  key, transform, kind = recommendTransform(
+    (flagged, clean, clean), MeasurementKind.unspecified, Transform.none, 0.05)
+  assert key == "diagnostic.recommendation.generic"
+  assert transform is None and kind is None
 
 
 def testNoRecommendationWhenAssumptionsHold():
   clean = _flaggedOutcome(0.5)
-  assert recommendTransform((clean, clean, clean), MeasurementKind.count, Transform.none, 0.05) is None
+  assert recommendTransform((clean, clean, clean), MeasurementKind.count, Transform.none, 0.05) == (None, None, None)
 
 
 def testNoRecommendationWhenAlreadyTransformed():
   flagged = _flaggedOutcome(0.001)
-  assert recommendTransform((flagged, flagged, flagged), MeasurementKind.count, Transform.sqrt, 0.05) is None
+  assert recommendTransform((flagged, flagged, flagged), MeasurementKind.count, Transform.sqrt, 0.05) == (None, None, None)

@@ -512,6 +512,82 @@
     "web.delete.cancel": {
       "text": "Cancel",
       "status": "source"
+    },
+    "diagnostic.equalVariance.name": {
+      "text": "Equal variance across treatments (Brown-Forsythe)",
+      "status": "source"
+    },
+    "diagnostic.equalVariance.flagged": {
+      "text": "Unequal error variance across treatments",
+      "status": "source"
+    },
+    "diagnostic.equalVariance.clear": {
+      "text": "No evidence of unequal variance",
+      "status": "source"
+    },
+    "diagnostic.nonAdditivity.name": {
+      "text": "Non-additivity (Tukey one df)",
+      "status": "source"
+    },
+    "diagnostic.nonAdditivity.flagged": {
+      "text": "Significant non-additivity; the additive RCBD model may be inadequate",
+      "status": "source"
+    },
+    "diagnostic.nonAdditivity.clear": {
+      "text": "No evidence of non-additivity",
+      "status": "source"
+    },
+    "diagnostic.normality.name": {
+      "text": "Normality of residuals (Shapiro-Wilk)",
+      "status": "source"
+    },
+    "diagnostic.normality.flagged": {
+      "text": "Residuals depart from normality",
+      "status": "source"
+    },
+    "diagnostic.normality.clear": {
+      "text": "No evidence against normal residuals",
+      "status": "source"
+    },
+    "diagnostic.notComputed.needsTwoByTwo": {
+      "text": "not computed: needs at least two treatments and two blocks",
+      "status": "source"
+    },
+    "diagnostic.notComputed.noDeviationVariation": {
+      "text": "not computed: no within-treatment variation in absolute deviations",
+      "status": "source"
+    },
+    "diagnostic.notComputed.tooFewErrorDegreesOfFreedom": {
+      "text": "not computed: too few error degrees of freedom for the one-df test",
+      "status": "source"
+    },
+    "diagnostic.notComputed.noTreatmentOrBlockVariation": {
+      "text": "not computed: no treatment or no block variation",
+      "status": "source"
+    },
+    "diagnostic.notComputed.noRemainderVariation": {
+      "text": "not computed: no residual variation after the non-additivity term",
+      "status": "source"
+    },
+    "diagnostic.notComputed.tooFewResiduals": {
+      "text": "not computed: only {count} residuals (need at least {minimum})",
+      "status": "source"
+    },
+    "diagnostic.notComputed.zeroResidualSpread": {
+      "text": "not computed: residuals have zero spread",
+      "status": "source"
+    },
+    "diagnostic.reading": {
+      "text": "{verdict} (p = {probability}).",
+      "status": "source"
+    },
+    "diagnostic.recommendation.forKind": {
+      "text": "assumptions were flagged and this is {kind} data; a {transform} transform may help. Declare it on the assessment -- it is never applied automatically.",
+      "status": "source"
+    },
+    "diagnostic.recommendation.generic": {
+      "text": "assumptions were flagged; if this is count or proportion data, declaring a measurementKind and a variance-stabilizing transform on the assessment may help (transforms are never applied automatically).",
+      "status": "source"
     }
   }
 }

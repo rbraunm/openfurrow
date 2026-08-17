@@ -179,7 +179,8 @@ def testReportSurfacesRecommendationWhenFlagged():
 
   assumptions = assessAssumptions("Y", package, layout, observations)
   assert assumptions.equalVariance.pValue < 0.05
-  assert assumptions.recommendation is not None and "sqrt" in assumptions.recommendation
+  assert assumptions.recommendationKey == "diagnostic.recommendation.forKind"
+  assert assumptions.recommendationTransform.value == "sqrt"
 
   report = buildReport(package, layout, observations)
   assert "Recommendation:" in report

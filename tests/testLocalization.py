@@ -212,3 +212,66 @@ def testReportContainsNoUntranslatedSourceLeak(workspace):
   """The en-GB report must not carry the American spellings it overrides."""
   british = workspace.buildReport("L10N-1", locale="en-GB")
   assert "Randomization" not in british
+
+
+# ---- the analysis layer emits keys, not prose -----------------------------
+
+def testDiagnosticsCarryKeysNotSentences(workspace):
+  """The analysis layer must hand back message keys and numbers, never English.
+
+  Regression: the diagnostics once built their own sentences ("No evidence of unequal
+  variance"), which the report printed verbatim -- so a non-English report still read in
+  English. Keys keep the wording in the display layer where decision 0007 puts it.
+  """
+  assumptions = workspace.assessAssumptions("L10N-1", "YIELD")
+  for outcome in (assumptions.equalVariance, assumptions.nonAdditivity, assumptions.normality):
+    assert outcome.nameKey.startswith("diagnostic.")
+    key = outcome.readingKey if outcome.computed else outcome.notComputedKey
+    assert key is not None and key.startswith("diagnostic.")
+    # No field carries a rendered sentence.
+    assert " " not in outcome.nameKey and " " not in key
+
+
+def testEveryDiagnosticKeyResolvesInEveryLocale(workspace):
+  """Every key the analysis can emit must exist in every shipped catalog.
+
+  A key with no catalog entry raises at render time, so this is what stops a diagnostic
+  from breaking a report in one locale but not another.
+  """
+  assumptions = workspace.assessAssumptions("L10N-1", "YIELD")
+  keys = []
+  for outcome in (assumptions.equalVariance, assumptions.nonAdditivity, assumptions.normality):
+    keys.append(outcome.nameKey)
+    keys.append(outcome.readingKey if outcome.computed else outcome.notComputedKey)
+  for locale in availableLocales():
+    catalog = loadCatalog(locale)
+    for key in keys:
+      assert key in catalog.keys, f"{locale} is missing {key}"
+
+
+def testDiagnosticTextFollowsTheLocale(workspace, tmp_path):
+  """A report in another locale renders the diagnostics in that locale.
+
+  Uses a temporary catalog with two diagnostic strings overridden, so the assertion is
+  about the mechanism (the text follows the catalog) rather than about any shipped
+  translation.
+  """
+  import json
+
+  from openfurrow.i18n.catalog import _localeDirectory
+
+  source = json.loads((_localeDirectory / f"{sourceLocale}.json").read_text(encoding="utf-8"))
+  source["locale"] = "fr"                       # fr has formatting rules but no catalog
+  for entry in source["messages"].values():
+    entry["status"] = "humanApproved"
+  source["messages"]["diagnostic.equalVariance.clear"]["text"] = "VERDICT-IN-LOCALE"
+  temporary = _localeDirectory / "fr.json"
+  temporary.write_text(json.dumps(source, indent=2, ensure_ascii=False), encoding="utf-8")
+  try:
+    before = workspace.contentHashFor("L10N-1")
+    localized = workspace.buildReport("L10N-1", locale="fr")
+    assert "VERDICT-IN-LOCALE" in localized
+    assert "No evidence of unequal variance" not in localized
+    assert workspace.contentHashFor("L10N-1") == before
+  finally:
+    temporary.unlink()

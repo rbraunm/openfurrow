@@ -17,12 +17,12 @@ from __future__ import annotations
 import math
 
 import numpy
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 from openfurrow.analysis.anova import buildRcbdMatrix
 from openfurrow.analysis.distributions import fDistributionSurvival, inverseNormalCdf, normalCdf
 from openfurrow.analysis.transforms import preferredTransform
-from openfurrow.schema.trialPackage import Transform
+from openfurrow.schema.trialPackage import MeasurementKind, Transform
 
 shapiroWilkMinimum = 3
 
@@ -121,22 +121,33 @@ def _shapiroWilkPValue(w, n):
 
 
 class DiagnosticOutcome(BaseModel):
-  """One assumption check: its statistic and a plain-language reading.
+  """One assumption check: its statistic and a message key for the reading.
 
-  When a check cannot be run (too few degrees of freedom, no variation), computed
-  is False and interpretation carries the reason -- never a silent pass.
+  The analysis layer does not produce prose. It reports *what it found* as keys plus
+  data -- `nameKey` for the check's name, and either `readingKey` (the verdict, when the
+  check ran) or `notComputedKey` (why it could not run) -- and the display layer resolves
+  those through the message catalog in the reader's locale (decision 0007). Returning
+  English sentences from here would make every surface that shows a diagnostic
+  monolingual, which is exactly the hardcoding that decision forbids.
+
+  When a check cannot be run (too few degrees of freedom, no variation), computed is
+  False and notComputedKey carries the reason -- never a silent pass.
   """
 
   model_config = ConfigDict(extra="forbid")
 
-  name: str
+  nameKey: str
   computed: bool
   statisticName: str | None = None
   statistic: float | None = None
   numeratorDegreesOfFreedom: int | None = None
   denominatorDegreesOfFreedom: int | None = None
   pValue: float | None = None
-  interpretation: str
+  readingKey: str | None = None
+  notComputedKey: str | None = None
+  # Numbers a not-computed reason needs (e.g. the residual count and the minimum), kept
+  # as data so the sentence can be built in any locale.
+  notComputedDetail: dict[str, int] = Field(default_factory=dict)
 
 
 class Assumptions(BaseModel):
@@ -149,16 +160,9 @@ class Assumptions(BaseModel):
   equalVariance: DiagnosticOutcome
   nonAdditivity: DiagnosticOutcome
   normality: DiagnosticOutcome
-  recommendation: str | None = None
-
-
-def _formatProbability(pValue):
-  return "< 0.0001" if pValue < 1.0e-4 else f"{pValue:.4f}"
-
-
-def _reading(significant, pValue, flagged, clear):
-  verdict = flagged if significant else clear
-  return f"{verdict} (p = {_formatProbability(pValue)})."
+  recommendationKey: str | None = None
+  recommendationTransform: Transform | None = None
+  recommendationKind: MeasurementKind | None = None
 
 
 def brownForsythe(matrix, significanceLevel=0.05):
@@ -167,12 +171,12 @@ def brownForsythe(matrix, significanceLevel=0.05):
   Levene's test on absolute deviations from each treatment's median -- an F-test
   robust to non-normality. Returns a DiagnosticOutcome.
   """
-  name = "Equal variance across treatments (Brown-Forsythe)"
+  nameKey = "diagnostic.equalVariance.name"
   blockCount, treatmentCount = matrix.shape
   if treatmentCount < 2 or blockCount < 2:
     return DiagnosticOutcome(
-      name=name, computed=False,
-      interpretation="not computed: needs at least two treatments and two blocks")
+      nameKey=nameKey, computed=False,
+      notComputedKey="diagnostic.notComputed.needsTwoByTwo")
   deviations = numpy.abs(matrix - numpy.median(matrix, axis=0))
   groupMeans = deviations.mean(axis=0)
   grandMean = float(deviations.mean())
@@ -182,17 +186,16 @@ def brownForsythe(matrix, significanceLevel=0.05):
   sumSquaresWithin = float(((deviations - groupMeans) ** 2).sum())
   if sumSquaresWithin <= 0.0:
     return DiagnosticOutcome(
-      name=name, computed=False,
-      interpretation="not computed: no within-treatment variation in absolute deviations")
+      nameKey=nameKey, computed=False,
+      notComputedKey="diagnostic.notComputed.noDeviationVariation")
   fStatistic = (sumSquaresBetween / numeratorDf) / (sumSquaresWithin / denominatorDf)
   pValue = fDistributionSurvival(fStatistic, numeratorDf, denominatorDf)
   return DiagnosticOutcome(
-    name=name, computed=True, statisticName="F", statistic=fStatistic,
+    nameKey=nameKey, computed=True, statisticName="F", statistic=fStatistic,
     numeratorDegreesOfFreedom=numeratorDf, denominatorDegreesOfFreedom=denominatorDf,
     pValue=pValue,
-    interpretation=_reading(
-      pValue < significanceLevel, pValue,
-      "Unequal error variance across treatments", "No evidence of unequal variance"))
+    readingKey=("diagnostic.equalVariance.flagged" if pValue < significanceLevel
+                else "diagnostic.equalVariance.clear"))
 
 
 def tukeyNonAdditivity(matrix, significanceLevel=0.05):
@@ -201,13 +204,13 @@ def tukeyNonAdditivity(matrix, significanceLevel=0.05):
   Partitions a single non-additivity term out of the RCBD error and tests it
   against the remainder. Returns a DiagnosticOutcome.
   """
-  name = "Non-additivity (Tukey one df)"
+  nameKey = "diagnostic.nonAdditivity.name"
   blockCount, treatmentCount = matrix.shape
   denominatorDf = (treatmentCount - 1) * (blockCount - 1) - 1
   if denominatorDf < 1:
     return DiagnosticOutcome(
-      name=name, computed=False,
-      interpretation="not computed: too few error degrees of freedom for the one-df test")
+      nameKey=nameKey, computed=False,
+      notComputedKey="diagnostic.notComputed.tooFewErrorDegreesOfFreedom")
   grand = float(matrix.mean())
   treatmentEffects = matrix.mean(axis=0) - grand
   blockEffects = matrix.mean(axis=1) - grand
@@ -215,8 +218,8 @@ def tukeyNonAdditivity(matrix, significanceLevel=0.05):
   sumBlockSquares = float((blockEffects ** 2).sum())
   if sumTreatmentSquares <= 0.0 or sumBlockSquares <= 0.0:
     return DiagnosticOutcome(
-      name=name, computed=False,
-      interpretation="not computed: no treatment or no block variation")
+      nameKey=nameKey, computed=False,
+      notComputedKey="diagnostic.notComputed.noTreatmentOrBlockVariation")
   crossProduct = float((matrix * blockEffects[:, None] * treatmentEffects[None, :]).sum())
   sumSquaresNonadditivity = crossProduct * crossProduct / (sumTreatmentSquares * sumBlockSquares)
   sumSquaresTotal = float(((matrix - grand) ** 2).sum())
@@ -224,17 +227,15 @@ def tukeyNonAdditivity(matrix, significanceLevel=0.05):
   sumSquaresRemainder = sumSquaresError - sumSquaresNonadditivity
   if sumSquaresRemainder <= 1.0e-12 * max(1.0, sumSquaresError):
     return DiagnosticOutcome(
-      name=name, computed=False,
-      interpretation="not computed: no residual variation after the non-additivity term")
+      nameKey=nameKey, computed=False,
+      notComputedKey="diagnostic.notComputed.noRemainderVariation")
   fStatistic = sumSquaresNonadditivity / (sumSquaresRemainder / denominatorDf)
   pValue = fDistributionSurvival(fStatistic, 1, denominatorDf)
   return DiagnosticOutcome(
-    name=name, computed=True, statisticName="F", statistic=fStatistic,
+    nameKey=nameKey, computed=True, statisticName="F", statistic=fStatistic,
     numeratorDegreesOfFreedom=1, denominatorDegreesOfFreedom=denominatorDf, pValue=pValue,
-    interpretation=_reading(
-      pValue < significanceLevel, pValue,
-      "Significant non-additivity; the additive RCBD model may be inadequate",
-      "No evidence of non-additivity"))
+    readingKey=("diagnostic.nonAdditivity.flagged" if pValue < significanceLevel
+                else "diagnostic.nonAdditivity.clear"))
 
 
 def shapiroWilkResiduals(matrix, significanceLevel=0.05):
@@ -244,54 +245,49 @@ def shapiroWilkResiduals(matrix, significanceLevel=0.05):
   practice runs the test on these fitted residuals; they are constrained rather
   than independent, a caveat the report states. Returns a DiagnosticOutcome.
   """
-  name = "Normality of residuals (Shapiro-Wilk)"
+  nameKey = "diagnostic.normality.name"
   grand = float(matrix.mean())
   fitted = matrix.mean(axis=0)[None, :] + matrix.mean(axis=1)[:, None] - grand
   residuals = (matrix - fitted).flatten()
   count = int(residuals.size)
   if count < shapiroWilkMinimum:
     return DiagnosticOutcome(
-      name=name, computed=False,
-      interpretation=f"not computed: only {count} residuals (need at least {shapiroWilkMinimum})")
+      nameKey=nameKey, computed=False,
+      notComputedKey="diagnostic.notComputed.tooFewResiduals",
+      notComputedDetail={"count": count, "minimum": shapiroWilkMinimum})
   if float(residuals.max() - residuals.min()) <= 0.0:
     return DiagnosticOutcome(
-      name=name, computed=False, interpretation="not computed: residuals have zero spread")
+      nameKey=nameKey, computed=False,
+      notComputedKey="diagnostic.notComputed.zeroResidualSpread")
   w, pValue = shapiroWilk(residuals.tolist())
   return DiagnosticOutcome(
-    name=name, computed=True, statisticName="W", statistic=w, pValue=pValue,
-    interpretation=_reading(
-      pValue < significanceLevel, pValue,
-      "Residuals depart from normality", "No evidence against normal residuals"))
+    nameKey=nameKey, computed=True, statisticName="W", statistic=w, pValue=pValue,
+    readingKey=("diagnostic.normality.flagged" if pValue < significanceLevel
+                else "diagnostic.normality.clear"))
 
 
 def recommendTransform(outcomes, measurementKind, currentTransform, significanceLevel):
   """An advisory transform suggestion when assumptions are flagged; never applied.
 
-  Returns None when no transform is indicated -- when the assumptions hold, or when a
-  transform is already applied. When a diagnostic is flagged and no transform is set: if
-  the measurement kind is known, the canonical transform for that kind is named; if the
-  kind is unspecified, a generic nudge to declare a kind and transform is given.
+  Returns a (messageKey, suggestedTransform, measurementKind) triple, all None when no
+  transform is indicated -- when the assumptions hold, or when a transform is already
+  applied. When a diagnostic is flagged and no transform is set: if the measurement kind
+  is known, the canonical transform for that kind is named; if the kind is unspecified,
+  a generic nudge to declare a kind and transform is given. Like the diagnostics
+  themselves, this returns keys and data, never a sentence -- the wording is the display
+  layer's business (decision 0007).
   """
   if currentTransform is not Transform.none:
-    return None
+    return (None, None, None)
   flagged = any(
     outcome.computed and outcome.pValue is not None and outcome.pValue < significanceLevel
     for outcome in outcomes
   )
   if not flagged:
-    return None
+    return (None, None, None)
   if measurementKind in preferredTransform:
-    suggestion = preferredTransform[measurementKind]
-    return (
-      f"assumptions were flagged and this is {measurementKind.value} data; a "
-      f"{suggestion.value} transform may help. Declare it on the assessment -- it is "
-      f"never applied automatically."
-    )
-  return (
-    "assumptions were flagged; if this is count or proportion data, declaring a "
-    "measurementKind and a variance-stabilizing transform on the assessment may help "
-    "(transforms are never applied automatically)."
-  )
+    return ("diagnostic.recommendation.forKind", preferredTransform[measurementKind], measurementKind)
+  return ("diagnostic.recommendation.generic", None, None)
 
 
 def assessAssumptions(assessmentCode, package, layout, observations, significanceLevel=0.05):
@@ -309,16 +305,19 @@ def assessAssumptions(assessmentCode, package, layout, observations, significanc
   equalVariance = brownForsythe(matrix, significanceLevel)
   nonAdditivity = tukeyNonAdditivity(matrix, significanceLevel)
   normality = shapiroWilkResiduals(matrix, significanceLevel)
+  recommendationKey, recommendationTransform, recommendationKind = recommendTransform(
+    (equalVariance, nonAdditivity, normality),
+    assessment.measurementKind,
+    transform,
+    significanceLevel,
+  )
   return Assumptions(
     assessmentCode=assessmentCode,
     significanceLevel=significanceLevel,
     equalVariance=equalVariance,
     nonAdditivity=nonAdditivity,
     normality=normality,
-    recommendation=recommendTransform(
-      (equalVariance, nonAdditivity, normality),
-      assessment.measurementKind,
-      transform,
-      significanceLevel,
-    ),
+    recommendationKey=recommendationKey,
+    recommendationTransform=recommendationTransform,
+    recommendationKind=recommendationKind,
   )
