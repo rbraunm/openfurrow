@@ -92,14 +92,14 @@ def _buildParser() -> argparse.ArgumentParser:
   importParser.add_argument("database")
   importParser.add_argument("trialCode")
   importParser.add_argument("csv", help="path to an observations CSV file")
-  importParser.add_argument("--config", help="path to a project config file")
+  importParser.add_argument("--config", help="path to a project config file (see examples/openfurrow.yaml)")
   importParser.set_defaults(handler=_commandImport)
 
   reportParser = sub.add_parser("report", help="build the trial report (AOV Means Table)")
   reportParser.add_argument("database")
   reportParser.add_argument("trialCode")
   reportParser.add_argument("--output", help="write the report to this file instead of stdout")
-  reportParser.add_argument("--config", help="path to a project config file")
+  reportParser.add_argument("--config", help="path to a project config file (see examples/openfurrow.yaml)")
   reportParser.add_argument(
     "--locale", default=sourceLocale,
     help=f"locale for the report's display text and numbers (default: {sourceLocale})",
@@ -130,7 +130,7 @@ def _buildParser() -> argparse.ArgumentParser:
 
   serveParser = sub.add_parser("serve", help="run the HTTP service over a trial database")
   serveParser.add_argument("database")
-  serveParser.add_argument("--config", help="path to a project config file")
+  serveParser.add_argument("--config", help="path to a project config file (see examples/openfurrow.yaml)")
   serveParser.add_argument("--host", help="bind address (overrides config; default from config)")
   serveParser.add_argument("--port", type=int, help="bind port (overrides config)")
   serveParser.set_defaults(handler=_commandServe)

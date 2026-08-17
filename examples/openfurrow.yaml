@@ -1,0 +1,82 @@
+# OpenFurrow project configuration -- reference copy.
+#
+# A project keeps its configuration in one file, conventionally at
+# config/openfurrow.yaml, and passes it with --config:
+#
+#   openfurrow report trials.db MY-TRIAL --config config/openfurrow.yaml
+#   openfurrow serve  trials.db          --config config/openfurrow.yaml
+#
+# Every setting below is shown at its default value, so this file is a no-op copy you
+# can trim to just what you change. Unknown sections and misspelled settings are
+# rejected loudly rather than ignored, so a typo fails immediately instead of silently
+# doing nothing.
+#
+# Configuration affects how data is read and how results are presented. It never
+# changes the canonical data or the content hash: the same trial hashes identically
+# whatever is set here.
+
+# How observation CSVs are read. Long format is canonical -- one row per observation --
+# and wide format (one column per assessment) is accepted and converted. The resolved
+# column mapping is recorded with the import for reproducibility.
+import:
+  format: long
+
+  # Column names for long format.
+  long:
+    plotNumber: plotNumber
+    assessmentCode: assessmentCode
+    value: value
+
+  # Wide format: one row per plot, one column per assessment.
+  wide:
+    plotNumber: plotNumber
+    # Which columns hold assessments. null means every column except plotNumber and
+    # anything listed in ignoreColumns.
+    assessmentColumns: null
+    ignoreColumns: []
+
+  # How raw cell text becomes a value.
+  parsing:
+    # The decimal separator used in the FILE being read. This is about parsing input,
+    # not display: the canonical form stays dot-decimal, so a trial hashes identically
+    # no matter which convention its source data used.
+    decimalSeparator: "."
+
+    # Cell values that mark "not recorded". Missing observations are rejected rather
+    # than imputed (decision 0003) -- an incomplete assessment fails the analysis
+    # loudly instead of being quietly filled in.
+    naTokens:
+      - ""
+      - "NA"
+      - "na"
+      - "N/A"
+
+# The analysis conventions, matching what an ARM user expects from the AOV Means Table.
+analysis:
+  significanceLevel: 0.05
+
+  # protectedLSD runs Fisher's LSD only when the treatment F test is significant;
+  # lsd always separates means. Other tests (Duncan's, SNK, Tukey's, Dunnett's) are
+  # future scope -- see roadmap/milestones.md.
+  meanComparison: protectedLSD
+
+# The HTTP service and web UI (openfurrow serve). Only read by `serve`.
+service:
+  # Loopback by default: the tool must not become a network service by accident.
+  # There is NO authentication yet, so do not bind this to a reachable address.
+  host: 127.0.0.1
+  port: 8420
+
+  # Largest accepted request body, in bytes. Bounds memory use; oversize uploads are
+  # rejected before being read. Trial packages and observation CSVs are small.
+  maxUploadBytes: 16777216
+
+  # HTTPS is off by default because a local single-user tool on loopback gains nothing
+  # from it. When enabled, both files must exist or the service refuses to start --
+  # it never quietly falls back to plain HTTP. Certificates are supplied by you;
+  # automatic issuance (ACME / Let's Encrypt) belongs with the internet-facing server
+  # and is not implemented.
+  tls:
+    enabled: false
+    certificateFile: null
+    privateKeyFile: null

@@ -1,8 +1,12 @@
 # Milestones
 
-The MVP is the thinnest reproducible loop: define a trial, randomize it, import
+The MVP was the thinnest reproducible loop: define a trial, randomize it, import
 observations, analyze, report, and export a portable package that re-imports and
-reproduces. CLI-first; web UI and team/Postgres mode are post-MVP.
+reproduces. That loop is now reachable three ways -- the CLI, an HTTP API, and a local
+web UI. Team/Postgres mode and a user-owned server remain post-MVP.
+
+Detailed, ordered work units and their acceptance bars live in `implementation-plan.md`;
+this file is the coarse "what exists" ledger.
 
 ## Done
 - [x] Trial-package schema -- trial metadata, treatments, RCBD design spec, assessment
@@ -30,11 +34,30 @@ reproduces. CLI-first; web UI and team/Postgres mode are post-MVP.
 - [x] Worked example -- `examples/yatesOats/` runs the whole loop on the Yates oat trial
       and reproduces its published ANOVA and a known stable input hash; guarded by a test.
 - [x] README quickstart -- install and the loop, replacing the definition-phase stub.
+- [x] Install smoke on Python 3.13 -- the wheel builds, installs into a clean venv, and
+      imports and runs from site-packages outside the source tree; `scripts/bootstrap.sh`
+      provisions the 3.13 environment and is idempotent.
+- [x] Core facade -- one `Workspace` that every surface calls; the CLI, the API, and the web
+      UI reach the core only through it, so no surface can drift from or re-implement the core.
+- [x] Public API surface -- `openfurrow/__init__.py` is the compatibility boundary (facade,
+      schema types, result types, config, errors); internals stay internal.
+- [x] Localization scaffolding (decision 0007) -- keyed per-locale JSON catalogs with a
+      translation-status convention, locale-aware number/date formatting, and RTL-capable
+      direction handling. Ships en-US and en-GB. Display only: a trial hashes identically in
+      every locale.
+- [x] HTTP API -- a Flask service, thin controllers over the facade, fail-loud errors mapped
+      to status by exception type, optional HTTPS, bounded request bodies. No auth yet.
+- [x] `serve` command -- runs the service and web UI locally.
+- [x] Analyst web UI -- browse trials, add a trial, view the randomized field layout as a plot
+      map, import observations, read the report, verify reproducibility, and delete. Served
+      offline with no external assets; localized; RTL layout mirroring verified.
+- [x] Field Book file interop (E1) -- export a trial's field and trait files, ingest a Field
+      Book database-format export, round-tripping to the same content hash.
 
 ## Next
-- [ ] Install smoke test on Python 3.13 -- confirm the `openfurrow` console script installs
-      (`pip install .`) and runs end to end. The entry point is wired and the loop is
-      covered by tests; a real install needs a 3.13 environment (the declared target).
+Nothing outstanding from the MVP loop. The next tracks are analysis breadth (below) and
+Phase 2 of `implementation-plan.md` (user-owned server, sync, BrAPI subset, RTL locale
+delivery).
 
 ## Future (recorded, not built)
 
@@ -60,7 +83,7 @@ studies, as a separate institution that the tool feeds -- is recorded in `vision
 - [ ] Cross-trial and across-year summaries built on the registry.
 
 **Analysis and visualization UI**
-- [ ] Web UI.
+- [x] Web UI -- the analyst workflow (see Done).
 - [ ] Visualization: means with letters/error bars, interaction plots, MET and across-year
       summaries -- reproducible views over validated results, not a new source of truth.
 
@@ -68,7 +91,8 @@ studies, as a separate institution that the tool feeds -- is recorded in `vision
 - [ ] Import from the incumbent registry and analysis formats (migrate a protocol/product
       history in without re-keying); open export so data is never re-locked. Extends the
       interoperability landscape in `brief.md` section 12.
-- [ ] BrAPI / Field Book alignment.
+- [x] Field Book file round-trip (export field/trait files, ingest the collected export).
+- [ ] BrAPI v2 server subset (Core + Phenotyping), and live sync with it.
 - [ ] Deposit into existing endowed archives (Dryad, Zenodo) and mint DOIs -- a durable
       public home and discovery now, and the near-term first step toward the archive
       north star (`vision.md`).
