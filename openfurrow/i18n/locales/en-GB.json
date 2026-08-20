@@ -162,7 +162,7 @@
       "status": "humanApproved"
     },
     "report.means.separation": {
-      "text": "Mean separation: {method} (alpha = {alpha}). Treatment effect {significance} (P = {probability}).",
+      "text": "Mean separation: {method} (alpha = {alpha}). Treatment effect {significance} (P {probability}).",
       "status": "humanApproved"
     },
     "report.means.significant": {
@@ -273,8 +273,12 @@
       "text": "-",
       "status": "humanApproved"
     },
-    "report.value.probabilityBelowThreshold": {
-      "text": "<0.0001",
+    "report.value.lessThan": {
+      "text": "< {value}",
+      "status": "humanApproved"
+    },
+    "report.value.equalTo": {
+      "text": "= {value}",
       "status": "humanApproved"
     },
     "web.app.name": {
@@ -578,7 +582,7 @@
       "status": "humanApproved"
     },
     "diagnostic.reading": {
-      "text": "{verdict} (p = {probability}).",
+      "text": "{verdict} (P {probability}).",
       "status": "humanApproved"
     },
     "diagnostic.recommendation.forKind": {

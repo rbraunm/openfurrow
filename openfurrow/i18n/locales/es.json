@@ -66,7 +66,7 @@
       "status": "machineDraft"
     },
     "diagnostic.reading": {
-      "text": "{verdict} (p = {probability}).",
+      "text": "{verdict} (P {probability}).",
       "status": "machineDraft"
     },
     "diagnostic.recommendation.forKind": {
@@ -270,7 +270,7 @@
       "status": "machineDraft"
     },
     "report.means.separation": {
-      "text": "Separación de medias: {method} (alfa = {alpha}). Efecto de tratamiento {significance} (P = {probability}).",
+      "text": "Separación de medias: {method} (alfa = {alpha}). Efecto de tratamiento {significance} (P {probability}).",
       "status": "machineDraft"
     },
     "report.means.significant": {
@@ -353,8 +353,12 @@
       "text": "-",
       "status": "machineDraft"
     },
-    "report.value.probabilityBelowThreshold": {
-      "text": "<0.0001",
+    "report.value.equalTo": {
+      "text": "= {value}",
+      "status": "machineDraft"
+    },
+    "report.value.lessThan": {
+      "text": "< {value}",
       "status": "machineDraft"
     },
     "web.add.error": {

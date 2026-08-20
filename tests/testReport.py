@@ -113,7 +113,7 @@ def testReportRendersAovMeansTable():
 
 def testReportSeparatesSignificantTrial():
   report = buildReport(*syntheticInputs())
-  assert "Treatment effect significant (P = <0.0001)" in report
+  assert "Treatment effect significant (P < 0.0001)" in report
   assert "| A | 100.000 | a |" in report
   assert "| B | 99.000 | a |" in report
   assert "| C | 80.000 | b |" in report

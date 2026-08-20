@@ -36,6 +36,11 @@ from openfurrow.schema.observation import Observation
 from openfurrow.schema.trialPackage import AssessmentDataType, Transform, TrialPackage
 from openfurrow.version import schemaVersion
 
+# The precision p-values print at, and the value below which one rounds to zero at that
+# precision. Derived, not written twice: change the decimals and the threshold follows.
+_probabilityDecimals = 4
+_probabilityThreshold = 10.0 ** -_probabilityDecimals
+
 _scaleKeys = {
   Transform.sqrt: "report.scale.sqrt",
   Transform.log: "report.scale.log",
@@ -193,7 +198,7 @@ def _assessmentSection(
       f"| {translator.number(row.sumOfSquares, decimals=4)} "
       f"| {translator.number(row.meanSquare, decimals=4)} "
       f"| {translator.number(row.fStatistic, decimals=2)} "
-      f"| {_probability(row.pValue, translator)} |"
+      f"| {_probabilityCell(row.pValue, translator)} |"
     )
   lines.append("")
   lines.append(
@@ -220,7 +225,7 @@ def _assessmentSection(
       method=separation.method,
       alpha=alpha,
       significance=significance,
-      probability=_probability(treatmentRow.pValue, translator),
+      probability=_probabilityStatement(treatmentRow.pValue, translator),
     )
   )
   lines.append("")
@@ -309,7 +314,7 @@ def _diagnosticLine(outcome, translator: Translator) -> str:
   reading = translator.text(
     "diagnostic.reading",
     verdict=translator.text(outcome.readingKey),
-    probability=_probability(outcome.pValue, translator),
+    probability=_probabilityStatement(outcome.pValue, translator),
   )
   return f"- {name}: {statistic}. {reading}"
 
@@ -371,9 +376,47 @@ def _significantDecimals(value: float) -> int:
   return 0 if float(value).is_integer() else 2
 
 
-def _probability(value, translator: Translator) -> str:
+def _belowProbabilityThreshold(value: float) -> bool:
+  """True when a p-value would round to zero at the precision reports print.
+
+  This is a display-precision fact, not a statistical one: nothing in the analysis
+  result is censored, and the threshold is derived from the printed precision rather
+  than written out a second time.
+  """
+  return value < _probabilityThreshold
+
+
+def _probabilityCell(value, translator: Translator) -> str:
+  """A p-value as an ANOVA table cell.
+
+  The column is headed P, so an ordinary value carries no operator; only the censored
+  case needs one.
+  """
   if value is None:
     return translator.text("report.value.absent")
-  if value < 0.0001:
-    return translator.text("report.value.probabilityBelowThreshold")
-  return translator.number(value, decimals=4)
+  if _belowProbabilityThreshold(value):
+    return translator.text(
+      "report.value.lessThan",
+      value=translator.number(_probabilityThreshold, decimals=_probabilityDecimals),
+    )
+  return translator.number(value, decimals=_probabilityDecimals)
+
+
+def _probabilityStatement(value, translator: Translator) -> str:
+  """A p-value as prose: the operator and the number, for a sentence reading `P {...}`.
+
+  The operator is rendered from the catalog rather than written into the sentence, so
+  the censored case reads `P < 0.0001` instead of the malformed `P = <0.0001`, and the
+  number goes through the locale formatter like every other number in the report.
+  """
+  if value is None:
+    return translator.text("report.value.absent")
+  if _belowProbabilityThreshold(value):
+    return translator.text(
+      "report.value.lessThan",
+      value=translator.number(_probabilityThreshold, decimals=_probabilityDecimals),
+    )
+  return translator.text(
+    "report.value.equalTo",
+    value=translator.number(value, decimals=_probabilityDecimals),
+  )

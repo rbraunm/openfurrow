@@ -162,7 +162,7 @@
       "status": "source"
     },
     "report.means.separation": {
-      "text": "Mean separation: {method} (alpha = {alpha}). Treatment effect {significance} (P = {probability}).",
+      "text": "Mean separation: {method} (alpha = {alpha}). Treatment effect {significance} (P {probability}).",
       "status": "source"
     },
     "report.means.significant": {
@@ -273,8 +273,12 @@
       "text": "-",
       "status": "source"
     },
-    "report.value.probabilityBelowThreshold": {
-      "text": "<0.0001",
+    "report.value.lessThan": {
+      "text": "< {value}",
+      "status": "source"
+    },
+    "report.value.equalTo": {
+      "text": "= {value}",
       "status": "source"
     },
     "web.app.name": {
@@ -578,7 +582,7 @@
       "status": "source"
     },
     "diagnostic.reading": {
-      "text": "{verdict} (p = {probability}).",
+      "text": "{verdict} (P {probability}).",
       "status": "source"
     },
     "diagnostic.recommendation.forKind": {

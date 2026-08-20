@@ -193,7 +193,7 @@ def testReportEscapesHtmlInTrialFields(client, workspace, tmp_path):
 
 
 def testReportStillRendersLiteralLessThan(client, populated):
-  """The escaping must not eat legitimate content: a P value like <0.0001 still shows."""
+  """The escaping must not eat legitimate content: a P value like < 0.0001 still shows."""
   body = client.get("/trials/D2-1/report").get_data(as_text=True)
   # tables still render (escaping preserves markdown structure)
   assert "<table>" in body

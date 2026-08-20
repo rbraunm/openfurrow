@@ -120,6 +120,58 @@ def testCommaDecimalLocaleFormatsDisplayButNotCanonical(workspace, tmp_path):
   assert workspace.contentHashFor("L10N-1") == before
 
 
+# ---- p-values are comparisons, and comparisons obey the locale --------------
+#
+# Regression: the below-threshold p-value used to be one catalog literal, "<0.0001",
+# dropped into a sentence that already supplied its own operator. That produced the
+# mathematically malformed "P = <0.0001", and because the literal carried its own
+# digits it was the one number in the whole report that ignored the locale -- a French
+# report read "alpha = 0,05" and "P = <0.0001" on the same line. The operator now comes
+# from the catalog and the number from the formatter, so both faults are structural
+# impossibilities rather than strings to keep an eye on.
+
+def testNoLocaleEmitsADoubledComparisonOperator(workspace):
+  """No report may pair an equals sign with a second comparison operator."""
+  for locale in availableLocales():
+    report = workspace.buildReport("L10N-1", locale=locale)
+    for malformed in ("= <", "= >", "=<", "=>"):
+      assert malformed not in report, f"{locale} report emitted '{malformed}'"
+
+
+def testBelowThresholdProbabilityUsesTheLocaleDecimalSeparator(workspace):
+  """The censored p-value is formatted like every other number, not preformatted.
+
+  The L10N-1 fixture's treatment effect is far below the printed precision, so every
+  locale renders the below-threshold form here.
+  """
+  assert "P < 0.0001" in workspace.buildReport("L10N-1", locale="en-US")
+  for locale in ("es", "fr"):
+    report = workspace.buildReport("L10N-1", locale=locale)
+    assert "P < 0,0001" in report, f"{locale} did not localize the threshold decimal"
+    assert "0.0001" not in report, f"{locale} left a dot-decimal threshold in place"
+
+
+def testOrdinaryAndThresholdProbabilitiesShareOneDecimalPolicy(workspace):
+  """A locale cannot format ordinary p-values one way and the threshold another."""
+  for locale, separator in (("en-US", "."), ("es", ","), ("fr", ",")):
+    report = workspace.buildReport("L10N-1", locale=locale)
+    assert f"P = 0{separator}9878" in report      # an ordinary diagnostic p-value
+    assert f"P < 0{separator}0001" in report      # the censored treatment p-value
+
+
+def testAnovaColumnCarriesNoRedundantEqualsSign(workspace):
+  """The P column is headed P, so ordinary cells are bare; only the censored one is not."""
+  report = workspace.buildReport("L10N-1", locale="en-US")
+  # The means table also has a Treatment column; the ANOVA row is the six-cell one.
+  anovaRows = [
+    line for line in report.splitlines()
+    if line.startswith("| Treatment |") and len(line.strip("| ").split(" | ")) == 6
+  ]
+  assert len(anovaRows) == 1
+  assert anovaRows[0].endswith("| < 0.0001 |")
+  assert "= " not in anovaRows[0]
+
+
 # ---- 2. catalog integrity -------------------------------------------------
 
 def testEveryLocaleCoversTheFullKeySet():

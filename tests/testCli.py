@@ -103,7 +103,7 @@ def testReportShowsAovMeansTable(project, capsys):
   assert main(["report", project["db"], "DEMO"]) == 0
   report = capsys.readouterr().out
   assert "### Analysis of variance" in report
-  assert "| Treatment | 3 | 1203.0000 | 401.0000 | 300.75 | <0.0001 |" in report
+  assert "| Treatment | 3 | 1203.0000 | 401.0000 | 300.75 | < 0.0001 |" in report
   assert "Treatment effect significant" in report
   assert "| A | 100.000 | a |" in report
   assert "| C | 80.000 | b |" in report
