@@ -40,12 +40,23 @@ class TreatmentGroup(BaseModel):
   group: str
 
 
+def methodKeyFor(protected: bool) -> str:
+  """The catalog key naming the separation method.
+
+  The analysis layer names the method with a key, never with a sentence (decision
+  0007): a display string built here would be English in every locale, and this is
+  the one place that knows which method ran. The reproducibility section resolves the
+  same key from the same function, so the two cannot describe different methods.
+  """
+  return "report.method.fisherProtectedLSD" if protected else "report.method.fisherLSD"
+
+
 class MeanSeparation(BaseModel):
   """The result of mean separation: the LSD and the lettered treatment means."""
 
   model_config = ConfigDict(extra="forbid")
 
-  method: str
+  methodKey: str
   significanceLevel: float
   leastSignificantDifference: float
   treatmentSignificant: bool
@@ -67,8 +78,6 @@ def separateMeans(
 
   treatmentRow = next(row for row in anovaResult.table if row.source == "treatment")
   treatmentSignificant = treatmentRow.pValue is not None and treatmentRow.pValue <= significanceLevel
-  method = "Fisher's Protected LSD" if protected else "Fisher's LSD"
-
   ordered = sorted(anovaResult.treatmentMeans, key=lambda mean: mean.mean, reverse=True)
   means = [mean.mean for mean in ordered]
   if protected and not treatmentSignificant:
@@ -82,7 +91,7 @@ def separateMeans(
     for index, mean in enumerate(ordered)
   ]
   return MeanSeparation(
-    method=method,
+    methodKey=methodKeyFor(protected),
     significanceLevel=significanceLevel,
     leastSignificantDifference=leastSignificantDifference,
     treatmentSignificant=treatmentSignificant,

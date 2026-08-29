@@ -16,6 +16,7 @@ from openfurrow.analysis.diagnostics import (
 from openfurrow.analysis.meanSeparation import (
   MeanSeparation,
   TreatmentGroup,
+  methodKeyFor,
   separateMeans,
 )
 
@@ -30,5 +31,6 @@ __all__ = [
   "TreatmentMean",
   "analyzeRcbd",
   "assessAssumptions",
+  "methodKeyFor",
   "separateMeans",
 ]

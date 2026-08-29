@@ -277,12 +277,16 @@
       "text": "significativo",
       "status": "machineDraft"
     },
-    "report.reproducibility.inputHash": {
-      "text": "Hash de entrada (SHA-256)",
+    "report.method.fisherLSD": {
+      "text": "DMS de Fisher",
       "status": "machineDraft"
     },
-    "report.reproducibility.leastSignificantDifference": {
-      "text": "DMS de Fisher",
+    "report.method.fisherProtectedLSD": {
+      "text": "DMS protegida de Fisher",
+      "status": "machineDraft"
+    },
+    "report.reproducibility.inputHash": {
+      "text": "Hash de entrada (SHA-256)",
       "status": "machineDraft"
     },
     "report.reproducibility.method": {
@@ -291,10 +295,6 @@
     },
     "report.reproducibility.methodValue": {
       "text": "ANOVA de DBCA; {test} (alfa = {alpha})",
-      "status": "machineDraft"
-    },
-    "report.reproducibility.protectedLeastSignificantDifference": {
-      "text": "DMS protegida de Fisher",
       "status": "machineDraft"
     },
     "report.reproducibility.seed": {

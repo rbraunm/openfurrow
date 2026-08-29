@@ -277,12 +277,16 @@
       "text": "معنوي",
       "status": "machineDraft"
     },
-    "report.reproducibility.inputHash": {
-      "text": "بصمة المدخلات (SHA-256)",
+    "report.method.fisherLSD": {
+      "text": "أقل فرق معنوي (فيشر)",
       "status": "machineDraft"
     },
-    "report.reproducibility.leastSignificantDifference": {
-      "text": "أقل فرق معنوي (فيشر)",
+    "report.method.fisherProtectedLSD": {
+      "text": "أقل فرق معنوي محمي (فيشر)",
+      "status": "machineDraft"
+    },
+    "report.reproducibility.inputHash": {
+      "text": "بصمة المدخلات (SHA-256)",
       "status": "machineDraft"
     },
     "report.reproducibility.method": {
@@ -291,10 +295,6 @@
     },
     "report.reproducibility.methodValue": {
       "text": "تحليل التباين لتصميم القطاعات الكاملة العشوائية؛ {test} (ألفا = {alpha})",
-      "status": "machineDraft"
-    },
-    "report.reproducibility.protectedLeastSignificantDifference": {
-      "text": "أقل فرق معنوي محمي (فيشر)",
       "status": "machineDraft"
     },
     "report.reproducibility.seed": {

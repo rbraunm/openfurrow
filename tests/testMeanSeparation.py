@@ -82,7 +82,7 @@ def testLetterForSequence():
 def testProtectedSeparatesSignificantTrial():
   separation = separateMeans(syntheticResult(), significanceLevel=0.05, protected=True)
   assert separation.treatmentSignificant is True
-  assert separation.method == "Fisher's Protected LSD"
+  assert separation.methodKey == "report.method.fisherProtectedLSD"
   byTreatment = {group.treatmentCode: group.group for group in separation.groups}
   assert byTreatment == {"A": "a", "B": "a", "C": "b", "D": "b"}
   # groups are ordered by descending mean
@@ -108,7 +108,7 @@ def testProtectedCollapsesWhenTreatmentNotSignificant():
 
 def testUnprotectedRunsAndIsLabelled():
   separation = separateMeans(syntheticResult(), significanceLevel=0.05, protected=False)
-  assert separation.method == "Fisher's LSD"
+  assert separation.methodKey == "report.method.fisherLSD"
   byTreatment = {group.treatmentCode: group.group for group in separation.groups}
   assert byTreatment == {"A": "a", "B": "a", "C": "b", "D": "b"}
 

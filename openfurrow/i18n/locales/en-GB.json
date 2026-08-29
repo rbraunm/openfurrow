@@ -229,11 +229,11 @@
       "text": "RCBD ANOVA; {test} (alpha = {alpha})",
       "status": "humanApproved"
     },
-    "report.reproducibility.protectedLeastSignificantDifference": {
+    "report.method.fisherProtectedLSD": {
       "text": "Fisher's Protected LSD",
       "status": "humanApproved"
     },
-    "report.reproducibility.leastSignificantDifference": {
+    "report.method.fisherLSD": {
       "text": "Fisher's LSD",
       "status": "humanApproved"
     },

@@ -27,7 +27,13 @@ import platform
 
 import numpy
 
-from openfurrow.analysis import AnalysisError, analyzeRcbd, assessAssumptions, separateMeans
+from openfurrow.analysis import (
+  AnalysisError,
+  analyzeRcbd,
+  assessAssumptions,
+  methodKeyFor,
+  separateMeans,
+)
 from openfurrow.analysis.transforms import backTransformMean
 from openfurrow.i18n import Translator, sourceLocale, translatorFor
 from openfurrow.schema.document import TrialDocument, contentHash
@@ -222,7 +228,7 @@ def _assessmentSection(
   lines.append(
     translator.text(
       "report.means.separation",
-      method=separation.method,
+      method=translator.text(separation.methodKey),
       alpha=alpha,
       significance=significance,
       probability=_probabilityStatement(treatmentRow.pValue, translator),
@@ -322,10 +328,7 @@ def _diagnosticLine(outcome, translator: Translator) -> str:
 def _reproducibilitySection(
   package, observations, significanceLevel, protected, translator: Translator
 ) -> list[str]:
-  test = translator.text(
-    "report.reproducibility.protectedLeastSignificantDifference" if protected
-    else "report.reproducibility.leastSignificantDifference"
-  )
+  test = translator.text(methodKeyFor(protected))
   method = translator.text(
     "report.reproducibility.methodValue",
     test=test,

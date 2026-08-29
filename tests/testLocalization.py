@@ -306,6 +306,35 @@ def testDiagnosticsCarryKeysNotSentences(workspace):
     assert " " not in outcome.nameKey and " " not in key
 
 
+def testMeanSeparationCarriesAKeyNotAMethodName(workspace):
+  """The method name is a catalog key, not a display string built in the analysis.
+
+  Regression: separateMeans used to set method="Fisher's Protected LSD", an English
+  sentence fragment inside a canonical analysis result. The report printed it verbatim,
+  so the one line of every non-English report that names the statistical method was in
+  English. testDiagnosticsCarryKeysNotSentences already forbade this for diagnostics;
+  mean separation was the gap it did not cover.
+  """
+  for protected, expected in ((True, "report.method.fisherProtectedLSD"),
+                              (False, "report.method.fisherLSD")):
+    separation = workspace.separateMeans(
+      "L10N-1", "YIELD", significanceLevel=0.05, protected=protected)
+    assert separation.methodKey == expected
+    assert " " not in separation.methodKey
+
+
+def testMethodNameIsLocalizedInEveryLocale(workspace):
+  """The method name resolves per locale and is not the English string in any of them."""
+  for locale in availableLocales():
+    report = workspace.buildReport("L10N-1", locale=locale)
+    rendered = loadCatalog(locale).text("report.method.fisherProtectedLSD")
+    assert rendered in report, f"{locale} did not render its own method name"
+  english = loadCatalog("en-US").text("report.method.fisherProtectedLSD")
+  for locale in ("es", "fr", "ar"):
+    assert english not in workspace.buildReport("L10N-1", locale=locale), (
+      f"{locale} report carried the English method name")
+
+
 def testEveryDiagnosticKeyResolvesInEveryLocale(workspace):
   """Every key the analysis can emit must exist in every shipped catalog.
 

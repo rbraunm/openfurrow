@@ -277,12 +277,16 @@
       "text": "significatif",
       "status": "machineDraft"
     },
-    "report.reproducibility.inputHash": {
-      "text": "Empreinte des entrées (SHA-256)",
+    "report.method.fisherLSD": {
+      "text": "PPDS de Fisher",
       "status": "machineDraft"
     },
-    "report.reproducibility.leastSignificantDifference": {
-      "text": "PPDS de Fisher",
+    "report.method.fisherProtectedLSD": {
+      "text": "PPDS protégée de Fisher",
+      "status": "machineDraft"
+    },
+    "report.reproducibility.inputHash": {
+      "text": "Empreinte des entrées (SHA-256)",
       "status": "machineDraft"
     },
     "report.reproducibility.method": {
@@ -291,10 +295,6 @@
     },
     "report.reproducibility.methodValue": {
       "text": "ANOVA en blocs complets randomisés; {test} (alpha = {alpha})",
-      "status": "machineDraft"
-    },
-    "report.reproducibility.protectedLeastSignificantDifference": {
-      "text": "PPDS protégée de Fisher",
       "status": "machineDraft"
     },
     "report.reproducibility.seed": {
