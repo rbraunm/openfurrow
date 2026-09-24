@@ -1,6 +1,10 @@
 {
   "locale": "en-GB",
   "messages": {
+    "report.labelValue": {
+      "text": "{label}: {value}",
+      "status": "humanApproved"
+    },
     "report.heading.trialReport": {
       "text": "Trial Report: {title}",
       "status": "humanApproved"
@@ -579,6 +583,10 @@
     },
     "diagnostic.notComputed.zeroResidualSpread": {
       "text": "not computed: residuals have zero spread",
+      "status": "humanApproved"
+    },
+    "diagnostic.line": {
+      "text": "{name}: {statistic}. {reading}",
       "status": "humanApproved"
     },
     "diagnostic.reading": {

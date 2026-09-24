@@ -92,8 +92,9 @@ def inputHash(package: TrialPackage, observations: list[Observation]) -> str:
   return contentHash(TrialDocument(package=package, observations=list(observations)))
 
 
-def _field(translator: Translator, key: str, value: object) -> str:
-  return f"- {translator.text(key)}: {value}"
+def _field(translator: Translator, key: str, value: object, /, **labelPlaceholders) -> str:
+  label = translator.text(key, **labelPlaceholders)
+  return f"- {translator.text('report.labelValue', label=label, value=value)}"
 
 
 def _metadataSection(package: TrialPackage, translator: Translator) -> list[str]:
@@ -256,10 +257,12 @@ def _assessmentSection(
       translator.text("report.means.backTransformNote", scale=_scaleName(result.transform, translator))
     )
     lines.append("")
-  lines.append(
-    f"- {translator.text('report.means.leastSignificantDifference', alpha=alpha)}: "
-    f"{translator.number(separation.leastSignificantDifference, decimals=3)}"
-  )
+  lines.append(_field(
+    translator,
+    "report.means.leastSignificantDifference",
+    translator.number(separation.leastSignificantDifference, decimals=3),
+    alpha=alpha,
+  ))
   if protected and not separation.treatmentSignificant:
     lines.append(f"- {translator.text('report.means.notSeparated')}")
   lines.append("")
@@ -306,9 +309,11 @@ def _diagnosticLine(outcome, translator: Translator) -> str:
   The analysis layer hands back keys and numbers, never sentences, so the wording and
   the number formatting are both resolved here (decision 0007).
   """
-  name = translator.text(outcome.nameKey)
   if not outcome.computed:
-    return f"- {name}: {translator.text(outcome.notComputedKey, **outcome.notComputedDetail)}"
+    return _field(
+      translator, outcome.nameKey,
+      translator.text(outcome.notComputedKey, **outcome.notComputedDetail),
+    )
   if outcome.statisticName == "F":
     statistic = (
       f"F({translator.integer(outcome.numeratorDegreesOfFreedom)}, "
@@ -322,7 +327,10 @@ def _diagnosticLine(outcome, translator: Translator) -> str:
     verdict=translator.text(outcome.readingKey),
     probability=_probabilityStatement(outcome.pValue, translator),
   )
-  return f"- {name}: {statistic}. {reading}"
+  line = translator.text(
+    "diagnostic.line", name=translator.text(outcome.nameKey), statistic=statistic, reading=reading
+  )
+  return f"- {line}"
 
 
 def _reproducibilitySection(

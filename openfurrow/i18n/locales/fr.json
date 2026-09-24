@@ -13,6 +13,10 @@
       "text": "Égalité des variances entre traitements (Brown-Forsythe)",
       "status": "machineDraft"
     },
+    "diagnostic.line": {
+      "text": "{name}: {statistic}. {reading}",
+      "status": "machineDraft"
+    },
     "diagnostic.nonAdditivity.clear": {
       "text": "Aucun signe de non-additivité",
       "status": "machineDraft"
@@ -235,6 +239,10 @@
     },
     "report.heading.trialReport": {
       "text": "Rapport d'essai: {title}",
+      "status": "machineDraft"
+    },
+    "report.labelValue": {
+      "text": "{label}: {value}",
       "status": "machineDraft"
     },
     "report.means.backTransformNote": {

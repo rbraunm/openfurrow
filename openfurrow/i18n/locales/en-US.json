@@ -1,6 +1,10 @@
 {
   "locale": "en-US",
   "messages": {
+    "report.labelValue": {
+      "text": "{label}: {value}",
+      "status": "source"
+    },
     "report.heading.trialReport": {
       "text": "Trial Report: {title}",
       "status": "source"
@@ -579,6 +583,10 @@
     },
     "diagnostic.notComputed.zeroResidualSpread": {
       "text": "not computed: residuals have zero spread",
+      "status": "source"
+    },
+    "diagnostic.line": {
+      "text": "{name}: {statistic}. {reading}",
       "status": "source"
     },
     "diagnostic.reading": {
