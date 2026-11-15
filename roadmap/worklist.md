@@ -6,7 +6,7 @@ Findings, defects, checks and owner calls that the plans do not carry.
 Status tags: `fix` (a defect to correct), `build` (work to add), `check` (a suspicion to
 measure), `owner` (the owner's call), `done`.
 
-**Counts.** fix 15, build 7, check 0, owner 3, done 5; 30 in all.
+**Counts.** fix 15, build 8, check 0, owner 3, done 5; 31 in all.
 
 ## Owner decisions
 
@@ -112,8 +112,8 @@ measure), `owner` (the owner's call), `done`.
   administrator's merge cannot skip it; "main protections" still requires the pull
   request. Read back from GitHub's list of rules in force on `main`. No pull request has
   met the rule yet (VAL-3).
-- **VAL-3** `build` **`main` is 65 commits behind `claude`.** It holds `README.md`,
-  `LICENSE` and `brief.md`, and its README says the project is in its definition phase. No
+- **VAL-3** `build` **`main` has none of the code.** It holds `README.md`, `LICENSE` and
+  `brief.md`, and its README says the project is in its definition phase. No
   release or tag exists. Merge by pull request once the workflow passes. That pull request
   is also the first to meet the gate: a merge attempted before `validated` has passed must
   be refused. Whether the merge is tagged 0.1.0 is the owner's call.
@@ -158,6 +158,12 @@ measure), `owner` (the owner's call), `done`.
 - **USR-6** `owner` **The readiness case.** Before the domain contact runs a real trial,
   the owner has to be convinced the tool is ready (Owner decisions, "First real trial").
   What that case must show is not yet defined.
+- **USR-7** `build` **Trials laid out elsewhere.** A layout is always generated from the
+  seed. A trial randomized by another tool, or already in the ground, cannot be entered
+  with its own plot numbers and its own plot-to-treatment map; its observations could
+  only be re-keyed onto a generated layout that does not match the field. A first real
+  trial will most likely be one of these. Bound up with the choice in REP-1: a layout
+  stored as data can also be imported.
 
 ## Small finds (SML)
 
