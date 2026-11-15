@@ -25,6 +25,20 @@ The script installs Python 3.13 if it is missing, creates `.venv`, and installs 
 editable with its test extras. It is idempotent. New system-level dependencies belong in
 that script, and new Python dependencies in `pyproject.toml`.
 
+## Validation: every change is tested on Linux and Windows
+
+Every push to `claude` and every pull request into `main` runs the `validate` workflow
+(`.github/workflows/validate.yml`) on Linux and Windows with Python 3.13 and 3.14: the test
+suite, then `scripts/productSmoke.py`, which builds the source distribution and the wheel,
+installs the wheel into a clean environment, and runs the worked example and the service
+from there. `main` accepts a pull request only when the workflow's `validated` check has
+passed, and that rule has no bypass. Both parts run locally the same way:
+
+```bash
+python -m pytest
+python scripts/productSmoke.py
+```
+
 ## Oracles: every reported number is validated
 
 OpenFurrow never presents an unvalidated statistic as a fact. Each analysis result is

@@ -55,6 +55,9 @@ this file is the coarse "what exists" ledger.
       offline with no external assets; localized; RTL layout mirroring verified.
 - [x] Field Book file interop (E1) -- export a trial's field and trait files, ingest a Field
       Book database-format export, round-tripping to the same content hash.
+- [x] Validation workflow -- every push to `claude` and every pull request into `main` is
+      tested on Linux and Windows with Python 3.13 and 3.14: the suite, then a smoke of the
+      wheel installed into a clean environment. `main` requires it, with no bypass.
 
 ## Next
 Nothing outstanding from the MVP loop. The next tracks are analysis breadth (below) and

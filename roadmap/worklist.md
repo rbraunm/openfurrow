@@ -6,7 +6,7 @@ Findings, defects, checks and owner calls that the plans do not carry.
 Status tags: `fix` (a defect to correct), `build` (work to add), `check` (a suspicion to
 measure), `owner` (the owner's call), `done`.
 
-**Counts.** fix 15, build 9, check 0, owner 3, done 3; 30 in all.
+**Counts.** fix 15, build 7, check 0, owner 3, done 5; 30 in all.
 
 ## Owner decisions
 
@@ -83,7 +83,8 @@ measure), `owner` (the owner's call), `done`.
   redirected, Python on Windows encodes it with the ANSI code page. Measured with code
   page 1252 and no `PYTHONIOENCODING`: `--locale ar` ends in an unhandled
   `UnicodeEncodeError` with an empty file, and `--locale fr` writes the report in cp1252,
-  not UTF-8. `--output` writes UTF-8 and works for both.
+  not UTF-8. `--output` writes UTF-8 and works for both; the product smoke uses it, so the
+  fix brings its own test.
 - **PLT-5** `done` **The database file stays open.** Measured on Windows: while a
   `Workspace` is alive its database file can be copied but not renamed or deleted
   (sharing violation); both work once the object is dropped. Ownership by copying the
@@ -95,17 +96,27 @@ measure), `owner` (the owner's call), `done`.
 
 ## Validation and release (VAL)
 
-- **VAL-1** `build` **The validation workflow.** No GitHub Actions workflow exists. Owner
-  decision: one workflow tests the full product on Linux and on Windows. The full product
-  includes what the test suite does not reach: the wheel installed into a clean
-  environment and run from there (the install smoke `milestones.md` records was done by
-  hand).
-- **VAL-2** `build` **The workflow gates `main`.** A required check for pull requests into
-  `main`, in a ruleset without a bypass, so that an administrator's merge cannot skip it.
+- **VAL-1** `done` **The validation workflow.** `.github/workflows/validate.yml` runs on
+  every push to `claude` and every pull request into `main`: the test suite, then
+  `scripts/productSmoke.py`, on Linux and Windows with Python 3.13 and 3.14.
+  `CONTRIBUTING.md` ("Validation") describes it. The smoke covers what the suite does not
+  reach: it builds the source distribution and the wheel from it, installs the wheel with
+  the service extra into a clean environment, runs the worked example through the
+  installed command in every shipped locale, and reads the served pages. Checked against a
+  copy with the templates removed from the packaging: the smoke fails there, at the first
+  page. First run, on the commit that added it: all four jobs passed, 357 tests each
+  (7 to 10 seconds on Linux, 23 to 25 on Windows), and the worked example's hash was the
+  same `50fbfb3a...4ded` on both systems and both Python versions.
+- **VAL-2** `done` **The workflow gates `main`.** The ruleset "main validation" requires
+  the workflow's final check, `validated`, on the default branch and has no bypass, so an
+  administrator's merge cannot skip it; "main protections" still requires the pull
+  request. Read back from GitHub's list of rules in force on `main`. No pull request has
+  met the rule yet (VAL-3).
 - **VAL-3** `build` **`main` is 65 commits behind `claude`.** It holds `README.md`,
   `LICENSE` and `brief.md`, and its README says the project is in its definition phase. No
-  release or tag exists. Merge by pull request once the workflow passes. Whether that
-  merge is tagged 0.1.0 is the owner's call.
+  release or tag exists. Merge by pull request once the workflow passes. That pull request
+  is also the first to meet the gate: a merge attempted before `validated` has passed must
+  be refused. Whether the merge is tagged 0.1.0 is the owner's call.
 
 ## Plan and documents (DOC)
 
@@ -163,7 +174,10 @@ measure), `owner` (the owner's call), `done`.
 - **SML-4** `fix` **A test depends on the working directory.**
   `testTemplatesAndStaticArePackaged` (`tests/testWeb.py`) runs `python -m build` without
   naming the project directory, so it passes only when pytest starts in the repository
-  root; it also needs network access.
+  root; it also needs network access. And it builds the wheel in the source tree, where a
+  `build/` directory left by an earlier build supplies files the project no longer
+  packages. Measured on a copy with the templates removed from the packaging: the test
+  passes while the old `build/` is there and fails once it is deleted.
 - **SML-5** `owner` **File names.** The owner's cross-project naming rule (camel case,
   files included) is not followed by `scripts/seed-draft-locales.py`,
   `tests/fixtures/fieldbook_database_export.csv` and the hyphenated documents under
