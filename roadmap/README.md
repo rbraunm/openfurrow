@@ -7,6 +7,8 @@ decisions, and the milestone trail. Nothing in `roadmap/` is load-bearing at run
 ## How this folder is used
 
 - `milestones.md` -- the build, as a tracked checklist: what is done and what is next.
+- `worklist.md` -- findings, defects, checks and owner calls the plans do not carry, each
+  with a status, plus the owner's decisions.
 - `platform-plan.md` -- the living master plan: the field-to-analysis platform's end-goal
   shape, five layers, and phased lanes (engine, service, storage/sync, web UI, field
   interop, first-party apps). Direction and intent, not a contract.
