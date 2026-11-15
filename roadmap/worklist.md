@@ -6,7 +6,7 @@ Findings, defects, checks and owner calls that the plans do not carry.
 Status tags: `fix` (a defect to correct), `build` (work to add), `check` (a suspicion to
 measure), `owner` (the owner's call), `done`.
 
-**Counts.** fix 11, build 9, check 5, owner 3, done 0; 28 in all.
+**Counts.** fix 15, build 9, check 0, owner 3, done 3; 30 in all.
 
 ## Owner decisions
 
@@ -42,20 +42,34 @@ measure), `owner` (the owner's call), `done`.
   `implementation-plan.md` (layout derived, never stored).
 - **REP-2** `fix` **Library versions are not pinned.** Dependencies carry lower bounds
   only, so every install takes the newest releases. A validation run is then not
-  repeatable, and nothing shows the suite running against what an install brings today
-  (statsmodels 0.15, pandas 3.1, SQLAlchemy 2.1, numpy 2.5). Pin the test environment.
-- **REP-3** `check` **Exported JSON takes the platform's line endings.** `exportJson`
-  (`openfurrow/exchange.py`) opens the file in text mode without a newline setting, so on
-  Windows the file should have CRLF. The content hash is computed in memory and is
-  unaffected, but the exported file would not be byte-identical across platforms, and
-  decision 0001 speaks of hashing the file. Measure on Windows; decide whether exports
-  must be byte-identical.
+  repeatable. The baseline of PLT-1 ran against statsmodels 0.15.0, pandas 3.1.1,
+  SQLAlchemy 2.1.8 and numpy 2.5.5 and passed, which says nothing about the next release.
+  One case already in the tree: formulaic (pulled in by statsmodels) requires
+  `wrapt>=1.17.0rc1` on Python 3.13 and newer, and a pre-release in a specifier makes pip
+  accept pre-releases, so the install took wrapt 2.6.0.dev1 over the stable 2.5.2. Pin the
+  test environment.
+- **REP-3** `fix` **Exported JSON takes the platform's line endings.** `exportJson`
+  (`openfurrow/exchange.py`) opens the file in text mode without a newline setting.
+  Measured on Windows: all 152 lines of the worked example's export end in CRLF. The
+  content hash is computed in memory and is unaffected, but the file is not byte-identical
+  across platforms, while the function's own docstring calls it deterministic and decision
+  0001 speaks of hashing the file. Write LF on every platform.
+- **REP-4** `fix` **The report names the schema version as the software version.** The
+  reproducibility block prints "OpenFurrow 0.1.0" from `schemaVersion`
+  (`openfurrow/reports/report.py`), while the installed distribution is 0.1.0.dev0. Two
+  builds of the software with one schema cannot be told apart in a report's provenance.
 
 ## Platforms (PLT)
 
-- **PLT-1** `check` **First run on Windows and on Python 3.14.** Nothing in the repository
-  shows the suite running anywhere but Linux with Python 3.13. Baseline to record: the
-  test results, the worked example's hash, the web interface.
+- **PLT-1** `done` **First run on Windows and on Python 3.14.** Nothing in the repository
+  showed the suite running anywhere but Linux with Python 3.13. Run on Windows 11 with
+  Python 3.14.8 in a virtual environment inside the clone (382 MB), installed with the
+  test and service extras: 357 tests passed in 94 seconds. The worked example through the
+  installed `openfurrow` command reproduced the published table and the input hash
+  `50fbfb3a...4ded`, before and after export and re-import. The web interface was walked
+  in Chromium: a trial added through the form, observations uploaded, both reports read,
+  the reproducibility check passed, and the Arabic view rendered right to left with its
+  draft notice; no console errors, no failed requests, no request to another host.
 - **PLT-2** `build` **Setup on Windows.** `scripts/bootstrap.sh` is Ubuntu-only (apt and
   the deadsnakes PPA), and `CLAUDE.md` and `CONTRIBUTING.md` tell every session to run it
   first. Windows needs its own path: a PowerShell 5.1 script, or the commands documented.
@@ -64,13 +78,16 @@ measure), `owner` (the owner's call), `done`.
   `scripts/bootstrap.sh` under bash and puts CRLF data files into a wheel built there. Two
   fixtures are committed with CRLF (`examples/yatesOats/observations.csv`,
   `tests/fixtures/stirretBorers.csv`); the other 122 files are LF.
-- **PLT-4** `check` **A non-English report printed to redirected output on Windows.**
+- **PLT-4** `fix` **A non-English report printed to redirected output on Windows.**
   `openfurrow report` prints the report (`openfurrow/cli/main.py`); when output is
-  redirected, Python on Windows encodes it with the ANSI code page, which cannot encode
-  Arabic. Expected: a crash with `--locale ar`. `--output` writes UTF-8 explicitly.
-- **PLT-5** `check` **The database file stays open.** A `Workspace` keeps its engine and
-  offers no way to release it. On Windows an open SQLite file cannot be moved or deleted,
-  which matters for the service and for ownership by copying the file.
+  redirected, Python on Windows encodes it with the ANSI code page. Measured with code
+  page 1252 and no `PYTHONIOENCODING`: `--locale ar` ends in an unhandled
+  `UnicodeEncodeError` with an empty file, and `--locale fr` writes the report in cp1252,
+  not UTF-8. `--output` writes UTF-8 and works for both.
+- **PLT-5** `done` **The database file stays open.** Measured on Windows: while a
+  `Workspace` is alive its database file can be copied but not renamed or deleted
+  (sharing violation); both work once the object is dropped. Ownership by copying the
+  file holds. A `Workspace` has no explicit way to release the file; nothing needed one.
 - **PLT-6** `fix` **The stated Python target.** `pyproject.toml` requires 3.13 or newer;
   `CLAUDE.md`, `CONTRIBUTING.md`, the README and the bootstrap script say the project
   targets 3.13. Development moves to 3.14 and the workflow tests both. Say "3.13 or newer"
@@ -151,6 +168,8 @@ measure), `owner` (the owner's call), `done`.
   files included) is not followed by `scripts/seed-draft-locales.py`,
   `tests/fixtures/fieldbook_database_export.csv` and the hyphenated documents under
   `roadmap/`. Rename, or leave as they are.
-- **SML-6** `check` **A pre-release dependency.** Resolving wheels only, on Python 3.14 for
-  Windows, picks a pre-release of wrapt (pulled in by statsmodels through formulaic). See
-  what a normal install picks.
+- **SML-6** `done` **A pre-release dependency.** A normal install on Python 3.14 takes a
+  pre-release of wrapt; the cause and the remedy are in REP-2.
+- **SML-7** `fix` **An unknown schema version is accepted.** `TrialPackage.schemaVersion`
+  is any non-empty string: a package declaring 99.0 loads without complaint, although the
+  code implements 0.1.0 and the field exists for migration.
