@@ -150,15 +150,17 @@ def analyzeEfficacy(
   matrix = numpy.empty((layout.replications, len(treatmentCodes)), dtype=float)
   for result in efficacies:
     matrix[result.block - 1, treatmentCodes.index(result.treatmentCode)] = result.efficacy
-  return anovaFromMatrix(assessmentCode, matrix, treatmentCodes, Transform.none)
+  return anovaFromMatrix(assessmentCode, matrix, treatmentCodes, Transform.none, 0.0)
 
 
-def _onDeclaredScale(assessmentCode: str, package: TrialPackage, values: list[float]) -> tuple[list[float], Transform]:
-  transform = package.ratingFor(assessmentCode).transform
-  if transform is Transform.none:
-    return values, transform
+def _onDeclaredScale(
+  assessmentCode: str, package: TrialPackage, values: list[float],
+) -> tuple[list[float], Transform, float]:
+  rating = package.ratingFor(assessmentCode)
+  if rating.transform is Transform.none:
+    return values, rating.transform, rating.transformOffset
   try:
-    return applyTransform(transform, values), transform
+    return applyTransform(rating.transform, values, rating.transformOffset), rating.transform, rating.transformOffset
   except TransformError as error:
     raise AnalysisError(f"assessment '{assessmentCode}': {error}") from error
 
@@ -171,7 +173,7 @@ def analyzeHalves(
     raise AnalysisError("treated and untreated halves are analysed together only for adjacent checks")
   pairs = checkPairs(assessmentCode, package, layout, observations)
   treatmentCodes = [treatment.treatmentCode for treatment in package.treatments]
-  scaled, transform = _onDeclaredScale(
+  scaled, transform, offset = _onDeclaredScale(
     assessmentCode, package, [value for pair in pairs for value in (pair.treated, pair.check)],
   )
   values = numpy.empty((layout.replications, len(treatmentCodes), 2), dtype=float)
@@ -185,7 +187,7 @@ def analyzeHalves(
   ]
   return twoStrataAnova(
     assessmentCode, values, treatmentCodes, [treatedLevel, untreatedLevel], "treatment", "half",
-    transform, treatmentMeans, DesignType.rcbd,
+    transform, offset, treatmentMeans, DesignType.rcbd,
   )
 
 
@@ -194,7 +196,7 @@ def compareWithChecks(
 ) -> list[PairedComparison]:
   """For each treatment, a paired t-test of its plots against their checks."""
   pairs = checkPairs(assessmentCode, package, layout, observations)
-  scaled, _ = _onDeclaredScale(
+  scaled, _, _ = _onDeclaredScale(
     assessmentCode, package, [value for pair in pairs for value in (pair.treated, pair.check)],
   )
   byTreatment: dict[str, list[tuple[float, float]]] = {}

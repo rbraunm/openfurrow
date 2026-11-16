@@ -97,7 +97,7 @@ _maximalPackage = {
   "ratings": [
     {"ratingCode": "CT", "name": "Insect count", "ratingType": "pest count", "partRated": "whole plant",
      "method": "Beat sheet, 10 plants", "targetCode": "APHID", "dataType": "numeric", "unit": "per m2", "minValue": 0,
-     "maxValue": 500, "transform": "sqrt", "measurementKind": "count"},
+     "maxValue": 500, "transform": "sqrt", "transformOffset": 0.5, "measurementKind": "count"},
     {"ratingCode": "SEV", "name": "Severity", "dataType": "ordinal", "allowedValues": ["none", "low", "moderate", "high"]}
   ],
   "assessments": [
@@ -288,7 +288,14 @@ def testTransformEntersContentHash():
   """ADR 0006: the transform enters the content hash, so it cannot silently change results."""
   def toNone(data):
     data["ratings"][0]["transform"] = "none"
+    data["ratings"][0]["transformOffset"] = 0.0
   assert _hashWith(lambda data: None) != _hashWith(toNone)
+
+
+def testTransformOffsetEntersContentHash():
+  def changeOffset(data):
+    data["ratings"][0]["transformOffset"] = 1.0
+  assert _hashWith(lambda data: None) != _hashWith(changeOffset)
 
 
 def testMeasurementKindEntersContentHash():

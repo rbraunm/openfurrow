@@ -761,12 +761,20 @@
       "text": "اللوغاريتم الطبيعي",
       "status": "machineDraft"
     },
+    "report.scale.log10": {
+      "text": "اللوغاريتم العشري",
+      "status": "machineDraft"
+    },
     "report.scale.logit": {
       "text": "اللوجت",
       "status": "machineDraft"
     },
     "report.scale.sqrt": {
       "text": "الجذر التربيعي",
+      "status": "machineDraft"
+    },
+    "report.scale.withOffset": {
+      "text": "{scale} لـ (x + {offset})",
       "status": "machineDraft"
     },
     "report.site.address": {

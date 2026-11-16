@@ -36,7 +36,7 @@ from sqlalchemy import ForeignKey, Text, event, inspect, select
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, relationship
 
-storeVersion = 11
+storeVersion = 12
 
 
 class StoreError(RuntimeError):
@@ -393,6 +393,7 @@ class RatingRow(Base):
   allowedValues: Mapped[str | None] = mapped_column(Text)
   measurementKind: Mapped[str]
   transform: Mapped[str]
+  transformOffset: Mapped[float]
 
   trial: Mapped[TrialRow] = relationship(back_populates="ratings")
 

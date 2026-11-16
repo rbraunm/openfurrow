@@ -104,7 +104,7 @@ def testTreatmentMeansAreOnTransformedScaleAndBackTransform():
     expected = sum(transformedValues) / len(transformedValues)
     assert means[treatment] == pytest.approx(expected, rel=1e-9)
     # back-transform is a point estimate on the original scale (mean-of-sqrt, squared).
-    assert backTransformMean(result.transform, means[treatment]) == pytest.approx(means[treatment] ** 2, rel=1e-12)
+    assert backTransformMean(result.transform, means[treatment], 0.0) == pytest.approx(means[treatment] ** 2, rel=1e-12)
 
 
 def testProtectedLsdSeparatesAllTreatmentsOnTransformedScale():
@@ -159,7 +159,7 @@ def testReportLabelsScaleBackTransformsMeansAndRecordsTransform():
   assert "- Transforms: Y = sqrt" in report
   # the displayed mean is the back-transformed (original-scale) point estimate
   result = analyzeRcbd("Y", package, layout, observations)
-  displayed = backTransformMean(Transform.sqrt, result.treatmentMeans[0].mean)
+  displayed = backTransformMean(Transform.sqrt, result.treatmentMeans[0].mean, 0.0)
   assert f"{displayed:.3f}" in report
 
 

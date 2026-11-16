@@ -290,6 +290,7 @@ def savePackage(
       allowedValues=json.dumps(rating.allowedValues) if rating.allowedValues is not None else None,
       measurementKind=rating.measurementKind.value,
       transform=rating.transform.value,
+      transformOffset=rating.transformOffset,
     ))
   for ordinal, assessment in enumerate(package.assessments):
     sampleSizeValue, sampleSizeUnit = _valueAndUnit(assessment.sampleSize)
@@ -476,6 +477,7 @@ def loadPackage(session: Session, trialCode: str) -> TrialPackage:
       allowedValues=json.loads(row.allowedValues) if row.allowedValues is not None else None,
       measurementKind=MeasurementKind(row.measurementKind),
       transform=Transform(row.transform),
+      transformOffset=row.transformOffset,
     )
     for row in sorted(trial.ratings, key=lambda row: row.ordinal)
   ]

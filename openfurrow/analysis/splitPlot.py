@@ -55,6 +55,7 @@ class SplitPlotResult(BaseModel):
   assessmentCode: str
   designType: DesignType
   transform: Transform
+  transformOffset: float
   mainPlotFactor: str
   subPlotFactor: str
   blockCount: int
@@ -125,7 +126,7 @@ def analyzeSplitPlot(
   ]
   return twoStrataAnova(
     assessmentCode, values, mainLevels, subLevels, design.mainPlotFactor, design.subPlotFactor,
-    transform, treatmentMeans, DesignType.splitPlot,
+    transform, package.ratingFor(assessmentCode).transformOffset, treatmentMeans, DesignType.splitPlot,
   )
 
 
@@ -137,6 +138,7 @@ def twoStrataAnova(
   mainPlotFactor: str,
   subPlotFactor: str,
   transform: Transform,
+  transformOffset: float,
   treatmentMeans: list[TreatmentMean],
   designType: DesignType,
 ) -> SplitPlotResult:
@@ -209,6 +211,7 @@ def twoStrataAnova(
     assessmentCode=assessmentCode,
     designType=designType,
     transform=transform,
+    transformOffset=transformOffset,
     mainPlotFactor=mainPlotFactor,
     subPlotFactor=subPlotFactor,
     blockCount=blockCount,

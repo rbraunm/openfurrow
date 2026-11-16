@@ -63,6 +63,7 @@ class AnovaResult(BaseModel):
   assessmentCode: str
   designType: DesignType
   transform: Transform
+  transformOffset: float
   treatmentCount: int
   blockCount: int
   grandMean: float
@@ -163,7 +164,7 @@ def buildBlockTreatmentMatrix(
   try:
     checkTransformKind(rating.transform, rating.measurementKind)
     if rating.transform is not Transform.none:
-      transformedValues = applyTransform(rating.transform, matrix.ravel().tolist())
+      transformedValues = applyTransform(rating.transform, matrix.ravel().tolist(), rating.transformOffset)
       matrix = numpy.array(transformedValues, dtype=float).reshape(matrix.shape)
   except TransformError as error:
     raise AnalysisError(f"assessment '{assessmentCode}': {error}") from error
@@ -178,11 +179,13 @@ def analyzeRcbd(
 ) -> AnovaResult:
   """Run the RCBD ANOVA for one numeric assessment."""
   matrix, treatmentCodes, _, transform = buildRcbdMatrix(assessmentCode, package, layout, observations)
-  return anovaFromMatrix(assessmentCode, matrix, treatmentCodes, transform)
+  return anovaFromMatrix(
+    assessmentCode, matrix, treatmentCodes, transform, package.ratingFor(assessmentCode).transformOffset,
+  )
 
 
 def anovaFromMatrix(
-  assessmentCode: str, matrix: numpy.ndarray, treatmentCodes: list[str], transform: Transform,
+  assessmentCode: str, matrix: numpy.ndarray, treatmentCodes: list[str], transform: Transform, transformOffset: float,
 ) -> AnovaResult:
   """The RCBD ANOVA of a complete block-by-treatment matrix of values on the analysed scale."""
   blockCount, treatmentCount = matrix.shape
@@ -248,6 +251,7 @@ def anovaFromMatrix(
     assessmentCode=assessmentCode,
     designType=DesignType.rcbd,
     transform=transform,
+    transformOffset=transformOffset,
     treatmentCount=treatmentCount,
     blockCount=blockCount,
     grandMean=grandMean,

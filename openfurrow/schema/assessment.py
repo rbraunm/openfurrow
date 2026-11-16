@@ -44,13 +44,14 @@ class Transform(str, Enum):
   """A variance-stabilizing transform applied to a numeric rating (decision 0006).
 
   Declared per rating. When set, the analysis runs on the transformed scale and the
-  transform enters the content hash. These are the plain forms with fail-loud domains;
-  offsets for zero and boundary values are a separate future slice.
+  transform enters the content hash. A log or square root may add an offset first
+  (log10(x + 1), sqrt(x + 0.5)) for data with zeros; domains still fail loud.
   """
 
   none = "none"
   sqrt = "sqrt"
   log = "log"
+  log10 = "log10"
   arcsinSqrt = "arcsinSqrt"
   logit = "logit"
 
@@ -111,10 +112,18 @@ class Rating(BaseModel):
     default=Transform.none,
     description="Variance-stabilizing transform for a numeric rating; enters the content hash (0006).",
   )
+  transformOffset: float = Field(
+    default=0.0, ge=0.0, description="Added before a log or square-root transform, e.g. 1 for log10(x + 1).",
+  )
 
   @model_validator(mode="after")
   def domainMatchesDataType(self) -> Rating:
     code = self.ratingCode
+    offsetTakers = {Transform.log, Transform.log10, Transform.sqrt}
+    if self.transformOffset != 0.0 and self.transform not in offsetTakers:
+      raise ValueError(
+        f"rating '{code}': a transformOffset goes with a log, log10 or sqrt transform, not {self.transform.value}"
+      )
     if self.dataType is AssessmentDataType.numeric:
       if self.allowedValues is not None:
         raise ValueError(f"rating '{code}': numeric type cannot define allowedValues")

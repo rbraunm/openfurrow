@@ -32,24 +32,24 @@ from openfurrow.schema import (
 # ---- forward transforms: known values --------------------------------------
 
 def testNoneIsIdentity():
-  assert applyTransform(Transform.none, [0.0, 1.5, 42.0]) == [0.0, 1.5, 42.0]
+  assert applyTransform(Transform.none, [0.0, 1.5, 42.0], 0.0) == [0.0, 1.5, 42.0]
 
 
 def testForwardKnownValues():
-  assert applyTransform(Transform.sqrt, [0.0, 1.0, 4.0, 9.0]) == [0.0, 1.0, 2.0, 3.0]
-  assert applyTransform(Transform.log, [1.0, math.e]) == pytest.approx([0.0, 1.0])
-  assert applyTransform(Transform.arcsinSqrt, [0.0, 1.0]) == pytest.approx([0.0, math.pi / 2])
-  assert applyTransform(Transform.logit, [0.5]) == pytest.approx([0.0])
+  assert applyTransform(Transform.sqrt, [0.0, 1.0, 4.0, 9.0], 0.0) == [0.0, 1.0, 2.0, 3.0]
+  assert applyTransform(Transform.log, [1.0, math.e], 0.0) == pytest.approx([0.0, 1.0])
+  assert applyTransform(Transform.arcsinSqrt, [0.0, 1.0], 0.0) == pytest.approx([0.0, math.pi / 2])
+  assert applyTransform(Transform.logit, [0.5], 0.0) == pytest.approx([0.0])
 
 
 # ---- back-transform and round-trip -----------------------------------------
 
 def testBackTransformKnownValues():
-  assert backTransformMean(Transform.none, 3.3) == 3.3
-  assert backTransformMean(Transform.sqrt, 3.0) == pytest.approx(9.0)
-  assert backTransformMean(Transform.log, 0.0) == pytest.approx(1.0)
-  assert backTransformMean(Transform.arcsinSqrt, math.pi / 2) == pytest.approx(1.0)
-  assert backTransformMean(Transform.logit, 0.0) == pytest.approx(0.5)
+  assert backTransformMean(Transform.none, 3.3, 0.0) == 3.3
+  assert backTransformMean(Transform.sqrt, 3.0, 0.0) == pytest.approx(9.0)
+  assert backTransformMean(Transform.log, 0.0, 0.0) == pytest.approx(1.0)
+  assert backTransformMean(Transform.arcsinSqrt, math.pi / 2, 0.0) == pytest.approx(1.0)
+  assert backTransformMean(Transform.logit, 0.0, 0.0) == pytest.approx(0.5)
 
 
 def testRoundTripInvertsForEachTransform():
@@ -61,36 +61,36 @@ def testRoundTripInvertsForEachTransform():
   }
   for transform, values in samples.items():
     for value in values:
-      forward = applyTransform(transform, [value])[0]
-      assert backTransformMean(transform, forward) == pytest.approx(value, abs=1e-12)
+      forward = applyTransform(transform, [value], 0.0)[0]
+      assert backTransformMean(transform, forward, 0.0) == pytest.approx(value, abs=1e-12)
 
 
 # ---- fail-loud domains, naming the offending values ------------------------
 
 def testSqrtRejectsNegative():
   with pytest.raises(TransformError, match="values >= 0") as excinfo:
-    applyTransform(Transform.sqrt, [1.0, -4.0, 9.0])
+    applyTransform(Transform.sqrt, [1.0, -4.0, 9.0], 0.0)
   assert "-4" in str(excinfo.value)
 
 
 def testLogRejectsNonPositive():
   with pytest.raises(TransformError, match="values > 0"):
-    applyTransform(Transform.log, [1.0, 0.0])
+    applyTransform(Transform.log, [1.0, 0.0], 0.0)
   with pytest.raises(TransformError, match="values > 0"):
-    applyTransform(Transform.log, [-2.0])
+    applyTransform(Transform.log, [-2.0], 0.0)
 
 
 def testArcsinSqrtRejectsOutsideUnitInterval():
   with pytest.raises(TransformError, match="proportions in"):
-    applyTransform(Transform.arcsinSqrt, [0.5, 1.5])
+    applyTransform(Transform.arcsinSqrt, [0.5, 1.5], 0.0)
   with pytest.raises(TransformError, match="proportions in"):
-    applyTransform(Transform.arcsinSqrt, [-0.1])
+    applyTransform(Transform.arcsinSqrt, [-0.1], 0.0)
 
 
 def testLogitRejectsBoundariesAndOutside():
   for bad in ([0.0], [1.0], [1.5], [-0.2]):
     with pytest.raises(TransformError, match="open interval"):
-      applyTransform(Transform.logit, bad)
+      applyTransform(Transform.logit, bad, 0.0)
 
 
 # ---- transform-versus-kind sanity check ------------------------------------
@@ -115,7 +115,7 @@ def testIncompatiblePairsRejected():
   with pytest.raises(TransformError, match="not appropriate") as excinfo:
     checkTransformKind(Transform.logit, MeasurementKind.count)
   message = str(excinfo.value)
-  assert "count" in message and "log, sqrt" in message
+  assert "count" in message and "log, log10, sqrt" in message
   for transform, kind in [
     (Transform.arcsinSqrt, MeasurementKind.count),
     (Transform.sqrt, MeasurementKind.proportion),

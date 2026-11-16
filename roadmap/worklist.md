@@ -199,6 +199,10 @@ measure), `owner` (the owner's call), `done`.
   control (Abbott, Henderson-Tilton) when the endpoint calls for it; missing plots when
   the trial has them. EPPO PP 1/152 names the completely randomized design beside the
   RCBD as the two principal designs; the tool has only the second.
+  Built so far: the transformation with its offset and log10 (decision 0026), percent
+  control (decision 0022), and the split-plot and factorial RCBD designs (decisions 0020,
+  0025). Still to come: the completely randomized design, Tukey for all pairs and Dunnett
+  against a check, and an explicit policy for the untreated check in the analysis.
 - **USR-4** `build` **Data entry.** Values can be typed in the tool (REC-9) or arrive by
   CSV or a Field Book export. No Excel import yet (the brief lists it second after CSV).
 - **USR-5** `done` **A printable report.** The report page has a Print button and a print

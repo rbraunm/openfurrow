@@ -96,3 +96,13 @@ yield`).
   3.3; the analysis it is checked against follows in section 3.3. Transcribed from the
   book; the transcription is checked against the book's printed replication, factor, cell
   and grand totals.
+
+## gomezLarvae.csv
+
+Living larvae on rice under nine insecticide treatments in four replications of a
+randomized complete block design (`treatment, replication, larvae`), analysed as
+log10(count + 1).
+
+- Source: Gomez & Gomez (1984), Statistical Procedures for Agricultural Research, Table
+  7.14; obtained via the Rdatasets agridat CSV mirror, dataset `agridat/gomez.nonnormal1`.
+  The analysis it is checked against is Tables 7.16 and 7.17.

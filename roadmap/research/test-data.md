@@ -252,6 +252,8 @@ log10(count + 1).
 - **Source:** Gomez & Gomez (1984), Table 7.16; via agridat.
 - **Role:** an efficacy trial with counts and a transform with an offset, the slice
   decision 0006 deferred.
+- **Status:** IN USE. Fixture `tests/fixtures/gomezLarvae.csv` (via the Rdatasets agridat
+  CSV mirror), validated by `tests/testTransformOffset.py` against Tables 7.16 and 7.17.
 
 ### D5. Designs beyond the RCBD
 

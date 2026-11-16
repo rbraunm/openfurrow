@@ -761,12 +761,20 @@
       "text": "logarithme népérien",
       "status": "machineDraft"
     },
+    "report.scale.log10": {
+      "text": "logarithme décimal",
+      "status": "machineDraft"
+    },
     "report.scale.logit": {
       "text": "logit",
       "status": "machineDraft"
     },
     "report.scale.sqrt": {
       "text": "racine carrée",
+      "status": "machineDraft"
+    },
+    "report.scale.withOffset": {
+      "text": "{scale} de (x + {offset})",
       "status": "machineDraft"
     },
     "report.site.address": {

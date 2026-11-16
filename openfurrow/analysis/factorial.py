@@ -47,6 +47,7 @@ class FactorialResult(BaseModel):
   assessmentCode: str
   designType: DesignType
   transform: Transform
+  transformOffset: float
   firstFactor: str
   secondFactor: str
   blockCount: int
@@ -115,6 +116,7 @@ def analyzeFactorialRcbd(
     assessmentCode=assessmentCode,
     designType=DesignType.rcbd,
     transform=transform,
+    transformOffset=package.ratingFor(assessmentCode).transformOffset,
     firstFactor=first.factorCode,
     secondFactor=second.factorCode,
     blockCount=blockCount,

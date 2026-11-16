@@ -973,6 +973,14 @@
       "text": "natural-log",
       "status": "source"
     },
+    "report.scale.log10": {
+      "text": "base-10 log",
+      "status": "source"
+    },
+    "report.scale.withOffset": {
+      "text": "{scale} of (x + {offset})",
+      "status": "source"
+    },
     "report.scale.arcsinSqrt": {
       "text": "arcsine-square-root",
       "status": "source"

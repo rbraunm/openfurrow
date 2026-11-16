@@ -68,6 +68,7 @@ _probabilityThreshold = 10.0 ** -_probabilityDecimals
 _scaleKeys = {
   Transform.sqrt: "report.scale.sqrt",
   Transform.log: "report.scale.log",
+  Transform.log10: "report.scale.log10",
   Transform.arcsinSqrt: "report.scale.arcsinSqrt",
   Transform.logit: "report.scale.logit",
 }
@@ -427,7 +428,7 @@ def _ratingsSection(package: TrialPackage, translator: Translator) -> list[str]:
       rating.method,
       rating.unit,
       _valuesText(rating, translator),
-      None if rating.transform is Transform.none else _scaleName(rating.transform, translator),
+      None if rating.transform is Transform.none else _scaleName(rating.transform, rating.transformOffset, translator),
     ]
     for rating in package.ratings
   ]
@@ -597,7 +598,7 @@ def _assessmentSection(
   lines.append("")
   if result.transform is not Transform.none:
     lines.append(
-      translator.text("report.anova.transformedScale", scale=_scaleName(result.transform, translator))
+      translator.text("report.anova.transformedScale", scale=_scaleName(result.transform, result.transformOffset, translator))
     )
     lines.append("")
   anovaHeader = " | ".join(
@@ -664,14 +665,14 @@ def _assessmentSection(
   )
   lines.append("|---|---:|:--:|")
   for group in separation.groups:
-    displayedMean = backTransformMean(result.transform, group.mean)
+    displayedMean = backTransformMean(result.transform, group.mean, result.transformOffset)
     lines.append(
       f"| {group.treatmentCode} | {translator.number(displayedMean, decimals=3)} | {group.group} |"
     )
   lines.append("")
   if result.transform is not Transform.none:
     lines.append(
-      translator.text("report.means.backTransformNote", scale=_scaleName(result.transform, translator))
+      translator.text("report.means.backTransformNote", scale=_scaleName(result.transform, result.transformOffset, translator))
     )
     lines.append("")
   lines.append(_field(
@@ -821,7 +822,7 @@ def _splitPlotSubsections(
   }
   lines = [f"### {translator.text('report.heading.anova')}", ""]
   if result.transform is not Transform.none:
-    lines += [translator.text("report.anova.transformedScale", scale=_scaleName(result.transform, translator)), ""]
+    lines += [translator.text("report.anova.transformedScale", scale=_scaleName(result.transform, result.transformOffset, translator)), ""]
   lines += _anovaTable(result.table, sourceNames, translator)
   lines += [
     "",
@@ -882,7 +883,7 @@ def _twoFactorMeans(
       "|---|---:|:--:|",
       *(
         f"| {_cell(levelNames[group.levelCode])} "
-        f"| {translator.number(backTransformMean(result.transform, group.mean), decimals=3)} | {group.group} |"
+        f"| {translator.number(backTransformMean(result.transform, group.mean, result.transformOffset), decimals=3)} | {group.group} |"
         for group in separation.groups
       ),
       "",
@@ -911,7 +912,7 @@ def _twoFactorMeans(
       for rank, letter in zip(ordered, letterGroups([rowMeans[index] for index in ordered], withinRow)):
         letters[rank] = f" {letter}"
     cells = (
-      translator.number(backTransformMean(result.transform, mean), decimals=3) + letters[index]
+      translator.number(backTransformMean(result.transform, mean, result.transformOffset), decimals=3) + letters[index]
       for index, mean in enumerate(rowMeans)
     )
     lines.append(f"| {_cell(firstLevel.name)} | " + " | ".join(cells) + " |")
@@ -1074,7 +1075,7 @@ def _reproducibilitySection(
       )
     )
   transformed = [
-    f"{rating.ratingCode} = {rating.transform.value}"
+    f"{rating.ratingCode} = {rating.transform.value}" + (f"(x + {rating.transformOffset:g})" if rating.transformOffset else "")
     for rating in package.ratings
     if rating.transform is not Transform.none
   ]
@@ -1099,11 +1100,16 @@ def _reproducibilitySection(
   return lines
 
 
-def _scaleName(transform, translator: Translator) -> str:
+def _scaleName(transform, offset: float, translator: Translator) -> str:
   key = _scaleKeys.get(transform)
   if key is None:
     raise AnalysisError(f"no report scale name for transform '{transform.value}'")
-  return translator.text(key)
+  if offset == 0.0:
+    return translator.text(key)
+  return translator.text(
+    "report.scale.withOffset", scale=translator.text(key),
+    offset=translator.number(offset, decimals=_authoredDecimals(offset)),
+  )
 
 
 def _authoredDecimals(value: float) -> int:
