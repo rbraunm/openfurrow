@@ -6,7 +6,7 @@ Findings, defects, checks and owner calls that the plans do not carry.
 Status tags: `fix` (a defect to correct), `build` (work to add), `check` (a suspicion to
 measure), `owner` (the owner's call), `done`.
 
-**Counts.** fix 0, build 4, check 0, owner 4, done 50; 58 in all.
+**Counts.** fix 0, build 4, check 0, owner 5, done 50; 59 in all.
 
 ## Owner decisions
 
@@ -187,6 +187,11 @@ measure), `owner` (the owner's call), `done`.
   mechanism (0011) and an audience that decision 0008 itself gates on a partner's
   confirmation. To be settled at the reassessment (Owner decisions, "Order of work").
 
+- **DOC-5** `owner` **Identity, settings and data governance.** The reassessment of
+  2026-11-16 (`governance-plan.md`): build the foundation -- hierarchy, settings, sign-in,
+  roles, audit, retention -- before the remaining record forms, with five open questions
+  for the owner.
+
 ## First real user (USR)
 
 - **USR-1** `done` **A trial design form.** "Add trial" opens a form: the trial's details,
@@ -216,7 +221,8 @@ measure), `owner` (the owner's call), `done`.
   (decision 0028), Dunnett against the untreated check (decision 0029) and an explicit
   policy for the check in each assessment's analysis (decision 0030). Still to come:
   missing plots (the analysis refuses an incomplete table, decision 0003), and with them
-  Dunnett with unequal replication, which only a missing plot can bring about.
+  Dunnett with unequal replication, which only a missing plot can bring about. The policy
+  for missing plots is a setting (`governance-plan.md`, F2); the methods are built behind it.
 - **USR-4** `done` **Data entry.** Built as decision 0031 says: a CSV or an `.xlsx` sheet
   (read natively) is previewed, its columns mapped by the person, imported, and reconciled
   per assessment against the plots; an import never replaces stored values. Typed entry is
@@ -292,10 +298,12 @@ measure), `owner` (the owner's call), `done`.
 - **USR-14** `build` **Forms for the rest of the record.** Product lines, applications,
   targets, planting, soil, weather, factors, checks and percent control are entered in a
   trial file today; the form covers the trial, treatments, blocks, layout and assessments.
-  Subsamples (decision 0033) are among them.
+  Subsamples (decision 0033) are among them. What may be edited, and when, is a setting
+  with permissions behind it (`governance-plan.md`, F2 and F4).
 - **USR-8** `build` **What happened to a plot, and who changed a value.** A lost plot, a misapplied treatment or a
   difference between the plan and what was planted has no record. EPPO PP 1/181 asks for
-  deviations to be noted and reported (decision 0015, "Consequences").
+  deviations to be noted and reported (decision 0015, "Consequences"). Who changed a value
+  comes from sign-in and the audit log (`governance-plan.md`, F3 and F5).
 
 ## Trial record (REC)
 
@@ -379,7 +387,8 @@ sections added beside them. REC-9 needs data entry in the tool (USR-4).
   kept as received" and the brief for the resolved column mapping to be recorded. An import
   keeps neither: the observations are saved, the file and the mapping are not. To keep: the
   file's bytes and hash, the sheet, the mapping and when it was imported, exported with the
-  trial.
+  trial. Per the owner (2026-11-16) the received files are one storage area of the
+  retention system (`governance-plan.md`, F6).
 - **REC-9** `done` **Validation rules for data entry.** Built as decision 0023 says: an entry
   page per assessment, values checked in two strengths. What cannot be a value is refused
   and nothing saved; a value outside its limits is saved only once ticked, and the
