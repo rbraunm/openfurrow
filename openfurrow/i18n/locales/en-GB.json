@@ -269,6 +269,122 @@
       "text": "Waterlogged",
       "status": "humanApproved"
     },
+    "report.heading.planting": {
+      "text": "Planting",
+      "status": "humanApproved"
+    },
+    "report.planting.cultivar": {
+      "text": "Cultivar",
+      "status": "humanApproved"
+    },
+    "report.planting.cropEPPOCode": {
+      "text": "Crop EPPO code",
+      "status": "humanApproved"
+    },
+    "report.planting.sowingDate": {
+      "text": "Sowing date",
+      "status": "humanApproved"
+    },
+    "report.planting.seedingRate": {
+      "text": "Seeding rate",
+      "status": "humanApproved"
+    },
+    "report.planting.plantDensity": {
+      "text": "Plant density",
+      "status": "humanApproved"
+    },
+    "report.planting.rowSpacing": {
+      "text": "Row spacing",
+      "status": "humanApproved"
+    },
+    "report.planting.inRowSpacing": {
+      "text": "In-row spacing",
+      "status": "humanApproved"
+    },
+    "report.planting.sowingDepth": {
+      "text": "Sowing depth",
+      "status": "humanApproved"
+    },
+    "report.planting.emergenceDate": {
+      "text": "Emergence date",
+      "status": "humanApproved"
+    },
+    "report.planting.precedingCrop": {
+      "text": "Preceding crop",
+      "status": "humanApproved"
+    },
+    "report.planting.tillage": {
+      "text": "Tillage",
+      "status": "humanApproved"
+    },
+    "report.planting.notes": {
+      "text": "Notes",
+      "status": "humanApproved"
+    },
+    "report.heading.soil": {
+      "text": "Soil",
+      "status": "humanApproved"
+    },
+    "report.soil.soilType": {
+      "text": "Soil type",
+      "status": "humanApproved"
+    },
+    "report.soil.texture": {
+      "text": "Texture",
+      "status": "humanApproved"
+    },
+    "report.soil.pH": {
+      "text": "pH",
+      "status": "humanApproved"
+    },
+    "report.soil.pHMethod": {
+      "text": "pH method",
+      "status": "humanApproved"
+    },
+    "report.soil.organicMatter": {
+      "text": "Organic matter",
+      "status": "humanApproved"
+    },
+    "report.soil.seedbedQuality": {
+      "text": "Seed-bed quality",
+      "status": "humanApproved"
+    },
+    "report.soil.fertilizerRegime": {
+      "text": "Fertiliser regime",
+      "status": "humanApproved"
+    },
+    "report.soil.notes": {
+      "text": "Notes",
+      "status": "humanApproved"
+    },
+    "report.heading.weather": {
+      "text": "Weather",
+      "status": "humanApproved"
+    },
+    "report.weather.column.date": {
+      "text": "Date",
+      "status": "humanApproved"
+    },
+    "report.weather.column.rainfall": {
+      "text": "Rainfall",
+      "status": "humanApproved"
+    },
+    "report.weather.column.irrigation": {
+      "text": "Irrigation",
+      "status": "humanApproved"
+    },
+    "report.weather.column.minimumTemperature": {
+      "text": "Minimum temperature",
+      "status": "humanApproved"
+    },
+    "report.weather.column.maximumTemperature": {
+      "text": "Maximum temperature",
+      "status": "humanApproved"
+    },
+    "report.weather.column.notes": {
+      "text": "Notes",
+      "status": "humanApproved"
+    },
     "report.heading.targets": {
       "text": "Targets",
       "status": "humanApproved"

@@ -24,11 +24,14 @@ from openfurrow.store.database import (
   RatingRow,
   ObservationRow,
   PlotRow,
+  PlantingRow,
+  SoilRow,
   StoreError,
   TargetRow,
   TreatmentLineRow,
   TreatmentRow,
   TrialRow,
+  WeatherRow,
 )
 from openfurrow.schema.application import Application, SoilMoisture
 from openfurrow.schema.assessment import (
@@ -42,6 +45,7 @@ from openfurrow.schema.layout import PlotAssignment
 from openfurrow.schema.observation import Observation
 from openfurrow.schema.quantity import Quantity
 from openfurrow.schema.target import Target, TargetKind
+from openfurrow.schema.trialConditions import Planting, Soil, WeatherRecord
 from openfurrow.schema.treatment import (
   ActiveSubstance,
   ProductKind,
@@ -165,6 +169,55 @@ def savePackage(session: Session, package: TrialPackage, layout: list[PlotAssign
       soilMoisture=application.soilMoisture.value if application.soilMoisture is not None else None,
       notes=application.notes,
     ))
+  if package.planting is not None:
+    planting = package.planting
+    trial.planting = PlantingRow(
+      trialCode=trialCode,
+      cultivar=planting.cultivar,
+      cropEPPOCode=planting.cropEPPOCode,
+      sowingDate=planting.sowingDate,
+      seedingRateValue=None if planting.seedingRate is None else planting.seedingRate.value,
+      seedingRateUnit=None if planting.seedingRate is None else planting.seedingRate.unit,
+      plantDensityValue=None if planting.plantDensity is None else planting.plantDensity.value,
+      plantDensityUnit=None if planting.plantDensity is None else planting.plantDensity.unit,
+      rowSpacingValue=None if planting.rowSpacing is None else planting.rowSpacing.value,
+      rowSpacingUnit=None if planting.rowSpacing is None else planting.rowSpacing.unit,
+      inRowSpacingValue=None if planting.inRowSpacing is None else planting.inRowSpacing.value,
+      inRowSpacingUnit=None if planting.inRowSpacing is None else planting.inRowSpacing.unit,
+      sowingDepthValue=None if planting.sowingDepth is None else planting.sowingDepth.value,
+      sowingDepthUnit=None if planting.sowingDepth is None else planting.sowingDepth.unit,
+      emergenceDate=planting.emergenceDate,
+      precedingCrop=planting.precedingCrop,
+      tillage=planting.tillage,
+      notes=planting.notes,
+    )
+  if package.soil is not None:
+    soil = package.soil
+    trial.soil = SoilRow(
+      trialCode=trialCode,
+      soilType=soil.soilType,
+      texture=soil.texture,
+      pH=soil.pH,
+      pHMethod=soil.pHMethod,
+      organicMatter=soil.organicMatter,
+      seedbedQuality=soil.seedbedQuality,
+      fertilizerRegime=soil.fertilizerRegime,
+      notes=soil.notes,
+    )
+  for record in package.weather:
+    trial.weather.append(WeatherRow(
+      trialCode=trialCode,
+      date=record.date,
+      rainfallValue=None if record.rainfall is None else record.rainfall.value,
+      rainfallUnit=None if record.rainfall is None else record.rainfall.unit,
+      irrigationValue=None if record.irrigation is None else record.irrigation.value,
+      irrigationUnit=None if record.irrigation is None else record.irrigation.unit,
+      minimumTemperatureValue=None if record.minimumTemperature is None else record.minimumTemperature.value,
+      minimumTemperatureUnit=None if record.minimumTemperature is None else record.minimumTemperature.unit,
+      maximumTemperatureValue=None if record.maximumTemperature is None else record.maximumTemperature.value,
+      maximumTemperatureUnit=None if record.maximumTemperature is None else record.maximumTemperature.unit,
+      notes=record.notes,
+    ))
   for ordinal, target in enumerate(package.targets):
     trial.targets.append(TargetRow(
       trialCode=trialCode,
@@ -267,6 +320,47 @@ def loadPackage(session: Session, trialCode: str) -> TrialPackage:
     )
     for row in sorted(trial.assessments, key=lambda row: row.ordinal)
   ]
+  planting = None
+  if trial.planting is not None:
+    row = trial.planting
+    planting = Planting(
+      cultivar=row.cultivar,
+      cropEPPOCode=row.cropEPPOCode,
+      sowingDate=row.sowingDate,
+      seedingRate=_quantity(row.seedingRateValue, row.seedingRateUnit),
+      plantDensity=_quantity(row.plantDensityValue, row.plantDensityUnit),
+      rowSpacing=_quantity(row.rowSpacingValue, row.rowSpacingUnit),
+      inRowSpacing=_quantity(row.inRowSpacingValue, row.inRowSpacingUnit),
+      sowingDepth=_quantity(row.sowingDepthValue, row.sowingDepthUnit),
+      emergenceDate=row.emergenceDate,
+      precedingCrop=row.precedingCrop,
+      tillage=row.tillage,
+      notes=row.notes,
+    )
+  soil = None
+  if trial.soil is not None:
+    row = trial.soil
+    soil = Soil(
+      soilType=row.soilType,
+      texture=row.texture,
+      pH=row.pH,
+      pHMethod=row.pHMethod,
+      organicMatter=row.organicMatter,
+      seedbedQuality=row.seedbedQuality,
+      fertilizerRegime=row.fertilizerRegime,
+      notes=row.notes,
+    )
+  weather = [
+    WeatherRecord(
+      date=row.date,
+      rainfall=_quantity(row.rainfallValue, row.rainfallUnit),
+      irrigation=_quantity(row.irrigationValue, row.irrigationUnit),
+      minimumTemperature=_quantity(row.minimumTemperatureValue, row.minimumTemperatureUnit),
+      maximumTemperature=_quantity(row.maximumTemperatureValue, row.maximumTemperatureUnit),
+      notes=row.notes,
+    )
+    for row in sorted(trial.weather, key=lambda row: row.date)
+  ]
   targets = [
     Target(
       targetCode=row.targetCode,
@@ -308,6 +402,9 @@ def loadPackage(session: Session, trialCode: str) -> TrialPackage:
       organization=trial.organization,
     ),
     targets=targets,
+    planting=planting,
+    soil=soil,
+    weather=weather,
     design=DesignSpecification(
       designType=DesignType(trial.designType),
       replications=trial.replications,

@@ -20,6 +20,7 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator, model_valida
 from openfurrow.schema.application import Application
 from openfurrow.schema.assessment import Assessment, Rating
 from openfurrow.schema.target import Target
+from openfurrow.schema.trialConditions import Planting, Soil, WeatherRecord
 from openfurrow.schema.treatment import Treatment
 from openfurrow.version import schemaVersion as currentSchemaVersion
 
@@ -107,6 +108,9 @@ class TrialPackage(BaseModel):
   schemaVersion: str = Field(description="The schema this package is written in; must be the one this build reads.")
   trial: TrialMetadata
   targets: list[Target] = Field(default_factory=list)
+  planting: Planting | None = None
+  soil: Soil | None = None
+  weather: list[WeatherRecord] = Field(default_factory=list, description="One record per day.")
   treatments: list[Treatment] = Field(min_length=2, description="At least two treatments to compare.")
   applications: list[Application] = Field(default_factory=list)
   design: DesignSpecification
@@ -129,6 +133,16 @@ class TrialPackage(BaseModel):
     if len(set(codes)) != len(codes):
       raise ValueError(f"duplicate treatmentCode values: {sorted(_duplicates(codes))}")
     return treatments
+
+  @field_validator("weather")
+  @classmethod
+  def oneWeatherRecordPerDayInOrder(cls, weather: list[WeatherRecord]) -> list[WeatherRecord]:
+    for earlier, later in zip(weather, weather[1:]):
+      if later.date <= earlier.date:
+        raise ValueError(
+          f"weather records must run one per day in date order; {later.date} follows {earlier.date}"
+        )
+    return weather
 
   @field_validator("targets")
   @classmethod

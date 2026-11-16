@@ -269,6 +269,122 @@
       "text": "Waterlogged",
       "status": "source"
     },
+    "report.heading.planting": {
+      "text": "Planting",
+      "status": "source"
+    },
+    "report.planting.cultivar": {
+      "text": "Cultivar",
+      "status": "source"
+    },
+    "report.planting.cropEPPOCode": {
+      "text": "Crop EPPO code",
+      "status": "source"
+    },
+    "report.planting.sowingDate": {
+      "text": "Sowing date",
+      "status": "source"
+    },
+    "report.planting.seedingRate": {
+      "text": "Seeding rate",
+      "status": "source"
+    },
+    "report.planting.plantDensity": {
+      "text": "Plant density",
+      "status": "source"
+    },
+    "report.planting.rowSpacing": {
+      "text": "Row spacing",
+      "status": "source"
+    },
+    "report.planting.inRowSpacing": {
+      "text": "In-row spacing",
+      "status": "source"
+    },
+    "report.planting.sowingDepth": {
+      "text": "Sowing depth",
+      "status": "source"
+    },
+    "report.planting.emergenceDate": {
+      "text": "Emergence date",
+      "status": "source"
+    },
+    "report.planting.precedingCrop": {
+      "text": "Preceding crop",
+      "status": "source"
+    },
+    "report.planting.tillage": {
+      "text": "Tillage",
+      "status": "source"
+    },
+    "report.planting.notes": {
+      "text": "Notes",
+      "status": "source"
+    },
+    "report.heading.soil": {
+      "text": "Soil",
+      "status": "source"
+    },
+    "report.soil.soilType": {
+      "text": "Soil type",
+      "status": "source"
+    },
+    "report.soil.texture": {
+      "text": "Texture",
+      "status": "source"
+    },
+    "report.soil.pH": {
+      "text": "pH",
+      "status": "source"
+    },
+    "report.soil.pHMethod": {
+      "text": "pH method",
+      "status": "source"
+    },
+    "report.soil.organicMatter": {
+      "text": "Organic matter",
+      "status": "source"
+    },
+    "report.soil.seedbedQuality": {
+      "text": "Seed-bed quality",
+      "status": "source"
+    },
+    "report.soil.fertilizerRegime": {
+      "text": "Fertilizer regime",
+      "status": "source"
+    },
+    "report.soil.notes": {
+      "text": "Notes",
+      "status": "source"
+    },
+    "report.heading.weather": {
+      "text": "Weather",
+      "status": "source"
+    },
+    "report.weather.column.date": {
+      "text": "Date",
+      "status": "source"
+    },
+    "report.weather.column.rainfall": {
+      "text": "Rainfall",
+      "status": "source"
+    },
+    "report.weather.column.irrigation": {
+      "text": "Irrigation",
+      "status": "source"
+    },
+    "report.weather.column.minimumTemperature": {
+      "text": "Minimum temperature",
+      "status": "source"
+    },
+    "report.weather.column.maximumTemperature": {
+      "text": "Maximum temperature",
+      "status": "source"
+    },
+    "report.weather.column.notes": {
+      "text": "Notes",
+      "status": "source"
+    },
     "report.heading.targets": {
       "text": "Targets",
       "status": "source"

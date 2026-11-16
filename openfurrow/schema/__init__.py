@@ -21,6 +21,7 @@ from openfurrow.schema.layout import (
 from openfurrow.schema.observation import Observation
 from openfurrow.schema.quantity import Quantity
 from openfurrow.schema.target import Target, TargetKind
+from openfurrow.schema.trialConditions import Planting, Soil, WeatherRecord
 from openfurrow.schema.treatment import (
   ActiveSubstance,
   ProductKind,
@@ -46,12 +47,14 @@ __all__ = [
   "DesignType",
   "MeasurementKind",
   "Observation",
+  "Planting",
   "PlotAssignment",
   "ProductKind",
   "Quantity",
   "RandomizationMethod",
   "RateBasis",
   "Rating",
+  "Soil",
   "SoilMoisture",
   "Target",
   "TargetKind",
@@ -63,6 +66,7 @@ __all__ = [
   "TrialLayout",
   "TrialMetadata",
   "TrialPackage",
+  "WeatherRecord",
   "canonicalBytes",
   "contentHash",
 ]

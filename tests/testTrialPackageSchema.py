@@ -477,6 +477,85 @@ def testGenusLevelEPPOCodeAccepted(validPackageDict):
   assert buildPackage(validPackageDict).targets[0].eppoCode == "1SEPTG"
 
 
+# ---- planting, soil and weather (decision 0019) ---------------------------
+
+def testPlantingSoilAndWeatherAreRecorded(validPackageDict):
+  validPackageDict["planting"] = {"cultivar": "Skyfall", "sowingDate": "2024-10-01",
+                                  "emergenceDate": "2024-10-12", "seedingRate": {"value": 160, "unit": "kg/ha"}}
+  validPackageDict["soil"] = {"pH": 6.8, "pHMethod": "CaCl2", "organicMatter": 2.4}
+  validPackageDict["weather"] = [{"date": "2025-05-01", "rainfall": {"value": 0, "unit": "mm"}}]
+  package = buildPackage(validPackageDict)
+  assert package.planting.seedingRate == Quantity(value=160.0, unit="kg/ha")
+  assert (package.soil.pH, package.soil.pHMethod) == (6.8, "CaCl2")
+  assert package.weather[0].rainfall == Quantity(value=0.0, unit="mm")
+
+
+def testEmergenceBeforeSowingRejected(validPackageDict):
+  validPackageDict["planting"] = {"sowingDate": "2024-10-12", "emergenceDate": "2024-10-01"}
+  assert any("emergenceDate 2024-10-01 is before sowingDate 2024-10-12" in message
+             for message in errorMessages(rejection(validPackageDict)))
+
+
+@pytest.mark.parametrize("block", ["planting", "soil"])
+def testEmptyBlockRejected(validPackageDict, block):
+  # Stored, an empty block and no block would look the same; so the empty one is refused.
+  validPackageDict[block] = {}
+  assert any(f"{block} holds nothing; leave it out instead" in message
+             for message in errorMessages(rejection(validPackageDict)))
+
+
+@pytest.mark.parametrize("field, value", [("pH", 14.5), ("pH", -0.1), ("organicMatter", 101)])
+def testSoilValueOutsideItsRangeRejected(validPackageDict, field, value):
+  validPackageDict["soil"] = {field: value}
+  errors = rejection(validPackageDict).value.errors()
+  assert [error["loc"][-1] for error in errors] == [field]
+
+
+def testPHMethodWithoutAPHRejected(validPackageDict):
+  validPackageDict["soil"] = {"pHMethod": "CaCl2"}
+  assert any("pHMethod is given without a pH" in message
+             for message in errorMessages(rejection(validPackageDict)))
+
+
+def testCropEPPOCodeOfTheWrongShapeRejected(validPackageDict):
+  validPackageDict["planting"] = {"cropEPPOCode": "wheat"}
+  errors = rejection(validPackageDict).value.errors()
+  assert [(error["type"], error["loc"][-1]) for error in errors] == [("string_pattern_mismatch", "cropEPPOCode")]
+
+
+def testNegativeRainfallRejected(validPackageDict):
+  validPackageDict["weather"] = [{"date": "2025-05-01", "rainfall": {"value": -1, "unit": "mm"}}]
+  assert any("rainfall must not be negative, got -1.0" in message
+             for message in errorMessages(rejection(validPackageDict)))
+
+
+def testMinimumAboveMaximumRejected(validPackageDict):
+  validPackageDict["weather"] = [{"date": "2025-05-01", "minimumTemperature": {"value": 20, "unit": "C"},
+                                  "maximumTemperature": {"value": 12, "unit": "C"}}]
+  assert any("weather record for 2025-05-01: minimum 20.0 is above maximum 12.0" in message
+             for message in errorMessages(rejection(validPackageDict)))
+
+
+def testTemperaturesInDifferentUnitsRejected(validPackageDict):
+  validPackageDict["weather"] = [{"date": "2025-05-01", "minimumTemperature": {"value": 5, "unit": "C"},
+                                  "maximumTemperature": {"value": 60, "unit": "F"}}]
+  assert any("temperatures in 'C' and 'F' cannot be compared" in message
+             for message in errorMessages(rejection(validPackageDict)))
+
+
+def testEmptyWeatherRecordRejected(validPackageDict):
+  validPackageDict["weather"] = [{"date": "2025-05-01"}]
+  assert any("weather record for 2025-05-01 holds nothing" in message
+             for message in errorMessages(rejection(validPackageDict)))
+
+
+@pytest.mark.parametrize("dates", [["2025-05-02", "2025-05-01"], ["2025-05-01", "2025-05-01"]])
+def testWeatherOutOfOrderOrRepeatedRejected(validPackageDict, dates):
+  validPackageDict["weather"] = [{"date": day, "rainfall": {"value": 1, "unit": "mm"}} for day in dates]
+  assert any(f"one per day in date order; {dates[1]} follows {dates[0]}" in message
+             for message in errorMessages(rejection(validPackageDict)))
+
+
 # ---- design rules -------------------------------------------------------
 
 def testReplicationsBelowTwoRejected(validPackageDict):

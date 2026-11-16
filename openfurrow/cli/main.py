@@ -202,6 +202,12 @@ def _commandInfo(args) -> int:
     f"{len(package.treatments)} treatments, {package.plotCount} plots"
   )
   print(f"Layout: {_layoutOrigin(package.design)}")
+  if package.planting is not None:
+    print(f"Planting: {_recordedFacts(package.planting)}")
+  if package.soil is not None:
+    print(f"Soil: {_recordedFacts(package.soil)}")
+  if package.weather:
+    print(f"Weather: {len(package.weather)} days, {package.weather[0].date} to {package.weather[-1].date}")
   if package.targets:
     print("Targets:")
     for target in package.targets:
@@ -223,6 +229,11 @@ def _commandInfo(args) -> int:
   print(f"Observations: {len(observations)}")
   print(f"Content hash: {workspace.contentHashFor(args.trialCode)}")
   return 0
+
+
+def _recordedFacts(block) -> str:
+  """The names of the facts a planting or soil block records, in schema order."""
+  return ", ".join(name for name in type(block).model_fields if getattr(block, name) is not None)
 
 
 def _layoutOrigin(design) -> str:

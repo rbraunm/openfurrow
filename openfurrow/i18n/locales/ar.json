@@ -381,12 +381,20 @@
       "text": "التصميم",
       "status": "machineDraft"
     },
+    "report.heading.planting": {
+      "text": "الزراعة",
+      "status": "machineDraft"
+    },
     "report.heading.ratings": {
       "text": "المتغيرات المقيمة",
       "status": "machineDraft"
     },
     "report.heading.reproducibility": {
       "text": "قابلية إعادة الإنتاج",
+      "status": "machineDraft"
+    },
+    "report.heading.soil": {
+      "text": "التربة",
       "status": "machineDraft"
     },
     "report.heading.targets": {
@@ -403,6 +411,10 @@
     },
     "report.heading.trialReport": {
       "text": "تقرير التجربة: {title}",
+      "status": "machineDraft"
+    },
+    "report.heading.weather": {
+      "text": "الطقس",
       "status": "machineDraft"
     },
     "report.labelValue": {
@@ -455,6 +467,54 @@
     },
     "report.method.fisherProtectedLSD": {
       "text": "أقل فرق معنوي محمي (فيشر)",
+      "status": "machineDraft"
+    },
+    "report.planting.cropEPPOCode": {
+      "text": "رمز EPPO للمحصول",
+      "status": "machineDraft"
+    },
+    "report.planting.cultivar": {
+      "text": "الصنف",
+      "status": "machineDraft"
+    },
+    "report.planting.emergenceDate": {
+      "text": "تاريخ الإنبات",
+      "status": "machineDraft"
+    },
+    "report.planting.inRowSpacing": {
+      "text": "المسافة على الخط",
+      "status": "machineDraft"
+    },
+    "report.planting.notes": {
+      "text": "ملاحظات",
+      "status": "machineDraft"
+    },
+    "report.planting.plantDensity": {
+      "text": "كثافة النباتات",
+      "status": "machineDraft"
+    },
+    "report.planting.precedingCrop": {
+      "text": "المحصول السابق",
+      "status": "machineDraft"
+    },
+    "report.planting.rowSpacing": {
+      "text": "المسافة بين الخطوط",
+      "status": "machineDraft"
+    },
+    "report.planting.seedingRate": {
+      "text": "معدل البذار",
+      "status": "machineDraft"
+    },
+    "report.planting.sowingDate": {
+      "text": "تاريخ الزراعة",
+      "status": "machineDraft"
+    },
+    "report.planting.sowingDepth": {
+      "text": "عمق الزراعة",
+      "status": "machineDraft"
+    },
+    "report.planting.tillage": {
+      "text": "الحراثة",
       "status": "machineDraft"
     },
     "report.ratings.atLeast": {
@@ -547,6 +607,38 @@
     },
     "report.scale.sqrt": {
       "text": "الجذر التربيعي",
+      "status": "machineDraft"
+    },
+    "report.soil.fertilizerRegime": {
+      "text": "برنامج التسميد",
+      "status": "machineDraft"
+    },
+    "report.soil.notes": {
+      "text": "ملاحظات",
+      "status": "machineDraft"
+    },
+    "report.soil.organicMatter": {
+      "text": "المادة العضوية",
+      "status": "machineDraft"
+    },
+    "report.soil.pH": {
+      "text": "pH",
+      "status": "machineDraft"
+    },
+    "report.soil.pHMethod": {
+      "text": "طريقة قياس pH",
+      "status": "machineDraft"
+    },
+    "report.soil.seedbedQuality": {
+      "text": "جودة مهد البذور",
+      "status": "machineDraft"
+    },
+    "report.soil.soilType": {
+      "text": "نوع التربة",
+      "status": "machineDraft"
+    },
+    "report.soil.texture": {
+      "text": "القوام",
       "status": "machineDraft"
     },
     "report.targets.column.code": {
@@ -703,6 +795,30 @@
     },
     "report.value.percent": {
       "text": "{value}%",
+      "status": "machineDraft"
+    },
+    "report.weather.column.date": {
+      "text": "التاريخ",
+      "status": "machineDraft"
+    },
+    "report.weather.column.irrigation": {
+      "text": "الري",
+      "status": "machineDraft"
+    },
+    "report.weather.column.maximumTemperature": {
+      "text": "درجة الحرارة العظمى",
+      "status": "machineDraft"
+    },
+    "report.weather.column.minimumTemperature": {
+      "text": "درجة الحرارة الصغرى",
+      "status": "machineDraft"
+    },
+    "report.weather.column.notes": {
+      "text": "ملاحظات",
+      "status": "machineDraft"
+    },
+    "report.weather.column.rainfall": {
+      "text": "الأمطار",
       "status": "machineDraft"
     },
     "web.add.error": {

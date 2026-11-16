@@ -352,6 +352,33 @@ def testReportListsTheTargetsAndTheRatingsThatNameThem():
   assert "## Targets" not in recordedReport()
 
 
+def testReportPlacesPlantingSoilAndWeatherWhereTheStandardDoes():
+  def addConditions(data):
+    data["planting"] = {"cultivar": "Laureate", "sowingDate": "2025-03-20",
+                        "seedingRate": {"value": 350, "unit": "seeds/m2"}}
+    data["soil"] = {"texture": "silty clay loam", "pH": 6.8, "pHMethod": "water 1:2.5", "organicMatter": 2.4}
+    data["weather"] = [
+      {"date": "2025-05-01", "rainfall": {"value": 4.2, "unit": "mm"}},
+      {"date": "2025-05-02", "minimumTemperature": {"value": -0.5, "unit": "C"}, "notes": "Ground frost"},
+    ]
+  package = recordedPackage(addConditions)
+  report = buildReport(package, generateRcbdLayout(package), [])
+  assert (
+    "## Planting\n\n- Cultivar: Laureate\n- Sowing date: 03/20/2025\n- Seeding rate: 350 seeds/m2\n\n## Design"
+  ) in report
+  assert (
+    "## Soil\n\n- Texture: silty clay loam\n- pH: 6.8\n- pH method: water 1:2.5\n- Organic matter: 2.4%\n"
+  ) in report
+  assert (
+    "## Weather\n\n| Date | Rainfall | Minimum temperature | Notes |\n|---|---|---|---|\n"
+    "| 05/01/2025 | 4.2 mm | - | - |\n| 05/02/2025 | - | -0.5 C | Ground frost |\n"
+  ) in report
+  order = [report.index(heading) for heading in
+           ("## Planting", "## Design", "## Applications", "## Soil", "## Weather", "## Ratings")]
+  assert order == sorted(order)
+  assert "## Planting" not in recordedReport() and "## Weather" not in recordedReport()
+
+
 def testReportListsWhatIsRated():
   assert (
     "## Ratings\n\n"

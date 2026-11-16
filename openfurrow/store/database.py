@@ -36,7 +36,7 @@ from sqlalchemy import ForeignKey, Text, event, inspect, select
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, relationship
 
-storeVersion = 5
+storeVersion = 6
 
 
 class StoreError(RuntimeError):
@@ -74,6 +74,15 @@ class TrialRow(Base):
   randomizationMethod: Mapped[str]
   randomizationSeed: Mapped[int | None]
 
+  planting: Mapped[PlantingRow | None] = relationship(
+    back_populates="trial", cascade="all, delete-orphan"
+  )
+  soil: Mapped[SoilRow | None] = relationship(
+    back_populates="trial", cascade="all, delete-orphan"
+  )
+  weather: Mapped[list[WeatherRow]] = relationship(
+    back_populates="trial", cascade="all, delete-orphan"
+  )
   targets: Mapped[list[TargetRow]] = relationship(
     back_populates="trial", cascade="all, delete-orphan"
   )
@@ -98,6 +107,77 @@ class TrialRow(Base):
   observations: Mapped[list[ObservationRow]] = relationship(
     back_populates="trial", cascade="all, delete-orphan"
   )
+
+
+class PlantingRow(Base):
+  """How the crop was established; at most one row per trial."""
+
+  __tablename__ = "planting"
+
+  trialCode: Mapped[str] = mapped_column(
+    ForeignKey("trial.trialCode", ondelete="CASCADE"), primary_key=True
+  )
+  cultivar: Mapped[str | None]
+  cropEPPOCode: Mapped[str | None]
+  sowingDate: Mapped[datetime.date | None]
+  seedingRateValue: Mapped[float | None]
+  seedingRateUnit: Mapped[str | None]
+  plantDensityValue: Mapped[float | None]
+  plantDensityUnit: Mapped[str | None]
+  rowSpacingValue: Mapped[float | None]
+  rowSpacingUnit: Mapped[str | None]
+  inRowSpacingValue: Mapped[float | None]
+  inRowSpacingUnit: Mapped[str | None]
+  sowingDepthValue: Mapped[float | None]
+  sowingDepthUnit: Mapped[str | None]
+  emergenceDate: Mapped[datetime.date | None]
+  precedingCrop: Mapped[str | None]
+  tillage: Mapped[str | None]
+  notes: Mapped[str | None]
+
+  trial: Mapped[TrialRow] = relationship(back_populates="planting")
+
+
+class SoilRow(Base):
+  """The soil of the site; at most one row per trial."""
+
+  __tablename__ = "soil"
+
+  trialCode: Mapped[str] = mapped_column(
+    ForeignKey("trial.trialCode", ondelete="CASCADE"), primary_key=True
+  )
+  soilType: Mapped[str | None]
+  texture: Mapped[str | None]
+  pH: Mapped[float | None]
+  pHMethod: Mapped[str | None]
+  organicMatter: Mapped[float | None]
+  seedbedQuality: Mapped[str | None]
+  fertilizerRegime: Mapped[str | None]
+  notes: Mapped[str | None]
+
+  trial: Mapped[TrialRow] = relationship(back_populates="soil")
+
+
+class WeatherRow(Base):
+  """One day of the weather log."""
+
+  __tablename__ = "weather"
+
+  trialCode: Mapped[str] = mapped_column(
+    ForeignKey("trial.trialCode", ondelete="CASCADE"), primary_key=True
+  )
+  date: Mapped[datetime.date] = mapped_column(primary_key=True)
+  rainfallValue: Mapped[float | None]
+  rainfallUnit: Mapped[str | None]
+  irrigationValue: Mapped[float | None]
+  irrigationUnit: Mapped[str | None]
+  minimumTemperatureValue: Mapped[float | None]
+  minimumTemperatureUnit: Mapped[str | None]
+  maximumTemperatureValue: Mapped[float | None]
+  maximumTemperatureUnit: Mapped[str | None]
+  notes: Mapped[str | None]
+
+  trial: Mapped[TrialRow] = relationship(back_populates="weather")
 
 
 class TargetRow(Base):

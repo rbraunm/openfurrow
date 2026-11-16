@@ -78,10 +78,13 @@ def buildReport(
   translator = translatorFor(locale)
   lines: list[str] = []
   lines += _metadataSection(package, translator)
+  lines += _plantingSection(package, translator)
   lines += _designSection(package, translator)
   lines += _targetsSection(package, translator)
   lines += _treatmentsSection(package, translator)
   lines += _applicationsSection(package, translator)
+  lines += _soilSection(package, translator)
+  lines += _weatherSection(package, translator)
   lines += _ratingsSection(package, translator)
   lines += _assessmentsSection(package, translator)
   for assessment in package.assessments:
@@ -130,6 +133,94 @@ def _metadataSection(package: TrialPackage, translator: Translator) -> list[str]
     lines.append(_field(translator, "report.field.organization", trial.organization))
   lines.append("")
   return lines
+
+
+def _plantingSection(package: TrialPackage, translator: Translator) -> list[str]:
+  planting = package.planting
+  if planting is None:
+    return []
+
+  def amount(quantity: Quantity | None) -> str | None:
+    return None if quantity is None else _quantityText(quantity, translator)
+
+  def day(value) -> str | None:
+    return None if value is None else translator.date(value)
+
+  facts = {
+    "cultivar": planting.cultivar,
+    "cropEPPOCode": planting.cropEPPOCode,
+    "sowingDate": day(planting.sowingDate),
+    "seedingRate": amount(planting.seedingRate),
+    "plantDensity": amount(planting.plantDensity),
+    "rowSpacing": amount(planting.rowSpacing),
+    "inRowSpacing": amount(planting.inRowSpacing),
+    "sowingDepth": amount(planting.sowingDepth),
+    "emergenceDate": day(planting.emergenceDate),
+    "precedingCrop": planting.precedingCrop,
+    "tillage": planting.tillage,
+    "notes": planting.notes,
+  }
+  return _factList("report.heading.planting", "report.planting.", facts, translator)
+
+
+def _soilSection(package: TrialPackage, translator: Translator) -> list[str]:
+  soil = package.soil
+  if soil is None:
+    return []
+  facts = {
+    "soilType": soil.soilType,
+    "texture": soil.texture,
+    "pH": None if soil.pH is None else translator.number(soil.pH, decimals=_authoredDecimals(soil.pH)),
+    "pHMethod": soil.pHMethod,
+    "organicMatter": None if soil.organicMatter is None else translator.text(
+      "report.value.percent",
+      value=translator.number(soil.organicMatter, decimals=_authoredDecimals(soil.organicMatter)),
+    ),
+    "seedbedQuality": soil.seedbedQuality,
+    "fertilizerRegime": soil.fertilizerRegime,
+    "notes": soil.notes,
+  }
+  return _factList("report.heading.soil", "report.soil.", facts, translator)
+
+
+def _factList(headingKey: str, labelPrefix: str, facts: dict[str, str | None], translator: Translator) -> list[str]:
+  """A heading and one line for each fact that is recorded."""
+  return [
+    f"## {translator.text(headingKey)}",
+    "",
+    *(_field(translator, labelPrefix + name, value) for name, value in facts.items() if value is not None),
+    "",
+  ]
+
+
+def _weatherSection(package: TrialPackage, translator: Translator) -> list[str]:
+  if not package.weather:
+    return []
+  header = [
+    translator.text(f"report.weather.column.{column}")
+    for column in ("date", "rainfall", "irrigation", "minimumTemperature", "maximumTemperature", "notes")
+  ]
+
+  def amount(quantity: Quantity | None) -> str | None:
+    return None if quantity is None else _quantityText(quantity, translator)
+
+  rows = [
+    [
+      translator.date(record.date),
+      amount(record.rainfall),
+      amount(record.irrigation),
+      amount(record.minimumTemperature),
+      amount(record.maximumTemperature),
+      record.notes,
+    ]
+    for record in package.weather
+  ]
+  return [
+    f"## {translator.text('report.heading.weather')}",
+    "",
+    *_filledTable(header, rows, translator),
+    "",
+  ]
 
 
 def _designSection(package: TrialPackage, translator: Translator) -> list[str]:

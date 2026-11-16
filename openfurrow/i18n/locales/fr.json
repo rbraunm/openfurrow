@@ -381,12 +381,20 @@
       "text": "Dispositif",
       "status": "machineDraft"
     },
+    "report.heading.planting": {
+      "text": "Implantation",
+      "status": "machineDraft"
+    },
     "report.heading.ratings": {
       "text": "Variables notées",
       "status": "machineDraft"
     },
     "report.heading.reproducibility": {
       "text": "Reproductibilité",
+      "status": "machineDraft"
+    },
+    "report.heading.soil": {
+      "text": "Sol",
       "status": "machineDraft"
     },
     "report.heading.targets": {
@@ -403,6 +411,10 @@
     },
     "report.heading.trialReport": {
       "text": "Rapport d'essai: {title}",
+      "status": "machineDraft"
+    },
+    "report.heading.weather": {
+      "text": "Météo",
       "status": "machineDraft"
     },
     "report.labelValue": {
@@ -455,6 +467,54 @@
     },
     "report.method.fisherProtectedLSD": {
       "text": "PPDS protégée de Fisher",
+      "status": "machineDraft"
+    },
+    "report.planting.cropEPPOCode": {
+      "text": "Code OEPP de la culture",
+      "status": "machineDraft"
+    },
+    "report.planting.cultivar": {
+      "text": "Variété",
+      "status": "machineDraft"
+    },
+    "report.planting.emergenceDate": {
+      "text": "Date de levée",
+      "status": "machineDraft"
+    },
+    "report.planting.inRowSpacing": {
+      "text": "Espacement sur le rang",
+      "status": "machineDraft"
+    },
+    "report.planting.notes": {
+      "text": "Notes",
+      "status": "machineDraft"
+    },
+    "report.planting.plantDensity": {
+      "text": "Densité de peuplement",
+      "status": "machineDraft"
+    },
+    "report.planting.precedingCrop": {
+      "text": "Précédent cultural",
+      "status": "machineDraft"
+    },
+    "report.planting.rowSpacing": {
+      "text": "Écartement des rangs",
+      "status": "machineDraft"
+    },
+    "report.planting.seedingRate": {
+      "text": "Densité de semis",
+      "status": "machineDraft"
+    },
+    "report.planting.sowingDate": {
+      "text": "Date de semis",
+      "status": "machineDraft"
+    },
+    "report.planting.sowingDepth": {
+      "text": "Profondeur de semis",
+      "status": "machineDraft"
+    },
+    "report.planting.tillage": {
+      "text": "Travail du sol",
       "status": "machineDraft"
     },
     "report.ratings.atLeast": {
@@ -547,6 +607,38 @@
     },
     "report.scale.sqrt": {
       "text": "racine carrée",
+      "status": "machineDraft"
+    },
+    "report.soil.fertilizerRegime": {
+      "text": "Fertilisation",
+      "status": "machineDraft"
+    },
+    "report.soil.notes": {
+      "text": "Notes",
+      "status": "machineDraft"
+    },
+    "report.soil.organicMatter": {
+      "text": "Matière organique",
+      "status": "machineDraft"
+    },
+    "report.soil.pH": {
+      "text": "pH",
+      "status": "machineDraft"
+    },
+    "report.soil.pHMethod": {
+      "text": "Méthode du pH",
+      "status": "machineDraft"
+    },
+    "report.soil.seedbedQuality": {
+      "text": "Qualité du lit de semence",
+      "status": "machineDraft"
+    },
+    "report.soil.soilType": {
+      "text": "Type de sol",
+      "status": "machineDraft"
+    },
+    "report.soil.texture": {
+      "text": "Texture",
       "status": "machineDraft"
     },
     "report.targets.column.code": {
@@ -703,6 +795,30 @@
     },
     "report.value.percent": {
       "text": "{value}%",
+      "status": "machineDraft"
+    },
+    "report.weather.column.date": {
+      "text": "Date",
+      "status": "machineDraft"
+    },
+    "report.weather.column.irrigation": {
+      "text": "Irrigation",
+      "status": "machineDraft"
+    },
+    "report.weather.column.maximumTemperature": {
+      "text": "Température maximale",
+      "status": "machineDraft"
+    },
+    "report.weather.column.minimumTemperature": {
+      "text": "Température minimale",
+      "status": "machineDraft"
+    },
+    "report.weather.column.notes": {
+      "text": "Notes",
+      "status": "machineDraft"
+    },
+    "report.weather.column.rainfall": {
+      "text": "Pluie",
       "status": "machineDraft"
     },
     "web.add.error": {

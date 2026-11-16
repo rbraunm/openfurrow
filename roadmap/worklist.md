@@ -6,7 +6,7 @@ Findings, defects, checks and owner calls that the plans do not carry.
 Status tags: `fix` (a defect to correct), `build` (work to add), `check` (a suspicion to
 measure), `owner` (the owner's call), `done`.
 
-**Counts.** fix 0, build 15, check 0, owner 4, done 28; 47 in all.
+**Counts.** fix 0, build 14, check 0, owner 4, done 31; 49 in all.
 
 ## Owner decisions
 
@@ -255,11 +255,10 @@ then gets its form. Order: REC-7 rests on REP-1, which is under way. REC-3, REC-
 REC-8 change the shape of a trial most and come next. REC-1, REC-2, REC-5 and REC-6 are
 sections added beside them. REC-9 needs data entry in the tool (USR-4).
 
-- **REC-1** `build` **Planting details.** Today: a crop, a season and a site as free text.
-  Plan, after section 1.2 of the standard: crop and cultivar (with an EPPO code where
-  known), sowing or planting date, seeding rate with its unit, plant density, row and
-  in-row spacing, emergence date, the preceding crop, and tillage, fertilizer and
-  irrigation as notes.
+- **REC-1** `done` **Planting details.** Built as decision 0019 says: cultivar, the crop's
+  EPPO code, sowing date, seeding rate, plant density, row and in-row spacing, sowing
+  depth, emergence date (not before sowing), preceding crop, tillage and notes. Fertilizer
+  lives with the soil and irrigation in the weather log, each once.
 - **REC-2** `done` **Pest information.** Built as decision 0018 says: a trial lists its
   targets (code, common name, kind, scientific name, EPPO code checked for shape), and a
   rating names the target it rates by code. A target's stage at an application or an
@@ -280,14 +279,21 @@ sections added beside them. REC-9 needs data entry in the tool (USR-4).
   table cell now takes its direction from its own text, so "250 kPa" reads correctly on
   the Arabic page. The downloaded Markdown file has no such rule, and a right-to-left
   viewer may show a quantity as "kPa 250". Not yet measured in a viewer.
-- **REC-5** `build` **Soil information.** Today: nothing. Plan, after section 3.1.2: soil
-  type or texture, pH, organic matter, seed-bed quality and the fertilizer regime; soil
-  moisture at application sits with the application (REC-4). Sand, silt and clay
-  fractions and soil layers can wait.
-- **REC-6** `build` **Weather information.** Today: nothing. Plan, after section 3.1.1:
-  the conditions on the day of each application (with REC-4), a dated log of rain,
-  irrigation and temperature for the trial, and notes on extremes. Entered by hand or
-  from a file; automatic feeds can wait.
+- **REC-5** `done` **Soil information.** Built as decision 0019 says: soil type, texture,
+  pH with the method it was measured by, organic matter, seed-bed quality, the fertilizer
+  regime and notes. Soil moisture at application sits with the application. Sand, silt
+  and clay fractions and soil layers can wait.
+- **REC-6** `done` **Weather information.** Built as decision 0019 says: a log of days in
+  date order with rainfall, irrigation, minimum and maximum temperature and notes; the
+  conditions on application days are with each application (REC-4). Reading a log from a
+  file is REC-13.
+- **REC-12** `build` **The site itself.** Section 1.1 of the standard: the site's address
+  and coordinates, field or glasshouse, exposure and slope; and for perennial crops the
+  spacing, training system, rootstock and age (section 1.2). Today the site is one line of
+  text.
+- **REC-13** `build` **A weather log from a file.** Weather comes from a station or a
+  service as a table of days; today it is typed into the trial file. Reading a CSV of
+  days, with its units stated, would spare that.
 - **REC-7** `build` **Special randomizations.** Today: one design, the RCBD, with every
   block shuffled independently. Plan: REP-1 (decision 0015) makes any layout a record,
   so an arrangement made by hand or in another tool is held with its own plot numbers.

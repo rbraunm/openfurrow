@@ -32,6 +32,25 @@ _maximalPackage = {
     "site": "North Field", "objective": "Compare programs",
     "investigator": "Dr. Q", "organization": "Institute Z",
   },
+  "planting": {
+    "cultivar": "Laureate", "cropEPPOCode": "HORVX", "sowingDate": "2025-03-20",
+    "seedingRate": {"value": 350, "unit": "seeds/m2"}, "plantDensity": {"value": 290, "unit": "plants/m2"},
+    "rowSpacing": {"value": 12.5, "unit": "cm"}, "inRowSpacing": {"value": 2.5, "unit": "cm"},
+    "sowingDepth": {"value": 3, "unit": "cm"}, "emergenceDate": "2025-04-02",
+    "precedingCrop": "Oilseed rape", "tillage": "Plough, then power harrow", "notes": "Rolled after drilling",
+  },
+  "soil": {
+    "soilType": "Luvisol", "texture": "silty clay loam", "pH": 6.8, "pHMethod": "water 1:2.5",
+    "organicMatter": 2.4, "seedbedQuality": "fine", "fertilizerRegime": "120 kg N/ha in two splits",
+    "notes": "Sampled 0-20 cm",
+  },
+  # Two days, so an exact round trip also proves their order is kept.
+  "weather": [
+    {"date": "2025-05-19", "rainfall": {"value": 0, "unit": "mm"}, "irrigation": {"value": 15, "unit": "mm"},
+     "minimumTemperature": {"value": -0.5, "unit": "C"}, "maximumTemperature": {"value": 18.5, "unit": "C"},
+     "notes": "Ground frost"},
+    {"date": "2025-05-20", "rainfall": {"value": 4.2, "unit": "mm"}},
+  ],
   "targets": [
     {"targetCode": "APHID", "name": "Bird cherry-oat aphid", "kind": "insect",
      "scientificName": "Rhopalosiphum padi", "eppoCode": "RHOPPA"},
@@ -227,6 +246,18 @@ def testTargetARatingNamesEntersContentHash():
   def dropTarget(data):
     del data["ratings"][0]["targetCode"]
   assert _hashWith(lambda data: None) != _hashWith(dropTarget)
+
+
+def testSoilPHEntersContentHash():
+  def changePH(data):
+    data["soil"]["pH"] = 6.9
+  assert _hashWith(lambda data: None) != _hashWith(changePH)
+
+
+def testRainfallEntersContentHash():
+  def changeRain(data):
+    data["weather"][1]["rainfall"]["value"] = 4.3
+  assert _hashWith(lambda data: None) != _hashWith(changeRain)
 
 
 def testTreatmentRateEntersContentHash():
