@@ -6,7 +6,7 @@ Findings, defects, checks and owner calls that the plans do not carry.
 Status tags: `fix` (a defect to correct), `build` (work to add), `check` (a suspicion to
 measure), `owner` (the owner's call), `done`.
 
-**Counts.** fix 0, build 4, check 0, owner 5, done 50; 59 in all.
+**Counts.** fix 0, build 9, check 0, owner 4, done 51; 64 in all.
 
 ## Owner decisions
 
@@ -55,6 +55,14 @@ measure), `owner` (the owner's call), `done`.
   Directory, SAML, SCIM). Identity reaches the whole system, down to a person's display
   language. A reassessment of where this goes and whether to build it now is in
   `governance-plan.md`.
+- **The governance foundation (2026-11-16):** build it now, before the remaining record
+  forms. The hierarchy is modular: organization, project, study and trial by default, with
+  levels added or removed to simplify or refine the permission groups -- usable defaults,
+  customization at scale. Sign-in uses no third-party library, LDAP included: the project
+  writes its own, so its licence never limits where OpenFurrow can be used. Every sign-in
+  method and every database (SQLite and PostgreSQL) gets test fixtures -- reprovisionable
+  ones for development, one-time ones for the validation workflow -- and one robust test
+  dataset for all providers.
 
 ## Reproducibility (REP)
 
@@ -187,10 +195,20 @@ measure), `owner` (the owner's call), `done`.
   mechanism (0011) and an audience that decision 0008 itself gates on a partner's
   confirmation. To be settled at the reassessment (Owner decisions, "Order of work").
 
-- **DOC-5** `owner` **Identity, settings and data governance.** The reassessment of
-  2026-11-16 (`governance-plan.md`): build the foundation -- hierarchy, settings, sign-in,
-  roles, audit, retention -- before the remaining record forms, with five open questions
-  for the owner.
+- **DOC-5** `done` **Identity, settings and data governance.** The reassessment of
+  2026-11-16 (`governance-plan.md`), accepted by the owner the same day: build the
+  foundation -- hierarchy, settings, sign-in, roles, audit, retention -- before the
+  remaining record forms.
+- **GOV-1** `build` **Hierarchy and settings** (`governance-plan.md` F1, F2), on SQLite and
+  PostgreSQL.
+- **GOV-2** `build` **Identity core, roles and audit** (F3 to F5): open mode, local
+  accounts, sessions, tokens, preferences; every route behind the permission boundary.
+- **GOV-3** `build` **The sign-in library**: OpenID Connect, SAML 2.0, LDAP, SCIM 2.0,
+  standard library only, verification-only cryptography.
+- **GOV-4** `build` **Test fixtures and dataset**: every sign-in provider and both
+  databases, reprovisionable for development and one-time for the workflow, one dataset
+  for all.
+- **GOV-5** `build` **Retention** (F6), with the files as received (REC-16).
 
 ## First real user (USR)
 

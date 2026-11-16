@@ -1,8 +1,8 @@
 # Identity, settings and data governance
 
-**Status: proposed, awaiting the owner's go.** A reassessment prompted by the owner's
-answers of 2026-11-16 (worklist, Owner decisions, "Policies are settings"). Once agreed,
-this becomes a lane of `platform-plan.md` and its pieces become decision records.
+**Status: accepted, being built.** A reassessment prompted by the owner's answers of
+2026-11-16 (worklist, Owner decisions, "Policies are settings" and "The governance
+foundation"). Each piece gets its decision record as it is built.
 
 ## What changed
 
@@ -37,9 +37,12 @@ made, and who changed a value -- got one answer between them:
 
 ### F1. Hierarchy
 
-Roles and settings attach to places, so the places must exist: an organization, its
-projects, their studies, their trials (decision 0004 proposed this; it becomes the first
-step). A trial belongs to exactly one study. Program and season stay open questions.
+Roles and settings attach to places, so the places must exist. The hierarchy is modular:
+organization, project, study and trial by default, and an administrator adds levels (a
+program, a season) or removes them to make the permission groups finer or simpler. The
+trial is always the last level and belongs to one place at the level above it. Sensible
+defaults for a person or a small group, customization at scale for an enterprise
+(decision 0004 proposed the hierarchy; it becomes the first step).
 
 ### F2. Settings
 
@@ -127,29 +130,55 @@ With F1 to F6 in place:
 - field collection by link (USR-9);
 - the server deployment the pilot runs on (decision 0011).
 
+## Our own sign-in library
+
+The project writes its own sign-in library, so that no third-party licence limits where
+OpenFurrow can be used (owner, 2026-11-16). It is part of the project, under its licence,
+and uses only the Python standard library:
+
+- **SAML 2.0** service provider: the request, the response, and the XML signature checked
+  with exclusive canonicalization and the provider's certificate, refusing anything outside
+  the signed element (the signature-wrapping attacks).
+- **OpenID Connect** relying party: discovery, the authorization-code flow with PKCE, and
+  the ID token's signature and claims checked.
+- **LDAP** client for Active Directory and other directories: bind and search over TLS,
+  its BER encoding written here.
+- **SCIM 2.0** service provider: users, groups, filters, PATCH, and deactivation.
+- **Signature verification only.** RSA (PKCS #1 v1.5 and PSS) and ECDSA verification are
+  arithmetic on public keys; the library never signs or decrypts with a secret key, so it
+  keeps out of the riskiest code in cryptography. TLS is the standard library's. Encrypted
+  SAML assertions are refused for now; providers are configured to sign, over TLS.
+- **Passwords** for local accounts are hashed with the standard library's scrypt.
+
+Each part is checked against the specifications' own test vectors and against real
+providers.
+
 ## Store
 
-The store stays one schema on SQLAlchemy. A single person or a small group can stay on
-SQLite; a server with many users moves to PostgreSQL, as decisions 0001 and 0005 already
-foresee. Whether SQLite is allowed for a multi-user server is an open question below.
+The store stays one schema on SQLAlchemy and runs on SQLite and on PostgreSQL alike;
+which one a deployment uses is its choice. Both are tested with the same data.
 
-## Testing sign-in for real
+## Test fixtures
 
-Each sign-in mode is tested against a real provider, not a stand-in:
-- Keycloak (Apache-2.0) for SAML, OpenID Connect and SCIM-style provisioning;
-- a Samba or Windows Active Directory for LDAP;
-- Entra ID if a tenant is available.
+Every sign-in method and every database has fixtures in two forms (owner, 2026-11-16):
 
-The providers run on lab machines, not on the development machine.
+- **For development:** semi-permanent, reprovisionable from scripts in the repository,
+  running on lab machines rather than the development machine.
+- **For the validation workflow:** created for one run and thrown away, from the same
+  scripts.
 
-## Open questions for the owner
+The providers: Keycloak (SAML and OpenID Connect), a Samba Active Directory (LDAP), a SCIM
+client that behaves as Entra ID's provisioning service is documented to, local accounts,
+the open mode, SQLite and PostgreSQL. One test dataset is loaded into all of them: people
+and groups chosen to break things (names in every script the locales cover, a disabled
+account, nested and many groups, a person in two organizations, an account removed by
+provisioning), so every provider is held to the same expectations.
 
-1. Build the foundation now, before the remaining record forms?
-2. Which levels the hierarchy has: organization, project, study, trial, or also program
-   and season.
-3. How Active Directory is reached:
-   - directly over LDAP, with the LGPL-licensed ldap3 library;
-   - or only through the directory's own SAML or OpenID Connect front (ADFS or Entra ID),
-     with no LDAP library at all.
-4. Whether an Entra ID tenant is available for testing.
-5. Whether a multi-user server may run on SQLite or must use PostgreSQL.
+## Order of building
+
+1. Hierarchy (F1) and settings (F2), on SQLite and PostgreSQL, with the PostgreSQL fixture.
+2. Identity core (F3: open mode, local accounts, sessions, tokens, preferences), roles
+   (F4) and audit (F5), every route behind the permission boundary.
+3. The sign-in library and its fixtures: OpenID Connect, SAML, LDAP, SCIM.
+4. Retention (F6), with the files as received (REC-16).
+5. The features on top.
