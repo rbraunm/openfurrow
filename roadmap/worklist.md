@@ -206,8 +206,8 @@ measure), `owner` (the owner's call), `done`.
   0025), the completely randomized design (decision 0027) and Tukey's HSD for all pairs
   (decision 0028), Dunnett against the untreated check (decision 0029) and an explicit
   policy for the check in each assessment's analysis (decision 0030). Still to come:
-  Dunnett with unequal replication, and missing plots (the analysis refuses an incomplete
-  table, decision 0003).
+  missing plots (the analysis refuses an incomplete table, decision 0003), and with them
+  Dunnett with unequal replication, which only a missing plot can bring about.
 - **USR-4** `done` **Data entry.** Built as decision 0031 says: a CSV or an `.xlsx` sheet
   (read natively) is previewed, its columns mapped by the person, imported, and reconciled
   per assessment against the plots; an import never replaces stored values. Typed entry is
