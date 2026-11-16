@@ -46,6 +46,15 @@ measure), `owner` (the owner's call), `done`.
   a company's confidential details. The suggested route to a first user: a tool that
   also collects data on a phone or tablet could interest a university group to try it
   and publish the result, which could draw industry attention over some years (USR-9).
+- **Policies are settings (2026-11-16):** how missing plots are handled, what may be edited
+  and when, and how long data is kept are settings, configured per server, study or finer,
+  not rules the project fixes. Retention is a first-class system: each kind of stored data
+  in its own area, monitored and pruned when its owners decide. Who changed a value comes
+  from sign-in: an open mode with no sign-in (everyone can do everything) stays supported,
+  and the university pilot needs roles and the university's identity provider (Active
+  Directory, SAML, SCIM). Identity reaches the whole system, down to a person's display
+  language. A reassessment of where this goes and whether to build it now is in
+  `governance-plan.md`.
 
 ## Reproducibility (REP)
 
