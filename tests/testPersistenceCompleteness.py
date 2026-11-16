@@ -32,6 +32,10 @@ _maximalPackage = {
     "site": "North Field", "objective": "Compare programs",
     "investigator": "Dr. Q", "organization": "Institute Z",
   },
+  "targets": [
+    {"targetCode": "APHID", "name": "Bird cherry-oat aphid", "kind": "insect",
+     "scientificName": "Rhopalosiphum padi", "eppoCode": "RHOPPA"},
+  ],
   "treatments": [
     {"treatmentCode": "UTC", "name": "Untreated control", "role": "untreatedControl"},
     {"treatmentCode": "T2", "name": "Program", "role": "test", "lines": [
@@ -64,7 +68,7 @@ _maximalPackage = {
   "design": {"designType": "rcbd", "replications": 3, "randomizationMethod": "sha256FisherYates1", "randomizationSeed": 99},
   "ratings": [
     {"ratingCode": "CT", "name": "Insect count", "ratingType": "pest count", "partRated": "whole plant",
-     "method": "Beat sheet, 10 plants", "dataType": "numeric", "unit": "per m2", "minValue": 0,
+     "method": "Beat sheet, 10 plants", "targetCode": "APHID", "dataType": "numeric", "unit": "per m2", "minValue": 0,
      "maxValue": 500, "transform": "sqrt", "measurementKind": "count"},
     {"ratingCode": "SEV", "name": "Severity", "dataType": "ordinal", "allowedValues": ["none", "low", "moderate", "high"]}
   ],
@@ -217,6 +221,12 @@ def testRatingAnAssessmentTakesEntersContentHash():
   def otherRating(data):
     data["assessments"][2]["ratingCode"] = "SEV"
   assert _hashWith(lambda data: None) != _hashWith(otherRating)
+
+
+def testTargetARatingNamesEntersContentHash():
+  def dropTarget(data):
+    del data["ratings"][0]["targetCode"]
+  assert _hashWith(lambda data: None) != _hashWith(dropTarget)
 
 
 def testTreatmentRateEntersContentHash():

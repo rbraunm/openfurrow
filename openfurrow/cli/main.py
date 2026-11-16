@@ -202,6 +202,11 @@ def _commandInfo(args) -> int:
     f"{len(package.treatments)} treatments, {package.plotCount} plots"
   )
   print(f"Layout: {_layoutOrigin(package.design)}")
+  if package.targets:
+    print("Targets:")
+    for target in package.targets:
+      eppo = f"  eppo={target.eppoCode}" if target.eppoCode else ""
+      print(f"  {target.targetCode}  {target.kind.value}  {target.name}{eppo}")
   print("Treatments:")
   for treatment in package.treatments:
     print(f"  {_treatmentLine(treatment)}")
@@ -260,6 +265,8 @@ def _ratingLine(rating) -> str:
   canonical design); this surfaces them, it does not add a second way to set them.
   """
   parts = [f"{rating.ratingCode}  {rating.dataType.value}"]
+  if rating.targetCode:
+    parts.append(f"target={rating.targetCode}")
   if rating.unit:
     parts.append(f"unit={rating.unit}")
   if rating.dataType is AssessmentDataType.numeric:

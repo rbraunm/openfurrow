@@ -25,6 +25,7 @@ from openfurrow.store.database import (
   ObservationRow,
   PlotRow,
   StoreError,
+  TargetRow,
   TreatmentLineRow,
   TreatmentRow,
   TrialRow,
@@ -40,6 +41,7 @@ from openfurrow.schema.assessment import (
 from openfurrow.schema.layout import PlotAssignment
 from openfurrow.schema.observation import Observation
 from openfurrow.schema.quantity import Quantity
+from openfurrow.schema.target import Target, TargetKind
 from openfurrow.schema.treatment import (
   ActiveSubstance,
   ProductKind,
@@ -163,6 +165,16 @@ def savePackage(session: Session, package: TrialPackage, layout: list[PlotAssign
       soilMoisture=application.soilMoisture.value if application.soilMoisture is not None else None,
       notes=application.notes,
     ))
+  for ordinal, target in enumerate(package.targets):
+    trial.targets.append(TargetRow(
+      trialCode=trialCode,
+      targetCode=target.targetCode,
+      ordinal=ordinal,
+      name=target.name,
+      kind=target.kind.value,
+      scientificName=target.scientificName,
+      eppoCode=target.eppoCode,
+    ))
   for ordinal, rating in enumerate(package.ratings):
     trial.ratings.append(RatingRow(
       trialCode=trialCode,
@@ -172,6 +184,7 @@ def savePackage(session: Session, package: TrialPackage, layout: list[PlotAssign
       ratingType=rating.ratingType,
       partRated=rating.partRated,
       method=rating.method,
+      targetCode=rating.targetCode,
       dataType=rating.dataType.value,
       unit=rating.unit,
       minValue=rating.minValue,
@@ -254,6 +267,16 @@ def loadPackage(session: Session, trialCode: str) -> TrialPackage:
     )
     for row in sorted(trial.assessments, key=lambda row: row.ordinal)
   ]
+  targets = [
+    Target(
+      targetCode=row.targetCode,
+      name=row.name,
+      kind=TargetKind(row.kind),
+      scientificName=row.scientificName,
+      eppoCode=row.eppoCode,
+    )
+    for row in sorted(trial.targets, key=lambda row: row.ordinal)
+  ]
   ratings = [
     Rating(
       ratingCode=row.ratingCode,
@@ -261,6 +284,7 @@ def loadPackage(session: Session, trialCode: str) -> TrialPackage:
       ratingType=row.ratingType,
       partRated=row.partRated,
       method=row.method,
+      targetCode=row.targetCode,
       dataType=AssessmentDataType(row.dataType),
       unit=row.unit,
       minValue=row.minValue,
@@ -283,6 +307,7 @@ def loadPackage(session: Session, trialCode: str) -> TrialPackage:
       investigator=trial.investigator,
       organization=trial.organization,
     ),
+    targets=targets,
     design=DesignSpecification(
       designType=DesignType(trial.designType),
       replications=trial.replications,

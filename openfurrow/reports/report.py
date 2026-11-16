@@ -79,6 +79,7 @@ def buildReport(
   lines: list[str] = []
   lines += _metadataSection(package, translator)
   lines += _designSection(package, translator)
+  lines += _targetsSection(package, translator)
   lines += _treatmentsSection(package, translator)
   lines += _applicationsSection(package, translator)
   lines += _ratingsSection(package, translator)
@@ -235,17 +236,44 @@ def _applicationsSection(package: TrialPackage, translator: Translator) -> list[
   ]
 
 
+def _targetsSection(package: TrialPackage, translator: Translator) -> list[str]:
+  """The organisms the trial is about; left out when it names none."""
+  if not package.targets:
+    return []
+  header = [
+    translator.text(f"report.targets.column.{column}")
+    for column in ("code", "name", "scientificName", "eppoCode", "kind")
+  ]
+  rows = [
+    [
+      target.targetCode,
+      target.name,
+      target.scientificName,
+      target.eppoCode,
+      translator.text(f"report.targets.kind.{target.kind.value}"),
+    ]
+    for target in package.targets
+  ]
+  return [
+    f"## {translator.text('report.heading.targets')}",
+    "",
+    *_filledTable(header, rows, translator),
+    "",
+  ]
+
+
 def _ratingsSection(package: TrialPackage, translator: Translator) -> list[str]:
   """What is rated: one row for each rating, columns nothing is recorded in left out."""
   header = [
     translator.text(f"report.ratings.column.{column}")
-    for column in ("code", "name", "type", "partRated", "method", "unit", "values", "transform")
+    for column in ("code", "name", "type", "target", "partRated", "method", "unit", "values", "transform")
   ]
   rows = [
     [
       rating.ratingCode,
       rating.name,
       rating.ratingType,
+      rating.targetCode,
       rating.partRated,
       rating.method,
       rating.unit,

@@ -389,6 +389,10 @@
       "text": "Reproducibilidad",
       "status": "machineDraft"
     },
+    "report.heading.targets": {
+      "text": "Organismos objetivo",
+      "status": "machineDraft"
+    },
     "report.heading.treatmentMeans": {
       "text": "Medias de tratamientos",
       "status": "machineDraft"
@@ -477,6 +481,10 @@
       "text": "Parte evaluada",
       "status": "machineDraft"
     },
+    "report.ratings.column.target": {
+      "text": "Objetivo",
+      "status": "machineDraft"
+    },
     "report.ratings.column.transform": {
       "text": "Analizado en escala",
       "status": "machineDraft"
@@ -539,6 +547,54 @@
     },
     "report.scale.sqrt": {
       "text": "raíz cuadrada",
+      "status": "machineDraft"
+    },
+    "report.targets.column.code": {
+      "text": "Código",
+      "status": "machineDraft"
+    },
+    "report.targets.column.eppoCode": {
+      "text": "Código EPPO",
+      "status": "machineDraft"
+    },
+    "report.targets.column.kind": {
+      "text": "Tipo",
+      "status": "machineDraft"
+    },
+    "report.targets.column.name": {
+      "text": "Nombre",
+      "status": "machineDraft"
+    },
+    "report.targets.column.scientificName": {
+      "text": "Nombre científico",
+      "status": "machineDraft"
+    },
+    "report.targets.kind.disease": {
+      "text": "Enfermedad",
+      "status": "machineDraft"
+    },
+    "report.targets.kind.insect": {
+      "text": "Insecto",
+      "status": "machineDraft"
+    },
+    "report.targets.kind.mite": {
+      "text": "Ácaro",
+      "status": "machineDraft"
+    },
+    "report.targets.kind.mollusc": {
+      "text": "Molusco",
+      "status": "machineDraft"
+    },
+    "report.targets.kind.nematode": {
+      "text": "Nematodo",
+      "status": "machineDraft"
+    },
+    "report.targets.kind.other": {
+      "text": "Otro",
+      "status": "machineDraft"
+    },
+    "report.targets.kind.weed": {
+      "text": "Maleza",
       "status": "machineDraft"
     },
     "report.treatments.column.activeSubstances": {

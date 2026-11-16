@@ -38,8 +38,8 @@ variable once (trait, method, scale) and record observations against it per occa
 
 - **Subsamples**: several values within a plot, with the plot's value derived from them
   (worklist REC-11).
-- **The target of a rating** (which pest or weed) waits for pests (REC-2), so that it is
-  linked by code rather than written as text that would have to be replaced.
+- **The target of a rating** (which pest or weed) came with pests (decision 0018), linked
+  by code.
 - **Keeping a confirmed out-of-range value** comes with entry in the tool (REC-9); import
   still refuses it.
 

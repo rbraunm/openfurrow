@@ -19,6 +19,7 @@ from openfurrow.schema import (
   Quantity,
   RateBasis,
   SoilMoisture,
+  TargetKind,
   TreatmentRole,
   TrialPackage,
 )
@@ -427,6 +428,53 @@ def testAssessmentDateNotWrittenAsADateRejected(validPackageDict):
   validPackageDict["assessments"][0]["date"] = 20250502
   assert any("a date is written YYYY-MM-DD, got 20250502" in message
              for message in errorMessages(rejection(validPackageDict)))
+
+
+# ---- targets (decision 0018) ----------------------------------------------
+
+def withTarget(packageDict):
+  packageDict["targets"] = [
+    {"targetCode": "SEPT", "name": "Septoria leaf blotch", "kind": "disease",
+     "scientificName": "Zymoseptoria tritici", "eppoCode": "SEPTTR"},
+  ]
+  packageDict["ratings"][1]["targetCode"] = "SEPT"
+  return packageDict
+
+
+def testRatingNamesTheTargetItRates(validPackageDict):
+  package = buildPackage(withTarget(validPackageDict))
+  assert package.ratings[1].targetCode == "SEPT"
+  target = package.targets[0]
+  assert (target.kind, target.scientificName, target.eppoCode) == (
+    TargetKind.disease, "Zymoseptoria tritici", "SEPTTR",
+  )
+
+
+def testRatingOfAnUndeclaredTargetRejected(validPackageDict):
+  withTarget(validPackageDict)["ratings"][1]["targetCode"] = "RUST"
+  assert any("rating 'SEV': target 'RUST' is not declared in the package" in message
+             for message in errorMessages(rejection(validPackageDict)))
+
+
+def testDuplicateTargetCodeRejected(validPackageDict):
+  withTarget(validPackageDict)["targets"].append(
+    {"targetCode": "SEPT", "name": "Other", "kind": "other"},
+  )
+  assert any("duplicate targetCode values: ['SEPT']" in message
+             for message in errorMessages(rejection(validPackageDict)))
+
+
+@pytest.mark.parametrize("written", ["septtr", "SEPT", "SEPTTRX", "SEPT-T"])
+def testEPPOCodeOfTheWrongShapeRejected(validPackageDict, written):
+  withTarget(validPackageDict)["targets"][0]["eppoCode"] = written
+  errors = rejection(validPackageDict).value.errors()
+  assert [(error["type"], error["loc"][-1]) for error in errors] == [("string_pattern_mismatch", "eppoCode")]
+
+
+def testGenusLevelEPPOCodeAccepted(validPackageDict):
+  # Codes for a genus or a group start with a digit, e.g. 1SEPTG.
+  withTarget(validPackageDict)["targets"][0]["eppoCode"] = "1SEPTG"
+  assert buildPackage(validPackageDict).targets[0].eppoCode == "1SEPTG"
 
 
 # ---- design rules -------------------------------------------------------

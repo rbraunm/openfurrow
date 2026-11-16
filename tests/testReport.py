@@ -335,6 +335,23 @@ def occasionsReport(locale="en-US"):
   return buildReport(package, generateRcbdLayout(package), [], locale=locale)
 
 
+def testReportListsTheTargetsAndTheRatingsThatNameThem():
+  def addTarget(data):
+    data["targets"] = [{"targetCode": "SEPT", "name": "Septoria leaf blotch", "kind": "disease",
+                        "eppoCode": "SEPTTR"}]
+    data["ratings"] = [{"ratingCode": "SEV", "name": "Septoria severity", "targetCode": "SEPT",
+                        "dataType": "numeric"}]
+    data["assessments"] = [{"assessmentCode": "SEV", "ratingCode": "SEV"}]
+  package = recordedPackage(addTarget)
+  report = buildReport(package, generateRcbdLayout(package), [])
+  assert (
+    "## Targets\n\n| Code | Name | EPPO code | Kind |\n|---|---|---|---|\n"
+    "| SEPT | Septoria leaf blotch | SEPTTR | Disease |\n"
+  ) in report
+  assert "| Code | Name | Target |\n|---|---|---|\n| SEV | Septoria severity | SEPT |\n" in report
+  assert "## Targets" not in recordedReport()
+
+
 def testReportListsWhatIsRated():
   assert (
     "## Ratings\n\n"

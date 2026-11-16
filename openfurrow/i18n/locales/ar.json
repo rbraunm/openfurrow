@@ -389,6 +389,10 @@
       "text": "قابلية إعادة الإنتاج",
       "status": "machineDraft"
     },
+    "report.heading.targets": {
+      "text": "الأهداف",
+      "status": "machineDraft"
+    },
     "report.heading.treatmentMeans": {
       "text": "متوسطات المعاملات",
       "status": "machineDraft"
@@ -477,6 +481,10 @@
       "text": "الجزء المقيم",
       "status": "machineDraft"
     },
+    "report.ratings.column.target": {
+      "text": "الهدف",
+      "status": "machineDraft"
+    },
     "report.ratings.column.transform": {
       "text": "التحليل على مقياس",
       "status": "machineDraft"
@@ -539,6 +547,54 @@
     },
     "report.scale.sqrt": {
       "text": "الجذر التربيعي",
+      "status": "machineDraft"
+    },
+    "report.targets.column.code": {
+      "text": "الرمز",
+      "status": "machineDraft"
+    },
+    "report.targets.column.eppoCode": {
+      "text": "رمز EPPO",
+      "status": "machineDraft"
+    },
+    "report.targets.column.kind": {
+      "text": "النوع",
+      "status": "machineDraft"
+    },
+    "report.targets.column.name": {
+      "text": "الاسم",
+      "status": "machineDraft"
+    },
+    "report.targets.column.scientificName": {
+      "text": "الاسم العلمي",
+      "status": "machineDraft"
+    },
+    "report.targets.kind.disease": {
+      "text": "مرض",
+      "status": "machineDraft"
+    },
+    "report.targets.kind.insect": {
+      "text": "حشرة",
+      "status": "machineDraft"
+    },
+    "report.targets.kind.mite": {
+      "text": "حلم",
+      "status": "machineDraft"
+    },
+    "report.targets.kind.mollusc": {
+      "text": "رخويات",
+      "status": "machineDraft"
+    },
+    "report.targets.kind.nematode": {
+      "text": "نيماتودا",
+      "status": "machineDraft"
+    },
+    "report.targets.kind.other": {
+      "text": "أخرى",
+      "status": "machineDraft"
+    },
+    "report.targets.kind.weed": {
+      "text": "عشب ضار",
       "status": "machineDraft"
     },
     "report.treatments.column.activeSubstances": {

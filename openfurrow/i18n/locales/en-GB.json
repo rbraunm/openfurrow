@@ -269,6 +269,62 @@
       "text": "Waterlogged",
       "status": "humanApproved"
     },
+    "report.heading.targets": {
+      "text": "Targets",
+      "status": "humanApproved"
+    },
+    "report.targets.column.code": {
+      "text": "Code",
+      "status": "humanApproved"
+    },
+    "report.targets.column.name": {
+      "text": "Name",
+      "status": "humanApproved"
+    },
+    "report.targets.column.scientificName": {
+      "text": "Scientific name",
+      "status": "humanApproved"
+    },
+    "report.targets.column.eppoCode": {
+      "text": "EPPO code",
+      "status": "humanApproved"
+    },
+    "report.targets.column.kind": {
+      "text": "Kind",
+      "status": "humanApproved"
+    },
+    "report.targets.kind.weed": {
+      "text": "Weed",
+      "status": "humanApproved"
+    },
+    "report.targets.kind.disease": {
+      "text": "Disease",
+      "status": "humanApproved"
+    },
+    "report.targets.kind.insect": {
+      "text": "Insect",
+      "status": "humanApproved"
+    },
+    "report.targets.kind.mite": {
+      "text": "Mite",
+      "status": "humanApproved"
+    },
+    "report.targets.kind.nematode": {
+      "text": "Nematode",
+      "status": "humanApproved"
+    },
+    "report.targets.kind.mollusc": {
+      "text": "Mollusc",
+      "status": "humanApproved"
+    },
+    "report.targets.kind.other": {
+      "text": "Other",
+      "status": "humanApproved"
+    },
+    "report.ratings.column.target": {
+      "text": "Target",
+      "status": "humanApproved"
+    },
     "report.heading.ratings": {
       "text": "Ratings",
       "status": "humanApproved"

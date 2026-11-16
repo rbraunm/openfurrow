@@ -36,7 +36,7 @@ from sqlalchemy import ForeignKey, Text, event, inspect, select
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, relationship
 
-storeVersion = 4
+storeVersion = 5
 
 
 class StoreError(RuntimeError):
@@ -74,6 +74,9 @@ class TrialRow(Base):
   randomizationMethod: Mapped[str]
   randomizationSeed: Mapped[int | None]
 
+  targets: Mapped[list[TargetRow]] = relationship(
+    back_populates="trial", cascade="all, delete-orphan"
+  )
   treatments: Mapped[list[TreatmentRow]] = relationship(
     back_populates="trial", cascade="all, delete-orphan"
   )
@@ -95,6 +98,24 @@ class TrialRow(Base):
   observations: Mapped[list[ObservationRow]] = relationship(
     back_populates="trial", cascade="all, delete-orphan"
   )
+
+
+class TargetRow(Base):
+  """One target of the trial. `ordinal` preserves package order."""
+
+  __tablename__ = "target"
+
+  trialCode: Mapped[str] = mapped_column(
+    ForeignKey("trial.trialCode", ondelete="CASCADE"), primary_key=True
+  )
+  targetCode: Mapped[str] = mapped_column(primary_key=True)
+  ordinal: Mapped[int]
+  name: Mapped[str]
+  kind: Mapped[str]
+  scientificName: Mapped[str | None]
+  eppoCode: Mapped[str | None]
+
+  trial: Mapped[TrialRow] = relationship(back_populates="targets")
 
 
 class TreatmentRow(Base):
@@ -187,6 +208,7 @@ class RatingRow(Base):
   ratingType: Mapped[str | None]
   partRated: Mapped[str | None]
   method: Mapped[str | None]
+  targetCode: Mapped[str | None]
   dataType: Mapped[str]
   unit: Mapped[str | None]
   minValue: Mapped[float | None]

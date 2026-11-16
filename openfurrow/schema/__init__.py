@@ -20,6 +20,7 @@ from openfurrow.schema.layout import (
 )
 from openfurrow.schema.observation import Observation
 from openfurrow.schema.quantity import Quantity
+from openfurrow.schema.target import Target, TargetKind
 from openfurrow.schema.treatment import (
   ActiveSubstance,
   ProductKind,
@@ -52,6 +53,8 @@ __all__ = [
   "RateBasis",
   "Rating",
   "SoilMoisture",
+  "Target",
+  "TargetKind",
   "Transform",
   "Treatment",
   "TreatmentLine",

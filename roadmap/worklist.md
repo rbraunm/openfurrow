@@ -6,7 +6,7 @@ Findings, defects, checks and owner calls that the plans do not carry.
 Status tags: `fix` (a defect to correct), `build` (work to add), `check` (a suspicion to
 measure), `owner` (the owner's call), `done`.
 
-**Counts.** fix 0, build 16, check 0, owner 4, done 27; 47 in all.
+**Counts.** fix 0, build 15, check 0, owner 4, done 28; 47 in all.
 
 ## Owner decisions
 
@@ -260,10 +260,10 @@ sections added beside them. REC-9 needs data entry in the tool (USR-4).
   known), sowing or planting date, seeding rate with its unit, plant density, row and
   in-row spacing, emergence date, the preceding crop, and tillage, fertilizer and
   irrigation as notes.
-- **REC-2** `build` **Pest information.** Today: nothing. Plan, after section 1.1: the
-  trial's targets, each with a name, a scientific name or EPPO code and a kind (weed,
-  disease, insect, other). A target's stage is already recorded as text at each
-  application and assessment; a rating then names the target it rates by code.
+- **REC-2** `done` **Pest information.** Built as decision 0018 says: a trial lists its
+  targets (code, common name, kind, scientific name, EPPO code checked for shape), and a
+  rating names the target it rates by code. A target's stage at an application or an
+  assessment stays text.
 - **REC-3** `done` **Treatment information.** Built as decision 0016 says: a treatment
   may state its role (test, reference, untreated control, other control) and has product
   lines, each a formulated product with its kind, formulation type, active substances and
@@ -305,7 +305,7 @@ sections added beside them. REC-9 needs data entry in the tool (USR-4).
   occasion it is taken (timing, date, crop and target stage, the application it is timed
   from, who assessed, sample size, notes). Each occasion is analysed on its own, and the
   report shows days after application (14 DA-A), derived from the two dates. Subsamples
-  are REC-11; a rating's target waits for REC-2.
+  are REC-11; a rating's target came with REC-2.
 - **REC-11** `build` **Subsamples within a plot.** Several values taken in one plot on one
   occasion (ten leaves, four quadrats) kept as entered, with the plot's value derived from
   them by a stated rule (mean, sum). Today one value per plot and assessment.

@@ -30,6 +30,7 @@ from openfurrow import (
   ProductKind,
   RateBasis,
   SoilMoisture,
+  TargetKind,
   TreatmentRole,
   TrialPackage,
   Workspace,
@@ -215,6 +216,7 @@ def testEveryRecordedCategoryAndApplicationFactHasAName():
     "report.treatments.rate.": {basis.value for basis in RateBasis},
     "report.applications.soilMoisture.": {moisture.value for moisture in SoilMoisture},
     "report.applications.row.": set(Application.model_fields) - {"applicationCode"},
+    "report.targets.kind.": {kind.value for kind in TargetKind},
   }
   keys = loadCatalog(sourceLocale).keys
   for prefix, values in named.items():

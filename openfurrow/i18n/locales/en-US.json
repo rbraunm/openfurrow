@@ -269,6 +269,62 @@
       "text": "Waterlogged",
       "status": "source"
     },
+    "report.heading.targets": {
+      "text": "Targets",
+      "status": "source"
+    },
+    "report.targets.column.code": {
+      "text": "Code",
+      "status": "source"
+    },
+    "report.targets.column.name": {
+      "text": "Name",
+      "status": "source"
+    },
+    "report.targets.column.scientificName": {
+      "text": "Scientific name",
+      "status": "source"
+    },
+    "report.targets.column.eppoCode": {
+      "text": "EPPO code",
+      "status": "source"
+    },
+    "report.targets.column.kind": {
+      "text": "Kind",
+      "status": "source"
+    },
+    "report.targets.kind.weed": {
+      "text": "Weed",
+      "status": "source"
+    },
+    "report.targets.kind.disease": {
+      "text": "Disease",
+      "status": "source"
+    },
+    "report.targets.kind.insect": {
+      "text": "Insect",
+      "status": "source"
+    },
+    "report.targets.kind.mite": {
+      "text": "Mite",
+      "status": "source"
+    },
+    "report.targets.kind.nematode": {
+      "text": "Nematode",
+      "status": "source"
+    },
+    "report.targets.kind.mollusc": {
+      "text": "Mollusc",
+      "status": "source"
+    },
+    "report.targets.kind.other": {
+      "text": "Other",
+      "status": "source"
+    },
+    "report.ratings.column.target": {
+      "text": "Target",
+      "status": "source"
+    },
     "report.heading.ratings": {
       "text": "Ratings",
       "status": "source"

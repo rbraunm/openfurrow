@@ -19,6 +19,7 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator, model_valida
 
 from openfurrow.schema.application import Application
 from openfurrow.schema.assessment import Assessment, Rating
+from openfurrow.schema.target import Target
 from openfurrow.schema.treatment import Treatment
 from openfurrow.version import schemaVersion as currentSchemaVersion
 
@@ -105,6 +106,7 @@ class TrialPackage(BaseModel):
 
   schemaVersion: str = Field(description="The schema this package is written in; must be the one this build reads.")
   trial: TrialMetadata
+  targets: list[Target] = Field(default_factory=list)
   treatments: list[Treatment] = Field(min_length=2, description="At least two treatments to compare.")
   applications: list[Application] = Field(default_factory=list)
   design: DesignSpecification
@@ -127,6 +129,24 @@ class TrialPackage(BaseModel):
     if len(set(codes)) != len(codes):
       raise ValueError(f"duplicate treatmentCode values: {sorted(_duplicates(codes))}")
     return treatments
+
+  @field_validator("targets")
+  @classmethod
+  def uniqueTargetCodes(cls, targets: list[Target]) -> list[Target]:
+    codes = [target.targetCode for target in targets]
+    if len(set(codes)) != len(codes):
+      raise ValueError(f"duplicate targetCode values: {sorted(_duplicates(codes))}")
+    return targets
+
+  @model_validator(mode="after")
+  def ratingsNameDeclaredTargets(self) -> TrialPackage:
+    declared = {target.targetCode for target in self.targets}
+    for rating in self.ratings:
+      if rating.targetCode is not None and rating.targetCode not in declared:
+        raise ValueError(
+          f"rating '{rating.ratingCode}': target '{rating.targetCode}' is not declared in the package"
+        )
+    return self
 
   @field_validator("ratings")
   @classmethod

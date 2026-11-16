@@ -70,6 +70,7 @@ class Rating(BaseModel):
   ratingType: str | None = Field(default=None, min_length=1, description="E.g. 'disease severity', 'percent control'.")
   partRated: str | None = Field(default=None, min_length=1, description="E.g. 'flag leaf', 'whole plot'.")
   method: str | None = Field(default=None, min_length=1, description="How the value is obtained.")
+  targetCode: str | None = Field(default=None, min_length=1, description="The target rated, when there is one.")
   dataType: AssessmentDataType
   unit: str | None = Field(default=None, min_length=1, description="Unit of a numeric rating, e.g. 'kg/ha'.")
   minValue: float | None = Field(default=None, description="Inclusive lower limit of a numeric value.")

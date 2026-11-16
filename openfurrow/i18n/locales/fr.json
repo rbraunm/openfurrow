@@ -389,6 +389,10 @@
       "text": "Reproductibilité",
       "status": "machineDraft"
     },
+    "report.heading.targets": {
+      "text": "Organismes cibles",
+      "status": "machineDraft"
+    },
     "report.heading.treatmentMeans": {
       "text": "Moyennes des traitements",
       "status": "machineDraft"
@@ -477,6 +481,10 @@
       "text": "Partie notée",
       "status": "machineDraft"
     },
+    "report.ratings.column.target": {
+      "text": "Cible",
+      "status": "machineDraft"
+    },
     "report.ratings.column.transform": {
       "text": "Analysé sur l'échelle",
       "status": "machineDraft"
@@ -539,6 +547,54 @@
     },
     "report.scale.sqrt": {
       "text": "racine carrée",
+      "status": "machineDraft"
+    },
+    "report.targets.column.code": {
+      "text": "Code",
+      "status": "machineDraft"
+    },
+    "report.targets.column.eppoCode": {
+      "text": "Code OEPP",
+      "status": "machineDraft"
+    },
+    "report.targets.column.kind": {
+      "text": "Type",
+      "status": "machineDraft"
+    },
+    "report.targets.column.name": {
+      "text": "Nom",
+      "status": "machineDraft"
+    },
+    "report.targets.column.scientificName": {
+      "text": "Nom scientifique",
+      "status": "machineDraft"
+    },
+    "report.targets.kind.disease": {
+      "text": "Maladie",
+      "status": "machineDraft"
+    },
+    "report.targets.kind.insect": {
+      "text": "Insecte",
+      "status": "machineDraft"
+    },
+    "report.targets.kind.mite": {
+      "text": "Acarien",
+      "status": "machineDraft"
+    },
+    "report.targets.kind.mollusc": {
+      "text": "Mollusque",
+      "status": "machineDraft"
+    },
+    "report.targets.kind.nematode": {
+      "text": "Nématode",
+      "status": "machineDraft"
+    },
+    "report.targets.kind.other": {
+      "text": "Autre",
+      "status": "machineDraft"
+    },
+    "report.targets.kind.weed": {
+      "text": "Adventice",
       "status": "machineDraft"
     },
     "report.treatments.column.activeSubstances": {
