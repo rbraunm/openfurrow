@@ -6,7 +6,7 @@ Findings, defects, checks and owner calls that the plans do not carry.
 Status tags: `fix` (a defect to correct), `build` (work to add), `check` (a suspicion to
 measure), `owner` (the owner's call), `done`.
 
-**Counts.** fix 0, build 0, check 0, owner 0, done 0; 57 in all.
+**Counts.** fix 0, build 14, check 0, owner 4, done 39; 57 in all.
 
 ## Owner decisions
 
