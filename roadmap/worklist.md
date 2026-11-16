@@ -6,7 +6,7 @@ Findings, defects, checks and owner calls that the plans do not carry.
 Status tags: `fix` (a defect to correct), `build` (work to add), `check` (a suspicion to
 measure), `owner` (the owner's call), `done`.
 
-**Counts.** fix 0, build 14, check 0, owner 4, done 39; 57 in all.
+**Counts.** fix 0, build 12, check 0, owner 4, done 41; 57 in all.
 
 ## Owner decisions
 
@@ -145,10 +145,12 @@ measure), `owner` (the owner's call), `done`.
   brought it up to the working tool on 2026-11-15, after the fixes of this worklist and
   after `validated` passed on both of its runs (392 tests on each of four combinations).
   `main` and `claude` are level. No tag was made; that remains the owner's call.
-- **VAL-4** `build` **A run against the newest libraries.** With the versions pinned
-  (REP-2), nothing reports that a new release of a dependency breaks the project until
-  someone moves the pins. A scheduled run of the workflow that installs without
-  `constraints.txt` would.
+- **VAL-4** `done` **A run against the newest libraries.** The `latest` workflow runs the
+  suite every Monday against the newest releases, without `constraints.txt`, on both
+  systems and both Python versions; it does not gate `main` (`CONTRIBUTING.md`, "Pinned
+  versions"). A manual run waits for the workflow to reach `main`, where GitHub reads
+  scheduled workflows from; the same install was measured on Windows with Python 3.14
+  before it was committed.
 
 ## Plan and documents (DOC)
 
@@ -323,9 +325,11 @@ sections added beside them. REC-9 needs data entry in the tool (USR-4).
   and coordinates, field or glasshouse, exposure and slope; and for perennial crops the
   spacing, training system, rootstock and age (section 1.2). Today the site is one line of
   text.
-- **REC-13** `build` **A weather log from a file.** Weather comes from a station or a
-  service as a table of days; today it is typed into the trial file. Reading a CSV of
-  days, with its units stated, would spare that.
+- **REC-13** `done` **A weather log from a file.** A CSV of days (a date, then rainfall,
+  irrigation, minimum and maximum temperature with the unit in the header, and notes)
+  replaces the trial's weather log, from the command line (`import-weather`) or the trial
+  page. Rows are put in date order; a day given twice, a column without its unit or a
+  value the log refuses is named, and nothing is replaced.
 - **REC-7** `done` **Special randomizations.** The arrangements the specialist named are
   built: the first replicate left in treatment order (a design option), the split plot
   (decision 0020), the spatially balanced RCBD (decision 0021) and the paired plot in all

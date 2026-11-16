@@ -1464,6 +1464,18 @@
     "web.verify.stored": {
       "text": "Stockée",
       "status": "machineDraft"
+    },
+    "web.weather.heading": {
+      "text": "Relevé météo",
+      "status": "machineDraft"
+    },
+    "web.weather.intro": {
+      "text": "Téléversez un CSV de jours: une colonne date (AAAA-MM-JJ), puis rainfall, irrigation, minimumTemperature et maximumTemperature avec l'unité entre crochets, p. ex. rainfall [mm], et notes. Il remplace le relevé météo de l'essai.",
+      "status": "machineDraft"
+    },
+    "web.weather.result": {
+      "text": "Le relevé météo compte maintenant {count} jours.",
+      "status": "machineDraft"
     }
   }
 }

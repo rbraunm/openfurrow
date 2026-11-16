@@ -1305,6 +1305,18 @@
       "text": "Import failed: {reason}",
       "status": "humanApproved"
     },
+    "web.weather.heading": {
+      "text": "Weather log",
+      "status": "humanApproved"
+    },
+    "web.weather.intro": {
+      "text": "Upload a CSV of days: a date column (YYYY-MM-DD), then any of rainfall, irrigation, minimumTemperature and maximumTemperature with the unit in brackets, e.g. rainfall [mm], and notes. It replaces the trial's weather log.",
+      "status": "humanApproved"
+    },
+    "web.weather.result": {
+      "text": "The weather log now holds {count} days.",
+      "status": "humanApproved"
+    },
     "web.report.heading": {
       "text": "Report",
       "status": "humanApproved"

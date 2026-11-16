@@ -37,6 +37,7 @@ from openfurrow.config import OpenFurrowConfig, defaultConfig
 from openfurrow.i18n import MessageError, availableLocales, sourceLocale, translatorFor
 from openfurrow.importers.entry import EntryRefused, readEntry, writeEntry
 from openfurrow.importers.layoutCsv import LayoutFileError, readLayoutCsv
+from openfurrow.importers.weatherCsv import WeatherFileError
 from openfurrow.schema import TrialDocument
 from openfurrow.service.trialForm import FormProblem, emptyForm, formFromRequest, packageFromForm
 from openfurrow.schema import AssessmentDataType, Observation, RandomizationMethod, TrialPackage
@@ -91,6 +92,8 @@ def createWebBlueprint(workspace: Workspace, config: OpenFurrowConfig | None = N
       "contentHash": workspace.contentHashFor(trialCode),
       "blocks": _blocks(layout, package),
       "legend": _legend(package),
+      "weatherResult": None,
+      "weatherError": None,
     }
 
   @blueprint.get("/")
@@ -301,6 +304,26 @@ def createWebBlueprint(workspace: Workspace, config: OpenFurrowConfig | None = N
     }
     status = 400 if refused else 200
     return Response(render_template("entry.html", **context, **_localeContext(translator)), status=status)
+
+  @blueprint.post("/trials/<trialCode>/weather")
+  def importWeather(trialCode: str) -> Response:
+    """Replace the trial's weather log from an uploaded CSV (worklist REC-13)."""
+    translator = _translator()
+    upload = request.files.get("file")
+    weatherResult = weatherError = None
+    try:
+      if not upload or not upload.filename:
+        raise WeatherFileError("choose a CSV file to import")
+      with _temporaryCsv(upload.read()) as csvPath:
+        weatherResult = workspace.importWeather(trialCode, csvPath)
+    except (WeatherFileError, ValidationError) as error:
+      weatherError = str(error)
+    context = _trialContext(trialCode) | {
+      "result": None, "importError": None, "verifyResult": None,
+      "weatherResult": weatherResult, "weatherError": weatherError,
+    }
+    status = 400 if weatherError else 200
+    return Response(render_template("trial.html", **context, **_localeContext(translator)), status=status)
 
   @blueprint.get("/trials/<trialCode>/report")
   def report(trialCode: str) -> Response:

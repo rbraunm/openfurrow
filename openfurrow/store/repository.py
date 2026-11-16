@@ -218,20 +218,7 @@ def savePackage(
       fertilizerRegime=soil.fertilizerRegime,
       notes=soil.notes,
     )
-  for record in package.weather:
-    trial.weather.append(WeatherRow(
-      trialCode=trialCode,
-      date=record.date,
-      rainfallValue=None if record.rainfall is None else record.rainfall.value,
-      rainfallUnit=None if record.rainfall is None else record.rainfall.unit,
-      irrigationValue=None if record.irrigation is None else record.irrigation.value,
-      irrigationUnit=None if record.irrigation is None else record.irrigation.unit,
-      minimumTemperatureValue=None if record.minimumTemperature is None else record.minimumTemperature.value,
-      minimumTemperatureUnit=None if record.minimumTemperature is None else record.minimumTemperature.unit,
-      maximumTemperatureValue=None if record.maximumTemperature is None else record.maximumTemperature.value,
-      maximumTemperatureUnit=None if record.maximumTemperature is None else record.maximumTemperature.unit,
-      notes=record.notes,
-    ))
+  trial.weather.extend(_weatherRows(trialCode, package.weather))
   for ordinal, factor in enumerate(package.factors):
     trial.factors.append(FactorRow(
       trialCode=trialCode, factorCode=factor.factorCode, ordinal=ordinal, name=factor.name,
@@ -554,6 +541,36 @@ def replaceAssessmentObservations(
     session.delete(row)
   session.flush()
   saveObservations(session, trialCode, observations)
+
+
+def _weatherRows(trialCode: str, weather: list[WeatherRecord]) -> list[WeatherRow]:
+  return [
+    WeatherRow(
+      trialCode=trialCode,
+      date=record.date,
+      rainfallValue=None if record.rainfall is None else record.rainfall.value,
+      rainfallUnit=None if record.rainfall is None else record.rainfall.unit,
+      irrigationValue=None if record.irrigation is None else record.irrigation.value,
+      irrigationUnit=None if record.irrigation is None else record.irrigation.unit,
+      minimumTemperatureValue=None if record.minimumTemperature is None else record.minimumTemperature.value,
+      minimumTemperatureUnit=None if record.minimumTemperature is None else record.minimumTemperature.unit,
+      maximumTemperatureValue=None if record.maximumTemperature is None else record.maximumTemperature.value,
+      maximumTemperatureUnit=None if record.maximumTemperature is None else record.maximumTemperature.unit,
+      notes=record.notes,
+    )
+    for record in weather
+  ]
+
+
+def replaceWeather(session: Session, trialCode: str, weather: list[WeatherRecord]) -> None:
+  """Replace a stored trial's weather log; the schema version is the one the trial carries."""
+  trial = session.get(TrialRow, trialCode)
+  if trial is None:
+    raise TrialNotFoundError(f"trial '{trialCode}' not found")
+  trial.weather.clear()
+  session.flush()
+  trial.weather.extend(_weatherRows(trialCode, weather))
+  session.flush()
 
 
 def listTrials(session: Session) -> list[tuple[str, str]]:

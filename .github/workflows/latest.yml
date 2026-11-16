@@ -1,0 +1,35 @@
+# SPDX-License-Identifier: Apache-2.0
+# The suite against the newest releases of every dependency, without constraints.txt, so a
+# release that breaks the project shows here before the pins are moved. It is not a check
+# that gates main: a red run here is news about the libraries, not about a change.
+name: latest
+
+on:
+  schedule:
+    - cron: "17 5 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: latest (${{ matrix.os }}, python ${{ matrix.python }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python: ["3.13", "3.14"]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Install the project with the newest releases of its dependencies
+        run: python -m pip install --upgrade --editable ".[test,service]"
+      - name: Record the installed versions
+        run: python -m pip freeze
+      - name: Run the test suite
+        run: python -m pytest

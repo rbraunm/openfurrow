@@ -51,6 +51,11 @@ write the versions that passed (`python -m pip freeze --exclude-editable`, plus 
 setuptools the build used), and let the workflow confirm them on every platform. A
 pre-release is never pinned when a release satisfies the requirement.
 
+The `latest` workflow (`.github/workflows/latest.yml`) runs the suite every Monday on Linux
+and Windows with Python 3.13 and 3.14 against the newest releases, without
+`constraints.txt`, and records what it installed. It does not gate `main`: a red run there
+says a new release breaks the project, and is the cue to fix the code or hold the pin.
+
 ## Validation: every change is tested on Linux and Windows
 
 Every push to `claude` and every pull request into `main` runs the `validate` workflow

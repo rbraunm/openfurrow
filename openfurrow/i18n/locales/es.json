@@ -1464,6 +1464,18 @@
     "web.verify.stored": {
       "text": "Almacenado",
       "status": "machineDraft"
+    },
+    "web.weather.heading": {
+      "text": "Registro meteorológico",
+      "status": "machineDraft"
+    },
+    "web.weather.intro": {
+      "text": "Suba un CSV de días: una columna date (AAAA-MM-DD) y cualquiera de rainfall, irrigation, minimumTemperature y maximumTemperature con la unidad entre corchetes, p. ej. rainfall [mm], y notes. Reemplaza el registro meteorológico del ensayo.",
+      "status": "machineDraft"
+    },
+    "web.weather.result": {
+      "text": "El registro meteorológico tiene ahora {count} días.",
+      "status": "machineDraft"
     }
   }
 }

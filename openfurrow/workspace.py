@@ -47,6 +47,7 @@ from openfurrow.analysis import (
   separateMeans as _separateMeans,
 )
 from openfurrow.config import ImportProfile
+from openfurrow.importers.weatherCsv import WeatherFileError, readWeatherCsv as _readWeatherCsv
 from openfurrow.design import generateLayout as _generateLayout
 from openfurrow.exchange import (
   ExchangeError,
@@ -83,6 +84,7 @@ from openfurrow.store import (
   listTrials as _listTrials,
   loadCheckPlots as _loadCheckPlots,
   replaceAssessmentObservations as _replaceAssessmentObservations,
+  replaceWeather as _replaceWeather,
   loadLayout as _loadLayout,
   loadObservations as _loadObservations,
   loadPackage as _loadPackage,
@@ -347,6 +349,20 @@ class Workspace:
       except ValueError as error:
         raise ObservationImportError(str(error)) from error
       _replaceAssessmentObservations(session, trialCode, assessmentCode, observations)
+
+  def importWeather(self, trialCode: str, csvPath: str) -> int:
+    """Replace the trial's weather log with the days a CSV lists; return how many (REC-13).
+
+    The trial with its new log is validated as a whole before anything is saved.
+    """
+    records = _readWeatherCsv(csvPath)
+    with _sessionScope(self._engine) as session:
+      package = _loadPackage(session, trialCode)
+      data = package.model_dump(mode="json")
+      data["weather"] = [record.model_dump(mode="json") for record in records]
+      TrialPackage.model_validate(data)
+      _replaceWeather(session, trialCode, records)
+    return len(records)
 
   def importFieldBook(self, trialCode: str, databaseCsvPath: str) -> ImportResult:
     """Ingest a Field Book database (long) export into the trial's observations.

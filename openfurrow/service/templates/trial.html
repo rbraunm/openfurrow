@@ -70,6 +70,25 @@
   </form>
 </section>
 
+<section class="weather" aria-label="{{ t.text('web.weather.heading') }}">
+  <h2>{{ t.text('web.weather.heading') }}</h2>
+  <p class="intro">{{ t.text('web.weather.intro') }}</p>
+  {% if weatherResult is not none %}
+  <div class="notice" role="status">{{ t.text('web.weather.result', count=t.integer(weatherResult)) }}</div>
+  {% endif %}
+  {% if weatherError %}
+  <div class="error" role="alert">{{ t.text('web.import.error', reason=weatherError) }}</div>
+  {% endif %}
+  <form class="import-form" method="post" enctype="multipart/form-data"
+        action="{{ url_for('web.importWeather', trialCode=package.trial.trialCode, locale=locale if locale != 'en-US' else none) }}">
+    <div class="file-row">
+      <label class="field-label" for="weather-file">{{ t.text('web.import.fileLabel') }}</label>
+      <input type="file" id="weather-file" name="file" accept=".csv,text/csv">
+    </div>
+    <div class="form-actions"><button class="button" type="submit">{{ t.text('web.import.submit') }}</button></div>
+  </form>
+</section>
+
 <section class="layout" aria-label="{{ t.text('web.trial.layoutHeading') }}">
   <h2>{{ t.text('web.trial.layoutHeading') }}</h2>
   {% if package.design.randomizationSeed is none %}

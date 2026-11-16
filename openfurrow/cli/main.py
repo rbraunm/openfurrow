@@ -26,6 +26,7 @@ from pathlib import Path
 
 from openfurrow.config import MeanComparison, defaultConfig, loadConfig
 from openfurrow.schema import AssessmentDataType, TrialPackage
+from openfurrow.importers.weatherCsv import WeatherFileError
 from openfurrow.workspace import (
   AnalysisError,
   ExchangeError,
@@ -51,7 +52,7 @@ def main(argv: list[str] | None = None) -> int:
     return handler(args)
   except (
     StoreError, ExchangeError, ObservationImportError, AnalysisError, MessageError,
-    ValidationError, OSError, json.JSONDecodeError,
+    ValidationError, OSError, json.JSONDecodeError, WeatherFileError,
   ) as error:
     print(f"error: {error}", file=sys.stderr)
     return 1
@@ -123,6 +124,13 @@ def _buildParser() -> argparse.ArgumentParser:
   exportParser.add_argument("--json", dest="jsonPath", help="write the trial document to this JSON file")
   exportParser.add_argument("--csv", dest="csvPath", help="write observations to this CSV file")
   exportParser.set_defaults(handler=_commandExport)
+
+  weatherParser = sub.add_parser("import-weather", help="replace a trial's weather log from a CSV file")
+  weatherParser.add_argument("database")
+  weatherParser.add_argument("trialCode")
+  weatherParser.add_argument("csv", help="date, then any of rainfall, irrigation, minimumTemperature, "
+                              "maximumTemperature with the unit in brackets, and notes")
+  weatherParser.set_defaults(handler=_commandImportWeather)
 
   importJsonParser = sub.add_parser("import-json", help="import a trial document from JSON into the database")
   importJsonParser.add_argument("database")
@@ -357,6 +365,12 @@ def _commandExport(args) -> int:
   if args.csvPath:
     workspace.exportObservationsCsv(args.trialCode, args.csvPath)
     print(f"Wrote {args.csvPath}")
+  return 0
+
+
+def _commandImportWeather(args) -> int:
+  count = Workspace.open(args.database).importWeather(args.trialCode, args.csv)
+  print(f"Replaced the weather log of '{args.trialCode}' with {count} days")
   return 0
 
 

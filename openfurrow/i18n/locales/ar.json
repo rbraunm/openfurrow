@@ -1464,6 +1464,18 @@
     "web.verify.stored": {
       "text": "المخزن",
       "status": "machineDraft"
+    },
+    "web.weather.heading": {
+      "text": "سجل الطقس",
+      "status": "machineDraft"
+    },
+    "web.weather.intro": {
+      "text": "ارفع ملف CSV للأيام: عمود date (YYYY-MM-DD) ثم أي من rainfall و irrigation و minimumTemperature و maximumTemperature مع الوحدة بين قوسين مربعين، مثل rainfall [mm]، و notes. يحل محل سجل الطقس للتجربة.",
+      "status": "machineDraft"
+    },
+    "web.weather.result": {
+      "text": "يحتوي سجل الطقس الآن على {count} يومًا.",
+      "status": "machineDraft"
     }
   }
 }
