@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Reading and writing trial packages and observations to the canonical store.
+"""Reading and writing trials to the canonical store.
 
 These functions map between the Pydantic schema (the interchange boundary) and the
 ORM rows (the store). They fail loud: saving a trial that already exists, saving an
@@ -18,7 +18,15 @@ from sqlalchemy import select
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
-from openfurrow.store.database import AssessmentRow, ObservationRow, TreatmentRow, TrialRow
+from openfurrow.store.database import (
+  AssessmentRow,
+  ObservationRow,
+  PlotRow,
+  StoreError,
+  TreatmentRow,
+  TrialRow,
+)
+from openfurrow.schema.layout import PlotAssignment
 from openfurrow.schema.observation import Observation
 from openfurrow.schema.trialPackage import (
   AssessmentDataType,
@@ -26,15 +34,12 @@ from openfurrow.schema.trialPackage import (
   DesignSpecification,
   DesignType,
   MeasurementKind,
+  RandomizationMethod,
   Transform,
   Treatment,
   TrialMetadata,
   TrialPackage,
 )
-
-
-class StoreError(RuntimeError):
-  """A store operation could not be completed as requested."""
 
 
 class TrialNotFoundError(StoreError):
@@ -65,8 +70,8 @@ def sessionScope(engine: Engine) -> Iterator[Session]:
     session.close()
 
 
-def savePackage(session: Session, package: TrialPackage) -> None:
-  """Persist a trial package. Raises if the trial code is already present."""
+def savePackage(session: Session, package: TrialPackage, layout: list[PlotAssignment]) -> None:
+  """Persist a trial package with its layout. Raises if the trial code is already present."""
   trialCode = package.trial.trialCode
   if session.get(TrialRow, trialCode) is not None:
     raise TrialExistsError(f"trial '{trialCode}' already exists; delete it first to replace it")
@@ -83,6 +88,7 @@ def savePackage(session: Session, package: TrialPackage) -> None:
     schemaVersion=package.schemaVersion,
     designType=package.design.designType.value,
     replications=package.design.replications,
+    randomizationMethod=package.design.randomizationMethod.value,
     randomizationSeed=package.design.randomizationSeed,
   )
   for ordinal, treatment in enumerate(package.treatments):
@@ -111,6 +117,14 @@ def savePackage(session: Session, package: TrialPackage) -> None:
       measurementKind=assessment.measurementKind.value,
       transform=assessment.transform.value,
     ))
+  for plot in layout:
+    trial.plots.append(PlotRow(
+      trialCode=trialCode,
+      plotNumber=plot.plotNumber,
+      block=plot.block,
+      positionInBlock=plot.positionInBlock,
+      treatmentCode=plot.treatmentCode,
+    ))
   session.add(trial)
   session.flush()
 
@@ -119,7 +133,7 @@ def loadPackage(session: Session, trialCode: str) -> TrialPackage:
   """Reconstruct a trial package. Raises if the trial is not present.
 
   Treatments and assessments are returned in their stored ordinal order, so the
-  regenerated layout and the input hash match the originals exactly.
+  input hash matches the original exactly.
   """
   trial = session.get(TrialRow, trialCode)
   if trial is None:
@@ -166,11 +180,30 @@ def loadPackage(session: Session, trialCode: str) -> TrialPackage:
     design=DesignSpecification(
       designType=DesignType(trial.designType),
       replications=trial.replications,
+      randomizationMethod=RandomizationMethod(trial.randomizationMethod),
       randomizationSeed=trial.randomizationSeed,
     ),
     treatments=treatments,
     assessments=assessments,
   )
+
+
+def loadLayout(session: Session, trialCode: str) -> list[PlotAssignment]:
+  """Load a trial's plots, ordered by plot number. Raises if the trial is not present."""
+  if session.get(TrialRow, trialCode) is None:
+    raise TrialNotFoundError(f"trial '{trialCode}' not found")
+  rows = session.execute(
+    select(PlotRow).where(PlotRow.trialCode == trialCode).order_by(PlotRow.plotNumber)
+  ).scalars().all()
+  return [
+    PlotAssignment(
+      plotNumber=row.plotNumber,
+      block=row.block,
+      positionInBlock=row.positionInBlock,
+      treatmentCode=row.treatmentCode,
+    )
+    for row in rows
+  ]
 
 
 def saveObservations(session: Session, trialCode: str, observations: list[Observation]) -> None:
@@ -223,7 +256,7 @@ def listTrials(session: Session) -> list[tuple[str, str]]:
 
 
 def deleteTrial(session: Session, trialCode: str) -> None:
-  """Delete a trial and all its treatments, assessments, and observations."""
+  """Delete a trial with its treatments, assessments, plots and observations."""
   trial = session.get(TrialRow, trialCode)
   if trial is None:
     raise TrialNotFoundError(f"trial '{trialCode}' not found")

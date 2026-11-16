@@ -25,10 +25,11 @@ users" rule, in full force here: do not hesitate to rebuild from the ground up w
 the right design.
 
 ## Core principles (these are the project, not preferences)
-- **Reproducible by default.** Every trial layout is regenerable from a
-  recorded seed, and every analysis result carries its method, library versions, input
-  hash, and a validation status. A layout or result that cannot be reproduced is not
-  valid output.
+- **Reproducible by default.** Every trial layout is recorded with the trial -- stored,
+  exported and covered by the content hash -- and one the tool generated is reproducible
+  from its recorded seed by a procedure the project specifies itself (decision 0015).
+  Every analysis result carries its method, library versions, input hash, and a
+  validation status. A layout or result that cannot be reproduced is not valid output.
 - **Never present an unvalidated number as a fact.** Each reported statistic is checked
   against an oracle -- a published table and/or an independent implementation
   (statsmodels) -- and carries that provenance. See `CONTRIBUTING.md` and

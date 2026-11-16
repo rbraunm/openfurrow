@@ -1,13 +1,15 @@
 # SPDX-License-Identifier: Apache-2.0
 """Tests for the canonical SQLite store.
 
-The load path must reconstruct a package and its observations faithfully enough
-that the input hash is unchanged and the regenerated layout is identical -- the
-two properties the reproducibility story rests on. Float values must round-trip
-exactly, typed values must keep their type, and the fail-loud paths (duplicate
-save, missing trial, collision) must raise. Cascade delete and SQLite foreign-key
-enforcement are checked directly.
+The load path must reconstruct a package, its layout and its observations
+faithfully enough that the input hash is unchanged -- the property the
+reproducibility story rests on. Float values must round-trip exactly, typed values
+must keep their type, and the fail-loud paths (duplicate save, missing trial,
+collision, a database written under another store version) must raise. Cascade
+delete and SQLite foreign-key enforcement are checked directly.
 """
+
+import sqlite3
 
 import pytest
 from sqlalchemy import select
@@ -16,20 +18,22 @@ from sqlalchemy.orm import Session
 
 from openfurrow.design import generateRcbdLayout
 from openfurrow.reports import inputHash
-from openfurrow.schema import TrialPackage
+from openfurrow.schema import TrialLayout, TrialPackage
 from openfurrow.schema.observation import Observation
 from openfurrow.store import (
   StoreError,
   createDatabase,
   deleteTrial,
   listTrials,
+  loadLayout,
   loadObservations,
   loadPackage,
   savePackage,
   saveObservations,
   sessionScope,
+  storeVersion,
 )
-from openfurrow.store.database import ObservationRow
+from openfurrow.store.database import ObservationRow, PlotRow
 
 
 @pytest.fixture
@@ -39,7 +43,7 @@ def engine(tmp_path):
 
 def samplePackage(trialCode="TRIAL-1"):
   return TrialPackage.model_validate({
-    "schemaVersion": "0.1.0",
+    "schemaVersion": "0.2.0",
     "trial": {"trialCode": trialCode, "title": "Sample trial", "crop": "Wheat", "season": "2025",
               "site": "Field A", "objective": "Compare fungicides", "investigator": "Dr. X",
               "organization": "Org Y"},
@@ -49,7 +53,7 @@ def samplePackage(trialCode="TRIAL-1"):
        "rateUnit": "L/ha", "timing": "BBCH 30"},
       {"treatmentCode": "T3", "name": "Fungicide Y", "product": "Prod Y", "rate": 1.0, "rateUnit": "kg/ha"},
     ],
-    "design": {"designType": "rcbd", "replications": 4, "randomizationSeed": 42},
+    "design": {"designType": "rcbd", "replications": 4, "randomizationMethod": "sha256FisherYates1", "randomizationSeed": 42},
     "assessments": [
       {"assessmentCode": "YIELD", "name": "Grain yield", "dataType": "numeric", "unit": "kg/ha", "minValue": 0},
       {"assessmentCode": "LODGE", "name": "Lodging", "dataType": "ordinal",
@@ -74,42 +78,45 @@ def sampleObservations(package):
 def testSaveLoadPackageRoundTrip(engine):
   package = samplePackage()
   with sessionScope(engine) as session:
-    savePackage(session, package)
+    savePackage(session, package, generateRcbdLayout(package).plots)
   with sessionScope(engine) as session:
     assert loadPackage(session, "TRIAL-1") == package
 
 
 def testSaveLoadPreservesInputHash(engine):
   package = samplePackage()
-  _, observations = sampleObservations(package)
+  layout, observations = sampleObservations(package)
   with sessionScope(engine) as session:
-    savePackage(session, package)
+    savePackage(session, package, layout.plots)
     saveObservations(session, "TRIAL-1", observations)
   with sessionScope(engine) as session:
     loadedPackage = loadPackage(session, "TRIAL-1")
+    loadedLayout = TrialLayout.forPackage(loadedPackage, loadLayout(session, "TRIAL-1"))
     loadedObservations = loadObservations(session, "TRIAL-1")
-  assert inputHash(loadedPackage, loadedObservations) == inputHash(package, observations)
+  assert inputHash(loadedPackage, loadedLayout, loadedObservations) == inputHash(package, layout, observations)
 
 
-def testSaveLoadPreservesTreatmentOrderViaLayout(engine):
-  # The randomizer permutes treatments in package order, so a load that reordered
-  # them would produce a different layout. Regenerate from both and compare.
+def testSaveLoadLayoutRoundTrip(engine):
+  # The layout is stored, not regenerated: what comes back is what went in, plot for plot.
   package = samplePackage()
-  originalLayout = generateRcbdLayout(package)
+  layout = generateRcbdLayout(package)
   with sessionScope(engine) as session:
-    savePackage(session, package)
+    savePackage(session, package, layout.plots)
   with sessionScope(engine) as session:
-    loadedLayout = generateRcbdLayout(loadPackage(session, "TRIAL-1"))
-  originalAssignment = {plot.plotNumber: plot.treatmentCode for plot in originalLayout.plots}
-  loadedAssignment = {plot.plotNumber: plot.treatmentCode for plot in loadedLayout.plots}
-  assert loadedAssignment == originalAssignment
+    assert loadLayout(session, "TRIAL-1") == layout.plots
+
+
+def testLoadLayoutOfUnknownTrialRejected(engine):
+  with sessionScope(engine) as session:
+    with pytest.raises(StoreError, match="not found"):
+      loadLayout(session, "NOPE")
 
 
 def testObservationValueTypesRoundTrip(engine):
   package = samplePackage()
   _, observations = sampleObservations(package)
   with sessionScope(engine) as session:
-    savePackage(session, package)
+    savePackage(session, package, generateRcbdLayout(package).plots)
     saveObservations(session, "TRIAL-1", observations)
   with sessionScope(engine) as session:
     loaded = {(o.plotNumber, o.assessmentCode): o.value for o in loadObservations(session, "TRIAL-1")}
@@ -133,7 +140,7 @@ def testFloatValuesRoundTripExactly(engine):
     for index, value in enumerate(awkward)
   ]
   with sessionScope(engine) as session:
-    savePackage(session, package)
+    savePackage(session, package, generateRcbdLayout(package).plots)
     saveObservations(session, "TRIAL-1", observations)
   with sessionScope(engine) as session:
     loaded = {o.plotNumber: o.value for o in loadObservations(session, "TRIAL-1")}
@@ -146,10 +153,10 @@ def testFloatValuesRoundTripExactly(engine):
 def testSavePackageDuplicateRejected(engine):
   package = samplePackage()
   with sessionScope(engine) as session:
-    savePackage(session, package)
+    savePackage(session, package, generateRcbdLayout(package).plots)
   with pytest.raises(StoreError, match="already exists"):
     with sessionScope(engine) as session:
-      savePackage(session, package)
+      savePackage(session, package, generateRcbdLayout(package).plots)
 
 
 def testSaveObservationsMissingTrialRejected(engine):
@@ -164,7 +171,7 @@ def testSaveObservationsDuplicateRejected(engine):
   layout = generateRcbdLayout(package)
   observation = Observation(plotNumber=layout.plots[0].plotNumber, assessmentCode="YIELD", value=1.0)
   with sessionScope(engine) as session:
-    savePackage(session, package)
+    savePackage(session, package, generateRcbdLayout(package).plots)
     saveObservations(session, "TRIAL-1", [observation])
   with pytest.raises(StoreError, match="already exists"):
     with sessionScope(engine) as session:
@@ -183,8 +190,9 @@ def testLoadUnknownTrialRejected(engine):
 
 def testListTrials(engine):
   with sessionScope(engine) as session:
-    savePackage(session, samplePackage("TRIAL-B"))
-    savePackage(session, samplePackage("TRIAL-A"))
+    for trialCode in ("TRIAL-B", "TRIAL-A"):
+      package = samplePackage(trialCode)
+      savePackage(session, package, generateRcbdLayout(package).plots)
   with sessionScope(engine) as session:
     assert listTrials(session) == [("TRIAL-A", "Sample trial"), ("TRIAL-B", "Sample trial")]
 
@@ -193,7 +201,7 @@ def testDeleteTrialCascades(engine):
   package = samplePackage()
   _, observations = sampleObservations(package)
   with sessionScope(engine) as session:
-    savePackage(session, package)
+    savePackage(session, package, generateRcbdLayout(package).plots)
     saveObservations(session, "TRIAL-1", observations)
   with sessionScope(engine) as session:
     deleteTrial(session, "TRIAL-1")
@@ -203,6 +211,10 @@ def testDeleteTrialCascades(engine):
       select(ObservationRow).where(ObservationRow.trialCode == "TRIAL-1")
     ).scalars().all()
     assert remaining == []
+    remainingPlots = session.execute(
+      select(PlotRow).where(PlotRow.trialCode == "TRIAL-1")
+    ).scalars().all()
+    assert remainingPlots == []
 
 
 def testDeleteUnknownTrialRejected(engine):
@@ -232,20 +244,53 @@ def testAssessmentTransformAndKindSurviveRoundTrip(engine):
   round-trip test missed it because its sample used the defaults on both sides.
   """
   package = TrialPackage.model_validate({
-    "schemaVersion": "0.1.0",
+    "schemaVersion": "0.2.0",
     "trial": {"trialCode": "TR-1", "title": "t", "crop": "Barley", "season": "2025",
               "site": "s", "objective": "o"},
     "treatments": [{"treatmentCode": code, "name": code} for code in ["A", "B"]],
-    "design": {"designType": "rcbd", "replications": 2, "randomizationSeed": 1},
+    "design": {"designType": "rcbd", "replications": 2, "randomizationMethod": "sha256FisherYates1", "randomizationSeed": 1},
     "assessments": [{"assessmentCode": "CT", "name": "Insect count", "dataType": "numeric",
                      "unit": "per m2", "minValue": 0, "transform": "sqrt",
                      "measurementKind": "count"}],
   })
   with sessionScope(engine) as session:
-    savePackage(session, package)
+    savePackage(session, package, generateRcbdLayout(package).plots)
   with sessionScope(engine) as session:
     loaded = loadPackage(session, "TR-1")
   assessment = loaded.assessments[0]
   assert assessment.transform.value == "sqrt"
   assert assessment.measurementKind.value == "count"
   assert loaded == package
+
+
+# ---- the store carries a version ------------------------------------------
+
+def testReopeningAStoreOfThisVersionSucceeds(tmp_path):
+  path = str(tmp_path / "trials.db")
+  package = samplePackage()
+  with sessionScope(createDatabase(path)) as session:
+    savePackage(session, package, generateRcbdLayout(package).plots)
+  with sessionScope(createDatabase(path)) as session:
+    assert listTrials(session) == [("TRIAL-1", "Sample trial")]
+
+
+def testStoreWithoutAVersionIsRefused(tmp_path):
+  # What an earlier build left behind: its tables, and no record of a version.
+  path = tmp_path / "old.db"
+  connection = sqlite3.connect(path)
+  connection.execute("CREATE TABLE trial (trialCode TEXT PRIMARY KEY, title TEXT)")
+  connection.commit()
+  connection.close()
+  with pytest.raises(StoreError, match="written by an earlier build"):
+    createDatabase(str(path))
+
+
+def testStoreOfAnotherVersionIsRefused(tmp_path):
+  path = tmp_path / "other.db"
+  createDatabase(str(path)).dispose()
+  connection = sqlite3.connect(path)
+  connection.execute("UPDATE storeVersion SET version = ?", (storeVersion + 1,))
+  connection.commit()
+  connection.close()
+  with pytest.raises(StoreError, match=rf"holds store version \[{storeVersion + 1}\], and this build reads version {storeVersion}"):
+    createDatabase(str(path))

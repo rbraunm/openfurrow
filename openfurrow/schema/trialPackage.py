@@ -109,19 +109,46 @@ class Treatment(BaseModel):
     return self
 
 
-class DesignSpecification(BaseModel):
-  """How treatments are laid out into plots.
+class RandomizationMethod(str, Enum):
+  """How a trial's layout came to be (decision 0015).
 
-  For the v0.1 MVP only RCBD is supported. The randomization seed is mandatory:
-  reproducibility is not optional, so a layout that cannot be regenerated from a
-  recorded seed is not a valid OpenFurrow design.
+  A generated layout names the procedure that produced it from the seed, so it can be
+  regenerated and checked. A layout made elsewhere -- by hand, by another tool, or
+  already in the ground -- is `imported` and has no seed.
+  """
+
+  sha256FisherYates1 = "sha256FisherYates1"
+  imported = "imported"
+
+
+class DesignSpecification(BaseModel):
+  """How treatments are laid out into plots, and where the layout came from.
+
+  Only RCBD is supported. The layout itself is recorded with the trial (decision
+  0015); this says how it was made. The method is always stated, never assumed. A
+  generated layout needs its seed, which is what lets the record be checked; an
+  imported layout has none.
   """
 
   model_config = ConfigDict(extra="forbid")
 
   designType: DesignType = DesignType.rcbd
   replications: int = Field(ge=2, description="Number of complete blocks; RCBD requires at least 2.")
-  randomizationSeed: int = Field(ge=0, description="Explicit seed; the layout must be regenerable from it.")
+  randomizationMethod: RandomizationMethod = Field(description="The procedure that made the layout, or 'imported'.")
+  randomizationSeed: int | None = Field(
+    default=None, ge=0, description="The seed of a generated layout; absent for an imported one.",
+  )
+
+  @model_validator(mode="after")
+  def seedGoesWithAGeneratedLayout(self) -> DesignSpecification:
+    generated = self.randomizationMethod is not RandomizationMethod.imported
+    if generated and self.randomizationSeed is None:
+      raise ValueError(
+        f"randomizationMethod '{self.randomizationMethod.value}' needs a randomizationSeed"
+      )
+    if not generated and self.randomizationSeed is not None:
+      raise ValueError("an imported layout has no randomizationSeed")
+    return self
 
 
 class AssessmentDefinition(BaseModel):

@@ -6,7 +6,7 @@ import copy
 import pytest
 
 _validPackage = {
-  "schemaVersion": "0.1.0",
+  "schemaVersion": "0.2.0",
   "trial": {
     "trialCode": "ESV-2025-01",
     "title": "Fungicide efficacy on winter wheat",
@@ -24,7 +24,7 @@ _validPackage = {
     {"treatmentCode": "T3", "name": "Program B", "product": "Fungicide B",
      "rate": 1.0, "rateUnit": "L/ha", "timing": "GS39"},
   ],
-  "design": {"designType": "rcbd", "replications": 4, "randomizationSeed": 42},
+  "design": {"designType": "rcbd", "replications": 4, "randomizationMethod": "sha256FisherYates1", "randomizationSeed": 42},
   "assessments": [
     {"assessmentCode": "YIELD", "name": "Grain yield", "dataType": "numeric",
      "unit": "kg/ha", "minValue": 0.0},

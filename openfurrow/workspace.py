@@ -10,16 +10,16 @@ re-implement part of it.
 
 A `Workspace` wraps one SQLite database (one system of record holding many trials)
 and exposes the trial loop as methods: add a designed package, list and load
-trials, regenerate the layout, import observations, analyze, separate means, assess
+trials, read the layout, import observations, analyze, separate means, assess
 assumptions, build the report, exchange portable files, hash, verify, and delete.
 
 Lifetime: a Workspace holds the SQLAlchemy engine and opens a fresh session per
 method call. The engine is the poolable, reusable resource (a long-running service
 keeps one); the session is the unit of work (one CLI command or one HTTP request is
 one transaction), so no session state leaks across calls. Composite operations that
-need the package, layout, and observations together load them in a single session
-and regenerate the layout from the recorded seed (the layout is derived, never
-stored or hashed separately).
+need the package, layout, and observations together load them in a single session.
+The layout is recorded with the trial (decision 0015): it is generated once, when a
+package is added, and read from the store from then on.
 
 Path-based methods exist only where a portable file is the thing being moved
 (document/CSV import and export); the pure design operation `addPackage` takes a
@@ -64,6 +64,7 @@ from openfurrow.interop.fieldbook import (
 from openfurrow.reports import buildReport as _buildReport
 from openfurrow.schema import (
   Observation,
+  RandomizationMethod,
   TrialDocument,
   TrialLayout,
   TrialPackage,
@@ -74,6 +75,7 @@ from openfurrow.store import (
   createDatabase as _createDatabase,
   deleteTrial as _deleteTrial,
   listTrials as _listTrials,
+  loadLayout as _loadLayout,
   loadObservations as _loadObservations,
   loadPackage as _loadPackage,
   savePackage as _savePackage,
@@ -138,9 +140,20 @@ class Workspace:
   # ---- trial management ---------------------------------------------------
 
   def addPackage(self, package: TrialPackage) -> None:
-    """Persist a validated trial package (the design document for one trial)."""
+    """Persist a validated trial package and the layout generated from its seed.
+
+    This is where a trial is randomized: once, here, and the layout is recorded. A
+    package whose layout was made elsewhere carries no plots, so it cannot be added
+    this way; such a trial comes in as a trial document (`importDocument`).
+    """
+    if package.design.randomizationMethod is RandomizationMethod.imported:
+      raise StoreError(
+        f"trial '{package.trial.trialCode}' declares an imported layout; supply it as a "
+        f"trial document, which carries the plots"
+      )
+    layout = _generateRcbdLayout(package)
     with _sessionScope(self._engine) as session:
-      _savePackage(session, package)
+      _savePackage(session, package, layout.plots)
 
   def listTrials(self) -> list[tuple[str, str]]:
     """Every trial in the store as (trialCode, title) pairs."""
@@ -165,8 +178,9 @@ class Workspace:
   # ---- layout -------------------------------------------------------------
 
   def layoutFor(self, trialCode: str) -> TrialLayout:
-    """Regenerate the randomized layout from the trial's recorded seed."""
-    return _generateRcbdLayout(self.loadPackage(trialCode))
+    """The trial's recorded layout."""
+    with _sessionScope(self._engine) as session:
+      return self._layoutIn(session, _loadPackage(session, trialCode))
 
   # ---- observations -------------------------------------------------------
 
@@ -183,7 +197,7 @@ class Workspace:
     """
     with _sessionScope(self._engine) as session:
       package = _loadPackage(session, trialCode)
-      layout = _generateRcbdLayout(package)
+      layout = self._layoutIn(session, package)
       result = _importObservations(csvPath, package, layout, importProfile)
       _saveObservations(session, trialCode, result.observations)
     return result
@@ -255,7 +269,7 @@ class Workspace:
     document = _importJson(jsonPath)
     trialCode = document.package.trial.trialCode
     with _sessionScope(self._engine) as session:
-      _savePackage(session, document.package)
+      _savePackage(session, document.package, document.layout)
       _saveObservations(session, trialCode, document.observations)
     return trialCode
 
@@ -291,21 +305,25 @@ class Workspace:
     """
     with _sessionScope(self._engine) as session:
       package = _loadPackage(session, trialCode)
-      layout = _generateRcbdLayout(package)
+      layout = self._layoutIn(session, package)
       result = _importObservations(databaseCsvPath, package, layout, _fieldBookImportProfile())
       _saveObservations(session, trialCode, result.observations)
     return result
 
   # ---- internals ----------------------------------------------------------
 
+  @staticmethod
+  def _layoutIn(session, package: TrialPackage) -> TrialLayout:
+    return TrialLayout.forPackage(package, _loadLayout(session, package.trial.trialCode))
+
   def _loadContext(self, trialCode: str) -> tuple[TrialPackage, TrialLayout, list[Observation]]:
-    """Load package and observations in one session and regenerate the layout."""
+    """Load the package, the layout and the observations in one session."""
     with _sessionScope(self._engine) as session:
       package = _loadPackage(session, trialCode)
+      layout = self._layoutIn(session, package)
       observations = _loadObservations(session, trialCode)
-    layout = _generateRcbdLayout(package)
     return package, layout, observations
 
   def _documentFor(self, trialCode: str) -> TrialDocument:
-    package, _, observations = self._loadContext(trialCode)
-    return TrialDocument(package=package, observations=observations)
+    package, layout, observations = self._loadContext(trialCode)
+    return TrialDocument(package=package, layout=layout.plots, observations=observations)

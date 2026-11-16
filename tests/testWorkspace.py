@@ -11,11 +11,14 @@ to the core function would, never a re-derived approximation. The fail-loud path
 raise the declared error types.
 """
 
+import copy
 import csv
 import json
+import sqlite3
 from pathlib import Path
 
 import pytest
+from pydantic import ValidationError
 
 from openfurrow.analysis import analyzeRcbd, assessAssumptions, separateMeans
 from openfurrow.config import defaultConfig
@@ -30,11 +33,11 @@ from openfurrow.workspace import (
 )
 
 _packageDict = {
-  "schemaVersion": "0.1.0",
+  "schemaVersion": "0.2.0",
   "trial": {"trialCode": "WS-1", "title": "Facade trial", "crop": "Barley", "season": "2025",
             "site": "Field A", "objective": "Compare treatments"},
   "treatments": [{"treatmentCode": code, "name": code} for code in ["A", "B", "C", "D"]],
-  "design": {"designType": "rcbd", "replications": 3, "randomizationSeed": 7},
+  "design": {"designType": "rcbd", "replications": 3, "randomizationMethod": "sha256FisherYates1", "randomizationSeed": 7},
   "assessments": [{"assessmentCode": "YIELD", "name": "Yield", "dataType": "numeric",
                    "unit": "kg/ha", "minValue": 0}],
 }
@@ -186,9 +189,44 @@ def testContentHashMatchesDocumentHash(trial):
   workspace = _populated(trial)
   document = TrialDocument(
     package=workspace.loadPackage("WS-1"),
+    layout=workspace.layoutFor("WS-1").plots,
     observations=workspace.loadObservations("WS-1"),
   )
   assert workspace.contentHashFor("WS-1") == contentHash(document)
+
+
+def testLayoutIsReadFromTheStoreNotRegenerated(trial):
+  """The recorded plots are what every surface sees, whatever a generator would say."""
+  workspace = _populated(trial)
+  recorded = workspace.layoutFor("WS-1").plots
+  assert recorded == generateRcbdLayout(workspace.loadPackage("WS-1")).plots
+
+  # Change one stored assignment behind the facade's back: the layout that comes out
+  # follows the store, and the document refuses it because it no longer matches its seed.
+  connection = sqlite3.connect(trial["db"])
+  first, second = recorded[0], recorded[1]
+  connection.execute(
+    "UPDATE plot SET treatmentCode = ? WHERE trialCode = 'WS-1' AND plotNumber = ?",
+    (second.treatmentCode, first.plotNumber),
+  )
+  connection.execute(
+    "UPDATE plot SET treatmentCode = ? WHERE trialCode = 'WS-1' AND plotNumber = ?",
+    (first.treatmentCode, second.plotNumber),
+  )
+  connection.commit()
+  connection.close()
+  swapped = workspace.layoutFor("WS-1").plots
+  assert (swapped[0].treatmentCode, swapped[1].treatmentCode) == (second.treatmentCode, first.treatmentCode)
+  with pytest.raises(ValidationError, match="is not the one method"):
+    workspace.contentHashFor("WS-1")
+
+
+def testAddingAPackageWithAnImportedLayoutIsRefused(trial):
+  workspace = Workspace.create(trial["db"])
+  data = copy.deepcopy(_packageDict)
+  data["design"] = {"designType": "rcbd", "replications": 3, "randomizationMethod": "imported"}
+  with pytest.raises(StoreError, match="declares an imported layout; supply it as a trial document"):
+    workspace.addPackage(TrialPackage.model_validate(data))
 
 
 def testExportImportRoundTripPreservesHash(trial):

@@ -171,11 +171,11 @@ def _stirretSetup(assessmentColumn):
     for row in csv.DictReader(handle):
       cells[(row["trt"], int(row["block"]))] = float(row[assessmentColumn])
   package = TrialPackage.model_validate({
-    "schemaVersion": "0.1.0",
+    "schemaVersion": "0.2.0",
     "trial": {"trialCode": "STIRRET-1935", "title": "Corn borer", "crop": "Maize",
               "season": "1935", "site": "Ottawa", "objective": "control"},
     "treatments": [{"treatmentCode": t, "name": t} for t in ("None", "Early", "Late", "Both")],
-    "design": {"designType": "rcbd", "replications": 15, "randomizationSeed": 1},
+    "design": {"designType": "rcbd", "replications": 15, "randomizationMethod": "sha256FisherYates1", "randomizationSeed": 1},
     "assessments": [{"assessmentCode": "y", "name": "count", "dataType": "numeric", "minValue": 0}],
   })
   layout = generateRcbdLayout(package)

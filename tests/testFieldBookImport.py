@@ -20,11 +20,11 @@ from openfurrow.workspace import ObservationImportError, Workspace
 _fixtureDir = Path(__file__).parent / "fixtures"
 
 _packageDict = {
-  "schemaVersion": "0.1.0",
+  "schemaVersion": "0.2.0",
   "trial": {"trialCode": "FB-IN", "title": "Field Book ingest", "crop": "Barley", "season": "2025",
             "site": "North Field", "objective": "Compare treatments"},
   "treatments": [{"treatmentCode": code, "name": code} for code in ["A", "B", "C", "D"]],
-  "design": {"designType": "rcbd", "replications": 3, "randomizationSeed": 7},
+  "design": {"designType": "rcbd", "replications": 3, "randomizationMethod": "sha256FisherYates1", "randomizationSeed": 7},
   "assessments": [
     {"assessmentCode": "YIELD", "name": "Grain yield", "dataType": "numeric",
      "unit": "kg/ha", "minValue": 0, "maxValue": 400},

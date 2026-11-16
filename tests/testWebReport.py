@@ -20,11 +20,11 @@ from openfurrow import TrialPackage, Workspace
 from openfurrow.service import createApp
 
 _packageDict = {
-  "schemaVersion": "0.1.0",
+  "schemaVersion": "0.2.0",
   "trial": {"trialCode": "D2-1", "title": "Barley trial", "crop": "Barley",
             "season": "2025", "site": "North Field", "objective": "Compare programs"},
   "treatments": [{"treatmentCode": code, "name": f"Treatment {code}"} for code in ["A", "B", "C", "D"]],
-  "design": {"designType": "rcbd", "replications": 3, "randomizationSeed": 7},
+  "design": {"designType": "rcbd", "replications": 3, "randomizationMethod": "sha256FisherYates1", "randomizationSeed": 7},
   "assessments": [{"assessmentCode": "YIELD", "name": "Grain yield", "dataType": "numeric",
                    "unit": "kg/ha", "minValue": 0}],
 }
@@ -176,12 +176,12 @@ def testReportEscapesHtmlInTrialFields(client, workspace, tmp_path):
   markup must render inert in the report, not execute. Regression: the report once
   wrapped raw Markdown output in Markup, passing <script> through unescaped."""
   malicious = {
-    "schemaVersion": "0.1.0",
+    "schemaVersion": "0.2.0",
     "trial": {"trialCode": "XSS", "title": "<script>alert(1)</script>", "crop": "Barley",
               "season": "2025", "site": "s", "objective": "o"},
     "treatments": [{"treatmentCode": "A", "name": "<img src=x onerror=alert(1)>"},
                    {"treatmentCode": "B", "name": "B"}],
-    "design": {"designType": "rcbd", "replications": 2, "randomizationSeed": 1},
+    "design": {"designType": "rcbd", "replications": 2, "randomizationMethod": "sha256FisherYates1", "randomizationSeed": 1},
     "assessments": [{"assessmentCode": "Y", "name": "Yield", "dataType": "numeric", "minValue": 0}],
   }
   client.post("/trials/new", data={"package": __import__("json").dumps(malicious)})

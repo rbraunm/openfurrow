@@ -25,11 +25,11 @@ from openfurrow.schema import TrialPackage
 repositoryRoot = Path(__file__).parent.parent
 
 demoPackage = {
-  "schemaVersion": "0.1.0",
+  "schemaVersion": "0.2.0",
   "trial": {"trialCode": "DEMO", "title": "Demo trial", "crop": "Wheat", "season": "2025",
             "site": "Field A", "objective": "Compare treatments"},
   "treatments": [{"treatmentCode": code, "name": code} for code in ["A", "B", "C", "D"]],
-  "design": {"designType": "rcbd", "replications": 3, "randomizationSeed": 1},
+  "design": {"designType": "rcbd", "replications": 3, "randomizationMethod": "sha256FisherYates1", "randomizationSeed": 1},
   "assessments": [{"assessmentCode": "YIELD", "name": "Yield", "dataType": "numeric", "unit": "kg/ha", "minValue": 0}],
 }
 demoValues = {
@@ -97,7 +97,8 @@ def testRandomizeIsDeterministic(project, capsys):
   assert main(["randomize", project["db"], "DEMO"]) == 0
   second = capsys.readouterr().out
   assert first == second
-  assert "101\t1\t1\tA" in first  # seed-1 layout is stable
+  assert "Layout for 'DEMO' (sha256FisherYates1, seed 1):" in first
+  assert "101\t1\t1\tC" in first  # the recorded seed-1 layout
 
 
 # ---- report ---------------------------------------------------------------
@@ -231,11 +232,11 @@ def testInfoSurfacesTransformAndMeasurementKind(tmp_path, capsys):
   unit closes: previously visible only by reading the trial JSON), and the allowed
   values of a categorical/ordinal assessment."""
   packageDict = {
-    "schemaVersion": "0.1.0",
+    "schemaVersion": "0.2.0",
     "trial": {"trialCode": "INFO-1", "title": "Info trial", "crop": "Barley", "season": "2025",
               "site": "Field A", "objective": "Compare"},
     "treatments": [{"treatmentCode": code, "name": code} for code in ["A", "B"]],
-    "design": {"designType": "rcbd", "replications": 2, "randomizationSeed": 1},
+    "design": {"designType": "rcbd", "replications": 2, "randomizationMethod": "sha256FisherYates1", "randomizationSeed": 1},
     "assessments": [
       {"assessmentCode": "CT", "name": "Insect count", "dataType": "numeric", "unit": "per m2",
        "minValue": 0, "transform": "sqrt", "measurementKind": "count"},
@@ -267,3 +268,56 @@ def testInfoShowsDefaultTransformForPlainNumeric(project, capsys):
   out = capsys.readouterr().out
   assert "transform=none" in out
   assert "kind=unspecified" in out
+  assert "Layout: sha256FisherYates1, seed 1" in out
+
+
+def importedTrialDocument():
+  """A trial laid out elsewhere, as a trial document: its own plot numbers and no seed."""
+  package = json.loads(json.dumps(demoPackage))
+  package["trial"]["trialCode"] = "FIELD-7"
+  package["treatments"] = [{"treatmentCode": code, "name": code} for code in ["A", "B"]]
+  package["design"] = {"designType": "rcbd", "replications": 2, "randomizationMethod": "imported"}
+  layout = [
+    {"plotNumber": 1, "block": 1, "positionInBlock": 1, "treatmentCode": "A"},
+    {"plotNumber": 2, "block": 1, "positionInBlock": 2, "treatmentCode": "B"},
+    {"plotNumber": 3, "block": 2, "positionInBlock": 1, "treatmentCode": "A"},
+    {"plotNumber": 4, "block": 2, "positionInBlock": 2, "treatmentCode": "B"},
+  ]
+  return {"package": package, "layout": layout, "observations": []}
+
+
+def testTrialLaidOutElsewhereComesInAsADocument(project, capsys):
+  """An unrandomized layout with its own plot numbers is kept and shown as given."""
+  documentPath = Path(project["dir"]) / "field7.json"
+  documentPath.write_text(json.dumps(importedTrialDocument()), encoding="utf-8")
+  assert main(["import-json", project["db"], str(documentPath)]) == 0
+  capsys.readouterr()
+  assert main(["randomize", project["db"], "FIELD-7"]) == 0
+  out = capsys.readouterr().out
+  assert "Layout for 'FIELD-7' (imported):" in out
+  assert [line for line in out.splitlines()[2:]] == ["1\t1\t1\tA", "2\t1\t2\tB", "3\t2\t1\tA", "4\t2\t2\tB"]
+  assert main(["info", project["db"], "FIELD-7"]) == 0
+  assert "Layout: imported" in capsys.readouterr().out
+  assert main(["verify", project["db"], "FIELD-7"]) == 0
+
+
+def testAddRefusesAPackageWithAnImportedLayout(project, capsys):
+  packagePath = Path(project["dir"]) / "imported.json"
+  packagePath.write_text(json.dumps(importedTrialDocument()["package"]), encoding="utf-8")
+  assert main(["init", project["db"]]) == 0
+  capsys.readouterr()
+  assert main(["add", project["db"], str(packagePath)]) == 1
+  assert "declares an imported layout" in capsys.readouterr().err
+
+
+def testImportJsonRefusesALayoutChangedAfterGeneration(project, capsys):
+  setUpTrialWithData(project)
+  documentPath = Path(project["dir"]) / "demo-doc.json"
+  assert main(["export", project["db"], "DEMO", "--json", str(documentPath)]) == 0
+  document = json.loads(documentPath.read_text(encoding="utf-8"))
+  first, second = document["layout"][0], document["layout"][1]
+  first["treatmentCode"], second["treatmentCode"] = second["treatmentCode"], first["treatmentCode"]
+  documentPath.write_text(json.dumps(document), encoding="utf-8")
+  capsys.readouterr()
+  assert main(["import-json", project["db2"], str(documentPath)]) == 1
+  assert "is not the one method 'sha256FisherYates1' produces from seed 1" in capsys.readouterr().err

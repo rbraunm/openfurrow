@@ -64,6 +64,10 @@ es = {
   "report.design.plots": "Parcelas",
   "report.design.rcbd": "Diseño de bloques completos al azar",
   "report.design.seed": "Semilla de aleatorización",
+  "report.design.layout": "Disposición",
+  "report.design.layoutSupplied": "aportada con el ensayo, no aleatorizada aquí",
+  "report.reproducibility.randomizationMethod": "Método de aleatorización",
+  "web.trial.layoutIntroSupplied": "Parcelas tal como se siembran en el campo, agrupadas por bloque. Esta disposición se aportó con el ensayo.",
   "report.design.treatments": "Tratamientos",
   "report.draftNotice": "Traducción preliminar (generada automáticamente, sin revisión): la redacción puede ser imprecisa. Los números, los identificadores y el hash de contenido no se ven afectados.",
   "report.field.crop": "Cultivo",
@@ -219,6 +223,10 @@ fr = {
   "report.design.plots": "Parcelles",
   "report.design.rcbd": "Dispositif en blocs complets randomisés",
   "report.design.seed": "Graine de randomisation",
+  "report.design.layout": "Plan",
+  "report.design.layoutSupplied": "fourni avec l'essai, non randomisé ici",
+  "report.reproducibility.randomizationMethod": "Méthode de randomisation",
+  "web.trial.layoutIntroSupplied": "Parcelles telles que semées au champ, groupées par bloc. Ce plan a été fourni avec l'essai.",
   "report.design.treatments": "Traitements",
   "report.draftNotice": "Traduction provisoire (générée automatiquement, non relue): la formulation peut être imprécise. Les nombres, les identifiants et l'empreinte du contenu ne sont pas affectés.",
   "report.field.crop": "Culture",
@@ -374,6 +382,10 @@ ar = {
   "report.design.plots": "القطع التجريبية",
   "report.design.rcbd": "تصميم القطاعات الكاملة العشوائية",
   "report.design.seed": "بذرة العشوائية",
+  "report.design.layout": "التخطيط",
+  "report.design.layoutSupplied": "مرفق مع التجربة، ولم يُوزَّع عشوائيًا هنا",
+  "report.reproducibility.randomizationMethod": "طريقة التوزيع العشوائي",
+  "web.trial.layoutIntroSupplied": "القطع كما تُزرع في الحقل، مجمعة حسب القطاع. أُرفق هذا التخطيط مع التجربة.",
   "report.design.treatments": "المعاملات",
   "report.draftNotice": "ترجمة مسودة (آلية، لم تُراجع بعد): قد تكون الصياغة غير دقيقة. الأرقام والمعرفات وبصمة المحتوى غير متأثرة.",
   "report.field.crop": "المحصول",
@@ -507,7 +519,7 @@ def main():
       "messages": {key: {"text": draft[key], "status": "machineDraft"} for key in sorted(draft)},
     }
     (localeDirectory / f"{locale}.json").write_text(
-      json.dumps(document, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+      json.dumps(document, indent=2, ensure_ascii=False) + "\n", encoding="utf-8", newline="\n")
     print(f"{locale}: {len(draft)} messages, all machineDraft")
 
 

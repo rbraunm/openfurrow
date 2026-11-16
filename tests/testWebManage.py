@@ -16,11 +16,11 @@ from openfurrow import TrialPackage, Workspace
 from openfurrow.service import createApp
 
 _packageDict = {
-  "schemaVersion": "0.1.0",
+  "schemaVersion": "0.2.0",
   "trial": {"trialCode": "D4-1", "title": "Barley trial", "crop": "Barley",
             "season": "2025", "site": "North Field", "objective": "Compare programs"},
   "treatments": [{"treatmentCode": code, "name": f"Treatment {code}"} for code in ["A", "B"]],
-  "design": {"designType": "rcbd", "replications": 3, "randomizationSeed": 7},
+  "design": {"designType": "rcbd", "replications": 3, "randomizationMethod": "sha256FisherYates1", "randomizationSeed": 7},
   "assessments": [{"assessmentCode": "YIELD", "name": "Yield", "dataType": "numeric", "minValue": 0}],
 }
 

@@ -36,11 +36,11 @@ def yatesPackage(extraAssessments=None):
   if extraAssessments:
     assessments.extend(extraAssessments)
   return TrialPackage.model_validate({
-    "schemaVersion": "0.1.0",
+    "schemaVersion": "0.2.0",
     "trial": {"trialCode": "YATES-OATS", "title": "Yates oats variety", "crop": "Oats",
               "season": "1935", "site": "Rothamsted", "objective": "Compare oat variety yield"},
     "treatments": [{"treatmentCode": code, "name": code} for code in ["GoldenRain", "Marvellous", "Victory"]],
-    "design": {"designType": "rcbd", "replications": 6, "randomizationSeed": 1},
+    "design": {"designType": "rcbd", "replications": 6, "randomizationMethod": "sha256FisherYates1", "randomizationSeed": 1},
     "assessments": assessments,
   })
 
@@ -67,10 +67,10 @@ syntheticCells = {
 
 def syntheticInputs():
   package = TrialPackage.model_validate({
-    "schemaVersion": "0.1.0",
+    "schemaVersion": "0.2.0",
     "trial": {"trialCode": "SYN", "title": "Synthetic", "crop": "x", "season": "x", "site": "x", "objective": "x"},
     "treatments": [{"treatmentCode": code, "name": code} for code in ["A", "B", "C", "D"]],
-    "design": {"designType": "rcbd", "replications": 3, "randomizationSeed": 1},
+    "design": {"designType": "rcbd", "replications": 3, "randomizationMethod": "sha256FisherYates1", "randomizationSeed": 1},
     "assessments": [{"assessmentCode": "Y", "name": "Yield", "dataType": "numeric"}],
   })
   layout = generateRcbdLayout(package)
@@ -137,26 +137,26 @@ def testReportUnprotectedLabel():
 # ---- input hash -----------------------------------------------------------
 
 def testInputHashStable():
-  packageA, _, observationsA = yatesInputs()
-  packageB, _, observationsB = yatesInputs()
-  assert inputHash(packageA, observationsA) == inputHash(packageB, observationsB)
+  packageA, layoutA, observationsA = yatesInputs()
+  packageB, layoutB, observationsB = yatesInputs()
+  assert inputHash(packageA, layoutA, observationsA) == inputHash(packageB, layoutB, observationsB)
 
 
 def testInputHashSensitiveToValueChange():
   package, layout, observations = yatesInputs()
-  baseline = inputHash(package, observations)
+  baseline = inputHash(package, layout, observations)
   perturbed = list(observations)
   perturbed[0] = Observation(
     plotNumber=observations[0].plotNumber,
     assessmentCode=observations[0].assessmentCode,
     value=observations[0].value + 1.0,
   )
-  assert inputHash(package, perturbed) != baseline
+  assert inputHash(package, layout, perturbed) != baseline
 
 
 def testInputHashOrderIndependent():
   package, layout, observations = yatesInputs()
-  assert inputHash(package, observations) == inputHash(package, list(reversed(observations)))
+  assert inputHash(package, layout, observations) == inputHash(package, layout, list(reversed(observations)))
 
 
 # ---- transparent failure --------------------------------------------------

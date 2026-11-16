@@ -161,6 +161,14 @@
       "text": "Diseño",
       "status": "machineDraft"
     },
+    "report.design.layout": {
+      "text": "Disposición",
+      "status": "machineDraft"
+    },
+    "report.design.layoutSupplied": {
+      "text": "aportada con el ensayo, no aleatorizada aquí",
+      "status": "machineDraft"
+    },
     "report.design.plots": {
       "text": "Parcelas",
       "status": "machineDraft"
@@ -303,6 +311,10 @@
     },
     "report.reproducibility.methodValue": {
       "text": "ANOVA de DBCA; {test} (alfa = {alpha})",
+      "status": "machineDraft"
+    },
+    "report.reproducibility.randomizationMethod": {
+      "text": "Método de aleatorización",
       "status": "machineDraft"
     },
     "report.reproducibility.seed": {
@@ -523,6 +535,10 @@
     },
     "web.trial.layoutIntro": {
       "text": "Parcelas tal como se siembran en el campo, agrupadas por bloque. Aleatorizado a partir de la semilla {seed}.",
+      "status": "machineDraft"
+    },
+    "web.trial.layoutIntroSupplied": {
+      "text": "Parcelas tal como se siembran en el campo, agrupadas por bloque. Esta disposición se aportó con el ensayo.",
       "status": "machineDraft"
     },
     "web.trial.legendHeading": {

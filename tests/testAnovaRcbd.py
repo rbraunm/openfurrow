@@ -35,11 +35,11 @@ def yatesPackage(extraAssessments=None):
   if extraAssessments:
     assessments.extend(extraAssessments)
   return TrialPackage.model_validate({
-    "schemaVersion": "0.1.0",
+    "schemaVersion": "0.2.0",
     "trial": {"trialCode": "YATES-OATS", "title": "Yates oats variety", "crop": "Oats",
               "season": "1935", "site": "Rothamsted", "objective": "variety yield"},
     "treatments": [{"treatmentCode": code, "name": code} for code in yatesTreatments],
-    "design": {"designType": "rcbd", "replications": 6, "randomizationSeed": 1},
+    "design": {"designType": "rcbd", "replications": 6, "randomizationMethod": "sha256FisherYates1", "randomizationSeed": 1},
     "assessments": assessments,
   })
 
@@ -203,11 +203,11 @@ def testZeroErrorMeanSquareRejected():
   # Perfectly additive data: value = blockEffect + treatmentEffect, so the
   # no-interaction model fits exactly and the error sum of squares is zero.
   package = TrialPackage.model_validate({
-    "schemaVersion": "0.1.0",
+    "schemaVersion": "0.2.0",
     "trial": {"trialCode": "ADDITIVE", "title": "additive", "crop": "x", "season": "x",
               "site": "x", "objective": "x"},
     "treatments": [{"treatmentCode": "T1", "name": "T1"}, {"treatmentCode": "T2", "name": "T2"}],
-    "design": {"designType": "rcbd", "replications": 2, "randomizationSeed": 1},
+    "design": {"designType": "rcbd", "replications": 2, "randomizationMethod": "sha256FisherYates1", "randomizationSeed": 1},
     "assessments": [{"assessmentCode": "Y", "name": "y", "dataType": "numeric"}],
   })
   layout = generateRcbdLayout(package)

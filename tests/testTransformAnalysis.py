@@ -30,11 +30,11 @@ def buildRcbd(values, transform="none", measurementKind="unspecified"):
   treatments = sorted({treatment for treatment, _ in values})
   blocks = sorted({block for _, block in values})
   package = TrialPackage.model_validate({
-    "schemaVersion": "0.1.0",
+    "schemaVersion": "0.2.0",
     "trial": {"trialCode": "TX", "title": "t", "crop": "Maize", "season": "2025",
               "site": "s", "objective": "o"},
     "treatments": [{"treatmentCode": treatment, "name": treatment} for treatment in treatments],
-    "design": {"designType": "rcbd", "replications": len(blocks), "randomizationSeed": 1},
+    "design": {"designType": "rcbd", "replications": len(blocks), "randomizationMethod": "sha256FisherYates1", "randomizationSeed": 1},
     "assessments": [{"assessmentCode": "Y", "name": "y", "dataType": "numeric",
                      "measurementKind": measurementKind, "transform": transform}],
   })

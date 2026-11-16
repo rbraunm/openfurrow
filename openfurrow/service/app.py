@@ -3,7 +3,7 @@
 
 This is the single HTTP interface behind every non-CLI surface. The controllers do
 exactly three things: read the request, call one `Workspace` method, serialize the
-result. No statistics, no store access, no layout regeneration, no business rules --
+result. No statistics, no store access, no layout logic, no business rules --
 if a controller ever needs to compute something, the computation belongs on the facade
 where the CLI and every future surface get it too (decision 0002: own the math once).
 

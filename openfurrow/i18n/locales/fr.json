@@ -161,6 +161,14 @@
       "text": "Dispositif",
       "status": "machineDraft"
     },
+    "report.design.layout": {
+      "text": "Plan",
+      "status": "machineDraft"
+    },
+    "report.design.layoutSupplied": {
+      "text": "fourni avec l'essai, non randomisé ici",
+      "status": "machineDraft"
+    },
     "report.design.plots": {
       "text": "Parcelles",
       "status": "machineDraft"
@@ -303,6 +311,10 @@
     },
     "report.reproducibility.methodValue": {
       "text": "ANOVA en blocs complets randomisés; {test} (alpha = {alpha})",
+      "status": "machineDraft"
+    },
+    "report.reproducibility.randomizationMethod": {
+      "text": "Méthode de randomisation",
       "status": "machineDraft"
     },
     "report.reproducibility.seed": {
@@ -523,6 +535,10 @@
     },
     "web.trial.layoutIntro": {
       "text": "Parcelles telles que semées au champ, groupées par bloc. Randomisé à partir de la graine {seed}.",
+      "status": "machineDraft"
+    },
+    "web.trial.layoutIntroSupplied": {
+      "text": "Parcelles telles que semées au champ, groupées par bloc. Ce plan a été fourni avec l'essai.",
       "status": "machineDraft"
     },
     "web.trial.legendHeading": {

@@ -9,6 +9,7 @@ empty cells.
 """
 
 import csv
+import json
 from pathlib import Path
 
 import pytest
@@ -20,6 +21,7 @@ from openfurrow.schema import TrialDocument, TrialPackage, contentHash
 from openfurrow.schema.observation import Observation
 from openfurrow.store import (
   createDatabase,
+  loadLayout,
   loadObservations,
   loadPackage,
   savePackage,
@@ -30,7 +32,7 @@ from openfurrow.store import (
 
 def samplePackage(trialCode="TRIAL-1"):
   return TrialPackage.model_validate({
-    "schemaVersion": "0.1.0",
+    "schemaVersion": "0.2.0",
     "trial": {"trialCode": trialCode, "title": "Sample trial", "crop": "Wheat", "season": "2025",
               "site": "Field A", "objective": "Compare fungicides", "investigator": "Dr. X"},
     "treatments": [
@@ -38,7 +40,7 @@ def samplePackage(trialCode="TRIAL-1"):
       {"treatmentCode": "T2", "name": "Fungicide X", "product": "Prod X", "rate": 2.5, "rateUnit": "L/ha"},
       {"treatmentCode": "T3", "name": "Fungicide Y", "product": "Prod Y", "rate": 1.0, "rateUnit": "kg/ha"},
     ],
-    "design": {"designType": "rcbd", "replications": 4, "randomizationSeed": 42},
+    "design": {"designType": "rcbd", "replications": 4, "randomizationMethod": "sha256FisherYates1", "randomizationSeed": 42},
     "assessments": [
       {"assessmentCode": "YIELD", "name": "Grain yield", "dataType": "numeric", "unit": "kg/ha", "minValue": 0},
       {"assessmentCode": "LODGE", "name": "Lodging", "dataType": "ordinal",
@@ -55,7 +57,26 @@ def sampleDocument(package=None):
     observations.append(Observation(plotNumber=plot.plotNumber, assessmentCode="YIELD", value=100.0 + index * 1.25))
     observations.append(Observation(plotNumber=plot.plotNumber, assessmentCode="LODGE", value="none"))
   observations[0] = Observation(plotNumber=observations[0].plotNumber, assessmentCode="YIELD", value=None)
-  return TrialDocument(package=package, observations=observations)
+  return TrialDocument(package=package, layout=layout.plots, observations=observations)
+
+
+def importedDocumentDict():
+  """A trial laid out elsewhere: its own plot numbers, no seed, treatments in hand-made order."""
+  data = samplePackage("IMPORTED-1").model_dump(mode="json")
+  data["design"] = {"designType": "rcbd", "replications": 2, "randomizationMethod": "imported"}
+  layout = [
+    {"plotNumber": 11, "block": 1, "positionInBlock": 1, "treatmentCode": "T1"},
+    {"plotNumber": 12, "block": 1, "positionInBlock": 2, "treatmentCode": "T2"},
+    {"plotNumber": 13, "block": 1, "positionInBlock": 3, "treatmentCode": "T3"},
+    {"plotNumber": 21, "block": 2, "positionInBlock": 1, "treatmentCode": "T3"},
+    {"plotNumber": 22, "block": 2, "positionInBlock": 2, "treatmentCode": "T1"},
+    {"plotNumber": 23, "block": 2, "positionInBlock": 3, "treatmentCode": "T2"},
+  ]
+  observations = [
+    {"plotNumber": plot["plotNumber"], "assessmentCode": "YIELD", "value": 50.0 + plot["plotNumber"]}
+    for plot in layout
+  ]
+  return {"package": data, "layout": layout, "observations": observations}
 
 
 # ---- JSON round trip ------------------------------------------------------
@@ -94,11 +115,12 @@ def testDatabaseAndJsonAgreeOnHash(tmp_path):
   document = sampleDocument()
   engine = createDatabase(str(tmp_path / "trials.db"))
   with sessionScope(engine) as session:
-    savePackage(session, document.package)
+    savePackage(session, document.package, document.layout)
     saveObservations(session, "TRIAL-1", document.observations)
   with sessionScope(engine) as session:
     fromStore = TrialDocument(
       package=loadPackage(session, "TRIAL-1"),
+      layout=loadLayout(session, "TRIAL-1"),
       observations=loadObservations(session, "TRIAL-1"),
     )
   path = str(tmp_path / "trial.json")
@@ -114,8 +136,8 @@ def testImportRejectsMalformedPackage(tmp_path):
   broken = sampleDocument().canonicalDict()
   broken["package"]["treatments"] = broken["package"]["treatments"][:1]  # min is 2
   path = tmp_path / "broken.json"
-  path.write_text(__import__("json").dumps(broken))
-  with pytest.raises(ValidationError):
+  path.write_text(json.dumps(broken))
+  with pytest.raises(ExchangeError, match="not a valid trial document"):
     importJson(str(path))
 
 
@@ -123,9 +145,67 @@ def testImportRejectsUnknownTopLevelKey(tmp_path):
   data = sampleDocument().canonicalDict()
   data["unexpected"] = True
   path = tmp_path / "extra.json"
-  path.write_text(__import__("json").dumps(data))
-  with pytest.raises(ValidationError):
+  path.write_text(json.dumps(data))
+  with pytest.raises(ExchangeError, match="not a valid trial document"):
     importJson(str(path))
+
+
+def testImportRejectsFileThatIsNotJson(tmp_path):
+  path = tmp_path / "notJson.json"
+  path.write_text("plotNumber,assessmentCode,value\n101,YIELD,1\n")
+  with pytest.raises(ExchangeError, match="not valid JSON"):
+    importJson(str(path))
+
+
+# ---- the layout is part of the document (decision 0015) -------------------
+
+def testHashCoversTheLayout():
+  data = importedDocumentDict()
+  original = contentHash(TrialDocument.model_validate(data))
+  # Swap two treatments inside block 2: same package, same observations, another field.
+  data["layout"][3]["treatmentCode"], data["layout"][4]["treatmentCode"] = "T1", "T3"
+  assert contentHash(TrialDocument.model_validate(data)) != original
+
+
+def testImportedLayoutSurvivesTheJsonRoundTrip(tmp_path):
+  document = TrialDocument.model_validate(importedDocumentDict())
+  path = str(tmp_path / "imported.json")
+  exportJson(document, path)
+  imported = importJson(path)
+  assert [plot.plotNumber for plot in imported.layout] == [11, 12, 13, 21, 22, 23]
+  assert [plot.treatmentCode for plot in imported.layout] == ["T1", "T2", "T3", "T3", "T1", "T2"]
+  assert imported.package.design.randomizationSeed is None
+  assert contentHash(imported) == contentHash(document)
+
+
+def testGeneratedLayoutMustBeWhatItsSeedProduces():
+  data = sampleDocument().canonicalDict()
+  first, second = data["layout"][0], data["layout"][1]
+  first["treatmentCode"], second["treatmentCode"] = second["treatmentCode"], first["treatmentCode"]
+  with pytest.raises(ValidationError, match="is not the one method 'sha256FisherYates1' produces from seed 42"):
+    TrialDocument.model_validate(data)
+
+
+def testLayoutMustBeCompleteBlocks():
+  data = importedDocumentDict()
+  data["layout"][5]["treatmentCode"] = "T1"  # block 2 now holds T1 twice and no T2
+  with pytest.raises(ValidationError, match="block 2 is not a complete set"):
+    TrialDocument.model_validate(data)
+
+
+def testLayoutRejectsRepeatedPlotNumber():
+  data = importedDocumentDict()
+  data["layout"][5]["plotNumber"] = 11
+  data["observations"] = []
+  with pytest.raises(ValidationError, match=r"plot numbers used more than once: \[11\]"):
+    TrialDocument.model_validate(data)
+
+
+def testObservationOnUnknownPlotRejected():
+  data = importedDocumentDict()
+  data["observations"].append({"plotNumber": 999999, "assessmentCode": "YIELD", "value": 1.0})
+  with pytest.raises(ValidationError, match=r"plots that are not in the layout: \[999999\]"):
+    TrialDocument.model_validate(data)
 
 
 # ---- CSV export -----------------------------------------------------------
@@ -158,11 +238,13 @@ def testObservationsCsvMissingValueIsEmpty(tmp_path):
   assert missingRow["value"] == ""
 
 
-def testObservationsCsvRejectsUnknownPlot(tmp_path):
-  package = samplePackage()
-  document = TrialDocument(
-    package=package,
-    observations=[Observation(plotNumber=999999, assessmentCode="YIELD", value=1.0)],
-  )
-  with pytest.raises(ExchangeError, match="not in the layout"):
-    exportObservationsCsv(document, str(tmp_path / "obs.csv"))
+def testObservationsCsvUsesAnImportedLayout(tmp_path):
+  document = TrialDocument.model_validate(importedDocumentDict())
+  path = tmp_path / "obs.csv"
+  exportObservationsCsv(document, str(path))
+  with path.open() as handle:
+    rows = list(csv.DictReader(handle))
+  assert [(row["plotNumber"], row["block"], row["treatment"]) for row in rows] == [
+    ("11", "1", "T1"), ("12", "1", "T2"), ("13", "1", "T3"),
+    ("21", "2", "T3"), ("22", "2", "T1"), ("23", "2", "T2"),
+  ]

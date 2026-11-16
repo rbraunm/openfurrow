@@ -17,7 +17,11 @@
     <div><dt>{{ t.text('report.design.blocks') }}</dt><dd class="code">{{ t.integer(package.design.replications) }}</dd></div>
     <div><dt>{{ t.text('report.design.plots') }}</dt><dd class="code">{{ t.integer(package.plotCount) }}</dd></div>
     <div><dt>{{ t.text('web.trial.observations') }}</dt><dd class="code">{{ t.integer(observationCount) }}</dd></div>
+    {% if package.design.randomizationSeed is none %}
+    <div><dt>{{ t.text('report.design.layout') }}</dt><dd>{{ t.text('report.design.layoutSupplied') }}</dd></div>
+    {% else %}
     <div><dt>{{ t.text('report.design.seed') }}</dt><dd class="code">{{ t.integer(package.design.randomizationSeed) }}</dd></div>
+    {% endif %}
   </dl>
   <p class="hash"><span class="hash-label">{{ t.text('web.trial.contentHash') }}</span> <span class="code hash-value">{{ contentHash }}</span></p>
   {% if observationCount > 0 %}
@@ -62,7 +66,11 @@
 
 <section class="layout" aria-label="{{ t.text('web.trial.layoutHeading') }}">
   <h2>{{ t.text('web.trial.layoutHeading') }}</h2>
+  {% if package.design.randomizationSeed is none %}
+  <p class="intro">{{ t.text('web.trial.layoutIntroSupplied') }}</p>
+  {% else %}
   <p class="intro">{{ t.text('web.trial.layoutIntro', seed=t.integer(package.design.randomizationSeed)) }}</p>
+  {% endif %}
 
   <ul class="legend" aria-label="{{ t.text('web.trial.legendHeading') }}">
     {% for item in legend %}

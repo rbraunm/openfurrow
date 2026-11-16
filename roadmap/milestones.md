@@ -11,8 +11,9 @@ this file is the coarse "what exists" ledger.
 ## Done
 - [x] Trial-package schema -- trial metadata, treatments, RCBD design spec, assessment
       definitions, with fail-loud validation.
-- [x] RCBD layout generation -- deterministic by recorded seed; complete-block invariants
-      enforced.
+- [x] RCBD layout generation -- by a procedure the project specifies itself, deterministic
+      by recorded seed; the layout is recorded with the trial, and one made elsewhere can
+      be held as supplied (decision 0015); complete-block invariants enforced.
 - [x] Project config and import profile -- YAML, per-study settings, override merge; the
       analysis section (significance level, mean-comparison test) per the ARM-aligned
       analysis conventions.
@@ -24,7 +25,8 @@ this file is the coarse "what exists" ledger.
 - [x] Reporting -- a Markdown report with input summary, method and version provenance,
       the reproducibility block (input hash, seed, versions), and per-assessment notes.
 - [x] Canonical store -- SQLite via SQLAlchemy (decision 0001, Accepted); portable to
-      PostgreSQL. Layout regenerated not stored; float values exact; foreign keys enforced.
+      PostgreSQL. The layout stored per plot; float values exact; foreign keys enforced;
+      the store carries a version and refuses a database written under another.
 - [x] Portable exchange -- JSON (validated, deterministic, archival) and long-format CSV;
       the database and a JSON export agree on the content hash.
 - [x] CLI -- the loop end to end: init -> add -> randomize -> import -> report -> export ->

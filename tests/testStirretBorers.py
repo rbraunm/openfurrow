@@ -82,7 +82,7 @@ def loadStirretCells():
 
 def stirretPackage():
   return TrialPackage.model_validate({
-    "schemaVersion": "0.1.0",
+    "schemaVersion": "0.2.0",
     "trial": {
       "trialCode": "STIRRET-1935",
       "title": "European corn borer control by Beauveria bassiana",
@@ -92,7 +92,7 @@ def stirretPackage():
       "objective": "Borer control by application of fungal spores",
     },
     "treatments": [{"treatmentCode": code, "name": code} for code in stirretTreatments],
-    "design": {"designType": "rcbd", "replications": 15, "randomizationSeed": 1},
+    "design": {"designType": "rcbd", "replications": 15, "randomizationMethod": "sha256FisherYates1", "randomizationSeed": 1},
     "assessments": [
       {"assessmentCode": "count1", "name": "Borer count August 18", "dataType": "numeric", "minValue": 0},
       {"assessmentCode": "count2", "name": "Borer count October 19", "dataType": "numeric", "minValue": 0},

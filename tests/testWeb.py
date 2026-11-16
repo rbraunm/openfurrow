@@ -19,11 +19,11 @@ from openfurrow import TrialPackage, Workspace
 from openfurrow.service import createApp
 
 _packageDict = {
-  "schemaVersion": "0.1.0",
+  "schemaVersion": "0.2.0",
   "trial": {"trialCode": "WEB-1", "title": "Barley trial", "crop": "Barley",
             "season": "2025", "site": "North Field", "objective": "Compare programs"},
   "treatments": [{"treatmentCode": code, "name": f"Treatment {code}"} for code in ["A", "B", "C", "D"]],
-  "design": {"designType": "rcbd", "replications": 3, "randomizationSeed": 7},
+  "design": {"designType": "rcbd", "replications": 3, "randomizationMethod": "sha256FisherYates1", "randomizationSeed": 7},
   "assessments": [{"assessmentCode": "YIELD", "name": "Yield", "dataType": "numeric",
                    "unit": "kg/ha", "minValue": 0}],
 }
@@ -76,6 +76,44 @@ def testAddFormShowsExample(client):
 def testHtmlDeclaresLangAndDir(client):
   body = _text(client.get("/"))
   assert '<html lang="en-US" dir="ltr">' in body
+
+
+def testTrialLaidOutElsewhereShowsItsOwnPlotsAndNoSeed(client, databasePath, tmp_path):
+  """A layout supplied with the trial is shown as recorded, in every shipped locale."""
+  package = json.loads(json.dumps(_packageDict))
+  package["trial"]["trialCode"] = "FIELD-7"
+  package["treatments"] = package["treatments"][:2]
+  package["design"] = {"designType": "rcbd", "replications": 2, "randomizationMethod": "imported"}
+  layout = [
+    {"plotNumber": 71, "block": 1, "positionInBlock": 1, "treatmentCode": "A"},
+    {"plotNumber": 72, "block": 1, "positionInBlock": 2, "treatmentCode": "B"},
+    {"plotNumber": 73, "block": 2, "positionInBlock": 1, "treatmentCode": "A"},
+    {"plotNumber": 74, "block": 2, "positionInBlock": 2, "treatmentCode": "B"},
+  ]
+  observations = [
+    {"plotNumber": plot["plotNumber"], "assessmentCode": "YIELD", "value": value}
+    for plot, value in zip(layout, [10.0, 14.0, 11.0, 16.0])
+  ]
+  documentPath = tmp_path / "field7.json"
+  documentPath.write_text(
+    json.dumps({"package": package, "layout": layout, "observations": observations}), encoding="utf-8",
+  )
+  Workspace.open(databasePath).importDocument(str(documentPath))
+
+  body = _text(client.get("/trials/FIELD-7"))
+  assert re.findall(r'<span class="plot-number code">(\d+)</span>', body) == ["71", "72", "73", "74"]
+  assert "This layout was supplied with the trial." in body
+  assert "supplied with the trial, not randomized here" in body
+  assert "Randomization seed" not in body
+
+  report = _text(client.get("/trials/FIELD-7/report"))
+  assert "Layout: supplied with the trial, not randomized here" in report
+  assert "Randomization method: imported" in report
+  assert "Randomization seed" not in report
+
+  for locale in ("en-GB", "es", "fr", "ar"):
+    assert client.get(f"/trials/FIELD-7?locale={locale}").status_code == 200
+    assert client.get(f"/trials/FIELD-7/report?locale={locale}").status_code == 200
 
 
 # ---- add a trial ----------------------------------------------------------

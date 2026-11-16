@@ -43,11 +43,11 @@ from openfurrow.i18n import (
 _localeDirectory = Path("openfurrow/i18n/locales")
 
 _packageDict = {
-  "schemaVersion": "0.1.0",
+  "schemaVersion": "0.2.0",
   "trial": {"trialCode": "L10N-1", "title": "Localization trial", "crop": "Barley",
             "season": "2025", "site": "Field A", "objective": "Compare treatments"},
   "treatments": [{"treatmentCode": code, "name": code} for code in ["A", "B", "C", "D"]],
-  "design": {"designType": "rcbd", "replications": 3, "randomizationSeed": 7},
+  "design": {"designType": "rcbd", "replications": 3, "randomizationMethod": "sha256FisherYates1", "randomizationSeed": 7},
   "assessments": [{"assessmentCode": "YIELD", "name": "Yield", "dataType": "numeric",
                    "unit": "kg/ha", "minValue": 0}],
 }
@@ -104,7 +104,9 @@ def testExchangeStaysLocaleNeutral(workspace, tmp_path):
   jsonPath = tmp_path / "out.json"
   workspace.exportDocument("L10N-1", str(jsonPath))
   document = json.loads(jsonPath.read_text(encoding="utf-8"))
-  assert document["observations"][0]["value"] == 106.0   # a JSON number, not a string
+  exported = [observation["value"] for observation in document["observations"]]
+  # JSON numbers, not strings, whichever plot each value sits on.
+  assert sorted(exported) == sorted(float(value) for value in _values.values())
 
 
 def testCommaDecimalLocaleFormatsDisplayButNotCanonical(workspace, tmp_path):

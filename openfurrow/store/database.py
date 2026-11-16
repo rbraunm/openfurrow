@@ -6,12 +6,11 @@ SQLAlchemy so the same schema runs on PostgreSQL for a future team mode without 
 rewrite. The schema is kept inside the portable intersection of the two engines:
 generic column types only, no SQLite-specific features.
 
-Three deliberate modeling choices, recorded in decision 0001:
+Modeling choices, recorded in decisions 0001 and 0015:
 
-- The layout is not stored. It is a pure function of the package (the seed plus the
-  design and treatment order), so per "derive, don't duplicate" it is regenerated
-  on demand rather than persisted -- which also keeps the input hash, computed over
-  package and observations, a complete description of the trial.
+- The layout is stored, one row per plot (decision 0015). Which treatment stands on
+  which plot is a fact about the field; the seed and the method's name on the trial
+  row say how a generated layout was made, and are absent or `imported` otherwise.
 - Treatments and assessments carry an explicit `ordinal`. Their order is
   significant -- the randomizer permutes treatments in package order, and the input
   hash preserves list order -- so it must survive a round trip, which SQL row order
@@ -21,17 +20,33 @@ Three deliberate modeling choices, recorded in decision 0001:
   which is populated and both NULL meaning missing. Native REAL keeps floats exact
   across a round trip, which keeps the hash stable; a single text column would
   stringify them.
+- The store carries a version. A database written under another version of this
+  schema is refused when it is opened, instead of failing later on a missing column.
 """
 
 from __future__ import annotations
 
-from sqlalchemy import ForeignKey, Text, event
+from sqlalchemy import ForeignKey, Text, event, inspect, select
 from sqlalchemy.engine import Engine
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
+from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, relationship
+
+storeVersion = 2
+
+
+class StoreError(RuntimeError):
+  """A store operation could not be completed as requested."""
 
 
 class Base(DeclarativeBase):
   """Declarative base for the store's ORM models."""
+
+
+class StoreVersionRow(Base):
+  """The version of this schema the database was written under; exactly one row."""
+
+  __tablename__ = "storeVersion"
+
+  version: Mapped[int] = mapped_column(primary_key=True)
 
 
 class TrialRow(Base):
@@ -50,12 +65,16 @@ class TrialRow(Base):
   schemaVersion: Mapped[str]
   designType: Mapped[str]
   replications: Mapped[int]
-  randomizationSeed: Mapped[int]
+  randomizationMethod: Mapped[str]
+  randomizationSeed: Mapped[int | None]
 
   treatments: Mapped[list[TreatmentRow]] = relationship(
     back_populates="trial", cascade="all, delete-orphan"
   )
   assessments: Mapped[list[AssessmentRow]] = relationship(
+    back_populates="trial", cascade="all, delete-orphan"
+  )
+  plots: Mapped[list[PlotRow]] = relationship(
     back_populates="trial", cascade="all, delete-orphan"
   )
   observations: Mapped[list[ObservationRow]] = relationship(
@@ -105,6 +124,22 @@ class AssessmentRow(Base):
   trial: Mapped[TrialRow] = relationship(back_populates="assessments")
 
 
+class PlotRow(Base):
+  """One plot of the layout: a treatment at a position within a block."""
+
+  __tablename__ = "plot"
+
+  trialCode: Mapped[str] = mapped_column(
+    ForeignKey("trial.trialCode", ondelete="CASCADE"), primary_key=True
+  )
+  plotNumber: Mapped[int] = mapped_column(primary_key=True)
+  block: Mapped[int]
+  positionInBlock: Mapped[int]
+  treatmentCode: Mapped[str]
+
+  trial: Mapped[TrialRow] = relationship(back_populates="plots")
+
+
 class ObservationRow(Base):
   """One recorded value, keyed by plot and assessment. See the value-column note."""
 
@@ -122,17 +157,40 @@ class ObservationRow(Base):
 
 
 def createDatabase(path: str) -> Engine:
-  """Open (creating if needed) the SQLite store at `path` and ensure the schema.
+  """Open the SQLite store at `path`, creating it if the file holds no tables yet.
 
-  Foreign keys are enforced for SQLite via a per-connection pragma; on PostgreSQL
-  they are enforced natively and the pragma is not applied.
+  An existing store must have been written under this schema's version; any other is
+  refused here. Foreign keys are enforced for SQLite via a per-connection pragma; on
+  PostgreSQL they are enforced natively and the pragma is not applied.
   """
   from sqlalchemy import create_engine
 
   engine = create_engine(f"sqlite:///{path}")
   if engine.dialect.name == "sqlite":
     event.listen(engine, "connect", _enableSqliteForeignKeys)
-  Base.metadata.create_all(engine)
+
+  existingTables = set(inspect(engine).get_table_names())
+  if not existingTables:
+    Base.metadata.create_all(engine)
+    with Session(engine) as session:
+      session.add(StoreVersionRow(version=storeVersion))
+      session.commit()
+    return engine
+
+  if StoreVersionRow.__tablename__ not in existingTables:
+    raise StoreError(
+      f"database '{path}' was written by an earlier build of OpenFurrow, before stores "
+      f"carried a version. Export its trials with that build and import them into a new "
+      f"database."
+    )
+  with Session(engine) as session:
+    versions = session.execute(select(StoreVersionRow.version)).scalars().all()
+  if versions != [storeVersion]:
+    raise StoreError(
+      f"database '{path}' holds store version {versions}, and this build reads version "
+      f"{storeVersion}. Export its trials with the build that wrote it and import them "
+      f"into a new database."
+    )
   return engine
 
 

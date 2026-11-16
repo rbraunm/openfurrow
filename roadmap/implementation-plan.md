@@ -49,14 +49,15 @@ license/auditability consequence) but must be fixed so every session builds the 
 1. **One core facade.** Every non-core surface (CLI, Flask, future apps) reaches the core
    through a single session-scoped facade object plus the stateless analysis functions --
    never by importing store/schema/analysis internals directly. The facade encapsulates the
-   repeated "open store -> load package -> regenerate layout -> load observations -> act"
+   repeated "open store -> load package -> load layout -> load observations -> act"
    dance that the CLI open-codes today. The CLI is refactored onto the facade as the first
    proof; Flask is the second. This is unit A1; its exact class/method names are finalized
    when built, but the *shape* (one facade, surfaces never touch internals) is fixed.
 
-2. **Layout stays derived, never stored.** The randomized layout is regenerated from the
-   recorded seed on demand (as it is today). It is not persisted and not hashed separately.
-   Any surface that needs it calls the facade, which regenerates it.
+2. **The layout is recorded, not derived (ADR 0015).** The plot map is stored with the
+   trial, exported and covered by the content hash. A generated layout is produced once,
+   when the package is added, by the project's own procedure; regenerating it is a check
+   on the record. Any surface that needs the layout asks the facade, which reads it.
 
 3. **One content hash, one implementation.** `schema.contentHash` over the `TrialDocument`
    is the single fixity anchor across export, verify, sync, and deposit. No surface computes
@@ -404,6 +405,6 @@ raise them for a talk-first decision when a unit forces the choice.
   no monkeypatching the logic under test.
 - Content hash intact and verified where the unit round-trips or exchanges data.
 - ASCII in code and generated output; user-facing strings routed through L0 once it exists.
-- Layout stays derived; internals stay behind the facade.
+- The layout is read from the record; internals stay behind the facade.
 - One logical commit to `claude`, human-style message; this file's checkbox updated in the
   same commit.

@@ -33,11 +33,11 @@ from openfurrow import (
 )
 
 _packageDict = {
-  "schemaVersion": "0.1.0",
+  "schemaVersion": "0.2.0",
   "trial": {"trialCode": "PUB-1", "title": "Public API trial", "crop": "Barley",
             "season": "2025", "site": "Field A", "objective": "Compare treatments"},
   "treatments": [{"treatmentCode": code, "name": code} for code in ["A", "B", "C", "D"]],
-  "design": {"designType": "rcbd", "replications": 3, "randomizationSeed": 7},
+  "design": {"designType": "rcbd", "replications": 3, "randomizationMethod": "sha256FisherYates1", "randomizationSeed": 7},
   "assessments": [{"assessmentCode": "YIELD", "name": "Yield", "dataType": "numeric",
                    "unit": "kg/ha", "minValue": 0}],
 }
@@ -93,6 +93,7 @@ def testFullLoopThroughPublicSurfaceOnly(tmp_path):
   # The public contentHash is THE hash -- the facade's and a caller's agree.
   document = TrialDocument(
     package=workspace.loadPackage("PUB-1"),
+    layout=workspace.layoutFor("PUB-1").plots,
     observations=workspace.loadObservations("PUB-1"),
   )
   assert contentHash(document) == workspace.contentHashFor("PUB-1")
@@ -115,7 +116,8 @@ def testPublicSurfaceIsExported():
   expected = {
     "Workspace", "RoundTripCheck",
     "AnalysisError", "ExchangeError", "ObservationImportError", "StoreError",
-    "TrialPackage", "TrialDocument", "TrialLayout", "Observation", "contentHash",
+    "TrialPackage", "TrialDocument", "TrialLayout", "PlotAssignment", "RandomizationMethod",
+    "Observation", "contentHash",
     "AnovaResult", "MeanSeparation", "Assumptions", "ImportResult",
     "ImportProfile", "defaultConfig", "loadConfig", "schemaVersion",
   }

@@ -32,7 +32,7 @@ tray_id, seed_id, seed_name, pedigree`.
 
 **OpenFurrow mapping (proposed for E1a):** emit one row per plot with
 `plotNumber` (unique id), `block` (primary), `positionInBlock` (secondary), and `treatment`
-as a carried attribute. All derived from the package + regenerated layout via the facade.
+as a carried attribute. All taken from the package and the recorded layout via the facade.
 Open: whether to also emit `row`/`column` plot geometry (we do not model it yet).
 
 ## Trait file `.trt` (we produce this: E1a)

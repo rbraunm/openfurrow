@@ -15,18 +15,16 @@ that is not exercised here is a field that can be silently lost.
 """
 
 import copy
-import tempfile
-from pathlib import Path
-
-import pytest
+import json
 
 from openfurrow import TrialDocument, TrialPackage, Workspace, contentHash
+from openfurrow.design import generateRcbdLayout
 
 # Every optional field populated with a value that differs from its default, and both a
 # numeric assessment (which carries transform/measurementKind/range) and an ordinal one
 # (which carries allowedValues) so both branches are covered.
 _maximalPackage = {
-  "schemaVersion": "0.1.0",
+  "schemaVersion": "0.2.0",
   "trial": {
     "trialCode": "MAX-1", "title": "Maximal trial", "crop": "Barley", "season": "2025",
     "site": "North Field", "objective": "Compare programs",
@@ -37,7 +35,7 @@ _maximalPackage = {
     {"treatmentCode": "T2", "name": "Program", "product": "Fungicide X",
      "rate": 2.5, "rateUnit": "L/ha", "timing": "BBCH 30"},
   ],
-  "design": {"designType": "rcbd", "replications": 3, "randomizationSeed": 99},
+  "design": {"designType": "rcbd", "replications": 3, "randomizationMethod": "sha256FisherYates1", "randomizationSeed": 99},
   "assessments": [
     {"assessmentCode": "CT", "name": "Insect count", "dataType": "numeric", "unit": "per m2",
      "timing": "14 DAA", "minValue": 0, "maxValue": 500, "transform": "sqrt",
@@ -79,7 +77,47 @@ def testJsonExchangeRoundTripIsExact(tmp_path):
 def _hashWith(mutate) -> str:
   data = copy.deepcopy(_maximalPackage)
   mutate(data)
-  return contentHash(TrialDocument(package=TrialPackage.model_validate(data), observations=[]))
+  package = TrialPackage.model_validate(data)
+  return contentHash(
+    TrialDocument(package=package, layout=generateRcbdLayout(package).plots, observations=[])
+  )
+
+
+def testRandomizationSeedEntersContentHash():
+  def changeSeed(data):
+    data["design"]["randomizationSeed"] = 100
+  assert _hashWith(lambda data: None) != _hashWith(changeSeed)
+
+
+# ---- a layout made elsewhere is kept exactly (decision 0015) ---------------
+
+def testImportedLayoutSurvivesStoreAndExchange(tmp_path):
+  """Plot numbers and assignments that no generator produced come back unchanged."""
+  data = copy.deepcopy(_maximalPackage)
+  data["design"] = {"designType": "rcbd", "replications": 3, "randomizationMethod": "imported"}
+  plots = [
+    {"plotNumber": 7, "block": 1, "positionInBlock": 1, "treatmentCode": "UTC"},
+    {"plotNumber": 8, "block": 1, "positionInBlock": 2, "treatmentCode": "T2"},
+    {"plotNumber": 31, "block": 2, "positionInBlock": 1, "treatmentCode": "T2"},
+    {"plotNumber": 32, "block": 2, "positionInBlock": 2, "treatmentCode": "UTC"},
+    {"plotNumber": 55, "block": 3, "positionInBlock": 1, "treatmentCode": "UTC"},
+    {"plotNumber": 56, "block": 3, "positionInBlock": 2, "treatmentCode": "T2"},
+  ]
+  sourcePath = tmp_path / "imported.json"
+  sourcePath.write_text(json.dumps({"package": data, "layout": plots, "observations": []}), encoding="utf-8")
+
+  first = Workspace.create(str(tmp_path / "a.db"))
+  assert first.importDocument(str(sourcePath)) == "MAX-1"
+  stored = first.layoutFor("MAX-1").plots
+  assert [plot.model_dump() for plot in stored] == plots
+  assert first.loadPackage("MAX-1").design.randomizationSeed is None
+
+  exportedPath = str(tmp_path / "exported.json")
+  first.exportDocument("MAX-1", exportedPath)
+  second = Workspace.create(str(tmp_path / "b.db"))
+  second.importDocument(exportedPath)
+  assert second.contentHashFor("MAX-1") == first.contentHashFor("MAX-1")
+  assert [plot.model_dump() for plot in second.layoutFor("MAX-1").plots] == plots
 
 
 def testTransformEntersContentHash():

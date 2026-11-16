@@ -6,7 +6,7 @@ Findings, defects, checks and owner calls that the plans do not carry.
 Status tags: `fix` (a defect to correct), `build` (work to add), `check` (a suspicion to
 measure), `owner` (the owner's call), `done`.
 
-**Counts.** fix 5, build 19, check 0, owner 3, done 16; 43 in all.
+**Counts.** fix 4, build 19, check 0, owner 3, done 18; 44 in all.
 
 ## Owner decisions
 
@@ -34,20 +34,19 @@ measure), `owner` (the owner's call), `done`.
 
 ## Reproducibility (REP)
 
-- **REP-1** `fix` **The field layout depends on numpy's shuffle.**
-  `openfurrow/design/randomization.py` regenerates the plot-to-treatment map from the seed
-  with `Generator.permutation`, and the map is stored nowhere: not in the database, not in
-  the JSON export, not in the content hash. numpy's compatibility policy
-  (https://numpy.org/doc/stable/reference/random/compatibility.html) allows `Generator`
-  methods to change their output in a feature release; only the bit generators carry a
-  version-to-version guarantee. `pyproject.toml` accepts any numpy from 1.26. If the
-  shuffle changes, an existing trial's plots map to other treatments and the analysis is
-  wrong with no error: the content hash and `verify` still pass. The module's docstring
-  says the stream is guaranteed across versions. Two tests pin a known layout
-  (`tests/testRcbdLayout.py`), so a developer would see a change; a user would not.
-  Decided in decision 0015: the plot map becomes recorded data (stored, exported, hashed),
-  the seed and the method's name become provenance, new layouts come from a shuffle the
-  project specifies itself on SHA-256, and the store carries a version. To build.
+- **REP-1** `done` **The field layout depended on numpy's shuffle.** The plot-to-treatment
+  map was regenerated from the seed with numpy's `Generator.permutation` and stored
+  nowhere: not in the database, not in the JSON export, not in the content hash. numpy
+  allows `Generator` methods to change their output in a feature release, so an existing
+  trial's plots could have come to map to other treatments with no error, the content
+  hash and `verify` still passing. Built as decision 0015 says. The plot map is recorded
+  data: a `plot` table, a `layout` in the trial document, covered by the content hash. A
+  generated layout comes from the project's own procedure, `sha256FisherYates1`, specified
+  in `openfurrow/design/randomization.py` and pinned in the tests against SHA-256 itself.
+  A document whose layout is not what its method and seed produce is rejected. A layout
+  made elsewhere is `imported`, has no seed, and is kept as supplied. The schema is 0.2.0,
+  and the store carries a version, so a database of an earlier build is refused by name.
+  Every existing trial hash changed; the worked example's is now `8bb10a52...e725`.
 - **REP-2** `done` **Library versions were not pinned.** Dependencies carry lower bounds
   only, so every install took the newest releases and a validation run could not be
   repeated. One install had already taken a pre-release: formulaic (pulled in by
@@ -75,8 +74,8 @@ measure), `owner` (the owner's call), `done`.
   showed the suite running anywhere but Linux with Python 3.13. Run on Windows 11 with
   Python 3.14.8 in a virtual environment inside the clone (382 MB), installed with the
   test and service extras: 357 tests passed in 94 seconds. The worked example through the
-  installed `openfurrow` command reproduced the published table and the input hash
-  `50fbfb3a...4ded`, before and after export and re-import. The web interface was walked
+  installed `openfurrow` command reproduced the published table and its input hash,
+  before and after export and re-import. The web interface was walked
   in Chromium: a trial added through the form, observations uploaded, both reports read,
   the reproducibility check passed, and the Arabic view rendered right to left with its
   draft notice; no console errors, no failed requests, no request to another host.
@@ -118,7 +117,7 @@ measure), `owner` (the owner's call), `done`.
   copy with the templates removed from the packaging: the smoke fails there, at the first
   page. First run, on the commit that added it: all four jobs passed, 357 tests each
   (7 to 10 seconds on Linux, 23 to 25 on Windows), and the worked example's hash was the
-  same `50fbfb3a...4ded` on both systems and both Python versions.
+  same on both systems and both Python versions.
 - **VAL-2** `done` **The workflow gates `main`.** The ruleset "main validation" requires
   the workflow's final check, `validated`, on the default branch and has no bypass, so an
   administrator's merge cannot skip it; "main protections" still requires the pull
@@ -208,9 +207,9 @@ measure), `owner` (the owner's call), `done`.
   seed. A trial randomized by another tool, or already in the ground, cannot be entered
   with its own plot numbers and its own plot-to-treatment map; its observations could
   only be re-keyed onto a generated layout that does not match the field. A first real
-  trial will most likely be one of these. Decision 0015 makes the layout recorded data, so
-  such a trial can be held; REP-1 brings the path through a trial document, and the path
-  through the interface remains to build.
+  trial will most likely be one of these. Since REP-1 such a trial can be held: it comes in
+  as a trial document whose package says `imported` and whose layout lists the plots
+  (`import-json`, or the API). The path through the interface remains to build.
 - **USR-8** `build` **What happened to a plot.** A lost plot, a misapplied treatment or a
   difference between the plan and what was planted has no record. EPPO PP 1/181 asks for
   deviations to be noted and reported (decision 0015, "Consequences").
@@ -313,3 +312,7 @@ sections added beside them. REC-9 needs data entry in the tool (USR-4).
   `testDiagnosticTextFollowsTheLocale` (`tests/testLocalization.py`) overwrote `fr.json`
   in the source tree and put it back afterwards, so an interrupted run would have left the
   shipped French catalog replaced. It now reads from a copy of the catalogs.
+- **SML-9** `done` **The API answered a document that is not JSON with a server error.**
+  `POST /api/documents` let a JSON parse error escape, and no handler mapped it. Importing
+  a document now raises one error type for a file that is not JSON or not a valid trial
+  document, which the command line reports and the API answers with 400.

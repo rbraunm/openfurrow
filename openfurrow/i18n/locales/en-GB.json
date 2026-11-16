@@ -65,6 +65,14 @@
       "text": "Randomisation seed",
       "status": "humanApproved"
     },
+    "report.design.layout": {
+      "text": "Layout",
+      "status": "humanApproved"
+    },
+    "report.design.layoutSupplied": {
+      "text": "supplied with the trial, not randomised here",
+      "status": "humanApproved"
+    },
     "report.heading.treatments": {
       "text": "Treatments",
       "status": "humanApproved"
@@ -245,6 +253,10 @@
       "text": "Randomisation seed",
       "status": "humanApproved"
     },
+    "report.reproducibility.randomizationMethod": {
+      "text": "Randomisation method",
+      "status": "humanApproved"
+    },
     "report.reproducibility.transforms": {
       "text": "Transforms",
       "status": "humanApproved"
@@ -399,6 +411,10 @@
     },
     "web.trial.layoutIntro": {
       "text": "Plots as drilled in the field, grouped by block. Randomised from seed {seed}.",
+      "status": "humanApproved"
+    },
+    "web.trial.layoutIntroSupplied": {
+      "text": "Plots as drilled in the field, grouped by block. This layout was supplied with the trial.",
       "status": "humanApproved"
     },
     "web.trial.plot": {

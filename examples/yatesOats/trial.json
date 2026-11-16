@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "0.1.0",
+  "schemaVersion": "0.2.0",
   "trial": {
     "trialCode": "yatesOats1935",
     "title": "Yates oat variety trial",
@@ -17,6 +17,7 @@
   "design": {
     "designType": "rcbd",
     "replications": 6,
+    "randomizationMethod": "sha256FisherYates1",
     "randomizationSeed": 1
   },
   "assessments": [

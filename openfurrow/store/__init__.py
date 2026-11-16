@@ -1,13 +1,13 @@
 # SPDX-License-Identifier: Apache-2.0
 """Store: the canonical SQLite system of record."""
 
-from openfurrow.store.database import createDatabase
+from openfurrow.store.database import StoreError, createDatabase, storeVersion
 from openfurrow.store.repository import (
-  StoreError,
   TrialExistsError,
   TrialNotFoundError,
   deleteTrial,
   listTrials,
+  loadLayout,
   loadObservations,
   loadPackage,
   savePackage,
@@ -22,9 +22,11 @@ __all__ = [
   "createDatabase",
   "deleteTrial",
   "listTrials",
+  "loadLayout",
   "loadObservations",
   "loadPackage",
   "savePackage",
   "saveObservations",
   "sessionScope",
+  "storeVersion",
 ]

@@ -77,19 +77,22 @@ def buildReport(
     lines += _assessmentSection(
       assessment, package, layout, observations, significanceLevel, protected, translator
     )
-  lines += _reproducibilitySection(package, observations, significanceLevel, protected, translator)
+  lines += _reproducibilitySection(
+    package, layout, observations, significanceLevel, protected, translator
+  )
   return "\n".join(lines).rstrip() + "\n"
 
 
-def inputHash(package: TrialPackage, observations: list[Observation]) -> str:
-  """A stable SHA-256 over the canonical inputs (package and observations).
+def inputHash(package: TrialPackage, layout: TrialLayout, observations: list[Observation]) -> str:
+  """A stable SHA-256 over the canonical inputs (package, layout and observations).
 
   Delegates to the shared trial-document content hash so hashing here and export
-  elsewhere cannot drift. The layout is regenerable from the package's seed and is
-  not hashed separately; observations are sorted so ordering does not affect it.
-  Locale never enters: this is canonical data, not display.
+  elsewhere cannot drift. Plots and observations are sorted, so ordering does not
+  affect it. Locale never enters: this is canonical data, not display.
   """
-  return contentHash(TrialDocument(package=package, observations=list(observations)))
+  return contentHash(
+    TrialDocument(package=package, layout=layout.plots, observations=list(observations))
+  )
 
 
 def _field(translator: Translator, key: str, value: object, /, **labelPlaceholders) -> str:
@@ -119,16 +122,25 @@ def _metadataSection(package: TrialPackage, translator: Translator) -> list[str]
 
 
 def _designSection(package: TrialPackage, translator: Translator) -> list[str]:
-  return [
+  design = package.design
+  lines = [
     f"## {translator.text('report.heading.design')}",
     "",
     _field(translator, "report.design.design", translator.text("report.design.rcbd")),
     _field(translator, "report.design.treatments", translator.integer(len(package.treatments))),
-    _field(translator, "report.design.blocks", translator.integer(package.design.replications)),
+    _field(translator, "report.design.blocks", translator.integer(design.replications)),
     _field(translator, "report.design.plots", translator.integer(package.plotCount)),
-    _field(translator, "report.design.seed", translator.integer(package.design.randomizationSeed)),
-    "",
   ]
+  if design.randomizationSeed is None:
+    lines.append(
+      _field(translator, "report.design.layout", translator.text("report.design.layoutSupplied"))
+    )
+  else:
+    lines.append(
+      _field(translator, "report.design.seed", translator.integer(design.randomizationSeed))
+    )
+  lines.append("")
+  return lines
 
 
 def _treatmentsSection(package: TrialPackage, translator: Translator) -> list[str]:
@@ -334,7 +346,7 @@ def _diagnosticLine(outcome, translator: Translator) -> str:
 
 
 def _reproducibilitySection(
-  package, observations, significanceLevel, protected, translator: Translator
+  package, layout, observations, significanceLevel, protected, translator: Translator
 ) -> list[str]:
   test = translator.text(methodKeyFor(protected))
   method = translator.text(
@@ -342,15 +354,22 @@ def _reproducibilitySection(
     test=test,
     alpha=translator.number(significanceLevel, decimals=2),
   )
+  design = package.design
   lines = [
     f"## {translator.text('report.heading.reproducibility')}",
     "",
     _field(translator, "report.reproducibility.method", method),
+    # The method's name is an identifier, shown as recorded in every locale.
     _field(
-      translator, "report.reproducibility.seed",
-      translator.integer(package.design.randomizationSeed),
+      translator, "report.reproducibility.randomizationMethod", design.randomizationMethod.value
     ),
   ]
+  if design.randomizationSeed is not None:
+    lines.append(
+      _field(
+        translator, "report.reproducibility.seed", translator.integer(design.randomizationSeed)
+      )
+    )
   transformed = [
     f"{assessment.assessmentCode} = {assessment.transform.value}"
     for assessment in package.assessments
@@ -360,7 +379,9 @@ def _reproducibilitySection(
     lines.append(_field(translator, "report.reproducibility.transforms", ", ".join(transformed)))
   # The input hash is canonical, not display: it is the same in every locale.
   lines.append(
-    _field(translator, "report.reproducibility.inputHash", inputHash(package, observations))
+    _field(
+      translator, "report.reproducibility.inputHash", inputHash(package, layout, observations)
+    )
   )
   lines.append(
     "- "

@@ -94,7 +94,7 @@ def _buildParser() -> argparse.ArgumentParser:
   infoParser.add_argument("trialCode")
   infoParser.set_defaults(handler=_commandInfo)
 
-  randomizeParser = sub.add_parser("randomize", help="print the randomized layout for a trial")
+  randomizeParser = sub.add_parser("randomize", help="print the recorded layout of a trial")
   randomizeParser.add_argument("database")
   randomizeParser.add_argument("trialCode")
   randomizeParser.set_defaults(handler=_commandRandomize)
@@ -200,13 +200,20 @@ def _commandInfo(args) -> int:
     f"Design: {package.design.designType.value}, {package.design.replications} blocks, "
     f"{len(package.treatments)} treatments, {package.plotCount} plots"
   )
-  print(f"Randomization seed: {package.design.randomizationSeed}")
+  print(f"Layout: {_layoutOrigin(package.design)}")
   print("Assessments:")
   for assessment in package.assessments:
     print(f"  {_assessmentLine(assessment)}")
   print(f"Observations: {len(observations)}")
   print(f"Content hash: {workspace.contentHashFor(args.trialCode)}")
   return 0
+
+
+def _layoutOrigin(design) -> str:
+  """How the recorded layout came to be: the method and its seed, or 'imported'."""
+  if design.randomizationSeed is None:
+    return design.randomizationMethod.value
+  return f"{design.randomizationMethod.value}, seed {design.randomizationSeed}"
 
 
 def _assessmentLine(assessment) -> str:
@@ -236,7 +243,7 @@ def _commandRandomize(args) -> int:
   workspace = Workspace.open(args.database)
   package = workspace.loadPackage(args.trialCode)
   layout = workspace.layoutFor(args.trialCode)
-  print(f"Layout for '{package.trial.trialCode}' (seed {package.design.randomizationSeed}):")
+  print(f"Layout for '{package.trial.trialCode}' ({_layoutOrigin(package.design)}):")
   print("plot\tblock\tposition\ttreatment")
   for plot in sorted(layout.plots, key=lambda plot: plot.plotNumber):
     print(f"{plot.plotNumber}\t{plot.block}\t{plot.positionInBlock}\t{plot.treatmentCode}")

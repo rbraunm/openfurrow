@@ -8,10 +8,11 @@ doubles as a check that the tool reproduces a known result.
 Files:
 
 - `trial.json` -- the trial package: metadata, three varieties, the RCBD (six blocks,
-  seed 1), and one numeric assessment (grain yield).
+  randomized by method `sha256FisherYates1` from seed 1), and one numeric assessment
+  (grain yield).
 - `observations.csv` -- one yield value per plot, in long format
-  (`plotNumber, assessmentCode, value`). The plot numbers come from the randomized
-  layout for seed 1.
+  (`plotNumber, assessmentCode, value`). The plot numbers are those of the layout the
+  tool records when the package is added.
 
 ## Run it
 
@@ -56,7 +57,7 @@ The report ends with a reproducibility block. The **input hash** is
 environment-independent:
 
 ```
-- Input hash (SHA-256): 50fbfb3a9d27652346db28631b55ebdbee91204a003a7a2b88e77d4db4a94ded
+- Input hash (SHA-256): 8bb10a5236bb335aaf6e4ef6e1122c1c98f560f72227d5905de888e88250e725
 ```
 
 `verify` re-exports and re-imports the trial and confirms this same hash, and

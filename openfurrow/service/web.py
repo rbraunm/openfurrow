@@ -35,7 +35,7 @@ from markupsafe import Markup
 
 from openfurrow.config import OpenFurrowConfig, defaultConfig
 from openfurrow.i18n import MessageError, availableLocales, sourceLocale, translatorFor
-from openfurrow.schema import TrialPackage
+from openfurrow.schema import RandomizationMethod, TrialPackage
 from openfurrow.version import schemaVersion
 from openfurrow.workspace import ObservationImportError, StoreError, Workspace
 from pydantic import ValidationError
@@ -305,7 +305,9 @@ def _examplePackageJson() -> str:
       {"treatmentCode": "A", "name": "Program A", "product": "Fungicide A", "rate": 1.0, "rateUnit": "L/ha"},
       {"treatmentCode": "B", "name": "Program B", "product": "Fungicide B", "rate": 0.75, "rateUnit": "L/ha"},
     ],
-    "design": {"designType": "rcbd", "replications": 4, "randomizationSeed": 20250601},
+    "design": {"designType": "rcbd", "replications": 4,
+               "randomizationMethod": RandomizationMethod.sha256FisherYates1.value,
+               "randomizationSeed": 20250601},
     "assessments": [
       {"assessmentCode": "YIELD", "name": "Grain yield", "dataType": "numeric",
        "unit": "kg/ha", "minValue": 0},

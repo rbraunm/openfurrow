@@ -27,11 +27,11 @@ from openfurrow.config import OpenFurrowConfig, TLSSettings
 from openfurrow.service import ServiceError, createApp, serviceUrl, tlsContext
 
 _packageDict = {
-  "schemaVersion": "0.1.0",
+  "schemaVersion": "0.2.0",
   "trial": {"trialCode": "API-1", "title": "Service trial", "crop": "Barley",
             "season": "2025", "site": "Field A", "objective": "Compare treatments"},
   "treatments": [{"treatmentCode": code, "name": code} for code in ["A", "B", "C", "D"]],
-  "design": {"designType": "rcbd", "replications": 3, "randomizationSeed": 7},
+  "design": {"designType": "rcbd", "replications": 3, "randomizationMethod": "sha256FisherYates1", "randomizationSeed": 7},
   "assessments": [{"assessmentCode": "YIELD", "name": "Yield", "dataType": "numeric",
                    "unit": "kg/ha", "minValue": 0}],
 }
@@ -142,6 +142,24 @@ def testDocumentRoundTripOverHttp(client, workspace, tmp_path):
   imported = freshClient.post("/api/documents", data=exported.get_data())
   assert imported.status_code == 201
   assert imported.get_json()["contentHash"] == sourceHash
+
+
+def testDocumentThatIsNotJsonIsABadRequest(client):
+  response = client.post("/api/documents", data=b"plotNumber,assessmentCode,value\n101,YIELD,1\n")
+  assert response.status_code == 400
+  assert "not valid JSON" in response.get_json()["error"]
+
+
+def testDocumentWithAChangedLayoutIsABadRequest(client, workspace, tmp_path):
+  _populate(client, workspace, tmp_path)
+  document = client.get("/api/trials/API-1/document").get_json()
+  first, second = document["layout"][0], document["layout"][1]
+  first["treatmentCode"], second["treatmentCode"] = second["treatmentCode"], first["treatmentCode"]
+  freshPath = str(tmp_path / "fresh.db")
+  Workspace.create(freshPath)
+  response = createApp(freshPath).test_client().post("/api/documents", data=json.dumps(document))
+  assert response.status_code == 400
+  assert "is not the one method 'sha256FisherYates1' produces from seed 7" in response.get_json()["error"]
 
 
 def testReportLocaleIsDisplayOnly(client, workspace, tmp_path):

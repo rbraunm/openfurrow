@@ -18,6 +18,7 @@ from openfurrow.analysis.transforms import (
   checkTransformKind,
   compatibleTransforms,
 )
+from openfurrow.design import generateRcbdLayout
 from openfurrow.schema import (
   MeasurementKind,
   Transform,
@@ -134,11 +135,11 @@ def testCompatibilityMapExcludesNone():
 
 def _packageDict(assessment):
   return {
-    "schemaVersion": "0.1.0",
+    "schemaVersion": "0.2.0",
     "trial": {"trialCode": "T1", "title": "t", "crop": "Maize", "season": "2025",
               "site": "s", "objective": "o"},
     "treatments": [{"treatmentCode": "A", "name": "A"}, {"treatmentCode": "B", "name": "B"}],
-    "design": {"designType": "rcbd", "replications": 3, "randomizationSeed": 1},
+    "design": {"designType": "rcbd", "replications": 3, "randomizationMethod": "sha256FisherYates1", "randomizationSeed": 1},
     "assessments": [assessment],
   }
 
@@ -189,7 +190,7 @@ def _hashWith(**assessmentOverrides):
   assessment = {"assessmentCode": "Y", "name": "yield", "dataType": "numeric"}
   assessment.update(assessmentOverrides)
   package = TrialPackage.model_validate(_packageDict(assessment))
-  return contentHash(TrialDocument(package=package))
+  return contentHash(TrialDocument(package=package, layout=generateRcbdLayout(package).plots))
 
 
 def testDeclaringTransformMovesContentHash():

@@ -161,6 +161,14 @@
       "text": "التصميم",
       "status": "machineDraft"
     },
+    "report.design.layout": {
+      "text": "التخطيط",
+      "status": "machineDraft"
+    },
+    "report.design.layoutSupplied": {
+      "text": "مرفق مع التجربة، ولم يُوزَّع عشوائيًا هنا",
+      "status": "machineDraft"
+    },
     "report.design.plots": {
       "text": "القطع التجريبية",
       "status": "machineDraft"
@@ -303,6 +311,10 @@
     },
     "report.reproducibility.methodValue": {
       "text": "تحليل التباين لتصميم القطاعات الكاملة العشوائية؛ {test} (ألفا = {alpha})",
+      "status": "machineDraft"
+    },
+    "report.reproducibility.randomizationMethod": {
+      "text": "طريقة التوزيع العشوائي",
       "status": "machineDraft"
     },
     "report.reproducibility.seed": {
@@ -523,6 +535,10 @@
     },
     "web.trial.layoutIntro": {
       "text": "القطع كما تُزرع في الحقل، مجمعة حسب القطاع. وُزعت عشوائيًا من البذرة {seed}.",
+      "status": "machineDraft"
+    },
+    "web.trial.layoutIntroSupplied": {
+      "text": "القطع كما تُزرع في الحقل، مجمعة حسب القطاع. أُرفق هذا التخطيط مع التجربة.",
       "status": "machineDraft"
     },
     "web.trial.legendHeading": {

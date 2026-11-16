@@ -21,10 +21,10 @@ from openfurrow.schema.observation import Observation
 
 def buildResult(treatments, replications, cellValues, seed=1):
   package = TrialPackage.model_validate({
-    "schemaVersion": "0.1.0",
+    "schemaVersion": "0.2.0",
     "trial": {"trialCode": "SEP", "title": "sep", "crop": "x", "season": "x", "site": "x", "objective": "x"},
     "treatments": [{"treatmentCode": code, "name": code} for code in treatments],
-    "design": {"designType": "rcbd", "replications": replications, "randomizationSeed": seed},
+    "design": {"designType": "rcbd", "replications": replications, "randomizationMethod": "sha256FisherYates1", "randomizationSeed": seed},
     "assessments": [{"assessmentCode": "Y", "name": "y", "dataType": "numeric"}],
   })
   layout = generateRcbdLayout(package)

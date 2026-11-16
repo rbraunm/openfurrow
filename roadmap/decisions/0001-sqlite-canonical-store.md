@@ -37,17 +37,16 @@ interchange boundary; the ORM owns the store. DuckDB is noted as a possible futu
 ## Implementation
 
 The MVP implements a flat, trial-scoped subset of the relational model above:
-`trial` (metadata and design folded 1:1), `treatment`, `assessment`, and
-`observation`. The project/study hierarchy and the append-only audit log are
-deferred -- they are real parts of the eventual model but not needed to prove the
-reproducible loop. Three concrete decisions were made building it:
+`trial` (metadata and design folded 1:1), `treatment`, `assessment`, `plot` and
+`observation`, with a one-row table for the store's version. The project/study
+hierarchy and the append-only audit log are deferred -- they are real parts of the
+eventual model but not needed to prove the reproducible loop. Three concrete
+decisions were made building it:
 
-- **The layout is not stored.** It is a pure function of the package -- the seed,
-  the design, and the treatment order -- so per "derive, don't duplicate" it is
-  regenerated on demand. This also keeps the input hash (over package and
-  observations) a complete description: there is no separately-stored layout that
-  could disagree with the seed. Observations carry a `plotNumber`, which the
-  deterministic regeneration reproduces exactly.
+- **The layout is stored, one row per plot (decision 0015).** Which treatment stands
+  on which plot is a fact about the field, so it is recorded and covered by the input
+  hash. The trial row keeps how a generated layout was made, its method and its seed.
+  Observations carry the `plotNumber` of a recorded plot.
 - **Treatments and assessments carry an explicit `ordinal`.** Their order is
   significant -- the randomizer permutes treatments in package order, and the input
   hash preserves list order -- and SQL row order is not guaranteed, so the order is

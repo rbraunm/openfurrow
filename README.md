@@ -33,6 +33,11 @@ openfurrow export trials.db MY-TRIAL --json trial.json --csv obs.csv
 openfurrow verify trials.db MY-TRIAL             # round-trip reproducibility check
 ```
 
+A trial that already has its layout -- made by hand or in another tool, perhaps already
+in the ground -- comes in whole with `import-json`: a trial document whose package says
+`"randomizationMethod": "imported"` and whose `layout` lists each plot with its block,
+position and treatment. Its plot numbers and assignments are kept exactly as supplied.
+
 Other commands: `list`, `info` (design, transforms, and content hash), `delete`,
 `import-json` (import a trial document into the store), and `serve` (below). Analysis settings (significance level, mean-comparison test) come
 from a project config file passed with `--config`; the defaults are ARM's
@@ -69,9 +74,10 @@ in the test suite against the Yates oats published table and against statsmodels
 
 ## Reproducibility and ownership
 
-- A trial's **input hash** (over package and observations) makes every report
-  traceable to its exact inputs. The layout is regenerated from the recorded seed, so
-  it is never a separate source of truth.
+- A trial's **input hash** (over the package, the field layout and the observations)
+  makes every report traceable to its exact inputs. The layout -- which treatment stands
+  on which plot -- is recorded with the trial. One the tool generated can be regenerated
+  from its seed and checked; one made elsewhere is kept exactly as supplied.
 - The **store** is one SQLite file (via SQLAlchemy, schema portable to PostgreSQL for a
   future team mode). Numeric values are stored exactly, so hashes are stable.
 - **Export** to JSON (validated, deterministic, archival) or CSV (long format,
