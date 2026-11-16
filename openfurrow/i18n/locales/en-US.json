@@ -225,6 +225,10 @@
       "text": "Comparisons within the interaction (one factor at a single level of the other) need standard errors of their own and are not computed here.",
       "status": "source"
     },
+    "report.factorial.heading": {
+      "text": "Factorial analysis",
+      "status": "source"
+    },
     "report.splitPlot.assumptionsNotComputed": {
       "text": "Assumption checks are not computed for split-plot designs yet.",
       "status": "source"

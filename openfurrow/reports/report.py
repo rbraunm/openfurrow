@@ -33,6 +33,8 @@ import numpy
 from openfurrow.analysis import (
   AnalysisError,
   analyzeEfficacy,
+  analyzeFactorialRcbd,
+  separateFactorialMeans,
   analyzeHalves,
   analyzeRcbd,
   checkPairs,
@@ -679,6 +681,10 @@ def _assessmentSection(
     lines.append(f"- {translator.text('report.means.notSeparated')}")
   lines.append("")
 
+  if package.factors:
+    lines += _factorialSubsections(
+      assessment.assessmentCode, rating, package, layout, observations, significanceLevel, protected, translator,
+    )
   lines += _assumptionsSubsection(
     assessment.assessmentCode, package, layout, observations, significanceLevel, translator
   )
@@ -823,22 +829,44 @@ def _splitPlotSubsections(
       "report.value.percent", value=translator.number(result.subPlotCoefficientOfVariation, decimals=2))),
     "",
   ]
-  for factorCode, name in ((result.mainPlotFactor, mainName), (result.subPlotFactor, subName)):
-    separation = separateFactorMeans(result, factorCode, significanceLevel=significanceLevel, protected=protected)
-    row = next(row for row in result.table if row.source == ("mainPlot" if factorCode == result.mainPlotFactor else "subPlot"))
+  lines += _twoFactorMeans(
+    result, package, result.mainPlotFactor, result.subPlotFactor,
+    lambda factorCode: separateFactorMeans(result, factorCode, significanceLevel=significanceLevel, protected=protected),
+    lambda factorCode: next(
+      row for row in result.table if row.source == ("mainPlot" if factorCode == result.mainPlotFactor else "subPlot")
+    ),
+    unit, alpha, translator,
+  )
+  lines += [
+    translator.text("report.splitPlot.cellMeansNote"),
+    "",
+    f"### {translator.text('report.heading.assumptions')}",
+    "",
+    translator.text("report.splitPlot.assumptionsNotComputed"),
+    "",
+  ]
+  return lines
+
+
+def _twoFactorMeans(result, package, firstFactor, secondFactor, separate, rowFor, unit, alpha, translator) -> list[str]:
+  """Each factor's level means with their letters, then the table of the combination means."""
+  factors = {factor.factorCode: factor for factor in package.factors}
+  meanHeaderKey = (
+    "report.means.column.mean" if result.transform is Transform.none else "report.means.column.meanOriginalScale"
+  )
+  lines: list[str] = []
+  for factorCode in (firstFactor, secondFactor):
+    separation = separate(factorCode)
     significance = translator.text(
       "report.means.significant" if separation.factorSignificant else "report.means.notSignificant"
     )
-    meanHeaderKey = (
-      "report.means.column.mean" if result.transform is Transform.none else "report.means.column.meanOriginalScale"
-    )
     levelNames = {level.levelCode: level.name for level in factors[factorCode].levels}
     lines += [
-      f"### {translator.text('report.splitPlot.heading.factorMeans', factor=name)}",
+      f"### {translator.text('report.splitPlot.heading.factorMeans', factor=factors[factorCode].name)}",
       "",
       translator.text(
         "report.splitPlot.separation", method=translator.text(separation.methodKey), alpha=alpha,
-        significance=significance, probability=_probabilityStatement(row.pValue, translator),
+        significance=significance, probability=_probabilityStatement(rowFor(factorCode).pValue, translator),
       ),
       "",
       f"| {translator.text('report.splitPlot.column.level')} | {translator.text(meanHeaderKey, unit=unit)} "
@@ -855,35 +883,59 @@ def _splitPlotSubsections(
       "",
     ]
   cellMeans = {mean.treatmentCode: mean.mean for mean in result.treatmentMeans}
-  subLevels = factors[result.subPlotFactor].levels
+  secondLevels = factors[secondFactor].levels
   lines += [
-    f"### {translator.text('report.splitPlot.heading.cellMeans', main=mainName, sub=subName)}",
+    f"### {translator.text('report.splitPlot.heading.cellMeans', main=factors[firstFactor].name, sub=factors[secondFactor].name)}",
     "",
-    f"| {result.mainPlotFactor} | " + " | ".join(_cell(level.name) for level in subLevels) + " |",
-    "|---|" + "---:|" * len(subLevels),
+    f"| {firstFactor} | " + " | ".join(_cell(level.name) for level in secondLevels) + " |",
+    "|---|" + "---:|" * len(secondLevels),
   ]
   treatmentFor = {
-    (t.factorLevels[result.mainPlotFactor], t.factorLevels[result.subPlotFactor]): t.treatmentCode
-    for t in package.treatments
+    (t.factorLevels[firstFactor], t.factorLevels[secondFactor]): t.treatmentCode for t in package.treatments
   }
-  for mainLevel in factors[result.mainPlotFactor].levels:
+  for firstLevel in factors[firstFactor].levels:
     cells = (
       translator.number(
-        backTransformMean(result.transform, cellMeans[treatmentFor[(mainLevel.levelCode, subLevel.levelCode)]]),
+        backTransformMean(result.transform, cellMeans[treatmentFor[(firstLevel.levelCode, level.levelCode)]]),
         decimals=3,
       )
-      for subLevel in subLevels
+      for level in secondLevels
     )
-    lines.append(f"| {_cell(mainLevel.name)} | " + " | ".join(cells) + " |")
-  lines += [
-    "",
-    translator.text("report.splitPlot.cellMeansNote"),
-    "",
-    f"### {translator.text('report.heading.assumptions')}",
-    "",
-    translator.text("report.splitPlot.assumptionsNotComputed"),
-    "",
-  ]
+    lines.append(f"| {_cell(firstLevel.name)} | " + " | ".join(cells) + " |")
+  lines.append("")
+  return lines
+
+
+def _factorialSubsections(
+  assessmentCode, rating, package, layout, observations, significanceLevel, protected, translator: Translator,
+) -> list[str]:
+  """The treatment line of a two-factor RCBD split into its factors (decision 0025)."""
+  try:
+    result = analyzeFactorialRcbd(assessmentCode, package, layout, observations)
+  except AnalysisError as error:
+    return [translator.text("report.assessment.notAnalyzed", reason=str(error)), ""]
+  factors = {factor.factorCode: factor for factor in package.factors}
+  firstName, secondName = factors[result.firstFactor].name, factors[result.secondFactor].name
+  sourceNames = {
+    "block": translator.text("report.anova.source.block"),
+    "firstFactor": firstName,
+    "secondFactor": secondName,
+    "interaction": translator.text("report.splitPlot.source.interaction", main=firstName, sub=secondName),
+    "error": translator.text("report.anova.source.error"),
+    "total": translator.text("report.anova.source.total"),
+  }
+  unit = f" ({rating.unit})" if rating.unit else ""
+  alpha = translator.number(significanceLevel, decimals=2)
+  lines = [f"### {translator.text('report.factorial.heading')}", ""]
+  lines += _anovaTable(result.table, sourceNames, translator) + [""]
+  lines += _twoFactorMeans(
+    result, package, result.firstFactor, result.secondFactor,
+    lambda factorCode: separateFactorialMeans(result, factorCode, significanceLevel=significanceLevel, protected=protected),
+    lambda factorCode: next(
+      row for row in result.table if row.source == ("firstFactor" if factorCode == result.firstFactor else "secondFactor")
+    ),
+    unit, alpha, translator,
+  )
   return lines
 
 

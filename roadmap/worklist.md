@@ -6,7 +6,7 @@ Findings, defects, checks and owner calls that the plans do not carry.
 Status tags: `fix` (a defect to correct), `build` (work to add), `check` (a suspicion to
 measure), `owner` (the owner's call), `done`.
 
-**Counts.** fix 0, build 9, check 0, owner 4, done 44; 57 in all.
+**Counts.** fix 0, build 8, check 0, owner 4, done 45; 57 in all.
 
 ## Owner decisions
 
@@ -251,9 +251,10 @@ measure), `owner` (the owner's call), `done`.
   is in place. For that discussion: the file-based Field Book path exists today but needs
   an Android app and a file hand-off; decision 0014 plans the project's own apps; a link
   that just works points at a served, phone-ready web interface (decisions 0011, 0012).
-- **USR-10** `build` **Factorial RCBD.** Two or more factors in complete blocks, analysed
-  with main effects and interaction on one error. Factors are refused on an RCBD until
-  then (decision 0020).
+- **USR-10** `done` **Factorial RCBD.** Built as decision 0025 says: two factors on an RCBD,
+  their combinations the treatments, the factorial table (A, B, A x B on the one error) and
+  each factor's means separated, checked against Gomez and Gomez section 3.3 and
+  statsmodels. Three or more factors are still refused.
 - **USR-11** `build` **Comparisons inside a split plot's interaction.** One factor at a
   single level of the other needs its own standard error (Gomez and Gomez, chapter 5);
   the report says they are not computed.

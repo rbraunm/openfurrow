@@ -441,6 +441,10 @@
       "text": "ترجمة مسودة (آلية، لم تُراجع بعد): قد تكون الصياغة غير دقيقة. الأرقام والمعرفات وبصمة المحتوى غير متأثرة.",
       "status": "machineDraft"
     },
+    "report.factorial.heading": {
+      "text": "التحليل العاملي",
+      "status": "machineDraft"
+    },
     "report.field.crop": {
       "text": "المحصول",
       "status": "machineDraft"

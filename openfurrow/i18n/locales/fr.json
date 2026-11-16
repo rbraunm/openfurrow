@@ -441,6 +441,10 @@
       "text": "Traduction provisoire (générée automatiquement, non relue): la formulation peut être imprécise. Les nombres, les identifiants et l'empreinte du contenu ne sont pas affectés.",
       "status": "machineDraft"
     },
+    "report.factorial.heading": {
+      "text": "Analyse factorielle",
+      "status": "machineDraft"
+    },
     "report.field.crop": {
       "text": "Culture",
       "status": "machineDraft"

@@ -237,8 +237,6 @@ def separateFactorMeans(
   protected: bool = True,
 ) -> FactorSeparation:
   """Separate the level means of the main-plot or the subplot factor by Fisher's LSD."""
-  if not 0.0 < significanceLevel < 1.0:
-    raise AnalysisError(f"significance level must be in (0, 1), got {significanceLevel}")
   if factor == result.mainPlotFactor:
     means, source = result.mainPlotMeans, "mainPlot"
     errorMeanSquare, errorDf = result.mainPlotErrorMeanSquare, result.mainPlotErrorDegreesOfFreedom
@@ -250,12 +248,27 @@ def separateFactorMeans(
       f"'{factor}' is neither the main-plot factor '{result.mainPlotFactor}' "
       f"nor the subplot factor '{result.subPlotFactor}'"
     )
+  row = next(row for row in result.table if row.source == source)
+  return separateLevels(factor, means, errorMeanSquare, errorDf, row.pValue, significanceLevel, protected)
+
+
+def separateLevels(
+  factor: str,
+  means: list[LevelMean],
+  errorMeanSquare: float,
+  errorDf: int,
+  pValue: float | None,
+  significanceLevel: float,
+  protected: bool,
+) -> FactorSeparation:
+  """Fisher's LSD over the level means of one factor, on the error that factor is tested against."""
+  if not 0.0 < significanceLevel < 1.0:
+    raise AnalysisError(f"significance level must be in (0, 1), got {significanceLevel}")
   perLevel = means[0].observationCount
   leastSignificantDifference = (
     tCriticalValue(significanceLevel / 2.0, errorDf) * math.sqrt(2.0 * errorMeanSquare / perLevel)
   )
-  row = next(row for row in result.table if row.source == source)
-  significant = row.pValue is not None and row.pValue <= significanceLevel
+  significant = pValue is not None and pValue <= significanceLevel
   ordered = sorted(means, key=lambda mean: mean.mean, reverse=True)
   if protected and not significant:
     letters = ["a"] * len(ordered)

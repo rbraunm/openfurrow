@@ -184,9 +184,10 @@ def testSplitPlotMustNameBothFactors():
   assert "a split-plot design names its mainPlotFactor and its subPlotFactor" in rejected(data)
 
 
-def testFactorsOnAnRcbdRejected(validPackageDict):
+def testFactorsOnAnRcbdNeedTheirCombinationsAsTreatments(validPackageDict):
+  # Two factors on an RCBD are a factorial trial (decision 0025); its treatments must be the combinations.
   validPackageDict["factors"] = gomezPackageDict()["factors"]
-  assert "factors are only used by a split-plot design so far; a rcbd design has none" in rejected(validPackageDict)
+  assert "treatment 'T1' must state its level of each of ['N', 'V']" in rejected(validPackageDict)
 
 
 # ---- the layout ---------------------------------------------------------------

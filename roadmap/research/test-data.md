@@ -216,6 +216,21 @@ in kg/ha.
   The book's Error(a) is computed from rounded sums (exact 1,419,678.81, printed
   1,419,678), and its replication mean square is misprinted (541,228 for 541,288).
 
+### D8. gomez.factorial -- rice variety by nitrogen (factorial RCBD)
+
+**3 varieties x 5 nitrogen rates x 4 replications** in a randomized complete block design,
+grain yield in t/ha.
+
+- **Source:** Gomez & Gomez (1984), *Statistical Procedures for Agricultural Research*,
+  Table 3.3 (data), Table 3.4 and the steps after it (the factorial partition), section
+  3.3. Read from an openly posted scan of the book and transcribed.
+- **Role:** the known answer for the factorial RCBD.
+- **Status:** IN USE. Fixture `tests/fixtures/gomezFactorial.csv`, validated by
+  `tests/testFactorial.py` against the book and statsmodels.
+- **Confirmed on transcription:** the replication, variety and nitrogen totals, two cell
+  totals and the grand total (297.390) agree with the book. The book subtracts a rounded
+  correction factor and divides mean squares cut to three decimals; see decision 0025.
+
 ### D3. sweetpotato -- virus conditions (completely randomized)
 
 **4 virus conditions x 3 plots**, no blocks, harvested weight. The agricolae tutorial
@@ -277,6 +292,7 @@ confirmed as a pair of plot-level data and a matching published analysis.
 | missing-data variants         | RCBD + gap          | count           | incomplete (induced) | yes    |
 | beall.webworms                | factorial + subsamp | count           | complete, large      | future |
 | gomez.splitplot               | split-plot          | numeric         | complete, published  | yes    |
+| gomez.factorial               | factorial RCBD      | numeric         | complete, published  | yes    |
 | durban.splitplot              | split-plot          | numeric         | complete, large      | future |
 | fisher.barley                 | MET (g x e)         | numeric         | balanced across env  | future |
 

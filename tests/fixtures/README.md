@@ -85,3 +85,14 @@ in three replications, grain yield in kg/ha (`nitrogen, variety, replication, yi
   3.7; the ANOVA it is checked against is Table 3.10. Transcribed from the book; the
   transcription is checked against the book's printed replication, factor and cell
   totals.
+
+## gomezFactorial.csv
+
+A factorial trial of three rice varieties and five nitrogen rates in a randomized complete
+block design with four replications, grain yield in t/ha (`variety, nitrogen, replication,
+yield`).
+
+- Source: Gomez & Gomez (1984), Statistical Procedures for Agricultural Research, Table
+  3.3; the analysis it is checked against follows in section 3.3. Transcribed from the
+  book; the transcription is checked against the book's printed replication, factor, cell
+  and grand totals.

@@ -180,21 +180,26 @@ class TrialPackage(BaseModel):
 
   @model_validator(mode="after")
   def treatmentsAreTheFactorCombinations(self) -> TrialPackage:
-    """A split plot's treatments are every combination of its two factors, each once."""
+    """A two-factor trial's treatments are every combination of its factors, each once (decisions 0020, 0025)."""
     design = self.design
-    if design.designType is not DesignType.splitPlot:
-      if self.factors or any(treatment.factorLevels for treatment in self.treatments):
-        raise ValueError(
-          f"factors are only used by a split-plot design so far; a {design.designType.value} "
-          f"design has none"
-        )
-      return self
     codes = [factor.factorCode for factor in self.factors]
-    if sorted(codes) != sorted([design.mainPlotFactor, design.subPlotFactor]):
-      raise ValueError(
-        f"a split plot declares exactly its two factors {[design.mainPlotFactor, design.subPlotFactor]}, "
-        f"got {codes}"
-      )
+    if design.designType is DesignType.splitPlot:
+      if sorted(codes) != sorted([design.mainPlotFactor, design.subPlotFactor]):
+        raise ValueError(
+          f"a split plot declares exactly its two factors {[design.mainPlotFactor, design.subPlotFactor]}, "
+          f"got {codes}"
+        )
+      first, second = design.mainPlotFactor, design.subPlotFactor
+    elif not self.factors:
+      if any(treatment.factorLevels for treatment in self.treatments):
+        raise ValueError("a treatment states factor levels, but the trial declares no factors")
+      return self
+    elif len(codes) != 2:
+      raise ValueError(f"a factorial {design.designType.value} has two factors so far, got {codes}")
+    else:
+      first, second = codes
+    if len(set(codes)) != len(codes):
+      raise ValueError(f"factor codes used more than once: {codes}")
     levels = {factor.factorCode: [level.levelCode for level in factor.levels] for factor in self.factors}
     combinations = []
     for treatment in self.treatments:
@@ -207,13 +212,13 @@ class TrialPackage(BaseModel):
           raise ValueError(
             f"treatment '{treatment.treatmentCode}': '{levelCode}' is not a level of factor '{factorCode}'"
           )
-      combinations.append((treatment.factorLevels[design.mainPlotFactor], treatment.factorLevels[design.subPlotFactor]))
-    expected = [(main, sub) for main in levels[design.mainPlotFactor] for sub in levels[design.subPlotFactor]]
+      combinations.append((treatment.factorLevels[first], treatment.factorLevels[second]))
+    expected = [(one, two) for one in levels[first] for two in levels[second]]
     if sorted(combinations) != sorted(expected):
       repeated = sorted({combination for combination in combinations if combinations.count(combination) > 1})
       absent = sorted(set(expected) - set(combinations))
       raise ValueError(
-        f"a split plot's treatments are every combination of its factors once; "
+        f"the treatments of a two-factor trial are every combination of its factors once; "
         f"repeated {repeated}, absent {absent}"
       )
     return self

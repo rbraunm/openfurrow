@@ -441,6 +441,10 @@
       "text": "Traducción preliminar (generada automáticamente, sin revisión): la redacción puede ser imprecisa. Los números, los identificadores y el hash de contenido no se ven afectados.",
       "status": "machineDraft"
     },
+    "report.factorial.heading": {
+      "text": "Análisis factorial",
+      "status": "machineDraft"
+    },
     "report.field.crop": {
       "text": "Cultivo",
       "status": "machineDraft"

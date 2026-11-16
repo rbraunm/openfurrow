@@ -38,9 +38,12 @@ from openfurrow.analysis import (
   AnovaResult,
   Assumptions,
   FactorSeparation,
+  FactorialResult,
   MeanSeparation,
   SplitPlotResult,
+  analyzeFactorialRcbd as _analyzeFactorialRcbd,
   analyzeRcbd as _analyzeRcbd,
+  separateFactorialMeans as _separateFactorialMeans,
   analyzeSplitPlot as _analyzeSplitPlot,
   separateFactorMeans as _separateFactorMeans,
   assessAssumptions as _assessAssumptions,
@@ -229,11 +232,20 @@ class Workspace:
     significanceLevel: float = 0.05,
     protected: bool = True,
   ) -> FactorSeparation:
-    """Separate the level means of one factor of a split plot by Fisher's (Protected) LSD."""
+    """Separate the level means of one factor of a split plot or a two-factor RCBD by Fisher's (Protected) LSD."""
     result = self.analyze(trialCode, assessmentCode)
-    if not isinstance(result, SplitPlotResult):
-      raise AnalysisError(f"trial '{trialCode}' is not a split plot; it has no factors to separate")
-    return _separateFactorMeans(result, factor, significanceLevel=significanceLevel, protected=protected)
+    if isinstance(result, SplitPlotResult):
+      return _separateFactorMeans(result, factor, significanceLevel=significanceLevel, protected=protected)
+    package, layout, observations = self._loadContext(trialCode)
+    if not package.factors:
+      raise AnalysisError(f"trial '{trialCode}' has no factors to separate")
+    factorial = _analyzeFactorialRcbd(assessmentCode, package, layout, observations)
+    return _separateFactorialMeans(factorial, factor, significanceLevel=significanceLevel, protected=protected)
+
+  def analyzeFactorial(self, trialCode: str, assessmentCode: str) -> FactorialResult:
+    """The factorial ANOVA of a two-factor RCBD (decision 0025)."""
+    package, layout, observations = self._loadContext(trialCode)
+    return _analyzeFactorialRcbd(assessmentCode, package, layout, observations)
 
   def separateMeans(
     self,
