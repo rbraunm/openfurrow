@@ -21,6 +21,10 @@
         <a href="{{ url_for('web.index', locale=locale if locale != 'en-US' else none) }}">{{ t.text('web.nav.trials') }}</a>
         <a href="{{ url_for('web.places', locale=locale if locale != 'en-US' else none) }}">{{ t.text('web.nav.places') }}</a>
         <a class="nav-action" href="{{ url_for('web.trialForm', locale=locale if locale != 'en-US' else none) }}">{{ t.text('web.nav.addTrial') }}</a>
+        {% if signedIn %}
+        <a href="{{ url_for('web.account', locale=locale if locale != 'en-US' else none) }}" class="code">{{ signedIn.userName }}</a>
+        <form class="sign-out" method="post" action="{{ url_for('web.signOut') }}"><button class="button button-quiet" type="submit">{{ t.text('web.signOut') }}</button></form>
+        {% endif %}
         {% if locales | length > 1 %}
         <form class="locale-switch" method="get" action="">
           <label class="visually-hidden" for="locale">{{ t.text('web.locale.label') }}</label>

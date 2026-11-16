@@ -9,27 +9,17 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from openfurrow.settings import EffectiveSetting, SettingError, SettingScope, checkedValue, definitions, jsonValue
-from openfurrow.store.database import PlaceRow, SettingValueRow, StoreError, TrialRow
-from openfurrow.store.hierarchy import pathOf, placeRowFor
+from openfurrow.store.database import SettingValueRow
+from openfurrow.store.hierarchy import scopeChain, storedScope
 
 
-def storedScope(session: Session, scope: str) -> tuple[SettingScope, str]:
-  """A scope as written ('server', 'place:<path>', 'trial:<code>') and its key in the store."""
-  if scope == "server":
-    return SettingScope.server, "server"
-  kind, _, name = scope.partition(":")
-  if kind == "place" and name:
-    return SettingScope.place, f"place:{placeRowFor(session, name).placeID}"
-  if kind == "trial" and name:
-    if session.get(TrialRow, name) is None:
-      raise StoreError(f"trial '{name}' not found")
-    return SettingScope.trial, f"trial:{name}"
-  raise SettingError(f"'{scope}' is not a scope: 'server', 'place:<path>' or 'trial:<code>'")
+def _scopeKind(stored: str) -> SettingScope:
+  return SettingScope(stored.split(":", 1)[0])
 
 
 def setValue(session: Session, scope: str, key: str, value) -> None:
-  kind, stored = storedScope(session, scope)
-  text = json.dumps(jsonValue(key, checkedValue(key, value, kind)))
+  stored = storedScope(session, scope)
+  text = json.dumps(jsonValue(key, checkedValue(key, value, _scopeKind(stored))))
   row = session.get(SettingValueRow, (stored, key))
   if row is None:
     session.add(SettingValueRow(scope=stored, key=key, valueJSON=text))
@@ -39,7 +29,7 @@ def setValue(session: Session, scope: str, key: str, value) -> None:
 
 
 def clearValue(session: Session, scope: str, key: str) -> None:
-  _, stored = storedScope(session, scope)
+  stored = storedScope(session, scope)
   row = session.get(SettingValueRow, (stored, key))
   if row is None:
     raise SettingError(f"setting '{key}' has no value at {scope}")
@@ -47,26 +37,9 @@ def clearValue(session: Session, scope: str, key: str) -> None:
   session.flush()
 
 
-def _chain(session: Session, scope: str) -> list[tuple[str, str]]:
-  """The stored scopes a value is looked for in, nearest first, each with its source label."""
-  kind, stored = storedScope(session, scope)
-  chain = []
-  placeID = None
-  if kind is SettingScope.trial:
-    chain.append((stored, scope))
-    placeID = session.get(TrialRow, stored.split(":", 1)[1]).placeID
-  elif kind is SettingScope.place:
-    placeID = int(stored.split(":", 1)[1])
-  while placeID is not None:
-    chain.append((f"place:{placeID}", f"place:{pathOf(session, placeID)}"))
-    placeID = session.get(PlaceRow, placeID).parentID
-  chain.append(("server", "server"))
-  return chain
-
-
 def effectiveSettings(session: Session, scope: str) -> list[EffectiveSetting]:
   """Every setting's value at `scope`, and where it was set."""
-  chain = _chain(session, scope)
+  chain = scopeChain(session, scope)
   stored = {
     (row.scope, row.key): row.valueJSON
     for row in session.execute(

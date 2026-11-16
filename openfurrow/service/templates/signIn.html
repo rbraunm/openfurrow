@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}{{ t.text('web.signIn.heading') }} - {{ t.text('web.app.name') }}{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>{{ t.text('web.signIn.heading') }}</h1>
+</div>
+{% if problem %}
+<div class="error" role="alert">{{ problem }}</div>
+{% endif %}
+<form class="import-form" method="post" action="{{ url_for('web.signIn', next=next, locale=locale if locale != 'en-US' else none) }}">
+  <div class="field-row">
+    <label class="field-label" for="userName">{{ t.text('web.signIn.userName') }}</label>
+    <input type="text" id="userName" name="userName" dir="ltr" autocomplete="username" value="{{ userName }}" autofocus>
+  </div>
+  <div class="field-row">
+    <label class="field-label" for="password">{{ t.text('web.signIn.password') }}</label>
+    <input type="password" id="password" name="password" autocomplete="current-password">
+  </div>
+  <div class="form-actions"><button class="button" type="submit">{{ t.text('web.signIn.submit') }}</button></div>
+</form>
+{% endblock %}

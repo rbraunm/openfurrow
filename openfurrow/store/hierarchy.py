@@ -7,7 +7,19 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from openfurrow.schema.hierarchy import HierarchyLevel, Place, checkPlaceCode, splitPath
-from openfurrow.store.database import HierarchyLevelRow, PlaceRow, SettingValueRow, StoreError, TrialRow
+from openfurrow.store.database import (
+  HierarchyLevelRow,
+  NotFoundError,
+  PlaceRow,
+  RoleAssignmentRow,
+  SettingValueRow,
+  StoreError,
+  TrialRow,
+)
+
+
+class ScopeError(ValueError):
+  """A scope that is not written as one."""
 
 
 def loadLevels(session: Session) -> list[HierarchyLevel]:
@@ -54,7 +66,7 @@ def placeRowFor(session: Session, path: str) -> PlaceRow:
                              else PlaceRow.parentID == parentID)
     ).scalar_one_or_none()
     if row is None:
-      raise StoreError(f"no place '{'/'.join(walked)}'")
+      raise NotFoundError(f"no place '{'/'.join(walked)}'")
     parentID = row.placeID
   return row
 
@@ -109,6 +121,7 @@ def deletePlace(session: Session, path: str) -> None:
   if children or trials:
     raise StoreError(f"place '{path}' holds {children} places and {trials} trials; only an empty place is deleted")
   session.execute(SettingValueRow.__table__.delete().where(SettingValueRow.scope == f"place:{row.placeID}"))
+  session.execute(RoleAssignmentRow.__table__.delete().where(RoleAssignmentRow.scope == f"place:{row.placeID}"))
   session.delete(row)
   session.flush()
 
@@ -128,17 +141,55 @@ def trialPlaceID(session: Session, placePath: str | None) -> int | None:
   return row.placeID
 
 
+def storedScope(session: Session, scope: str) -> str:
+  """A scope as written ('server', 'place:<path>', 'trial:<code>') as the store keeps it."""
+  if scope == "server":
+    return "server"
+  kind, _, name = scope.partition(":")
+  if kind == "place" and name:
+    return f"place:{placeRowFor(session, name).placeID}"
+  if kind == "trial" and name:
+    if session.get(TrialRow, name) is None:
+      raise NotFoundError(f"trial '{name}' not found")
+    return f"trial:{name}"
+  raise ScopeError(f"'{scope}' is not a scope: 'server', 'place:<path>' or 'trial:<code>'")
+
+
+def writtenScope(session: Session, stored: str) -> str:
+  """A stored scope as written."""
+  if stored.startswith("place:"):
+    return f"place:{pathOf(session, int(stored.split(':', 1)[1]))}"
+  return stored
+
+
+def scopeChain(session: Session, scope: str) -> list[tuple[str, str]]:
+  """The stored scopes that hold for `scope`, nearest first, each with its written form."""
+  stored = storedScope(session, scope)
+  chain = []
+  placeID = None
+  if stored.startswith("trial:"):
+    chain.append((stored, scope))
+    placeID = session.get(TrialRow, stored.split(":", 1)[1]).placeID
+  elif stored.startswith("place:"):
+    placeID = int(stored.split(":", 1)[1])
+  while placeID is not None:
+    chain.append((f"place:{placeID}", f"place:{pathOf(session, placeID)}"))
+    placeID = session.get(PlaceRow, placeID).parentID
+  chain.append(("server", "server"))
+  return chain
+
+
 def trialPlace(session: Session, trialCode: str) -> str | None:
   trial = session.get(TrialRow, trialCode)
   if trial is None:
-    raise StoreError(f"trial '{trialCode}' not found")
+    raise NotFoundError(f"trial '{trialCode}' not found")
   return None if trial.placeID is None else pathOf(session, trial.placeID)
 
 
 def moveTrial(session: Session, trialCode: str, placePath: str | None) -> None:
   trial = session.get(TrialRow, trialCode)
   if trial is None:
-    raise StoreError(f"trial '{trialCode}' not found")
+    raise NotFoundError(f"trial '{trialCode}' not found")
   trial.placeID = trialPlaceID(session, placePath)
   session.flush()
 

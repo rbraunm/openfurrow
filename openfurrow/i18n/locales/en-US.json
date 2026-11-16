@@ -1589,6 +1589,82 @@
       "text": "The place was not added: {reason}",
       "status": "source"
     },
+    "web.signIn.heading": {
+      "text": "Sign in",
+      "status": "source"
+    },
+    "web.signIn.userName": {
+      "text": "User name",
+      "status": "source"
+    },
+    "web.signIn.password": {
+      "text": "Password",
+      "status": "source"
+    },
+    "web.signIn.submit": {
+      "text": "Sign in",
+      "status": "source"
+    },
+    "web.signIn.refused": {
+      "text": "Not signed in: {reason}",
+      "status": "source"
+    },
+    "web.signOut": {
+      "text": "Sign out",
+      "status": "source"
+    },
+    "web.account.heading": {
+      "text": "Your account",
+      "status": "source"
+    },
+    "web.account.languageHeading": {
+      "text": "Language",
+      "status": "source"
+    },
+    "web.account.noPreference": {
+      "text": "No preference",
+      "status": "source"
+    },
+    "web.account.save": {
+      "text": "Save",
+      "status": "source"
+    },
+    "web.account.passwordHeading": {
+      "text": "Password",
+      "status": "source"
+    },
+    "web.account.newPassword": {
+      "text": "New password (12 characters or more)",
+      "status": "source"
+    },
+    "web.account.passwordChanged": {
+      "text": "Your password is changed.",
+      "status": "source"
+    },
+    "web.account.tokenHeading": {
+      "text": "API tokens",
+      "status": "source"
+    },
+    "web.account.tokenIntro": {
+      "text": "A token lets a script act as you through the API (Authorization: Bearer <token>).",
+      "status": "source"
+    },
+    "web.account.tokenName": {
+      "text": "What the token is for",
+      "status": "source"
+    },
+    "web.account.issueToken": {
+      "text": "Issue a token",
+      "status": "source"
+    },
+    "web.account.tokenNeedsName": {
+      "text": "Say what the token is for.",
+      "status": "source"
+    },
+    "web.account.tokenShownOnce": {
+      "text": "Your new token, shown this once; copy it now:",
+      "status": "source"
+    },
     "web.trial.importData": {
       "text": "Import a file",
       "status": "source"

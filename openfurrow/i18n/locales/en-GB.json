@@ -1589,6 +1589,82 @@
       "text": "The place was not added: {reason}",
       "status": "humanApproved"
     },
+    "web.signIn.heading": {
+      "text": "Sign in",
+      "status": "humanApproved"
+    },
+    "web.signIn.userName": {
+      "text": "User name",
+      "status": "humanApproved"
+    },
+    "web.signIn.password": {
+      "text": "Password",
+      "status": "humanApproved"
+    },
+    "web.signIn.submit": {
+      "text": "Sign in",
+      "status": "humanApproved"
+    },
+    "web.signIn.refused": {
+      "text": "Not signed in: {reason}",
+      "status": "humanApproved"
+    },
+    "web.signOut": {
+      "text": "Sign out",
+      "status": "humanApproved"
+    },
+    "web.account.heading": {
+      "text": "Your account",
+      "status": "humanApproved"
+    },
+    "web.account.languageHeading": {
+      "text": "Language",
+      "status": "humanApproved"
+    },
+    "web.account.noPreference": {
+      "text": "No preference",
+      "status": "humanApproved"
+    },
+    "web.account.save": {
+      "text": "Save",
+      "status": "humanApproved"
+    },
+    "web.account.passwordHeading": {
+      "text": "Password",
+      "status": "humanApproved"
+    },
+    "web.account.newPassword": {
+      "text": "New password (12 characters or more)",
+      "status": "humanApproved"
+    },
+    "web.account.passwordChanged": {
+      "text": "Your password is changed.",
+      "status": "humanApproved"
+    },
+    "web.account.tokenHeading": {
+      "text": "API tokens",
+      "status": "humanApproved"
+    },
+    "web.account.tokenIntro": {
+      "text": "A token lets a script act as you through the API (Authorization: Bearer <token>).",
+      "status": "humanApproved"
+    },
+    "web.account.tokenName": {
+      "text": "What the token is for",
+      "status": "humanApproved"
+    },
+    "web.account.issueToken": {
+      "text": "Issue a token",
+      "status": "humanApproved"
+    },
+    "web.account.tokenNeedsName": {
+      "text": "Say what the token is for.",
+      "status": "humanApproved"
+    },
+    "web.account.tokenShownOnce": {
+      "text": "Your new token, shown this once; copy it now:",
+      "status": "humanApproved"
+    },
     "web.trial.importData": {
       "text": "Import a file",
       "status": "humanApproved"

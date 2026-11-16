@@ -18,6 +18,7 @@ from typing import Annotated, Any
 from pydantic import BaseModel, ConfigDict, Field, TypeAdapter, ValidationError
 
 from openfurrow.analysis.meanSeparation import MeanComparison
+from openfurrow.identity.model import SignInMode
 
 
 class SettingError(ValueError):
@@ -55,6 +56,10 @@ definitions: dict[str, SettingDefinition] = {
     ),
     SettingDefinition("analysis.meanComparison", TypeAdapter(MeanComparison), MeanComparison.protectedLSD, everyScope),
     SettingDefinition("analysis.missingPlots", TypeAdapter(MissingPlotPolicy), MissingPlotPolicy.refuse, everyScope),
+    SettingDefinition("identity.signInMode", TypeAdapter(SignInMode), SignInMode.open, frozenset({SettingScope.server})),
+    SettingDefinition(
+      "identity.sessionHours", TypeAdapter(Annotated[int, Field(ge=1, le=720)]), 12, frozenset({SettingScope.server}),
+    ),
   )
 }
 

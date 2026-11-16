@@ -1225,6 +1225,58 @@
       "text": "Lluvia",
       "status": "machineDraft"
     },
+    "web.account.heading": {
+      "text": "Su cuenta",
+      "status": "machineDraft"
+    },
+    "web.account.issueToken": {
+      "text": "Emitir un token",
+      "status": "machineDraft"
+    },
+    "web.account.languageHeading": {
+      "text": "Idioma",
+      "status": "machineDraft"
+    },
+    "web.account.newPassword": {
+      "text": "Nueva contraseña (12 caracteres o más)",
+      "status": "machineDraft"
+    },
+    "web.account.noPreference": {
+      "text": "Sin preferencia",
+      "status": "machineDraft"
+    },
+    "web.account.passwordChanged": {
+      "text": "Su contraseña se ha cambiado.",
+      "status": "machineDraft"
+    },
+    "web.account.passwordHeading": {
+      "text": "Contraseña",
+      "status": "machineDraft"
+    },
+    "web.account.save": {
+      "text": "Guardar",
+      "status": "machineDraft"
+    },
+    "web.account.tokenHeading": {
+      "text": "Tokens de API",
+      "status": "machineDraft"
+    },
+    "web.account.tokenIntro": {
+      "text": "Un token permite que un script actúe como usted a través de la API (Authorization: Bearer <token>).",
+      "status": "machineDraft"
+    },
+    "web.account.tokenName": {
+      "text": "Para qué es el token",
+      "status": "machineDraft"
+    },
+    "web.account.tokenNeedsName": {
+      "text": "Indique para qué es el token.",
+      "status": "machineDraft"
+    },
+    "web.account.tokenShownOnce": {
+      "text": "Su nuevo token, mostrado solo esta vez; cópielo ahora:",
+      "status": "machineDraft"
+    },
     "web.add.error": {
       "text": "No se pudo crear el ensayo: {reason}",
       "status": "machineDraft"
@@ -1823,6 +1875,30 @@
     },
     "web.report.print": {
       "text": "Imprimir",
+      "status": "machineDraft"
+    },
+    "web.signIn.heading": {
+      "text": "Iniciar sesión",
+      "status": "machineDraft"
+    },
+    "web.signIn.password": {
+      "text": "Contraseña",
+      "status": "machineDraft"
+    },
+    "web.signIn.refused": {
+      "text": "No se inició sesión: {reason}",
+      "status": "machineDraft"
+    },
+    "web.signIn.submit": {
+      "text": "Entrar",
+      "status": "machineDraft"
+    },
+    "web.signIn.userName": {
+      "text": "Nombre de usuario",
+      "status": "machineDraft"
+    },
+    "web.signOut": {
+      "text": "Cerrar sesión",
       "status": "machineDraft"
     },
     "web.trial.allPlots": {

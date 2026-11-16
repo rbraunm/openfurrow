@@ -12,9 +12,9 @@ response carrying the core's own message: an unknown trial is 404, a conflicting
 is 409, bad input is 400. Nothing is caught and turned into a cheerful empty result.
 The status mapping keys off the exception *type*, never the message text.
 
-Authentication is deliberately absent: the first target is a local single-user tool
-bound to loopback (decision 0005 defers the access model, and unit B5 is where it
-arrives). This app must not be exposed to a network without that work.
+Who a request acts as comes from the store's sign-in mode (decision 0036): everyone in
+the open mode, otherwise the account behind a bearer token. The facade checks every
+permission and writes every audit event, so the controllers stay free of both.
 
 JSON is serialized with the `json` module rather than `flask.jsonify`, per the house
 rule; pydantic models are dumped in JSON mode so enums and dates come out canonical.
@@ -34,9 +34,15 @@ from openfurrow.config import ImportProfile, OpenFurrowConfig, defaultConfig
 from openfurrow.i18n import MessageError, availableLocales, sourceLocale
 from openfurrow.interop.fieldbook import fieldBookImportProfile
 from openfurrow.schema import TrialPackage
+from openfurrow.identity.model import Actor
+from openfurrow.service.signIn import RequestWorkspace, installSignIn
 from openfurrow.service.web import createWebBlueprint
-from openfurrow.store import TrialExistsError, TrialNotFoundError
+from openfurrow.store import NotFoundError, TrialExistsError
+from openfurrow.store.hierarchy import ScopeError
+from openfurrow.settings import SettingError
 from openfurrow.workspace import (
+  IdentityError,
+  NotPermitted,
   AnalysisError,
   ExchangeError,
   ObservationImportError,
@@ -58,7 +64,9 @@ def createApp(databasePath: str, config: OpenFurrowConfig | None = None) -> Flas
   # Bound request bodies so an oversize upload is rejected with 413 before being read
   # into memory, rather than letting it exhaust memory on a self-hosted server.
   application.config["MAX_CONTENT_LENGTH"] = settings.service.maxUploadBytes
-  workspace = Workspace.open(databasePath)
+  base = Workspace.open(databasePath, Actor.operator("service"))
+  workspace = RequestWorkspace()
+  installSignIn(application, base, settings.service.tls.enabled)
 
   _registerErrorHandlers(application)
   _registerRoutes(application, workspace, settings)
@@ -92,9 +100,25 @@ def _error(message: str, status: int) -> Response:
 def _registerErrorHandlers(application: Flask) -> None:
   # Order matters only in that the specific store errors are registered alongside the
   # general one; Flask dispatches to the most specific handler for the raised type.
-  @application.errorhandler(TrialNotFoundError)
-  def notFound(error: TrialNotFoundError) -> Response:
+  @application.errorhandler(NotFoundError)
+  def notFound(error: NotFoundError) -> Response:
     return _error(str(error), 404)
+
+  @application.errorhandler(NotPermitted)
+  def notPermitted(error: NotPermitted) -> Response:
+    return _error(str(error), 403)
+
+  @application.errorhandler(IdentityError)
+  def identityFailure(error: IdentityError) -> Response:
+    return _error(str(error), 400)
+
+  @application.errorhandler(ScopeError)
+  def scopeFailure(error: ScopeError) -> Response:
+    return _error(str(error), 400)
+
+  @application.errorhandler(SettingError)
+  def settingFailure(error: SettingError) -> Response:
+    return _error(str(error), 400)
 
   @application.errorhandler(TrialExistsError)
   def conflict(error: TrialExistsError) -> Response:

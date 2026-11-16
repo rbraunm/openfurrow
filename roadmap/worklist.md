@@ -6,7 +6,7 @@ Findings, defects, checks and owner calls that the plans do not carry.
 Status tags: `fix` (a defect to correct), `build` (work to add), `check` (a suspicion to
 measure), `owner` (the owner's call), `done`.
 
-**Counts.** fix 0, build 8, check 0, owner 4, done 52; 64 in all.
+**Counts.** fix 0, build 8, check 0, owner 4, done 53; 65 in all.
 
 ## Owner decisions
 
@@ -204,8 +204,12 @@ measure), `owner` (the owner's call), `done`.
   (levels as data, places by path, every trial placed) and 0035 (settings by scope, the
   analysis and report following the trial's). Not yet: reshaping a populated hierarchy,
   settings in the web interface (with roles).
-- **GOV-2** `build` **Identity core, roles and audit** (F3 to F5): open mode, local
-  accounts, sessions, tokens, preferences; every route behind the permission boundary.
+- **GOV-2** `done` **Identity core, roles and audit.** Built as decisions 0036 (sign-in
+  modes, local accounts, tokens, preferences), 0037 (roles and permissions checked in the
+  facade) and 0038 (the audit log); tested on SQLite and PostgreSQL.
+- **GOV-6** `build` **Web pages for access and settings.** Accounts, groups, roles and their
+  assignments, and settings, are managed on the command line; the web needs pages for them,
+  and a refused permission there answers with the API's JSON rather than a page.
 - **GOV-3** `build` **The sign-in library**: OpenID Connect, SAML 2.0, LDAP, SCIM 2.0,
   standard library only, verification-only cryptography.
 - **GOV-4** `build` **Test fixtures and dataset**: every sign-in provider and both
@@ -323,8 +327,9 @@ measure), `owner` (the owner's call), `done`.
   with permissions behind it (`governance-plan.md`, F2 and F4).
 - **USR-8** `build` **What happened to a plot, and who changed a value.** A lost plot, a misapplied treatment or a
   difference between the plan and what was planted has no record. EPPO PP 1/181 asks for
-  deviations to be noted and reported (decision 0015, "Consequences"). Who changed a value
-  comes from sign-in and the audit log (`governance-plan.md`, F3 and F5).
+  deviations to be noted and reported (decision 0015, "Consequences"). Who changed a value,
+  and when, is now in the audit log (decision 0038); what happened to a plot is still to
+  build.
 
 ## Trial record (REC)
 

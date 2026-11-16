@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 """Store: the canonical SQLite system of record."""
 
-from openfurrow.store.database import StoreError, createDatabase, isDatabaseURL, storeVersion
+from openfurrow.store.database import NotFoundError, StoreError, createDatabase, isDatabaseURL, storeVersion
 from openfurrow.store.repository import (
   TrialExistsError,
   TrialNotFoundError,
@@ -19,6 +19,7 @@ from openfurrow.store.repository import (
 )
 
 __all__ = [
+  "NotFoundError",
   "StoreError",
   "TrialExistsError",
   "TrialNotFoundError",

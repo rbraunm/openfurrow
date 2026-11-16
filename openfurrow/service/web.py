@@ -34,7 +34,7 @@ import json
 import secrets
 
 import markdown as markdownLibrary
-from flask import Blueprint, Response, redirect, render_template, request, url_for
+from flask import Blueprint, Response, current_app, g, redirect, render_template, request, url_for
 from markupsafe import Markup
 
 from openfurrow.config import OpenFurrowConfig, defaultConfig
@@ -49,7 +49,8 @@ from openfurrow.service.trialForm import FormProblem, emptyForm, formFromRequest
 from openfurrow.schema import AssessmentDataType, Observation, RandomizationMethod, TrialPackage
 from openfurrow.schema.document import isOutOfRange
 from openfurrow.version import schemaVersion
-from openfurrow.workspace import ObservationImportError, StoreError, Workspace
+from openfurrow.service.signIn import sessionCookie
+from openfurrow.workspace import IdentityError, ObservationImportError, StoreError, Workspace
 from pydantic import ValidationError
 
 # Okabe-Ito, a colorblind-safe qualitative palette. Treatment colour is a *redundant*
@@ -74,8 +75,12 @@ def createWebBlueprint(workspace: Workspace, config: OpenFurrowConfig | None = N
 
   def _translator():
     # ?locale= is a display choice only. An unknown locale is a loud 400 via the
-    # MessageError handler, not a silent fall back to the source language.
-    return translatorFor(request.args.get("locale", sourceLocale))
+    # MessageError handler, not a silent fall back to the source language. Without one,
+    # a signed-in person's preferred language applies.
+    chosen = request.args.get("locale")
+    if chosen is None and g.signedIn is not None:
+      chosen = workspace.account().locale
+    return translatorFor(chosen or sourceLocale)
 
   def _localeContext(translator):
     # Shared template context: the translator, the current locale, its direction, and
@@ -85,6 +90,7 @@ def createWebBlueprint(workspace: Workspace, config: OpenFurrowConfig | None = N
       "locale": translator.locale,
       "direction": translator.direction,
       "locales": availableLocales(),
+      "signedIn": g.signedIn,
     }
 
   def _levelName(level, translator) -> str:
@@ -192,6 +198,67 @@ def createWebBlueprint(workspace: Workspace, config: OpenFurrowConfig | None = N
         "trialForm.html", typed=typed, error=str(error), **choices, **_localeContext(translator),
       ), status=400)
     return redirect(_localized(url_for("web.trial", trialCode=package.trial.trialCode), translator))
+
+  @blueprint.route("/signin", methods=["GET", "POST"])
+  def signIn() -> Response:
+    """Sign in with a user name and password (decision 0036)."""
+    translator = _translator()
+    target = request.args.get("next") or url_for("web.index")
+    if not target.startswith("/") or target.startswith("//"):
+      target = url_for("web.index")
+    context = {"problem": None, "userName": "", "next": target}
+    if request.method == "POST":
+      context["userName"] = request.form.get("userName", "")
+      try:
+        _, token = workspace.signIn(context["userName"], request.form.get("password", ""), "web")
+      except IdentityError as error:
+        context["problem"] = translator.text("web.signIn.refused", reason=str(error))
+        return Response(render_template("signIn.html", **context, **_localeContext(translator)), status=401)
+      response = redirect(target)
+      hours = {s.key: s.value for s in workspace.effectiveSettings("server")}["identity.sessionHours"]
+      response.set_cookie(sessionCookie, token, max_age=hours * 3600, httponly=True, samesite="Strict",
+                          secure=current_app.config["openfurrowSecureCookies"])
+      return response
+    return Response(render_template("signIn.html", **context, **_localeContext(translator)))
+
+  @blueprint.post("/signout")
+  def signOut() -> Response:
+    token = request.cookies.get(sessionCookie)
+    if token:
+      workspace.signOut(token)
+    response = redirect(url_for("web.signIn"))
+    response.delete_cookie(sessionCookie)
+    return response
+
+  @blueprint.route("/account", methods=["GET", "POST"])
+  def account() -> Response:
+    """The signed-in person's language, password and API tokens."""
+    translator = _translator()
+    me = workspace.account()
+    if me is None:
+      return redirect(url_for("web.index"))
+    context = {"problem": None, "notice": None, "newToken": None}
+    if request.method == "POST":
+      action = request.form.get("action")
+      try:
+        if action == "locale":
+          workspace.setPreferredLocale(me.userName, request.form.get("preferredLocale") or None)
+          return redirect(url_for("web.account"))
+        if action == "password":
+          workspace.setPassword(me.userName, request.form.get("newPassword", ""))
+          context["notice"] = translator.text("web.account.passwordChanged")
+        elif action == "token":
+          name = request.form.get("tokenName", "").strip()
+          if not name:
+            raise IdentityError(translator.text("web.account.tokenNeedsName"))
+          context["newToken"] = workspace.issueAPIToken(name, None)
+        else:
+          raise IdentityError(f"unknown action '{action}'")
+      except IdentityError as error:
+        context["problem"] = str(error)
+      me = workspace.account()
+    status = 400 if context["problem"] else 200
+    return Response(render_template("account.html", account=me, **context, **_localeContext(translator)), status=status)
 
   @blueprint.route("/places", methods=["GET", "POST"])
   def places() -> Response:

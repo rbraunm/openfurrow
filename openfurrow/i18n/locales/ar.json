@@ -1225,6 +1225,58 @@
       "text": "الأمطار",
       "status": "machineDraft"
     },
+    "web.account.heading": {
+      "text": "حسابك",
+      "status": "machineDraft"
+    },
+    "web.account.issueToken": {
+      "text": "إصدار رمز",
+      "status": "machineDraft"
+    },
+    "web.account.languageHeading": {
+      "text": "اللغة",
+      "status": "machineDraft"
+    },
+    "web.account.newPassword": {
+      "text": "كلمة مرور جديدة (12 حرفًا أو أكثر)",
+      "status": "machineDraft"
+    },
+    "web.account.noPreference": {
+      "text": "بلا تفضيل",
+      "status": "machineDraft"
+    },
+    "web.account.passwordChanged": {
+      "text": "تم تغيير كلمة المرور.",
+      "status": "machineDraft"
+    },
+    "web.account.passwordHeading": {
+      "text": "كلمة المرور",
+      "status": "machineDraft"
+    },
+    "web.account.save": {
+      "text": "حفظ",
+      "status": "machineDraft"
+    },
+    "web.account.tokenHeading": {
+      "text": "رموز الواجهة البرمجية",
+      "status": "machineDraft"
+    },
+    "web.account.tokenIntro": {
+      "text": "يتيح الرمز لبرنامج نصي أن يعمل باسمك عبر الواجهة البرمجية (Authorization: Bearer <token>).",
+      "status": "machineDraft"
+    },
+    "web.account.tokenName": {
+      "text": "الغرض من الرمز",
+      "status": "machineDraft"
+    },
+    "web.account.tokenNeedsName": {
+      "text": "اذكر الغرض من الرمز.",
+      "status": "machineDraft"
+    },
+    "web.account.tokenShownOnce": {
+      "text": "رمزك الجديد، يُعرض هذه المرة فقط؛ انسخه الآن:",
+      "status": "machineDraft"
+    },
     "web.add.error": {
       "text": "تعذر إنشاء التجربة: {reason}",
       "status": "machineDraft"
@@ -1823,6 +1875,30 @@
     },
     "web.report.print": {
       "text": "طباعة",
+      "status": "machineDraft"
+    },
+    "web.signIn.heading": {
+      "text": "تسجيل الدخول",
+      "status": "machineDraft"
+    },
+    "web.signIn.password": {
+      "text": "كلمة المرور",
+      "status": "machineDraft"
+    },
+    "web.signIn.refused": {
+      "text": "لم يتم الدخول: {reason}",
+      "status": "machineDraft"
+    },
+    "web.signIn.submit": {
+      "text": "دخول",
+      "status": "machineDraft"
+    },
+    "web.signIn.userName": {
+      "text": "اسم المستخدم",
+      "status": "machineDraft"
+    },
+    "web.signOut": {
+      "text": "تسجيل الخروج",
       "status": "machineDraft"
     },
     "web.trial.allPlots": {

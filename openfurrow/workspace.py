@@ -8,10 +8,16 @@ never by importing store, analysis, exchange, or design internals directly. This
 exactly one caller-facing shape, so a surface can never drift from the core or
 re-implement part of it.
 
-A `Workspace` wraps one SQLite database (one system of record holding many trials)
-and exposes the trial loop as methods: add a designed package, list and load
-trials, read the layout, import observations, analyze, separate means, assess
-assumptions, build the report, exchange portable files, hash, verify, and delete.
+A `Workspace` wraps one store (one system of record holding many trials) and exposes
+the trial loop as methods: add a designed package, list and load trials, read the
+layout, import observations, analyze, separate means, assess assumptions, build the
+report, exchange portable files, hash, verify, and delete.
+
+Every Workspace acts as someone (decisions 0036 to 0038). Each method checks that its
+actor holds the permission it needs where it acts, and each change writes an audit event
+in its own transaction. The command line and the library act as the store's operator,
+and the open mode as everyone; both hold every permission. The service gives each request
+a Workspace acting as the signed-in account (`actingAs`).
 
 Lifetime: a Workspace holds the SQLAlchemy engine and opens a fresh session per
 method call. The engine is the poolable, reusable resource (a long-running service
@@ -28,7 +34,9 @@ validated `TrialPackage`, and the surface reads the JSON.
 
 from __future__ import annotations
 
+import datetime
 import tempfile
+from contextlib import contextmanager
 from pathlib import Path
 
 from pydantic import BaseModel, ConfigDict
@@ -90,8 +98,41 @@ from openfurrow.schema import (
   contentHash as _contentHash,
 )
 from openfurrow.schema.document import checkObservationValues as _checkObservationValues
+from openfurrow.identity.model import (
+  Account,
+  Actor,
+  ActorKind,
+  Group,
+  IdentityError,
+  Permission,
+  RoleAssignment,
+  RoleDefinition,
+  SignInMode,
+)
 from openfurrow.schema.hierarchy import HierarchyLevel, Place
 from openfurrow.settings import EffectiveSetting
+from openfurrow.store.audit import AuditEvent, events as _auditEvents, record as _record
+from openfurrow.store.identity import (
+  actorForToken as _actorForToken,
+  assignRole as _assignRole,
+  createAccount as _createAccount,
+  createGroup as _createGroup,
+  defineRole as _defineRole,
+  deleteRole as _deleteRole,
+  issueToken as _issueToken,
+  listAccounts as _listAccounts,
+  listAssignments as _listAssignments,
+  listGroups as _listGroups,
+  permissionsAt as _permissionsAt,
+  revokeToken as _revokeToken,
+  roles as _roles,
+  scopesWithAssignments as _scopesWithAssignments,
+  setActive as _setActive,
+  setLocale as _setLocale,
+  setMembership as _setMembership,
+  setPassword as _setPassword,
+  signIn as _signIn,
+)
 from openfurrow.store.hierarchy import (
   addPlace as _addPlace,
   deletePlace as _deletePlace,
@@ -108,6 +149,7 @@ from openfurrow.store.settingValues import (
   setValue as _setValue,
 )
 from openfurrow.store import (
+  NotFoundError,
   StoreError,
   createDatabase as _createDatabase,
   isDatabaseURL as _isDatabaseURL,
@@ -130,6 +172,9 @@ __all__ = [
   "AnalysisError",
   "ExchangeError",
   "MessageError",
+  "IdentityError",
+  "NotFoundError",
+  "NotPermitted",
   "ObservationImportError",
   "RoundTripCheck",
   "StoreError",
@@ -137,6 +182,17 @@ __all__ = [
   "availableLocales",
   "sourceLocale",
 ]
+
+
+def _jsonSetting(setting: EffectiveSetting | None) -> dict | None:
+  from openfurrow.settings import jsonValue
+  if setting is None:
+    return None
+  return {"value": jsonValue(setting.key, setting.value), "source": setting.source}
+
+
+class NotPermitted(PermissionError):
+  """The actor does not hold the permission an operation needs where it acts; not bad input, so no form catches it."""
 
 
 class RoundTripCheck(BaseModel):
@@ -162,22 +218,59 @@ class Workspace:
   `postgresql+pg8000://` URL.
   """
 
-  def __init__(self, engine) -> None:
-    # Prefer the create/open classmethods; __init__ takes an already-open engine
-    # so tests and future surfaces can inject one if needed.
+  def __init__(self, engine, actor: Actor | None = None) -> None:
+    # Code that holds the store's engine is its operator; a surface that serves people
+    # gives each of them their own Workspace through actingAs.
     self._engine = engine
+    self.actor = actor if actor is not None else Actor.operator("library")
 
   @classmethod
-  def create(cls, location: str) -> "Workspace":
+  def create(cls, location: str, actor: Actor | None = None) -> "Workspace":
     """Create (or open) the store at `location` and ensure its schema."""
-    return cls(_createDatabase(location))
+    return cls(_createDatabase(location), actor)
 
   @classmethod
-  def open(cls, location: str) -> "Workspace":
+  def open(cls, location: str, actor: Actor | None = None) -> "Workspace":
     """Open an existing store; raise if the file does not exist or the database holds none."""
     if not _isDatabaseURL(location) and not Path(location).exists():
       raise StoreError(f"database '{location}' does not exist; create it first")
-    return cls(_createDatabase(location, create=False))
+    return cls(_createDatabase(location, create=False), actor)
+
+  def actingAs(self, actor: Actor) -> "Workspace":
+    """The same store, acting as `actor`."""
+    return Workspace(self._engine, actor)
+
+  # ---- permissions and audit (decisions 0037, 0038) -----------------------
+
+  def _require(self, session, permission: Permission, scope: str) -> None:
+    held = _permissionsAt(session, self.actor, scope)
+    if permission in held:
+      return
+    if Permission.view not in held and scope != "server":
+      kind, _, name = scope.partition(":")
+      raise NotFoundError(f"{kind} '{name}' not found")
+    raise NotPermitted(f"{self.actor.label} may not {permission.value} at {scope}")
+
+  @contextmanager
+  def _acting(self, permission: Permission, scope: str):
+    with _sessionScope(self._engine) as session:
+      self._require(session, permission, scope)
+      yield session
+
+  def _audit(self, session, action: str, scope: str, detail: dict) -> None:
+    _record(session, self.actor, action, scope, detail)
+
+  def permissionsAt(self, scope: str) -> frozenset[Permission]:
+    """What this workspace's actor may do at a scope."""
+    with _sessionScope(self._engine) as session:
+      return _permissionsAt(session, self.actor, scope)
+
+  def auditEvents(self, scope: str = "server", limit: int = 200) -> list[AuditEvent]:
+    """The latest audit events at a scope and inside it, newest first."""
+    with self._acting(Permission.viewAudit, scope):
+      pass
+    with _sessionScope(self._engine) as session:
+      return _auditEvents(session, None if scope == "server" else scope, limit)
 
   # ---- trial management ---------------------------------------------------
 
@@ -195,28 +288,35 @@ class Workspace:
         f"trial document, which carries the plots"
       )
     layout = _generateLayout(package)
-    with _sessionScope(self._engine) as session:
+    scope = "server" if place is None else f"place:{place}"
+    with self._acting(Permission.manageTrials, scope) as session:
       _savePackage(session, package, layout.plots, layout.checkPlots, place)
+      self._audit(session, "trial.add", f"trial:{package.trial.trialCode}", {"place": place})
 
   def listTrials(self) -> list[tuple[str, str]]:
-    """Every trial in the store as (trialCode, title) pairs."""
+    """The trials the actor may view, as (trialCode, title) pairs."""
     with _sessionScope(self._engine) as session:
-      return _listTrials(session)
+      return [
+        (code, title) for code, title in _listTrials(session)
+        if Permission.view in _permissionsAt(session, self.actor, f"trial:{code}")
+      ]
 
   def loadPackage(self, trialCode: str) -> TrialPackage:
     """The trial package for `trialCode`; raises if the trial is unknown."""
-    with _sessionScope(self._engine) as session:
+    with self._acting(Permission.view, f"trial:{trialCode}") as session:
       return _loadPackage(session, trialCode)
 
   def loadObservations(self, trialCode: str) -> list[Observation]:
     """The stored observations for `trialCode` (empty if none imported yet)."""
-    with _sessionScope(self._engine) as session:
+    with self._acting(Permission.view, f"trial:{trialCode}") as session:
       return _loadObservations(session, trialCode)
 
   def deleteTrial(self, trialCode: str) -> None:
     """Delete a trial and all its observations."""
-    with _sessionScope(self._engine) as session:
+    with self._acting(Permission.manageTrials, f"trial:{trialCode}") as session:
+      place = _trialPlace(session, trialCode)
       _deleteTrial(session, trialCode)
+      self._audit(session, "trial.delete", f"trial:{trialCode}", {"place": place})
 
   # ---- hierarchy (decision 0034) ------------------------------------------
 
@@ -227,63 +327,242 @@ class Workspace:
 
   def setHierarchyLevels(self, levels: list[HierarchyLevel]) -> None:
     """Replace the levels; only while the store holds no places and no trials."""
-    with _sessionScope(self._engine) as session:
+    with self._acting(Permission.manageStructure, "server") as session:
       _replaceLevels(session, levels)
+      self._audit(session, "levels.set", "server", {"levels": [level.levelCode for level in levels]})
 
   def addPlace(self, parent: str | None, code: str, name: str) -> Place:
     """A new place inside `parent` (None for the first level)."""
-    with _sessionScope(self._engine) as session:
-      return _addPlace(session, parent, code, name)
+    with self._acting(Permission.manageStructure, "server" if parent is None else f"place:{parent}") as session:
+      place = _addPlace(session, parent, code, name)
+      self._audit(session, "place.add", f"place:{place.path}", {"name": place.name})
+      return place
 
   def places(self) -> list[Place]:
+    """The places the actor may see: where it holds view, and the places above those."""
     with _sessionScope(self._engine) as session:
-      return _listPlaces(session)
+      every = _listPlaces(session)
+      if self.actor.holdsEverything:
+        return every
+      visible = {place.path for place in every if Permission.view in _permissionsAt(session, self.actor, f"place:{place.path}")}
+      for scope in _scopesWithAssignments(session, self.actor):
+        if scope.startswith("trial:"):
+          path = _trialPlace(session, scope.split(":", 1)[1])
+        elif scope.startswith("place:"):
+          path = scope.split(":", 1)[1]
+        else:
+          continue
+        while path:
+          visible.add(path)
+          path = path.rpartition("/")[0]
+      return [place for place in every if place.path in visible]
 
   def deletePlace(self, path: str) -> None:
     """Delete a place that holds no places and no trials."""
-    with _sessionScope(self._engine) as session:
+    with self._acting(Permission.manageStructure, f"place:{path}") as session:
       _deletePlace(session, path)
+      self._audit(session, "place.delete", f"place:{path}", {})
 
   def placeOf(self, trialCode: str) -> str | None:
-    with _sessionScope(self._engine) as session:
+    with self._acting(Permission.view, f"trial:{trialCode}") as session:
       return _trialPlace(session, trialCode)
 
   def moveTrial(self, trialCode: str, place: str | None) -> None:
     """Put a trial in another place; the trial and its content hash are unchanged."""
-    with _sessionScope(self._engine) as session:
+    with self._acting(Permission.manageTrials, f"trial:{trialCode}") as session:
+      self._require(session, Permission.manageTrials, "server" if place is None else f"place:{place}")
+      before = _trialPlace(session, trialCode)
       _moveTrial(session, trialCode, place)
+      self._audit(session, "trial.move", f"trial:{trialCode}", {"before": before, "after": place})
 
   def trialsIn(self, place: str) -> list[tuple[str, str]]:
-    """The trials anywhere inside a place, as (trialCode, title)."""
+    """The trials the actor may view anywhere inside a place, as (trialCode, title)."""
     with _sessionScope(self._engine) as session:
-      return _trialsIn(session, place)
+      return [
+        (code, title) for code, title in _trialsIn(session, place)
+        if Permission.view in _permissionsAt(session, self.actor, f"trial:{code}")
+      ]
 
   # ---- settings (decision 0035) -------------------------------------------
 
   def setSetting(self, scope: str, key: str, value) -> None:
     """Set a setting at 'server', 'place:<path>' or 'trial:<code>'."""
-    with _sessionScope(self._engine) as session:
+    with self._acting(Permission.changeSettings, scope) as session:
+      before = {setting.key: setting for setting in _effectiveSettings(session, scope)}.get(key)
       _setValue(session, scope, key, value)
+      after = {setting.key: setting for setting in _effectiveSettings(session, scope)}[key]
+      if key == "identity.signInMode" and after.value is SignInMode.accounts:
+        self._requireAnAdministrator(session)
+      self._audit(session, "setting.set", scope, {"key": key, "before": _jsonSetting(before), "after": _jsonSetting(after)})
 
   def clearSetting(self, scope: str, key: str) -> None:
-    with _sessionScope(self._engine) as session:
+    with self._acting(Permission.changeSettings, scope) as session:
       _clearValue(session, scope, key)
+      after = {setting.key: setting for setting in _effectiveSettings(session, scope)}[key]
+      if key == "identity.signInMode" and after.value is SignInMode.accounts:
+        self._requireAnAdministrator(session)
+      self._audit(session, "setting.clear", scope, {"key": key, "after": _jsonSetting(after)})
 
   def effectiveSettings(self, scope: str) -> list[EffectiveSetting]:
     """Every setting's value at a scope, and where it was set."""
-    with _sessionScope(self._engine) as session:
+    with self._acting(Permission.view, scope) if scope != "server" else _sessionScope(self._engine) as session:
       return _effectiveSettings(session, scope)
+
+  def signInMode(self) -> SignInMode:
+    """How the service knows who acts: everyone (open) or signed-in accounts."""
+    with _sessionScope(self._engine) as session:
+      return {s.key: s.value for s in _effectiveSettings(session, "server")}["identity.signInMode"]
+
+  def _requireAnAdministrator(self, session) -> None:
+    administrators = [
+      assignment for assignment in _listAssignments(session)
+      if assignment.roleCode == "administrator" and assignment.scope == "server" and assignment.userName is not None
+    ]
+    active = {account.userName for account in _listAccounts(session) if account.active}
+    if not any(assignment.userName in active for assignment in administrators):
+      raise IdentityError(
+        "sign-in by accounts needs an active account that is administrator at the server first; "
+        "otherwise nobody could sign in to manage the store"
+      )
 
   def _analysisSettings(self, trialCode: str) -> tuple[float, MeanComparison, list[EffectiveSetting]]:
     effective = self.effectiveSettings(f"trial:{trialCode}")
     values = {setting.key: setting.value for setting in effective}
     return values["analysis.significanceLevel"], values["analysis.meanComparison"], effective
 
+
+  # ---- accounts, groups and roles (decisions 0036, 0037) -------------------
+
+  def createAccount(self, userName: str, displayName: str, email: str | None = None, password: str | None = None) -> Account:
+    with self._acting(Permission.manageAccess, "server") as session:
+      account = _createAccount(session, userName, displayName, email, password)
+      self._audit(session, "account.create", "server", {"userName": account.userName})
+      return account
+
+  def accounts(self) -> list[Account]:
+    with self._acting(Permission.manageAccess, "server") as session:
+      return _listAccounts(session)
+
+  def _selfOrManager(self, session, userName: str) -> None:
+    if self.actor.kind is ActorKind.account and self.actor.userName == userName.strip().lower():
+      return
+    self._require(session, Permission.manageAccess, "server")
+
+  def setPassword(self, userName: str, password: str) -> None:
+    """A person sets their own password; an access manager sets anyone's."""
+    with _sessionScope(self._engine) as session:
+      self._selfOrManager(session, userName)
+      _setPassword(session, userName, password)
+      self._audit(session, "account.password", "server", {"userName": userName})
+
+  def setAccountActive(self, userName: str, active: bool) -> None:
+    """Deactivating an account ends its sessions and tokens."""
+    with self._acting(Permission.manageAccess, "server") as session:
+      _setActive(session, userName, active)
+      self._audit(session, "account.active", "server", {"userName": userName, "active": active})
+
+  def setPreferredLocale(self, userName: str, locale: str | None) -> None:
+    from openfurrow.i18n import availableLocales
+    if locale is not None and locale not in availableLocales():
+      raise IdentityError(f"'{locale}' is not one of the locales {availableLocales()}")
+    with _sessionScope(self._engine) as session:
+      self._selfOrManager(session, userName)
+      _setLocale(session, userName, locale)
+
+  def createGroup(self, name: str) -> Group:
+    with self._acting(Permission.manageAccess, "server") as session:
+      group = _createGroup(session, name)
+      self._audit(session, "group.create", "server", {"group": group.name})
+      return group
+
+  def setMembership(self, groupName: str, userName: str, member: bool) -> None:
+    with self._acting(Permission.manageAccess, "server") as session:
+      _setMembership(session, groupName, userName, member)
+      self._audit(session, "group.member", "server", {"group": groupName, "userName": userName, "member": member})
+
+  def groups(self) -> list[Group]:
+    with self._acting(Permission.manageAccess, "server") as session:
+      return _listGroups(session)
+
+  def defineRole(self, role: RoleDefinition) -> None:
+    with self._acting(Permission.manageAccess, "server") as session:
+      _defineRole(session, role)
+      self._audit(session, "role.define", "server", {"role": role.roleCode, "permissions": sorted(p.value for p in role.permissions)})
+
+  def deleteRole(self, roleCode: str) -> None:
+    with self._acting(Permission.manageAccess, "server") as session:
+      _deleteRole(session, roleCode)
+      self._audit(session, "role.delete", "server", {"role": roleCode})
+
+  def roles(self) -> dict[str, RoleDefinition]:
+    with _sessionScope(self._engine) as session:
+      return _roles(session)
+
+  def assignRole(self, assignment: RoleAssignment) -> None:
+    """Give a role at a scope; an access manager there may give it."""
+    with self._acting(Permission.manageAccess, assignment.scope) as session:
+      _assignRole(session, assignment)
+      self._audit(session, "role.assign", assignment.scope, assignment.model_dump(exclude_none=True))
+
+  def unassignRole(self, assignment: RoleAssignment) -> None:
+    with self._acting(Permission.manageAccess, assignment.scope) as session:
+      _assignRole(session, assignment, given=False)
+      self._audit(session, "role.unassign", assignment.scope, assignment.model_dump(exclude_none=True))
+
+  def assignments(self) -> list[RoleAssignment]:
+    with self._acting(Permission.manageAccess, "server") as session:
+      return _listAssignments(session)
+
+  # ---- signing in (decision 0036) -----------------------------------------
+
+  def signIn(self, userName: str, password: str, surface: str) -> tuple[Account, str]:
+    """Check a user name and password; return the account and a new session token."""
+    with _sessionScope(self._engine) as session:
+      hours = {s.key: s.value for s in _effectiveSettings(session, "server")}["identity.sessionHours"]
+      try:
+        account = _signIn(session, userName, password)
+      except IdentityError:
+        _record(session, Actor.everyone(surface), "signIn.refused", "server", {"userName": userName.strip().lower()})
+        session.commit()
+        raise
+      token = _issueToken(session, account.userName, "session", datetime.timedelta(hours=hours), None)
+      _record(session, Actor(kind=ActorKind.account, accountID=account.accountID, userName=account.userName, surface=surface),
+              "signIn", "server", {})
+      return account, token
+
+  def actorForSession(self, token: str, surface: str) -> Actor:
+    with _sessionScope(self._engine) as session:
+      return _actorForToken(session, token, "session", surface)
+
+  def actorForAPIToken(self, token: str, surface: str) -> Actor:
+    with _sessionScope(self._engine) as session:
+      return _actorForToken(session, token, "api", surface)
+
+  def issueAPIToken(self, name: str, days: int | None) -> str:
+    """A token for this workspace's own account, to use from scripts; shown once."""
+    if self.actor.kind is not ActorKind.account:
+      raise IdentityError("an API token belongs to an account; sign in first")
+    with _sessionScope(self._engine) as session:
+      token = _issueToken(session, self.actor.userName, "api", None if days is None else datetime.timedelta(days=days), name)
+      self._audit(session, "token.issue", "server", {"name": name, "days": days})
+      return token
+
+  def signOut(self, token: str) -> None:
+    with _sessionScope(self._engine) as session:
+      _revokeToken(session, token)
+
+  def account(self) -> Account | None:
+    """The signed-in account this workspace acts as, if any."""
+    if self.actor.kind is not ActorKind.account:
+      return None
+    with _sessionScope(self._engine) as session:
+      return next(a for a in _listAccounts(session) if a.accountID == self.actor.accountID)
+
   # ---- layout -------------------------------------------------------------
 
   def layoutFor(self, trialCode: str) -> TrialLayout:
     """The trial's recorded layout."""
-    with _sessionScope(self._engine) as session:
+    with self._acting(Permission.view, f"trial:{trialCode}") as session:
       return self._layoutIn(session, _loadPackage(session, trialCode))
 
   # ---- observations -------------------------------------------------------
@@ -317,7 +596,7 @@ class Workspace:
     adds values and never replaces stored ones: a plot and assessment the trial already
     holds a value for refuses the whole file.
     """
-    with _sessionScope(self._engine) as session:
+    with self._acting(Permission.importValues, f"trial:{trialCode}") as session:
       package = _loadPackage(session, trialCode)
       layout = self._layoutIn(session, package)
       result = _importTable(table, package, layout, importProfile)
@@ -333,6 +612,10 @@ class Workspace:
           f"them on the entry page"
         )
       _saveObservations(session, trialCode, result.observations)
+      self._audit(session, "values.import", f"trial:{trialCode}", {
+        "file": table.fileName, "sheet": table.sheetName, "values": len(result.observations),
+        "assessments": sorted({o.assessmentCode for o in result.observations}),
+      })
     return result
 
   def countImported(self, trialCode: str, result: ImportResult) -> list[AssessmentCount]:
@@ -436,9 +719,10 @@ class Workspace:
   def addDocument(self, document: TrialDocument, place: str | None) -> str:
     """Store a validated trial document (its package, plots, checks and values) in `place`; return its trialCode."""
     trialCode = document.package.trial.trialCode
-    with _sessionScope(self._engine) as session:
+    with self._acting(Permission.manageTrials, "server" if place is None else f"place:{place}") as session:
       _savePackage(session, document.package, document.layout, document.checkPlots, place)
       _saveObservations(session, trialCode, document.observations)
+      self._audit(session, "trial.add", f"trial:{trialCode}", {"place": place, "values": len(document.observations)})
     return trialCode
 
   def verifyRoundTrip(self, trialCode: str) -> RoundTripCheck:
@@ -471,7 +755,7 @@ class Workspace:
     and fits its rating; a value outside the limits must be confirmed. Nothing is saved
     unless all of them pass.
     """
-    with _sessionScope(self._engine) as session:
+    with self._acting(Permission.enterValues, f"trial:{trialCode}") as session:
       package = _loadPackage(session, trialCode)
       layout = self._layoutIn(session, package)
       package.assessmentFor(assessmentCode)
@@ -483,7 +767,18 @@ class Workspace:
         _checkObservationValues(package, observations)
       except ValueError as error:
         raise ObservationImportError(str(error)) from error
+      stored = {
+        (o.plotNumber, o.subsample): o.value for o in _loadObservations(session, trialCode)
+        if o.assessmentCode == assessmentCode
+      }
+      entered = {(o.plotNumber, o.subsample): o.value for o in observations}
+      changes = [
+        {"plot": plot, "subsample": subsample, "before": stored.get((plot, subsample)), "after": entered.get((plot, subsample))}
+        for plot, subsample in sorted(set(stored) | set(entered), key=lambda key: (key[0], key[1] or 0))
+        if stored.get((plot, subsample)) != entered.get((plot, subsample))
+      ]
       _replaceAssessmentObservations(session, trialCode, assessmentCode, observations)
+      self._audit(session, "values.record", f"trial:{trialCode}", {"assessment": assessmentCode, "changes": changes})
 
   def importWeather(self, trialCode: str, csvPath: str) -> int:
     """Replace the trial's weather log with the days a CSV lists; return how many (REC-13).
@@ -491,12 +786,13 @@ class Workspace:
     The trial with its new log is validated as a whole before anything is saved.
     """
     records = _readWeatherCsv(csvPath)
-    with _sessionScope(self._engine) as session:
+    with self._acting(Permission.editRecord, f"trial:{trialCode}") as session:
       package = _loadPackage(session, trialCode)
       data = package.model_dump(mode="json")
       data["weather"] = [record.model_dump(mode="json") for record in records]
       TrialPackage.model_validate(data)
       _replaceWeather(session, trialCode, records)
+      self._audit(session, "weather.import", f"trial:{trialCode}", {"file": Path(csvPath).name, "days": len(records)})
     return len(records)
 
   def importFieldBook(self, trialCode: str, databaseCsvPath: str) -> ImportResult:
@@ -517,7 +813,7 @@ class Workspace:
 
   def _loadContext(self, trialCode: str) -> tuple[TrialPackage, TrialLayout, list[Observation]]:
     """Load the package, the layout and the observations in one session."""
-    with _sessionScope(self._engine) as session:
+    with self._acting(Permission.view, f"trial:{trialCode}") as session:
       package = _loadPackage(session, trialCode)
       layout = self._layoutIn(session, package)
       observations = _loadObservations(session, trialCode)

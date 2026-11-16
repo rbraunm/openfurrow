@@ -28,11 +28,14 @@ from openfurrow.config import defaultConfig, loadConfig
 from openfurrow.schema import AssessmentDataType, TrialPackage
 from openfurrow.schema.hierarchy import HierarchyLevel
 from openfurrow.settings import SettingError
+from openfurrow.store.hierarchy import ScopeError
+from openfurrow.identity import Actor, IdentityError, Permission, RoleAssignment, RoleDefinition
 from openfurrow.importers.weatherCsv import WeatherFileError
 from openfurrow.workspace import (
   AnalysisError,
   ExchangeError,
   MessageError,
+  NotPermitted,
   ObservationImportError,
   StoreError,
   Workspace,
@@ -54,7 +57,8 @@ def main(argv: list[str] | None = None) -> int:
     return handler(args)
   except (
     StoreError, ExchangeError, ObservationImportError, AnalysisError, MessageError,
-    ValidationError, OSError, json.JSONDecodeError, WeatherFileError, SettingError,
+    ValidationError, OSError, json.JSONDecodeError, WeatherFileError, SettingError, ScopeError, IdentityError,
+    NotPermitted,
   ) as error:
     print(f"error: {error}", file=sys.stderr)
     return 1
@@ -195,6 +199,75 @@ def _buildParser() -> argparse.ArgumentParser:
   deleteParser.add_argument("trialCode")
   deleteParser.set_defaults(handler=_commandDelete)
 
+  accountParser = sub.add_parser("account", help="add, list, activate or deactivate accounts")
+  accountSub = accountParser.add_subparsers(dest="accountCommand", required=True)
+  accountAdd = accountSub.add_parser("add", help="add an account; its password is read from standard input")
+  accountAdd.add_argument("database")
+  accountAdd.add_argument("userName")
+  accountAdd.add_argument("displayName")
+  accountAdd.add_argument("--email")
+  accountAdd.add_argument("--no-password", dest="noPassword", action="store_true",
+                          help="an account that signs in through an identity provider only")
+  accountAdd.set_defaults(handler=_commandAccountAdd)
+  accountPassword = accountSub.add_parser("password", help="set an account's password, read from standard input")
+  accountPassword.add_argument("database")
+  accountPassword.add_argument("userName")
+  accountPassword.set_defaults(handler=_commandAccountPassword)
+  accountList = accountSub.add_parser("list", help="list the accounts")
+  accountList.add_argument("database")
+  accountList.set_defaults(handler=_commandAccountList)
+  for name, active in (("activate", True), ("deactivate", False)):
+    toggle = accountSub.add_parser(name, help=f"{name} an account")
+    toggle.add_argument("database")
+    toggle.add_argument("userName")
+    toggle.set_defaults(handler=_commandAccountActive, active=active)
+
+  groupParser = sub.add_parser("group", help="add groups and their members")
+  groupSub = groupParser.add_subparsers(dest="groupCommand", required=True)
+  groupAdd = groupSub.add_parser("add", help="add a group")
+  groupAdd.add_argument("database")
+  groupAdd.add_argument("name")
+  groupAdd.set_defaults(handler=_commandGroupAdd)
+  groupMember = groupSub.add_parser("member", help="put an account in a group, or take it out with --remove")
+  groupMember.add_argument("database")
+  groupMember.add_argument("group")
+  groupMember.add_argument("userName")
+  groupMember.add_argument("--remove", action="store_true")
+  groupMember.set_defaults(handler=_commandGroupMember)
+  groupList = groupSub.add_parser("list", help="list the groups and their members")
+  groupList.add_argument("database")
+  groupList.set_defaults(handler=_commandGroupList)
+
+  roleParser = sub.add_parser("role", help="define roles and give them at a scope")
+  roleSub = roleParser.add_subparsers(dest="roleCommand", required=True)
+  roleList = roleSub.add_parser("list", help="the roles and their permissions")
+  roleList.add_argument("database")
+  roleList.set_defaults(handler=_commandRoleList)
+  roleDefine = roleSub.add_parser("define", help="define or redefine a custom role")
+  roleDefine.add_argument("database")
+  roleDefine.add_argument("roleCode")
+  roleDefine.add_argument("name")
+  roleDefine.add_argument("permissions", nargs="+")
+  roleDefine.set_defaults(handler=_commandRoleDefine)
+  for name, given in (("assign", True), ("unassign", False)):
+    assign = roleSub.add_parser(name, help=f"{name} a role to an account or a group at a scope")
+    assign.add_argument("database")
+    assign.add_argument("roleCode")
+    assign.add_argument("scope", help="'server', 'place:<path>' or 'trial:<code>'")
+    who = assign.add_mutually_exclusive_group(required=True)
+    who.add_argument("--user", dest="userName")
+    who.add_argument("--group", dest="groupName")
+    assign.set_defaults(handler=_commandRoleAssign, given=given)
+  roleAssignments = roleSub.add_parser("assignments", help="every role given, to whom and where")
+  roleAssignments.add_argument("database")
+  roleAssignments.set_defaults(handler=_commandRoleAssignments)
+
+  auditParser = sub.add_parser("audit", help="the latest changes, who made them and from where")
+  auditParser.add_argument("database")
+  auditParser.add_argument("--scope", default="server", help="'server' (everything), 'place:<path>' or 'trial:<code>'")
+  auditParser.add_argument("--limit", type=int, default=50)
+  auditParser.set_defaults(handler=_commandAudit)
+
   serveParser = sub.add_parser("serve", help="run the HTTP service over a trial database")
   serveParser.add_argument("database")
   serveParser.add_argument("--config", help="path to a project config file (see examples/openfurrow.yaml)")
@@ -220,14 +293,14 @@ def _configFor(args) -> "object":
 # ---- commands -------------------------------------------------------------
 
 def _commandInit(args) -> int:
-  Workspace.create(args.database)
+  Workspace.create(args.database, Actor.operator("cli"))
   print(f"Initialized database at {args.database}")
   return 0
 
 
 def _commandAdd(args) -> int:
   package = _readPackage(args.package)
-  workspace = Workspace.create(args.database)
+  workspace = Workspace.create(args.database, Actor.operator("cli"))
   workspace.addPackage(package, args.place)
   print(
     f"Added trial '{package.trial.trialCode}' "
@@ -238,7 +311,7 @@ def _commandAdd(args) -> int:
 
 
 def _commandLevels(args) -> int:
-  workspace = Workspace.open(args.database)
+  workspace = Workspace.open(args.database, Actor.operator("cli"))
   if args.set is not None:
     levels = []
     for entry in args.set:
@@ -253,13 +326,13 @@ def _commandLevels(args) -> int:
 
 def _commandPlaceAdd(args) -> int:
   parent, _, code = args.path.rpartition("/")
-  place = Workspace.open(args.database).addPlace(parent or None, code, args.name)
+  place = Workspace.open(args.database, Actor.operator("cli")).addPlace(parent or None, code, args.name)
   print(f"Added {place.levelCode} '{place.path}'")
   return 0
 
 
 def _commandPlaceList(args) -> int:
-  places = Workspace.open(args.database).places()
+  places = Workspace.open(args.database, Actor.operator("cli")).places()
   if not places:
     print("(no places)")
   for place in places:
@@ -268,13 +341,13 @@ def _commandPlaceList(args) -> int:
 
 
 def _commandPlaceDelete(args) -> int:
-  Workspace.open(args.database).deletePlace(args.path)
+  Workspace.open(args.database, Actor.operator("cli")).deletePlace(args.path)
   print(f"Deleted place '{args.path}'")
   return 0
 
 
 def _commandMove(args) -> int:
-  Workspace.open(args.database).moveTrial(args.trialCode, args.place)
+  Workspace.open(args.database, Actor.operator("cli")).moveTrial(args.trialCode, args.place)
   print(f"Moved trial '{args.trialCode}' to '{args.place}'")
   return 0
 
@@ -288,25 +361,114 @@ def _settingValue(text: str):
 
 def _commandSettingShow(args) -> int:
   from openfurrow.settings import jsonValue
-  for setting in Workspace.open(args.database).effectiveSettings(args.scope):
+  for setting in Workspace.open(args.database, Actor.operator("cli")).effectiveSettings(args.scope):
     print(f"{setting.key}\t{json.dumps(jsonValue(setting.key, setting.value))}\t{setting.source}")
   return 0
 
 
 def _commandSettingSet(args) -> int:
-  Workspace.open(args.database).setSetting(args.scope, args.key, _settingValue(args.value))
+  Workspace.open(args.database, Actor.operator("cli")).setSetting(args.scope, args.key, _settingValue(args.value))
   print(f"Set {args.key} at {args.scope}")
   return 0
 
 
 def _commandSettingClear(args) -> int:
-  Workspace.open(args.database).clearSetting(args.scope, args.key)
+  Workspace.open(args.database, Actor.operator("cli")).clearSetting(args.scope, args.key)
   print(f"Cleared {args.key} at {args.scope}")
   return 0
 
 
+def _operator(database: str) -> Workspace:
+  return Workspace.open(database, Actor.operator("cli"))
+
+
+def _passwordFromInput() -> str:
+  password = sys.stdin.readline().rstrip("\r\n")
+  if not password:
+    raise IdentityError("no password on standard input")
+  return password
+
+
+def _commandAccountAdd(args) -> int:
+  password = None if args.noPassword else _passwordFromInput()
+  account = _operator(args.database).createAccount(args.userName, args.displayName, args.email, password)
+  print(f"Added account '{account.userName}'")
+  return 0
+
+
+def _commandAccountPassword(args) -> int:
+  _operator(args.database).setPassword(args.userName, _passwordFromInput())
+  print(f"Set the password of '{args.userName}'")
+  return 0
+
+
+def _commandAccountList(args) -> int:
+  for account in _operator(args.database).accounts():
+    print(f"{account.userName}\t{account.displayName}\t{'active' if account.active else 'inactive'}")
+  return 0
+
+
+def _commandAccountActive(args) -> int:
+  _operator(args.database).setAccountActive(args.userName, args.active)
+  print(f"{'Activated' if args.active else 'Deactivated'} '{args.userName}'")
+  return 0
+
+
+def _commandGroupAdd(args) -> int:
+  _operator(args.database).createGroup(args.name)
+  print(f"Added group '{args.name}'")
+  return 0
+
+
+def _commandGroupMember(args) -> int:
+  _operator(args.database).setMembership(args.group, args.userName, not args.remove)
+  print(f"{'Removed' if args.remove else 'Added'} '{args.userName}' {'from' if args.remove else 'to'} '{args.group}'")
+  return 0
+
+
+def _commandGroupList(args) -> int:
+  for group in _operator(args.database).groups():
+    print(f"{group.name}\t{', '.join(group.members)}")
+  return 0
+
+
+def _commandRoleList(args) -> int:
+  for code, role in sorted(_operator(args.database).roles().items()):
+    print(f"{code}\t{'built in' if role.builtIn else role.name}\t{' '.join(sorted(p.value for p in role.permissions))}")
+  return 0
+
+
+def _commandRoleDefine(args) -> int:
+  role = RoleDefinition(roleCode=args.roleCode, name=args.name, permissions=frozenset(Permission(p) for p in args.permissions))
+  _operator(args.database).defineRole(role)
+  print(f"Defined role '{args.roleCode}'")
+  return 0
+
+
+def _commandRoleAssign(args) -> int:
+  assignment = RoleAssignment(roleCode=args.roleCode, scope=args.scope, userName=args.userName, groupName=args.groupName)
+  workspace = _operator(args.database)
+  (workspace.assignRole if args.given else workspace.unassignRole)(assignment)
+  print(f"{'Gave' if args.given else 'Took back'} '{args.roleCode}' at {args.scope}")
+  return 0
+
+
+def _commandRoleAssignments(args) -> int:
+  for assignment in _operator(args.database).assignments():
+    who = f"user {assignment.userName}" if assignment.userName else f"group {assignment.groupName}"
+    print(f"{assignment.roleCode}\t{assignment.scope}\t{who}")
+  return 0
+
+
+def _commandAudit(args) -> int:
+  for event in _operator(args.database).auditEvents(args.scope, args.limit):
+    who = event.actorName or event.actorKind
+    print(f"{event.at}\t{who}\t{event.surface}\t{event.action}\t{event.scope}\t{json.dumps(event.detail, sort_keys=True)}")
+  return 0
+
+
 def _commandList(args) -> int:
-  trials = Workspace.open(args.database).listTrials()
+  trials = Workspace.open(args.database, Actor.operator("cli")).listTrials()
   if not trials:
     print("(no trials)")
   for trialCode, title in trials:
@@ -315,7 +477,7 @@ def _commandList(args) -> int:
 
 
 def _commandInfo(args) -> int:
-  workspace = Workspace.open(args.database)
+  workspace = Workspace.open(args.database, Actor.operator("cli"))
   package = workspace.loadPackage(args.trialCode)
   observations = workspace.loadObservations(args.trialCode)
   trial = package.trial
@@ -432,7 +594,7 @@ def _assessmentLine(package, assessment) -> str:
 
 
 def _commandRandomize(args) -> int:
-  workspace = Workspace.open(args.database)
+  workspace = Workspace.open(args.database, Actor.operator("cli"))
   package = workspace.loadPackage(args.trialCode)
   layout = workspace.layoutFor(args.trialCode)
   print(f"Layout for '{package.trial.trialCode}' ({_layoutOrigin(package.design)}):")
@@ -443,7 +605,7 @@ def _commandRandomize(args) -> int:
 
 
 def _commandImport(args) -> int:
-  workspace = Workspace.open(args.database)
+  workspace = Workspace.open(args.database, Actor.operator("cli"))
   config = _configFor(args)
   result = workspace.importObservations(args.trialCode, args.csv, config.importProfile)
   print(f"Imported {len(result.observations)} observations for '{args.trialCode}'")
@@ -453,7 +615,7 @@ def _commandImport(args) -> int:
 
 
 def _commandReport(args) -> int:
-  workspace = Workspace.open(args.database)
+  workspace = Workspace.open(args.database, Actor.operator("cli"))
   report = workspace.buildReport(args.trialCode, locale=args.locale)
   if args.output:
     Path(args.output).write_text(report, encoding="utf-8", newline="\n")
@@ -467,7 +629,7 @@ def _commandExport(args) -> int:
   if not args.jsonPath and not args.csvPath:
     print("error: specify --json and/or --csv", file=sys.stderr)
     return 2
-  workspace = Workspace.open(args.database)
+  workspace = Workspace.open(args.database, Actor.operator("cli"))
   if args.jsonPath:
     workspace.exportDocument(args.trialCode, args.jsonPath)
     print(f"Wrote {args.jsonPath}")
@@ -478,13 +640,13 @@ def _commandExport(args) -> int:
 
 
 def _commandImportWeather(args) -> int:
-  count = Workspace.open(args.database).importWeather(args.trialCode, args.csv)
+  count = Workspace.open(args.database, Actor.operator("cli")).importWeather(args.trialCode, args.csv)
   print(f"Replaced the weather log of '{args.trialCode}' with {count} days")
   return 0
 
 
 def _commandImportJson(args) -> int:
-  workspace = Workspace.create(args.database)
+  workspace = Workspace.create(args.database, Actor.operator("cli"))
   trialCode = workspace.importDocument(args.jsonFile, args.place)
   count = len(workspace.loadObservations(trialCode))
   print(f"Imported trial '{trialCode}' with {count} observations")
@@ -492,7 +654,7 @@ def _commandImportJson(args) -> int:
 
 
 def _commandVerify(args) -> int:
-  workspace = Workspace.open(args.database)
+  workspace = Workspace.open(args.database, Actor.operator("cli"))
   check = workspace.verifyRoundTrip(args.trialCode)
   if check.matches:
     print(f"PASS reproducibility check for '{args.trialCode}'")
@@ -505,7 +667,7 @@ def _commandVerify(args) -> int:
 
 
 def _commandDelete(args) -> int:
-  Workspace.open(args.database).deleteTrial(args.trialCode)
+  Workspace.open(args.database, Actor.operator("cli")).deleteTrial(args.trialCode)
   print(f"Deleted trial '{args.trialCode}'")
   return 0
 

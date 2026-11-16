@@ -266,6 +266,7 @@ textarea {
 .import-map fieldset { border: 1px solid var(--line); padding: 0.6rem 0.9rem; margin-block: 1rem; max-width: 48rem; }
 .import-map fieldset label { display: block; margin-block: 0.25rem; }
 .field-row { margin-block: 0.6rem; }
+.sign-out { display: inline; margin: 0; }
 .table-scroll { overflow-x: auto; max-width: 100%; }
 .import-preview { max-width: none; width: auto; }
 .import-preview td, .import-preview th { white-space: nowrap; }

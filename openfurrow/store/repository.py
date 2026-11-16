@@ -27,11 +27,13 @@ from openfurrow.store.database import (
   RatingRow,
   ObservationRow,
   SettingValueRow,
+  RoleAssignmentRow,
   PlotRow,
   PlantingRow,
   PlotDimensionsRow,
   SiteRow,
   SoilRow,
+  NotFoundError,
   StoreError,
   TargetRow,
   TreatmentLineRow,
@@ -77,7 +79,7 @@ from openfurrow.schema.trialPackage import (
 )
 
 
-class TrialNotFoundError(StoreError):
+class TrialNotFoundError(NotFoundError):
   """The named trial is not in the store.
 
   A distinct type because callers need to tell "you asked for something that is not
@@ -668,6 +670,7 @@ def deleteTrial(session: Session, trialCode: str) -> None:
   if trial is None:
     raise TrialNotFoundError(f"trial '{trialCode}' not found")
   session.execute(SettingValueRow.__table__.delete().where(SettingValueRow.scope == f"trial:{trialCode}"))
+  session.execute(RoleAssignmentRow.__table__.delete().where(RoleAssignmentRow.scope == f"trial:{trialCode}"))
   session.delete(trial)
   session.flush()
 

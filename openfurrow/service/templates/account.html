@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}{{ t.text('web.account.heading') }} - {{ t.text('web.app.name') }}{% endblock %}
+{% block content %}
+{% set localeArgument = locale if locale != 'en-US' else none %}
+<div class="page-head">
+  <h1>{{ t.text('web.account.heading') }}</h1>
+  <p class="code trial-code">{{ account.userName }}</p>
+</div>
+{% if problem %}<div class="error" role="alert">{{ problem }}</div>{% endif %}
+{% if notice %}<div class="notice" role="status">{{ notice }}</div>{% endif %}
+{% if newToken %}
+<div class="notice" role="status">{{ t.text('web.account.tokenShownOnce') }} <code class="code">{{ newToken }}</code></div>
+{% endif %}
+
+<section aria-label="{{ t.text('web.account.languageHeading') }}">
+  <h2>{{ t.text('web.account.languageHeading') }}</h2>
+  <form class="import-form" method="post" action="{{ url_for('web.account', locale=localeArgument) }}">
+    <input type="hidden" name="action" value="locale">
+    <select name="preferredLocale" aria-label="{{ t.text('web.account.languageHeading') }}">
+      <option value="">{{ t.text('web.account.noPreference') }}</option>
+      {% for option in locales %}<option value="{{ option }}" {% if option == account.locale %}selected{% endif %}>{{ option }}</option>{% endfor %}
+    </select>
+    <div class="form-actions"><button class="button" type="submit">{{ t.text('web.account.save') }}</button></div>
+  </form>
+</section>
+
+<section aria-label="{{ t.text('web.account.passwordHeading') }}">
+  <h2>{{ t.text('web.account.passwordHeading') }}</h2>
+  <form class="import-form" method="post" action="{{ url_for('web.account', locale=localeArgument) }}">
+    <input type="hidden" name="action" value="password">
+    <div class="field-row">
+      <label class="field-label" for="newPassword">{{ t.text('web.account.newPassword') }}</label>
+      <input type="password" id="newPassword" name="newPassword" autocomplete="new-password">
+    </div>
+    <div class="form-actions"><button class="button" type="submit">{{ t.text('web.account.save') }}</button></div>
+  </form>
+</section>
+
+<section aria-label="{{ t.text('web.account.tokenHeading') }}">
+  <h2>{{ t.text('web.account.tokenHeading') }}</h2>
+  <p class="intro">{{ t.text('web.account.tokenIntro') }}</p>
+  <form class="import-form" method="post" action="{{ url_for('web.account', locale=localeArgument) }}">
+    <input type="hidden" name="action" value="token">
+    <div class="field-row">
+      <label class="field-label" for="tokenName">{{ t.text('web.account.tokenName') }}</label>
+      <input type="text" id="tokenName" name="tokenName" dir="auto">
+    </div>
+    <div class="form-actions"><button class="button" type="submit">{{ t.text('web.account.issueToken') }}</button></div>
+  </form>
+</section>
+{% endblock %}

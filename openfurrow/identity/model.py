@@ -1,0 +1,152 @@
+# SPDX-License-Identifier: Apache-2.0
+"""Accounts, groups, roles and the actor every change is recorded under (decisions 0036, 0037).
+
+A permission is held at a scope -- the server, a place, a trial -- through a role given to
+an account or to a group the account belongs to, and it holds below where it is given.
+Five roles are built in; an organization defines its own from the same permissions. Who
+acts is an Actor: a signed-in account, everyone (the open mode, where every permission is
+held everywhere), or the store's operator (the command line and the library, which reach
+the store directly and so hold every permission too).
+"""
+
+from __future__ import annotations
+
+import re
+from enum import Enum
+
+from pydantic import BaseModel, ConfigDict, Field, field_validator
+
+
+class IdentityError(ValueError):
+  """An account, group, role or sign-in that is refused."""
+
+
+class Permission(str, Enum):
+  view = "view"
+  enterValues = "enterValues"
+  importValues = "importValues"
+  editRecord = "editRecord"
+  editDesign = "editDesign"
+  manageTrials = "manageTrials"
+  changeSettings = "changeSettings"
+  manageStructure = "manageStructure"
+  manageAccess = "manageAccess"
+  manageRetention = "manageRetention"
+  viewAudit = "viewAudit"
+
+
+class SignInMode(str, Enum):
+  """How the service knows who is acting (decision 0036)."""
+
+  open = "open"          # no sign-in: everyone holds every permission everywhere
+  accounts = "accounts"  # every request belongs to a signed-in account or an API token
+
+
+class ActorKind(str, Enum):
+  account = "account"
+  everyone = "everyone"
+  operator = "operator"
+
+
+class Actor(BaseModel):
+  """Who a change is made by, and through which surface."""
+
+  model_config = ConfigDict(extra="forbid", frozen=True)
+
+  kind: ActorKind
+  accountID: int | None = None
+  userName: str | None = None
+  surface: str = Field(description="web, api, cli, library or provisioning")
+
+  @classmethod
+  def operator(cls, surface: str) -> Actor:
+    return cls(kind=ActorKind.operator, surface=surface)
+
+  @classmethod
+  def everyone(cls, surface: str) -> Actor:
+    return cls(kind=ActorKind.everyone, surface=surface)
+
+  @property
+  def holdsEverything(self) -> bool:
+    return self.kind is not ActorKind.account
+
+  @property
+  def label(self) -> str:
+    return self.userName if self.kind is ActorKind.account else self.kind.value
+
+
+userNamePattern = re.compile(r"^[a-z0-9][a-z0-9._@-]{1,63}$")
+roleCodePattern = re.compile(r"^[a-z][A-Za-z0-9]{1,39}$")
+
+
+def normalizedUserName(userName: str) -> str:
+  name = userName.strip().lower()
+  if not userNamePattern.match(name):
+    raise IdentityError(
+      f"'{userName}' is not a user name: 2 to 64 of letters, digits, '.', '_', '@' and '-', starting with a letter or digit"
+    )
+  return name
+
+
+class Account(BaseModel):
+  model_config = ConfigDict(extra="forbid")
+
+  accountID: int
+  userName: str
+  displayName: str
+  email: str | None = None
+  locale: str | None = None
+  active: bool
+
+
+class Group(BaseModel):
+  model_config = ConfigDict(extra="forbid")
+
+  groupID: int
+  name: str
+  members: list[str]
+
+
+class RoleDefinition(BaseModel):
+  """A named set of permissions; the built-in ones are named by the message catalog."""
+
+  model_config = ConfigDict(extra="forbid")
+
+  roleCode: str
+  name: str | None = None
+  permissions: frozenset[Permission]
+  builtIn: bool = False
+
+  @field_validator("roleCode")
+  @classmethod
+  def codeIsACode(cls, roleCode: str) -> str:
+    if not roleCodePattern.match(roleCode):
+      raise ValueError(f"'{roleCode}' is not a role code: a letter, then letters and digits")
+    return roleCode
+
+
+_viewer = frozenset({Permission.view})
+_collector = _viewer | {Permission.enterValues}
+_analyst = _collector | {Permission.importValues}
+_manager = _analyst | {Permission.editRecord, Permission.editDesign, Permission.manageTrials, Permission.changeSettings}
+
+builtInRoles: dict[str, RoleDefinition] = {
+  role.roleCode: role for role in (
+    RoleDefinition(roleCode="viewer", permissions=_viewer, builtIn=True),
+    RoleDefinition(roleCode="dataCollector", permissions=_collector, builtIn=True),
+    RoleDefinition(roleCode="analyst", permissions=_analyst, builtIn=True),
+    RoleDefinition(roleCode="trialManager", permissions=_manager, builtIn=True),
+    RoleDefinition(roleCode="administrator", permissions=frozenset(Permission), builtIn=True),
+  )
+}
+
+
+class RoleAssignment(BaseModel):
+  """A role given to an account or a group at a scope ('server', 'place:<path>', 'trial:<code>')."""
+
+  model_config = ConfigDict(extra="forbid")
+
+  roleCode: str
+  scope: str
+  userName: str | None = None
+  groupName: str | None = None

@@ -1225,6 +1225,58 @@
       "text": "Pluie",
       "status": "machineDraft"
     },
+    "web.account.heading": {
+      "text": "Votre compte",
+      "status": "machineDraft"
+    },
+    "web.account.issueToken": {
+      "text": "Émettre un jeton",
+      "status": "machineDraft"
+    },
+    "web.account.languageHeading": {
+      "text": "Langue",
+      "status": "machineDraft"
+    },
+    "web.account.newPassword": {
+      "text": "Nouveau mot de passe (12 caractères ou plus)",
+      "status": "machineDraft"
+    },
+    "web.account.noPreference": {
+      "text": "Aucune préférence",
+      "status": "machineDraft"
+    },
+    "web.account.passwordChanged": {
+      "text": "Votre mot de passe est changé.",
+      "status": "machineDraft"
+    },
+    "web.account.passwordHeading": {
+      "text": "Mot de passe",
+      "status": "machineDraft"
+    },
+    "web.account.save": {
+      "text": "Enregistrer",
+      "status": "machineDraft"
+    },
+    "web.account.tokenHeading": {
+      "text": "Jetons d'API",
+      "status": "machineDraft"
+    },
+    "web.account.tokenIntro": {
+      "text": "Un jeton permet à un script d'agir en votre nom via l'API (Authorization: Bearer <token>).",
+      "status": "machineDraft"
+    },
+    "web.account.tokenName": {
+      "text": "À quoi sert le jeton",
+      "status": "machineDraft"
+    },
+    "web.account.tokenNeedsName": {
+      "text": "Indiquez à quoi sert le jeton.",
+      "status": "machineDraft"
+    },
+    "web.account.tokenShownOnce": {
+      "text": "Votre nouveau jeton, affiché cette seule fois ; copiez-le maintenant :",
+      "status": "machineDraft"
+    },
     "web.add.error": {
       "text": "Impossible de créer l'essai: {reason}",
       "status": "machineDraft"
@@ -1823,6 +1875,30 @@
     },
     "web.report.print": {
       "text": "Imprimer",
+      "status": "machineDraft"
+    },
+    "web.signIn.heading": {
+      "text": "Se connecter",
+      "status": "machineDraft"
+    },
+    "web.signIn.password": {
+      "text": "Mot de passe",
+      "status": "machineDraft"
+    },
+    "web.signIn.refused": {
+      "text": "Connexion refusée : {reason}",
+      "status": "machineDraft"
+    },
+    "web.signIn.submit": {
+      "text": "Se connecter",
+      "status": "machineDraft"
+    },
+    "web.signIn.userName": {
+      "text": "Nom d'utilisateur",
+      "status": "machineDraft"
+    },
+    "web.signOut": {
+      "text": "Se déconnecter",
       "status": "machineDraft"
     },
     "web.trial.allPlots": {

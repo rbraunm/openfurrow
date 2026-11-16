@@ -38,11 +38,15 @@ from sqlalchemy import ForeignKey, Text, event, inspect, select
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, relationship
 
-storeVersion = 15
+storeVersion = 16
 
 
 class StoreError(RuntimeError):
   """A store operation could not be completed as requested."""
+
+
+class NotFoundError(StoreError):
+  """A trial, place or other named thing is not in the store, or not visible to whoever asks."""
 
 
 class Base(DeclarativeBase):
@@ -87,6 +91,87 @@ class SettingValueRow(Base):
   scope: Mapped[str] = mapped_column(primary_key=True)
   key: Mapped[str] = mapped_column(primary_key=True)
   valueJSON: Mapped[str]
+
+
+class AccountRow(Base):
+  """A person who signs in (decision 0036); the user name is stored lower-case."""
+
+  __tablename__ = "account"
+
+  accountID: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+  userName: Mapped[str] = mapped_column(unique=True)
+  displayName: Mapped[str]
+  email: Mapped[str | None]
+  locale: Mapped[str | None]
+  active: Mapped[bool]
+  passwordHash: Mapped[str | None]
+  createdAt: Mapped[datetime.datetime]
+
+
+class AccountGroupRow(Base):
+  """A named group of accounts; roles given to it hold for its members."""
+
+  __tablename__ = "accountGroup"
+
+  groupID: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+  name: Mapped[str] = mapped_column(unique=True)
+
+
+class GroupMemberRow(Base):
+  __tablename__ = "groupMember"
+
+  groupID: Mapped[int] = mapped_column(ForeignKey("accountGroup.groupID", ondelete="CASCADE"), primary_key=True)
+  accountID: Mapped[int] = mapped_column(ForeignKey("account.accountID", ondelete="CASCADE"), primary_key=True)
+
+
+class CustomRoleRow(Base):
+  """A role an organization defined; its permissions are a JSON list (decision 0037)."""
+
+  __tablename__ = "customRole"
+
+  roleCode: Mapped[str] = mapped_column(primary_key=True)
+  name: Mapped[str]
+  permissionsJSON: Mapped[str]
+
+
+class RoleAssignmentRow(Base):
+  """A role given to one account or one group at a stored scope ('server', 'place:<id>', 'trial:<code>')."""
+
+  __tablename__ = "roleAssignment"
+
+  assignmentID: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+  roleCode: Mapped[str]
+  scope: Mapped[str]
+  accountID: Mapped[int | None] = mapped_column(ForeignKey("account.accountID", ondelete="CASCADE"))
+  groupID: Mapped[int | None] = mapped_column(ForeignKey("accountGroup.groupID", ondelete="CASCADE"))
+
+
+class AuthTokenRow(Base):
+  """A session or an API token, kept only as its SHA-256."""
+
+  __tablename__ = "authToken"
+
+  tokenHash: Mapped[str] = mapped_column(primary_key=True)
+  accountID: Mapped[int] = mapped_column(ForeignKey("account.accountID", ondelete="CASCADE"))
+  kind: Mapped[str]
+  name: Mapped[str | None]
+  createdAt: Mapped[datetime.datetime]
+  expiresAt: Mapped[datetime.datetime | None]
+
+
+class AuditEventRow(Base):
+  """One change, who made it and from where (decision 0038); never updated or deleted by the tool."""
+
+  __tablename__ = "auditEvent"
+
+  eventID: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+  at: Mapped[datetime.datetime]
+  actorKind: Mapped[str]
+  actorName: Mapped[str | None]
+  surface: Mapped[str]
+  action: Mapped[str]
+  scope: Mapped[str]
+  detailJSON: Mapped[str]
 
 
 class TrialRow(Base):
