@@ -62,6 +62,7 @@ class RandomizationMethod(str, Enum):
   """
 
   sha256FisherYates1 = "sha256FisherYates1"
+  sha256SpatialBalance1 = "sha256SpatialBalance1"
   imported = "imported"
 
 
@@ -106,6 +107,8 @@ class DesignSpecification(BaseModel):
       raise ValueError("a split plot's main-plot and subplot factors must differ")
     if not splitPlot and named != (None, None):
       raise ValueError(f"a {self.designType.value} design has no main-plot or subplot factor")
+    if self.randomizationMethod is RandomizationMethod.sha256SpatialBalance1 and splitPlot:
+      raise ValueError("spatial balance applies to an RCBD's blocks, not to a split plot")
     if not generated and self.firstBlockInTreatmentOrder:
       raise ValueError("an imported layout is recorded as supplied; firstBlockInTreatmentOrder applies to generated ones")
     return self

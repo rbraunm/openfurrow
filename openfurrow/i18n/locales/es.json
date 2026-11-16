@@ -293,6 +293,10 @@
       "text": "Los residuos provienen del modelo aditivo de bloques y tratamientos y están restringidos (suman cero dentro de cada bloque y cada tratamiento), por lo que la prueba de normalidad es aproximada.",
       "status": "machineDraft"
     },
+    "report.design.arrangement": {
+      "text": "Disposición en los bloques",
+      "status": "machineDraft"
+    },
     "report.design.blocks": {
       "text": "Bloques (repeticiones)",
       "status": "machineDraft"
@@ -331,6 +335,10 @@
     },
     "report.design.seed": {
       "text": "Semilla de aleatorización",
+      "status": "machineDraft"
+    },
+    "report.design.spatiallyBalanced": {
+      "text": "espacialmente equilibrada (van Es et al. 2007)",
       "status": "machineDraft"
     },
     "report.design.splitPlot": {

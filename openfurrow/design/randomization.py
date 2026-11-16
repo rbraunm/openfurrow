@@ -36,54 +36,21 @@ recorded under it can always be regenerated and checked.
 
 from __future__ import annotations
 
-import hashlib
-
+from openfurrow.design.spatialBalance import generateSpatiallyBalancedLayout
+from openfurrow.design.stream import Sha256Stream, shuffled
 from openfurrow.schema.layout import PlotAssignment, TrialLayout
 from openfurrow.schema.trialPackage import DesignType, RandomizationMethod, TrialPackage
 
 _maxTreatmentsPerBlock = 99  # plotNumber = block * 100 + position; positions must stay 2-digit
-_wordBytes = 8
-_wordRange = 1 << (8 * _wordBytes)
-
-
-class _Sha256Stream:
-  """The random stream of method sha256FisherYates1 for one seed."""
-
-  def __init__(self, seed: int) -> None:
-    self._seed = seed
-    self._counter = 0
-    self._buffer = b""
-
-  def nextWord(self) -> int:
-    if len(self._buffer) < _wordBytes:
-      text = f"{RandomizationMethod.sha256FisherYates1.value}:{self._seed}:{self._counter}"
-      self._buffer += hashlib.sha256(text.encode("ascii")).digest()
-      self._counter += 1
-    word = int.from_bytes(self._buffer[:_wordBytes], "big")
-    self._buffer = self._buffer[_wordBytes:]
-    return word
-
-  def below(self, bound: int) -> int:
-    limit = _wordRange - _wordRange % bound
-    while True:
-      word = self.nextWord()
-      if word < limit:
-        return word % bound
 
 
 def generateLayout(package: TrialPackage) -> TrialLayout:
   """Generate the plot map a package's design and seed call for."""
   if package.design.designType is DesignType.splitPlot:
     return generateSplitPlotLayout(package)
+  if package.design.randomizationMethod is RandomizationMethod.sha256SpatialBalance1:
+    return generateSpatiallyBalancedLayout(package)
   return generateRcbdLayout(package)
-
-
-def _shuffled(count: int, stream: _Sha256Stream) -> list[int]:
-  order = list(range(count))
-  for position in range(count - 1, 0, -1):
-    chosen = stream.below(position + 1)
-    order[position], order[chosen] = order[chosen], order[position]
-  return order
 
 
 def generateSplitPlotLayout(package: TrialPackage) -> TrialLayout:
@@ -108,13 +75,13 @@ def generateSplitPlotLayout(package: TrialPackage) -> TrialLayout:
     (treatment.factorLevels[design.mainPlotFactor], treatment.factorLevels[design.subPlotFactor]): treatment.treatmentCode
     for treatment in package.treatments
   }
-  stream = _Sha256Stream(design.randomizationSeed)
+  stream = Sha256Stream(design.randomizationSeed, RandomizationMethod.sha256FisherYates1.value)
   plots: list[PlotAssignment] = []
   for block in range(1, design.replications + 1):
     ordered = block == 1 and design.firstBlockInTreatmentOrder
-    mainOrder = list(range(len(mainLevels))) if ordered else _shuffled(len(mainLevels), stream)
+    mainOrder = list(range(len(mainLevels))) if ordered else shuffled(len(mainLevels), stream)
     for mainPlot, mainIndex in enumerate(mainOrder, start=1):
-      subOrder = list(range(len(subLevels))) if ordered else _shuffled(len(subLevels), stream)
+      subOrder = list(range(len(subLevels))) if ordered else shuffled(len(subLevels), stream)
       for subPosition, subIndex in enumerate(subOrder, start=1):
         positionInBlock = (mainPlot - 1) * len(subLevels) + subPosition
         plots.append(PlotAssignment(
@@ -150,14 +117,13 @@ def generateRcbdLayout(package: TrialPackage) -> TrialLayout:
       f"{treatmentCount} treatments exceeds the {_maxTreatmentsPerBlock}-per-block plot-number scheme"
     )
 
-  stream = _Sha256Stream(design.randomizationSeed)
+  stream = Sha256Stream(design.randomizationSeed, RandomizationMethod.sha256FisherYates1.value)
   plots: list[PlotAssignment] = []
   for block in range(1, design.replications + 1):
-    order = list(range(treatmentCount))
-    if not (block == 1 and design.firstBlockInTreatmentOrder):
-      for position in range(treatmentCount - 1, 0, -1):
-        chosen = stream.below(position + 1)
-        order[position], order[chosen] = order[chosen], order[position]
+    if block == 1 and design.firstBlockInTreatmentOrder:
+      order = list(range(treatmentCount))
+    else:
+      order = shuffled(treatmentCount, stream)
     for positionInBlock, treatmentIndex in enumerate(order, start=1):
       plots.append(
         PlotAssignment(

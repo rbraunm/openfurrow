@@ -293,6 +293,10 @@
       "text": "Les résidus proviennent du modèle additif blocs et traitements et sont contraints (leur somme est nulle dans chaque bloc et chaque traitement); le test de normalité est donc approximatif.",
       "status": "machineDraft"
     },
+    "report.design.arrangement": {
+      "text": "Disposition dans les blocs",
+      "status": "machineDraft"
+    },
     "report.design.blocks": {
       "text": "Blocs (répétitions)",
       "status": "machineDraft"
@@ -331,6 +335,10 @@
     },
     "report.design.seed": {
       "text": "Graine de randomisation",
+      "status": "machineDraft"
+    },
+    "report.design.spatiallyBalanced": {
+      "text": "spatialement équilibrée (van Es et al. 2007)",
       "status": "machineDraft"
     },
     "report.design.splitPlot": {

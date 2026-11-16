@@ -48,7 +48,7 @@ from openfurrow.schema.observation import Observation
 from openfurrow.schema.quantity import Quantity
 from openfurrow.schema.treatment import ActiveSubstance, TreatmentLine
 from openfurrow.schema.assessment import AssessmentDataType, Rating, Transform
-from openfurrow.schema.trialPackage import DesignType, TrialPackage
+from openfurrow.schema.trialPackage import DesignType, RandomizationMethod, TrialPackage
 from openfurrow.version import softwareVersion
 
 # The precision p-values print at, and the value below which one rounds to zero at that
@@ -246,6 +246,10 @@ def _designSection(package: TrialPackage, translator: Translator) -> list[str]:
   else:
     lines.append(
       _field(translator, "report.design.seed", translator.integer(design.randomizationSeed))
+    )
+  if design.randomizationMethod is RandomizationMethod.sha256SpatialBalance1:
+    lines.append(
+      _field(translator, "report.design.arrangement", translator.text("report.design.spatiallyBalanced"))
     )
   if design.firstBlockInTreatmentOrder:
     lines.append(

@@ -16,7 +16,7 @@ import pytest
 from pydantic import ValidationError
 
 from openfurrow.design import generateRcbdLayout
-from openfurrow.design.randomization import _Sha256Stream
+from openfurrow.design.stream import Sha256Stream
 from openfurrow.schema import TrialPackage
 
 # Pinned known answers: plotNumber -> treatmentCode for the 3-treatment, 4-block
@@ -47,7 +47,7 @@ def packageWithSeed(validPackageDict, seed):
 # ---- the documented procedure ---------------------------------------------
 
 def testStreamIsSha256OfTheDocumentedText():
-  stream = _Sha256Stream(42)
+  stream = Sha256Stream(42, "sha256FisherYates1")
   words = [stream.nextWord() for _ in range(8)]
   expected = b"".join(
     hashlib.sha256(f"sha256FisherYates1:42:{counter}".encode("ascii")).digest()
@@ -60,7 +60,7 @@ def testFirstBlockOfSeed42FollowsFromTheFirstTwoWords(validPackageDict):
   # Worked by hand from the stream. The first word is a multiple of 3, so position 3
   # swaps with position 1: T1 T2 T3 becomes T3 T2 T1. The second word is even, so
   # position 2 swaps with position 1: T2 T3 T1.
-  stream = _Sha256Stream(42)
+  stream = Sha256Stream(42, "sha256FisherYates1")
   first, second = stream.nextWord(), stream.nextWord()
   assert (first % 3, second % 2) == (0, 0)
   layout = generateRcbdLayout(packageWithSeed(validPackageDict, 42))
@@ -68,7 +68,7 @@ def testFirstBlockOfSeed42FollowsFromTheFirstTwoWords(validPackageDict):
 
 
 def testBoundedDrawDiscardsWordsAboveTheLargestMultiple():
-  class FixedWords(_Sha256Stream):
+  class FixedWords(Sha256Stream):
     def __init__(self, words):
       self._words = iter(words)
 
@@ -83,7 +83,7 @@ def testBoundedDrawDiscardsWordsAboveTheLargestMultiple():
 
 
 def testBoundedDrawsAreSpreadEvenly():
-  stream = _Sha256Stream(2026)
+  stream = Sha256Stream(2026, "sha256FisherYates1")
   counts = Counter(stream.below(6) for _ in range(6000))
   assert sorted(counts) == [0, 1, 2, 3, 4, 5]
   # Each value is expected 1000 times; 150 either way is beyond four standard deviations.

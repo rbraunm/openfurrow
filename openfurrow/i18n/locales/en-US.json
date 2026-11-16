@@ -81,6 +81,14 @@
       "text": "in treatment order, not randomized",
       "status": "source"
     },
+    "report.design.arrangement": {
+      "text": "Arrangement",
+      "status": "source"
+    },
+    "report.design.spatiallyBalanced": {
+      "text": "spatially balanced (van Es et al. 2007)",
+      "status": "source"
+    },
     "report.design.splitPlot": {
       "text": "Split-plot design",
       "status": "source"

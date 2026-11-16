@@ -81,6 +81,14 @@
       "text": "in treatment order, not randomised",
       "status": "humanApproved"
     },
+    "report.design.arrangement": {
+      "text": "Arrangement",
+      "status": "humanApproved"
+    },
+    "report.design.spatiallyBalanced": {
+      "text": "spatially balanced (van Es et al. 2007)",
+      "status": "humanApproved"
+    },
     "report.design.splitPlot": {
       "text": "Split-plot design",
       "status": "humanApproved"

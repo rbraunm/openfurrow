@@ -293,6 +293,10 @@
       "text": "البواقي مشتقة من النموذج الجمعي للقطاعات والمعاملات وهي مقيدة (مجموعها صفر داخل كل قطاع وكل معاملة)، لذا فإن اختبار الاعتدالية تقريبي.",
       "status": "machineDraft"
     },
+    "report.design.arrangement": {
+      "text": "الترتيب",
+      "status": "machineDraft"
+    },
     "report.design.blocks": {
       "text": "القطاعات (المكررات)",
       "status": "machineDraft"
@@ -331,6 +335,10 @@
     },
     "report.design.seed": {
       "text": "بذرة العشوائية",
+      "status": "machineDraft"
+    },
+    "report.design.spatiallyBalanced": {
+      "text": "متوازن مكانيًا (van Es et al. 2007)",
       "status": "machineDraft"
     },
     "report.design.splitPlot": {
