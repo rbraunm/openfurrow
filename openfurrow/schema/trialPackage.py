@@ -17,6 +17,8 @@ from enum import Enum
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
+from openfurrow.version import schemaVersion as currentSchemaVersion
+
 
 class DesignType(str, Enum):
   """Experimental design used to lay out treatments into plots."""
@@ -192,11 +194,20 @@ class TrialPackage(BaseModel):
 
   model_config = ConfigDict(extra="forbid")
 
-  schemaVersion: str = Field(min_length=1, description="Package schema version for migration/reproducibility.")
+  schemaVersion: str = Field(description="The schema this package is written in; must be the one this build reads.")
   trial: TrialMetadata
   treatments: list[Treatment] = Field(min_length=2, description="At least two treatments to compare.")
   design: DesignSpecification
   assessments: list[AssessmentDefinition] = Field(min_length=1)
+
+  @field_validator("schemaVersion")
+  @classmethod
+  def schemaVersionIsCurrent(cls, declared: str) -> str:
+    if declared != currentSchemaVersion:
+      raise ValueError(
+        f"schemaVersion '{declared}' is not supported; this build reads schema {currentSchemaVersion}"
+      )
+    return declared
 
   @field_validator("treatments")
   @classmethod

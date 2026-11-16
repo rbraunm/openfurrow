@@ -4,7 +4,8 @@
 Server-rendered Flask templates, not a single-page app: fewer moving parts, works on
 modest hardware and intermittent connections, no separate front-end build, and every
 asset served locally so the tool works offline (decision 0012). Light client-side code
-only where an interaction needs it -- D1 needs none.
+only where an interaction needs it: the locale switch submits itself, and works without
+script too.
 
 Localization and right-to-left are first-class (decision 0007). Every user-facing
 string is resolved from the message catalog through a request-scoped `Translator`; the
@@ -18,9 +19,9 @@ Like the CLI and the JSON API, these views are thin over the `Workspace` facade:
 resolve a request into one or two facade calls and render. No statistics, no store
 access, no layout logic lives here.
 
-D1 scope: list trials, add a trial (submit or upload the canonical package JSON -- a
-field-by-field design form is a later unit), and view the randomized field layout. The
-report view and the analysis pages are D2.
+The pages: list trials; add a trial (submit or upload the canonical package JSON -- a
+field-by-field design form is a later unit); view a trial with its field layout; import
+observations; read the report; check reproducibility; delete a trial.
 """
 
 from __future__ import annotations
@@ -35,6 +36,7 @@ from markupsafe import Markup
 from openfurrow.config import OpenFurrowConfig, defaultConfig
 from openfurrow.i18n import MessageError, availableLocales, sourceLocale, translatorFor
 from openfurrow.schema import TrialPackage
+from openfurrow.version import schemaVersion
 from openfurrow.workspace import ObservationImportError, StoreError, Workspace
 from pydantic import ValidationError
 
@@ -292,7 +294,7 @@ def _blocks(layout) -> list[dict]:
 def _examplePackageJson() -> str:
   """A minimal, valid package to seed the add form -- editable, not written from scratch."""
   example = {
-    "schemaVersion": "0.1.0",
+    "schemaVersion": schemaVersion,
     "trial": {
       "trialCode": "ESV-2025-01", "title": "Barley fungicide efficacy",
       "crop": "Barley", "season": "2025", "site": "North Field",

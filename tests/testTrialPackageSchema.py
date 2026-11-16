@@ -59,6 +59,16 @@ def testNumericRangeWithMinBelowMaxAccepted(validPackageDict):
   assert package.assessments[0].maxValue == 20000.0
 
 
+# ---- schema version ------------------------------------------------------
+
+def testUnsupportedSchemaVersionRejected(validPackageDict):
+  validPackageDict["schemaVersion"] = "99.0"
+  with pytest.raises(ValidationError) as excInfo:
+    buildPackage(validPackageDict)
+  assert any("schemaVersion '99.0' is not supported" in message
+             for message in errorMessages(excInfo))
+
+
 # ---- treatment rules ----------------------------------------------------
 
 def testRateWithoutUnitRejected(validPackageDict):
