@@ -100,6 +100,9 @@ class Treatment(BaseModel):
   treatmentCode: str = Field(min_length=1, description="Stable per-trial code, e.g. 'T1'.")
   name: str = Field(min_length=1)
   role: TreatmentRole | None = None
+  factorLevels: dict[str, str] = Field(
+    default_factory=dict, description="Factor code to level code, for a treatment that is a combination.",
+  )
   lines: list[TreatmentLine] = Field(default_factory=list)
 
   @model_validator(mode="after")

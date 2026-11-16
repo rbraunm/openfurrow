@@ -14,7 +14,7 @@ import pytest
 
 from openfurrow import schemaVersion
 from openfurrow.analysis import AnalysisError, analyzeRcbd, separateMeans
-from openfurrow.analysis.meanSeparation import _letterFor, _letterGroups
+from openfurrow.analysis.meanSeparation import _letterFor, letterGroups
 from openfurrow.design import generateRcbdLayout
 from openfurrow.schema import TrialPackage
 from openfurrow.schema.observation import Observation
@@ -59,21 +59,21 @@ def syntheticResult():
 # ---- letter algorithm (unit) ---------------------------------------------
 
 def testLetterGroupsAllWithinLsdShareOneLetter():
-  assert _letterGroups([109.79, 104.5, 97.625], 15.77) == ["a", "a", "a"]
+  assert letterGroups([109.79, 104.5, 97.625], 15.77) == ["a", "a", "a"]
 
 
 def testLetterGroupsTwoCleanGroups():
-  assert _letterGroups([100.0, 99.0, 80.0, 79.0], 2.31) == ["a", "a", "b", "b"]
+  assert letterGroups([100.0, 99.0, 80.0, 79.0], 2.31) == ["a", "a", "b", "b"]
 
 
 def testLetterGroupsOverlap():
   # Middle mean is within the LSD of both ends, which are not within the LSD of
   # each other -> it shares both letters.
-  assert _letterGroups([10.0, 7.0, 4.0], 3.5) == ["a", "ab", "b"]
+  assert letterGroups([10.0, 7.0, 4.0], 3.5) == ["a", "ab", "b"]
 
 
 def testLetterGroupsAllDifferent():
-  assert _letterGroups([10.0, 5.0, 0.0], 1.0) == ["a", "b", "c"]
+  assert letterGroups([10.0, 5.0, 0.0], 1.0) == ["a", "b", "c"]
 
 
 def testLetterForSequence():

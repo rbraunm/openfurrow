@@ -21,6 +21,8 @@ from sqlalchemy.orm import Session
 from openfurrow.store.database import (
   ApplicationRow,
   AssessmentRow,
+  FactorLevelRow,
+  FactorRow,
   RatingRow,
   ObservationRow,
   PlotRow,
@@ -41,6 +43,7 @@ from openfurrow.schema.assessment import (
   Rating,
   Transform,
 )
+from openfurrow.schema.factor import Factor, FactorLevel
 from openfurrow.schema.layout import PlotAssignment
 from openfurrow.schema.observation import Observation
 from openfurrow.schema.quantity import Quantity
@@ -112,6 +115,8 @@ def savePackage(session: Session, package: TrialPackage, layout: list[PlotAssign
     randomizationMethod=package.design.randomizationMethod.value,
     randomizationSeed=package.design.randomizationSeed,
     firstBlockInTreatmentOrder=package.design.firstBlockInTreatmentOrder,
+    mainPlotFactor=package.design.mainPlotFactor,
+    subPlotFactor=package.design.subPlotFactor,
   )
   for ordinal, treatment in enumerate(package.treatments):
     trial.treatments.append(TreatmentRow(
@@ -120,6 +125,7 @@ def savePackage(session: Session, package: TrialPackage, layout: list[PlotAssign
       ordinal=ordinal,
       name=treatment.name,
       role=treatment.role.value if treatment.role is not None else None,
+      factorLevels=json.dumps(treatment.factorLevels),
     ))
     for lineOrdinal, line in enumerate(treatment.lines):
       trial.treatmentLines.append(TreatmentLineRow(
@@ -219,6 +225,15 @@ def savePackage(session: Session, package: TrialPackage, layout: list[PlotAssign
       maximumTemperatureUnit=None if record.maximumTemperature is None else record.maximumTemperature.unit,
       notes=record.notes,
     ))
+  for ordinal, factor in enumerate(package.factors):
+    trial.factors.append(FactorRow(
+      trialCode=trialCode, factorCode=factor.factorCode, ordinal=ordinal, name=factor.name,
+    ))
+    for levelOrdinal, level in enumerate(factor.levels):
+      trial.factorLevels.append(FactorLevelRow(
+        trialCode=trialCode, factorCode=factor.factorCode, levelCode=level.levelCode,
+        ordinal=levelOrdinal, name=level.name,
+      ))
   for ordinal, target in enumerate(package.targets):
     trial.targets.append(TargetRow(
       trialCode=trialCode,
@@ -270,6 +285,7 @@ def savePackage(session: Session, package: TrialPackage, layout: list[PlotAssign
       plotNumber=plot.plotNumber,
       block=plot.block,
       positionInBlock=plot.positionInBlock,
+      mainPlot=plot.mainPlot,
       treatmentCode=plot.treatmentCode,
     ))
   session.add(trial)
@@ -299,6 +315,7 @@ def loadPackage(session: Session, trialCode: str) -> TrialPackage:
       treatmentCode=row.treatmentCode,
       name=row.name,
       role=TreatmentRole(row.role) if row.role is not None else None,
+      factorLevels=json.loads(row.factorLevels),
       lines=linesByTreatment.get(row.treatmentCode, []),
     )
     for row in sorted(trial.treatments, key=lambda row: row.ordinal)
@@ -362,6 +379,13 @@ def loadPackage(session: Session, trialCode: str) -> TrialPackage:
     )
     for row in sorted(trial.weather, key=lambda row: row.date)
   ]
+  levelsByFactor: dict[str, list[FactorLevel]] = {}
+  for row in sorted(trial.factorLevels, key=lambda row: (row.factorCode, row.ordinal)):
+    levelsByFactor.setdefault(row.factorCode, []).append(FactorLevel(levelCode=row.levelCode, name=row.name))
+  factors = [
+    Factor(factorCode=row.factorCode, name=row.name, levels=levelsByFactor[row.factorCode])
+    for row in sorted(trial.factors, key=lambda row: row.ordinal)
+  ]
   targets = [
     Target(
       targetCode=row.targetCode,
@@ -403,6 +427,7 @@ def loadPackage(session: Session, trialCode: str) -> TrialPackage:
       organization=trial.organization,
     ),
     targets=targets,
+    factors=factors,
     planting=planting,
     soil=soil,
     weather=weather,
@@ -412,6 +437,8 @@ def loadPackage(session: Session, trialCode: str) -> TrialPackage:
       randomizationMethod=RandomizationMethod(trial.randomizationMethod),
       randomizationSeed=trial.randomizationSeed,
       firstBlockInTreatmentOrder=trial.firstBlockInTreatmentOrder,
+      mainPlotFactor=trial.mainPlotFactor,
+      subPlotFactor=trial.subPlotFactor,
     ),
     treatments=treatments,
     applications=applications,
@@ -432,6 +459,7 @@ def loadLayout(session: Session, trialCode: str) -> list[PlotAssignment]:
       plotNumber=row.plotNumber,
       block=row.block,
       positionInBlock=row.positionInBlock,
+      mainPlot=row.mainPlot,
       treatmentCode=row.treatmentCode,
     )
     for row in rows

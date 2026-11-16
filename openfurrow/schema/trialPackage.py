@@ -19,6 +19,7 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator, model_valida
 
 from openfurrow.schema.application import Application
 from openfurrow.schema.assessment import Assessment, Rating
+from openfurrow.schema.factor import Factor
 from openfurrow.schema.target import Target
 from openfurrow.schema.trialConditions import Planting, Soil, WeatherRecord
 from openfurrow.schema.treatment import Treatment
@@ -29,6 +30,7 @@ class DesignType(str, Enum):
   """Experimental design used to lay out treatments into plots."""
 
   rcbd = "rcbd"  # randomized complete block design
+  splitPlot = "splitPlot"  # main plots in complete blocks, subplots within them
 
 
 class TrialMetadata(BaseModel):
@@ -80,6 +82,8 @@ class DesignSpecification(BaseModel):
   randomizationSeed: int | None = Field(
     default=None, ge=0, description="The seed of a generated layout; absent for an imported one.",
   )
+  mainPlotFactor: str | None = Field(default=None, min_length=1, description="Split plot: the factor on main plots.")
+  subPlotFactor: str | None = Field(default=None, min_length=1, description="Split plot: the factor on subplots.")
   firstBlockInTreatmentOrder: bool = Field(
     default=False,
     description="A generated layout leaves block 1 in treatment order, e.g. for field walks.",
@@ -94,6 +98,14 @@ class DesignSpecification(BaseModel):
       )
     if not generated and self.randomizationSeed is not None:
       raise ValueError("an imported layout has no randomizationSeed")
+    splitPlot = self.designType is DesignType.splitPlot
+    named = (self.mainPlotFactor, self.subPlotFactor)
+    if splitPlot and None in named:
+      raise ValueError("a split-plot design names its mainPlotFactor and its subPlotFactor")
+    if splitPlot and self.mainPlotFactor == self.subPlotFactor:
+      raise ValueError("a split plot's main-plot and subplot factors must differ")
+    if not splitPlot and named != (None, None):
+      raise ValueError(f"a {self.designType.value} design has no main-plot or subplot factor")
     if not generated and self.firstBlockInTreatmentOrder:
       raise ValueError("an imported layout is recorded as supplied; firstBlockInTreatmentOrder applies to generated ones")
     return self
@@ -114,6 +126,7 @@ class TrialPackage(BaseModel):
   schemaVersion: str = Field(description="The schema this package is written in; must be the one this build reads.")
   trial: TrialMetadata
   targets: list[Target] = Field(default_factory=list)
+  factors: list[Factor] = Field(default_factory=list)
   planting: Planting | None = None
   soil: Soil | None = None
   weather: list[WeatherRecord] = Field(default_factory=list, description="One record per day.")
@@ -139,6 +152,51 @@ class TrialPackage(BaseModel):
     if len(set(codes)) != len(codes):
       raise ValueError(f"duplicate treatmentCode values: {sorted(_duplicates(codes))}")
     return treatments
+
+  @model_validator(mode="after")
+  def treatmentsAreTheFactorCombinations(self) -> TrialPackage:
+    """A split plot's treatments are every combination of its two factors, each once."""
+    design = self.design
+    if design.designType is not DesignType.splitPlot:
+      if self.factors or any(treatment.factorLevels for treatment in self.treatments):
+        raise ValueError(
+          f"factors are only used by a split-plot design so far; a {design.designType.value} "
+          f"design has none"
+        )
+      return self
+    codes = [factor.factorCode for factor in self.factors]
+    if sorted(codes) != sorted([design.mainPlotFactor, design.subPlotFactor]):
+      raise ValueError(
+        f"a split plot declares exactly its two factors {[design.mainPlotFactor, design.subPlotFactor]}, "
+        f"got {codes}"
+      )
+    levels = {factor.factorCode: [level.levelCode for level in factor.levels] for factor in self.factors}
+    combinations = []
+    for treatment in self.treatments:
+      if set(treatment.factorLevels) != set(codes):
+        raise ValueError(
+          f"treatment '{treatment.treatmentCode}' must state its level of each of {sorted(codes)}"
+        )
+      for factorCode, levelCode in treatment.factorLevels.items():
+        if levelCode not in levels[factorCode]:
+          raise ValueError(
+            f"treatment '{treatment.treatmentCode}': '{levelCode}' is not a level of factor '{factorCode}'"
+          )
+      combinations.append((treatment.factorLevels[design.mainPlotFactor], treatment.factorLevels[design.subPlotFactor]))
+    expected = [(main, sub) for main in levels[design.mainPlotFactor] for sub in levels[design.subPlotFactor]]
+    if sorted(combinations) != sorted(expected):
+      repeated = sorted({combination for combination in combinations if combinations.count(combination) > 1})
+      absent = sorted(set(expected) - set(combinations))
+      raise ValueError(
+        f"a split plot's treatments are every combination of its factors once; "
+        f"repeated {repeated}, absent {absent}"
+      )
+    return self
+
+  def mainPlotLevelOf(self, treatmentCode: str) -> str:
+    """The main-plot level of a split-plot treatment."""
+    treatment = next(treatment for treatment in self.treatments if treatment.treatmentCode == treatmentCode)
+    return treatment.factorLevels[self.design.mainPlotFactor]
 
   @field_validator("weather")
   @classmethod

@@ -317,6 +317,10 @@
       "text": "fourni avec l'essai, non randomisé ici",
       "status": "machineDraft"
     },
+    "report.design.mainPlotFactor": {
+      "text": "Facteur des grandes parcelles",
+      "status": "machineDraft"
+    },
     "report.design.plots": {
       "text": "Parcelles",
       "status": "machineDraft"
@@ -327,6 +331,14 @@
     },
     "report.design.seed": {
       "text": "Graine de randomisation",
+      "status": "machineDraft"
+    },
+    "report.design.splitPlot": {
+      "text": "Dispositif en parcelles divisées",
+      "status": "machineDraft"
+    },
+    "report.design.subPlotFactor": {
+      "text": "Facteur des sous-parcelles",
       "status": "machineDraft"
     },
     "report.design.treatments": {
@@ -593,6 +605,10 @@
       "text": "Graine de randomisation",
       "status": "machineDraft"
     },
+    "report.reproducibility.splitPlotMethodValue": {
+      "text": "ANOVA en parcelles divisées; {test} sur l'erreur propre à chaque facteur (alpha = {alpha})",
+      "status": "machineDraft"
+    },
     "report.reproducibility.transforms": {
       "text": "Transformations",
       "status": "machineDraft"
@@ -647,6 +663,50 @@
     },
     "report.soil.texture": {
       "text": "Texture",
+      "status": "machineDraft"
+    },
+    "report.splitPlot.assumptionsNotComputed": {
+      "text": "Les vérifications des hypothèses ne sont pas encore calculées pour les dispositifs en parcelles divisées.",
+      "status": "machineDraft"
+    },
+    "report.splitPlot.cellMeansNote": {
+      "text": "Les comparaisons à l'intérieur de l'interaction (un facteur à un seul niveau de l'autre) demandent leurs propres erreurs types et ne sont pas calculées ici.",
+      "status": "machineDraft"
+    },
+    "report.splitPlot.column.level": {
+      "text": "Niveau",
+      "status": "machineDraft"
+    },
+    "report.splitPlot.cvMain": {
+      "text": "Coefficient de variation, grandes parcelles (a)",
+      "status": "machineDraft"
+    },
+    "report.splitPlot.cvSub": {
+      "text": "Coefficient de variation, sous-parcelles (b)",
+      "status": "machineDraft"
+    },
+    "report.splitPlot.heading.cellMeans": {
+      "text": "Moyennes des traitements ({main} × {sub})",
+      "status": "machineDraft"
+    },
+    "report.splitPlot.heading.factorMeans": {
+      "text": "Moyennes de {factor}",
+      "status": "machineDraft"
+    },
+    "report.splitPlot.separation": {
+      "text": "Séparation des moyennes: {method} (alpha = {alpha}), sur l'erreur propre à ce facteur. Effet {significance} (P {probability}).",
+      "status": "machineDraft"
+    },
+    "report.splitPlot.source.interaction": {
+      "text": "{main} × {sub}",
+      "status": "machineDraft"
+    },
+    "report.splitPlot.source.mainPlotError": {
+      "text": "Erreur des grandes parcelles (a)",
+      "status": "machineDraft"
+    },
+    "report.splitPlot.source.subPlotError": {
+      "text": "Erreur des sous-parcelles (b)",
       "status": "machineDraft"
     },
     "report.targets.column.code": {

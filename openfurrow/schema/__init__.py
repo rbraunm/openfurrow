@@ -14,6 +14,7 @@ from openfurrow.schema.document import (
   canonicalBytes,
   contentHash,
 )
+from openfurrow.schema.factor import Factor, FactorLevel
 from openfurrow.schema.layout import (
   PlotAssignment,
   TrialLayout,
@@ -45,6 +46,8 @@ __all__ = [
   "AssessmentDataType",
   "DesignSpecification",
   "DesignType",
+  "Factor",
+  "FactorLevel",
   "MeasurementKind",
   "Observation",
   "Planting",

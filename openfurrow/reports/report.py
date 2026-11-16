@@ -33,6 +33,8 @@ import numpy
 from openfurrow.analysis import (
   AnalysisError,
   analyzeRcbd,
+  analyzeSplitPlot,
+  separateFactorMeans,
   assessAssumptions,
   methodKeyFor,
   separateMeans,
@@ -46,7 +48,7 @@ from openfurrow.schema.observation import Observation
 from openfurrow.schema.quantity import Quantity
 from openfurrow.schema.treatment import ActiveSubstance, TreatmentLine
 from openfurrow.schema.assessment import AssessmentDataType, Rating, Transform
-from openfurrow.schema.trialPackage import TrialPackage
+from openfurrow.schema.trialPackage import DesignType, TrialPackage
 from openfurrow.version import softwareVersion
 
 # The precision p-values print at, and the value below which one rounds to zero at that
@@ -228,11 +230,15 @@ def _designSection(package: TrialPackage, translator: Translator) -> list[str]:
   lines = [
     f"## {translator.text('report.heading.design')}",
     "",
-    _field(translator, "report.design.design", translator.text("report.design.rcbd")),
+    _field(translator, "report.design.design", translator.text(f"report.design.{design.designType.value}")),
     _field(translator, "report.design.treatments", translator.integer(len(package.treatments))),
     _field(translator, "report.design.blocks", translator.integer(design.replications)),
     _field(translator, "report.design.plots", translator.integer(package.plotCount)),
   ]
+  if design.designType is DesignType.splitPlot:
+    factors = {factor.factorCode: factor for factor in package.factors}
+    lines.append(_field(translator, "report.design.mainPlotFactor", factors[design.mainPlotFactor].name))
+    lines.append(_field(translator, "report.design.subPlotFactor", factors[design.subPlotFactor].name))
   if design.randomizationSeed is None:
     lines.append(
       _field(translator, "report.design.layout", translator.text("report.design.layoutSupplied"))
@@ -519,6 +525,10 @@ def _assessmentSection(
     lines.append(translator.text("report.assessment.notNumeric", dataType=rating.dataType.value))
     lines.append("")
     return lines
+  if package.design.designType is DesignType.splitPlot:
+    return lines + _splitPlotSubsections(
+      assessment.assessmentCode, rating, package, layout, observations, significanceLevel, protected, translator,
+    )
   try:
     result = analyzeRcbd(assessment.assessmentCode, package, layout, observations)
   except AnalysisError as error:
@@ -627,6 +637,122 @@ def _assessmentSection(
   return lines
 
 
+def _splitPlotSubsections(
+  assessmentCode, rating, package, layout, observations, significanceLevel, protected, translator: Translator,
+) -> list[str]:
+  """The split-plot ANOVA, each factor's separated means, and the cell means (decision 0020)."""
+  try:
+    result = analyzeSplitPlot(assessmentCode, package, layout, observations)
+  except AnalysisError as error:
+    return [translator.text("report.assessment.notAnalyzed", reason=str(error)), ""]
+  factors = {factor.factorCode: factor for factor in package.factors}
+  mainName, subName = factors[result.mainPlotFactor].name, factors[result.subPlotFactor].name
+  unit = f" ({rating.unit})" if rating.unit else ""
+  alpha = translator.number(significanceLevel, decimals=2)
+  sourceNames = {
+    "block": translator.text("report.anova.source.block"),
+    "mainPlot": mainName,
+    "mainPlotError": translator.text("report.splitPlot.source.mainPlotError"),
+    "subPlot": subName,
+    "interaction": translator.text("report.splitPlot.source.interaction", main=mainName, sub=subName),
+    "subPlotError": translator.text("report.splitPlot.source.subPlotError"),
+    "total": translator.text("report.anova.source.total"),
+  }
+  lines = [f"### {translator.text('report.heading.anova')}", ""]
+  if result.transform is not Transform.none:
+    lines += [translator.text("report.anova.transformedScale", scale=_scaleName(result.transform, translator)), ""]
+  lines += _anovaTable(result.table, sourceNames, translator)
+  lines += [
+    "",
+    _field(translator, "report.anova.grandMean", f"{translator.number(result.grandMean, decimals=3)}{unit}"),
+    _field(translator, "report.splitPlot.cvMain", translator.text(
+      "report.value.percent", value=translator.number(result.mainPlotCoefficientOfVariation, decimals=2))),
+    _field(translator, "report.splitPlot.cvSub", translator.text(
+      "report.value.percent", value=translator.number(result.subPlotCoefficientOfVariation, decimals=2))),
+    "",
+  ]
+  for factorCode, name in ((result.mainPlotFactor, mainName), (result.subPlotFactor, subName)):
+    separation = separateFactorMeans(result, factorCode, significanceLevel=significanceLevel, protected=protected)
+    row = next(row for row in result.table if row.source == ("mainPlot" if factorCode == result.mainPlotFactor else "subPlot"))
+    significance = translator.text(
+      "report.means.significant" if separation.factorSignificant else "report.means.notSignificant"
+    )
+    meanHeaderKey = (
+      "report.means.column.mean" if result.transform is Transform.none else "report.means.column.meanOriginalScale"
+    )
+    levelNames = {level.levelCode: level.name for level in factors[factorCode].levels}
+    lines += [
+      f"### {translator.text('report.splitPlot.heading.factorMeans', factor=name)}",
+      "",
+      translator.text(
+        "report.splitPlot.separation", method=translator.text(separation.methodKey), alpha=alpha,
+        significance=significance, probability=_probabilityStatement(row.pValue, translator),
+      ),
+      "",
+      f"| {translator.text('report.splitPlot.column.level')} | {translator.text(meanHeaderKey, unit=unit)} "
+      f"| {translator.text('report.means.column.group')} |",
+      "|---|---:|:--:|",
+      *(
+        f"| {_cell(levelNames[group.levelCode])} "
+        f"| {translator.number(backTransformMean(result.transform, group.mean), decimals=3)} | {group.group} |"
+        for group in separation.groups
+      ),
+      "",
+      _field(translator, "report.means.leastSignificantDifference",
+             translator.number(separation.leastSignificantDifference, decimals=3), alpha=alpha),
+      "",
+    ]
+  cellMeans = {mean.treatmentCode: mean.mean for mean in result.treatmentMeans}
+  subLevels = factors[result.subPlotFactor].levels
+  lines += [
+    f"### {translator.text('report.splitPlot.heading.cellMeans', main=mainName, sub=subName)}",
+    "",
+    f"| {result.mainPlotFactor} | " + " | ".join(_cell(level.name) for level in subLevels) + " |",
+    "|---|" + "---:|" * len(subLevels),
+  ]
+  treatmentFor = {
+    (t.factorLevels[result.mainPlotFactor], t.factorLevels[result.subPlotFactor]): t.treatmentCode
+    for t in package.treatments
+  }
+  for mainLevel in factors[result.mainPlotFactor].levels:
+    cells = (
+      translator.number(
+        backTransformMean(result.transform, cellMeans[treatmentFor[(mainLevel.levelCode, subLevel.levelCode)]]),
+        decimals=3,
+      )
+      for subLevel in subLevels
+    )
+    lines.append(f"| {_cell(mainLevel.name)} | " + " | ".join(cells) + " |")
+  lines += [
+    "",
+    translator.text("report.splitPlot.cellMeansNote"),
+    "",
+    f"### {translator.text('report.heading.assumptions')}",
+    "",
+    translator.text("report.splitPlot.assumptionsNotComputed"),
+    "",
+  ]
+  return lines
+
+
+def _anovaTable(table, sourceNames: dict[str, str], translator: Translator) -> list[str]:
+  header = " | ".join(
+    translator.text(f"report.anova.column.{column}")
+    for column in ("source", "degreesOfFreedom", "sumOfSquares", "meanSquare", "fStatistic", "probability")
+  )
+  lines = [f"| {header} |", "|---|---:|---:|---:|---:|---:|"]
+  for row in table:
+    lines.append(
+      f"| {_cell(sourceNames[row.source])} "
+      f"| {translator.integer(row.degreesOfFreedom)} "
+      f"| {translator.number(row.sumOfSquares, decimals=4)} "
+      f"| {translator.number(row.meanSquare, decimals=4)} "
+      f"| {translator.number(row.fStatistic, decimals=2)} "
+      f"| {_probabilityCell(row.pValue, translator)} |"
+    )
+  return lines
+
+
 def _assumptionsSubsection(
   assessmentCode, package, layout, observations, significanceLevel, translator: Translator
 ) -> list[str]:
@@ -691,8 +817,12 @@ def _reproducibilitySection(
   package, layout, observations, significanceLevel, protected, translator: Translator
 ) -> list[str]:
   test = translator.text(methodKeyFor(protected))
+  methodKey = (
+    "report.reproducibility.splitPlotMethodValue" if package.design.designType is DesignType.splitPlot
+    else "report.reproducibility.methodValue"
+  )
   method = translator.text(
-    "report.reproducibility.methodValue",
+    methodKey,
     test=test,
     alpha=translator.number(significanceLevel, decimals=2),
   )

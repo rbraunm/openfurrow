@@ -24,6 +24,12 @@ Method `sha256FisherYates1`:
    order and draws nothing from the stream; shuffling starts with block 2 at the start
    of the stream. A design without that option is laid out by steps 1 to 5 alone.
 
+A split plot (decision 0020) uses the same stream. In each block the main-plot levels,
+in factor order, are shuffled by step 4; then the subplot levels of each main plot, in
+factor order, are shuffled the same way, main plot 1 first, each continuing the stream.
+Main plot m holds positions (m - 1) * b + 1 to m * b of the block, b being the number of
+subplot levels. Step 6 leaves block 1 entirely in factor order, drawing nothing.
+
 A changed procedure gets a new method name. This one stays as it is, so a layout
 recorded under it can always be regenerated and checked.
 """
@@ -63,6 +69,62 @@ class _Sha256Stream:
       word = self.nextWord()
       if word < limit:
         return word % bound
+
+
+def generateLayout(package: TrialPackage) -> TrialLayout:
+  """Generate the plot map a package's design and seed call for."""
+  if package.design.designType is DesignType.splitPlot:
+    return generateSplitPlotLayout(package)
+  return generateRcbdLayout(package)
+
+
+def _shuffled(count: int, stream: _Sha256Stream) -> list[int]:
+  order = list(range(count))
+  for position in range(count - 1, 0, -1):
+    chosen = stream.below(position + 1)
+    order[position], order[chosen] = order[chosen], order[position]
+  return order
+
+
+def generateSplitPlotLayout(package: TrialPackage) -> TrialLayout:
+  """Generate the split-plot plot map for a trial package from its seed."""
+  design = package.design
+  if design.designType is not DesignType.splitPlot:
+    raise ValueError(f"generateSplitPlotLayout requires a split-plot design, got {design.designType.value}")
+  if design.randomizationMethod is not RandomizationMethod.sha256FisherYates1:
+    raise ValueError(
+      f"a layout with randomization method '{design.randomizationMethod.value}' "
+      f"is supplied with the trial, not generated"
+    )
+  factors = {factor.factorCode: factor for factor in package.factors}
+  mainLevels = [level.levelCode for level in factors[design.mainPlotFactor].levels]
+  subLevels = [level.levelCode for level in factors[design.subPlotFactor].levels]
+  if len(mainLevels) * len(subLevels) > _maxTreatmentsPerBlock:
+    raise ValueError(
+      f"{len(mainLevels) * len(subLevels)} plots per block exceeds the "
+      f"{_maxTreatmentsPerBlock}-per-block plot-number scheme"
+    )
+  treatmentFor = {
+    (treatment.factorLevels[design.mainPlotFactor], treatment.factorLevels[design.subPlotFactor]): treatment.treatmentCode
+    for treatment in package.treatments
+  }
+  stream = _Sha256Stream(design.randomizationSeed)
+  plots: list[PlotAssignment] = []
+  for block in range(1, design.replications + 1):
+    ordered = block == 1 and design.firstBlockInTreatmentOrder
+    mainOrder = list(range(len(mainLevels))) if ordered else _shuffled(len(mainLevels), stream)
+    for mainPlot, mainIndex in enumerate(mainOrder, start=1):
+      subOrder = list(range(len(subLevels))) if ordered else _shuffled(len(subLevels), stream)
+      for subPosition, subIndex in enumerate(subOrder, start=1):
+        positionInBlock = (mainPlot - 1) * len(subLevels) + subPosition
+        plots.append(PlotAssignment(
+          plotNumber=block * 100 + positionInBlock,
+          block=block,
+          positionInBlock=positionInBlock,
+          mainPlot=mainPlot,
+          treatmentCode=treatmentFor[(mainLevels[mainIndex], subLevels[subIndex])],
+        ))
+  return TrialLayout.forPackage(package, plots)
 
 
 def generateRcbdLayout(package: TrialPackage) -> TrialLayout:

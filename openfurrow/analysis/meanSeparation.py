@@ -84,7 +84,7 @@ def separateMeans(
     # Protected: no separation when the treatment effect is not significant.
     letters = ["a"] * len(ordered)
   else:
-    letters = _letterGroups(means, leastSignificantDifference)
+    letters = letterGroups(means, leastSignificantDifference)
 
   groups = [
     TreatmentGroup(treatmentCode=mean.treatmentCode, mean=mean.mean, group=letters[index])
@@ -99,7 +99,7 @@ def separateMeans(
   )
 
 
-def _letterGroups(sortedMeans: list[float], leastSignificantDifference: float) -> list[str]:
+def letterGroups(sortedMeans: list[float], leastSignificantDifference: float) -> list[str]:
   """Compact letter display for means sorted in descending order.
 
   Returns, for each mean, the concatenation of the letters of every maximal

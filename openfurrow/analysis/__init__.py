@@ -13,6 +13,14 @@ from openfurrow.analysis.diagnostics import (
   DiagnosticOutcome,
   assessAssumptions,
 )
+from openfurrow.analysis.splitPlot import (
+  FactorSeparation,
+  LevelGroup,
+  LevelMean,
+  SplitPlotResult,
+  analyzeSplitPlot,
+  separateFactorMeans,
+)
 from openfurrow.analysis.meanSeparation import (
   MeanSeparation,
   TreatmentGroup,
@@ -26,11 +34,17 @@ __all__ = [
   "AnovaSource",
   "Assumptions",
   "DiagnosticOutcome",
+  "FactorSeparation",
+  "LevelGroup",
+  "LevelMean",
   "MeanSeparation",
+  "SplitPlotResult",
   "TreatmentGroup",
   "TreatmentMean",
   "analyzeRcbd",
+  "analyzeSplitPlot",
   "assessAssumptions",
   "methodKeyFor",
+  "separateFactorMeans",
   "separateMeans",
 ]

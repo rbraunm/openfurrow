@@ -317,6 +317,10 @@
       "text": "مرفق مع التجربة، ولم يُوزَّع عشوائيًا هنا",
       "status": "machineDraft"
     },
+    "report.design.mainPlotFactor": {
+      "text": "عامل القطع الرئيسية",
+      "status": "machineDraft"
+    },
     "report.design.plots": {
       "text": "القطع التجريبية",
       "status": "machineDraft"
@@ -327,6 +331,14 @@
     },
     "report.design.seed": {
       "text": "بذرة العشوائية",
+      "status": "machineDraft"
+    },
+    "report.design.splitPlot": {
+      "text": "تصميم القطع المنشقة",
+      "status": "machineDraft"
+    },
+    "report.design.subPlotFactor": {
+      "text": "عامل القطع الفرعية",
       "status": "machineDraft"
     },
     "report.design.treatments": {
@@ -593,6 +605,10 @@
       "text": "بذرة العشوائية",
       "status": "machineDraft"
     },
+    "report.reproducibility.splitPlotMethodValue": {
+      "text": "تحليل تباين القطع المنشقة؛ {test} على خطأ كل عامل (ألفا = {alpha})",
+      "status": "machineDraft"
+    },
     "report.reproducibility.transforms": {
       "text": "التحويلات",
       "status": "machineDraft"
@@ -647,6 +663,50 @@
     },
     "report.soil.texture": {
       "text": "القوام",
+      "status": "machineDraft"
+    },
+    "report.splitPlot.assumptionsNotComputed": {
+      "text": "لا تُحسب فحوص الافتراضات لتصاميم القطع المنشقة بعد.",
+      "status": "machineDraft"
+    },
+    "report.splitPlot.cellMeansNote": {
+      "text": "المقارنات داخل التفاعل (عامل عند مستوى واحد من الآخر) تتطلب أخطاء معيارية خاصة بها ولا تُحسب هنا.",
+      "status": "machineDraft"
+    },
+    "report.splitPlot.column.level": {
+      "text": "المستوى",
+      "status": "machineDraft"
+    },
+    "report.splitPlot.cvMain": {
+      "text": "معامل الاختلاف، القطع الرئيسية (a)",
+      "status": "machineDraft"
+    },
+    "report.splitPlot.cvSub": {
+      "text": "معامل الاختلاف، القطع الفرعية (b)",
+      "status": "machineDraft"
+    },
+    "report.splitPlot.heading.cellMeans": {
+      "text": "متوسطات المعاملات ({main} × {sub})",
+      "status": "machineDraft"
+    },
+    "report.splitPlot.heading.factorMeans": {
+      "text": "متوسطات {factor}",
+      "status": "machineDraft"
+    },
+    "report.splitPlot.separation": {
+      "text": "فصل المتوسطات: {method} (ألفا = {alpha})، على خطأ هذا العامل. التأثير {significance} (P {probability}).",
+      "status": "machineDraft"
+    },
+    "report.splitPlot.source.interaction": {
+      "text": "{main} × {sub}",
+      "status": "machineDraft"
+    },
+    "report.splitPlot.source.mainPlotError": {
+      "text": "خطأ القطع الرئيسية (a)",
+      "status": "machineDraft"
+    },
+    "report.splitPlot.source.subPlotError": {
+      "text": "خطأ القطع الفرعية (b)",
       "status": "machineDraft"
     },
     "report.targets.column.code": {

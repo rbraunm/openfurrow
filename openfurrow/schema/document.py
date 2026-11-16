@@ -47,9 +47,9 @@ class TrialDocument(BaseModel):
     if design.randomizationMethod is not RandomizationMethod.imported:
       # Imported here, not at the top: the design package builds on this schema
       # package, so a top-level import would make the two depend on import order.
-      from openfurrow.design.randomization import generateRcbdLayout
+      from openfurrow.design.randomization import generateLayout
 
-      generated = generateRcbdLayout(self.package).plots
+      generated = generateLayout(self.package).plots
       if _byPlotNumber(self.layout) != _byPlotNumber(generated):
         raise ValueError(
           f"the layout is not the one method '{design.randomizationMethod.value}' produces "

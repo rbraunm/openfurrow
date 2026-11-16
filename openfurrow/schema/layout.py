@@ -22,6 +22,7 @@ class PlotAssignment(BaseModel):
   plotNumber: int = Field(gt=0, description="Field plot label, e.g. 101 for block 1 position 1.")
   block: int = Field(ge=1, description="Block (replication) number, 1-based.")
   positionInBlock: int = Field(ge=1, description="Plot position within the block, 1-based.")
+  mainPlot: int | None = Field(default=None, ge=1, description="Split plot: the main plot within the block, 1-based.")
   treatmentCode: str = Field(min_length=1, description="Treatment placed in this plot.")
 
 
@@ -56,6 +57,31 @@ def checkCompleteBlocks(treatmentCodes: list[str], replications: int, plots: lis
       raise ValueError(f"block {block} has two plots at the same position")
 
 
+def checkMainPlots(mainPlotLevels: dict[str, str], plots: list[PlotAssignment]) -> None:
+  """Raise unless each block's main plots each hold one main-plot level, every subplot of it.
+
+  Within a block every plot names its main plot; a main plot holds the treatments of one
+  main-plot level and all of them, and the block's main plots hold different levels.
+  """
+  subplotCount = len(mainPlotLevels) // len(set(mainPlotLevels.values()))
+  byMainPlot: dict[tuple[int, int], list[PlotAssignment]] = {}
+  for plot in plots:
+    if plot.mainPlot is None:
+      raise ValueError(f"plot {plot.plotNumber} of a split plot names no main plot")
+    byMainPlot.setdefault((plot.block, plot.mainPlot), []).append(plot)
+  levelsByBlock: dict[int, list[str]] = {}
+  for (block, mainPlot), mainPlotPlots in sorted(byMainPlot.items()):
+    levels = {mainPlotLevels[plot.treatmentCode] for plot in mainPlotPlots}
+    if len(levels) != 1 or len(mainPlotPlots) != subplotCount:
+      raise ValueError(
+        f"block {block}, main plot {mainPlot} must hold the {subplotCount} subplots of one main-plot level"
+      )
+    levelsByBlock.setdefault(block, []).append(levels.pop())
+  for block, levels in levelsByBlock.items():
+    if len(set(levels)) != len(levels):
+      raise ValueError(f"block {block} holds a main-plot level in more than one main plot")
+
+
 class TrialLayout(BaseModel):
   """The complete plot map for a trial, with the design it belongs to.
 
@@ -72,9 +98,19 @@ class TrialLayout(BaseModel):
   treatmentCodes: list[str] = Field(min_length=2)
   plots: list[PlotAssignment] = Field(min_length=1)
 
+  mainPlotLevels: dict[str, str] | None = Field(
+    default=None, description="Split plot: each treatment's main-plot level.",
+  )
+
   @model_validator(mode="after")
   def plotsFormCompleteBlocks(self) -> TrialLayout:
     checkCompleteBlocks(self.treatmentCodes, self.replications, self.plots)
+    if self.designType is DesignType.splitPlot:
+      if self.mainPlotLevels is None:
+        raise ValueError("a split-plot layout needs each treatment's main-plot level")
+      checkMainPlots(self.mainPlotLevels, self.plots)
+    elif any(plot.mainPlot is not None for plot in self.plots) or self.mainPlotLevels is not None:
+      raise ValueError(f"a {self.designType.value} layout has no main plots")
     return self
 
   @classmethod
@@ -86,4 +122,8 @@ class TrialLayout(BaseModel):
       replications=package.design.replications,
       treatmentCodes=[treatment.treatmentCode for treatment in package.treatments],
       plots=plots,
+      mainPlotLevels=(
+        {treatment.treatmentCode: package.mainPlotLevelOf(treatment.treatmentCode) for treatment in package.treatments}
+        if package.design.designType is DesignType.splitPlot else None
+      ),
     )

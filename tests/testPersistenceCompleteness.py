@@ -102,14 +102,43 @@ _maximalPackage = {
 }
 
 
+# The fields only a split plot uses. Levels and treatments are listed out of order on
+# purpose, so an exact round trip also proves their order is kept.
+_splitPlotPackage = {
+  "schemaVersion": schemaVersion,
+  "trial": {"trialCode": "SPLIT-1", "title": "Split plot", "crop": "Rice", "season": "1984",
+            "site": "Field 3", "objective": "Nitrogen by variety"},
+  "factors": [
+    {"factorCode": "N", "name": "Nitrogen", "levels": [
+      {"levelCode": "N90", "name": "90 kg N/ha"}, {"levelCode": "N0", "name": "0 kg N/ha"}]},
+    {"factorCode": "V", "name": "Variety", "levels": [
+      {"levelCode": "IR8", "name": "IR8"}, {"levelCode": "PETA", "name": "Peta"}]},
+  ],
+  "treatments": [
+    {"treatmentCode": "N0-IR8", "name": "0 N, IR8", "factorLevels": {"N": "N0", "V": "IR8"}},
+    {"treatmentCode": "N0-PETA", "name": "0 N, Peta", "factorLevels": {"N": "N0", "V": "PETA"}},
+    {"treatmentCode": "N90-PETA", "name": "90 N, Peta", "factorLevels": {"N": "N90", "V": "PETA"}},
+    {"treatmentCode": "N90-IR8", "name": "90 N, IR8", "factorLevels": {"N": "N90", "V": "IR8"}},
+  ],
+  "design": {"designType": "splitPlot", "replications": 3, "mainPlotFactor": "N", "subPlotFactor": "V",
+             "randomizationMethod": "sha256FisherYates1", "randomizationSeed": 5},
+  "ratings": [{"ratingCode": "Y", "name": "Grain yield", "dataType": "numeric", "unit": "kg/ha"}],
+  "assessments": [{"assessmentCode": "Y", "ratingCode": "Y"}],
+}
+
+
 def _package():
   return TrialPackage.model_validate(_maximalPackage)
 
 
+def _splitPlot():
+  return TrialPackage.model_validate(_splitPlotPackage)
+
+
 # ---- the maximal package really is maximal ---------------------------------
 
-# The one field that cannot differ from its default: there is a single design.
-_cannotDiffer = {("DesignSpecification", "designType")}
+# Every field is set to something other than its default in one of the two packages.
+_cannotDiffer: set[tuple[str, str]] = set()
 
 
 def _recordPopulated(model: BaseModel, populated: dict[tuple[str, str], bool]) -> None:
@@ -124,13 +153,14 @@ def _recordPopulated(model: BaseModel, populated: dict[tuple[str, str], bool]) -
 
 
 def testMaximalPackagePopulatesEveryField():
-  """A field added to the schema and left out of the package above fails here.
+  """A field added to the schema and left out of both packages above fails here.
 
   Without this the round trips below would pass for the new field with a default on both
   sides, which is how a dropped column goes unnoticed.
   """
   populated: dict[tuple[str, str], bool] = {}
   _recordPopulated(_package(), populated)
+  _recordPopulated(_splitPlot(), populated)
   assert sorted(key for key, isSet in populated.items() if not isSet) == sorted(_cannotDiffer)
 
 
@@ -142,6 +172,25 @@ def testStoreRoundTripIsExact(tmp_path):
   package = _package()
   workspace.addPackage(package)
   assert workspace.loadPackage("MAX-1") == package
+
+
+def testSplitPlotStoreRoundTripIsExact(tmp_path):
+  workspace = Workspace.create(str(tmp_path / "trials.db"))
+  workspace.addPackage(_splitPlot())
+  assert workspace.loadPackage("SPLIT-1") == _splitPlot()
+  plots = workspace.layoutFor("SPLIT-1").plots
+  assert sorted({plot.mainPlot for plot in plots}) == [1, 2]
+
+
+def testSplitPlotExchangeRoundTripIsExact(tmp_path):
+  source = Workspace.create(str(tmp_path / "a.db"))
+  source.addPackage(_splitPlot())
+  jsonPath = str(tmp_path / "doc.json")
+  source.exportDocument("SPLIT-1", jsonPath)
+  destination = Workspace.create(str(tmp_path / "b.db"))
+  destination.importDocument(jsonPath)
+  assert destination.loadPackage("SPLIT-1") == _splitPlot()
+  assert destination.contentHashFor("SPLIT-1") == source.contentHashFor("SPLIT-1")
 
 
 def testJsonExchangeRoundTripIsExact(tmp_path):
@@ -207,7 +256,7 @@ def testImportedLayoutSurvivesStoreAndExchange(tmp_path):
   first = Workspace.create(str(tmp_path / "a.db"))
   assert first.importDocument(str(sourcePath)) == "MAX-1"
   stored = first.layoutFor("MAX-1").plots
-  assert [plot.model_dump() for plot in stored] == plots
+  assert [plot.model_dump(exclude_none=True) for plot in stored] == plots
   assert first.loadPackage("MAX-1").design.randomizationSeed is None
 
   exportedPath = str(tmp_path / "exported.json")
@@ -215,7 +264,7 @@ def testImportedLayoutSurvivesStoreAndExchange(tmp_path):
   second = Workspace.create(str(tmp_path / "b.db"))
   second.importDocument(exportedPath)
   assert second.contentHashFor("MAX-1") == first.contentHashFor("MAX-1")
-  assert [plot.model_dump() for plot in second.layoutFor("MAX-1").plots] == plots
+  assert [plot.model_dump(exclude_none=True) for plot in second.layoutFor("MAX-1").plots] == plots
 
 
 def testFirstBlockInTreatmentOrderEntersContentHash():

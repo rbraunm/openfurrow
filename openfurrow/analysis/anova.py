@@ -79,9 +79,21 @@ def buildRcbdMatrix(
   layout: TrialLayout,
   observations: list[Observation],
 ) -> tuple[numpy.ndarray, list[str], list[int], Transform]:
-  """Validate inputs and build the block-by-treatment value matrix for an RCBD.
+  """The block-by-treatment matrix of an RCBD; see `buildBlockTreatmentMatrix`."""
+  if layout.designType is not DesignType.rcbd:
+    raise AnalysisError(f"analyzeRcbd requires an RCBD layout, got {layout.designType.value}")
+  return buildBlockTreatmentMatrix(assessmentCode, package, layout, observations)
 
-  Shared by the ANOVA and its assumption diagnostics so the structural checks and
+
+def buildBlockTreatmentMatrix(
+  assessmentCode: str,
+  package: TrialPackage,
+  layout: TrialLayout,
+  observations: list[Observation],
+) -> tuple[numpy.ndarray, list[str], list[int], Transform]:
+  """Validate inputs and build the block-by-treatment value matrix of a complete-block design.
+
+  Shared by the ANOVAs and the assumption diagnostics so the structural checks and
   the transform live in one place: the assessment's declared transform (decision
   0006) is applied here, so both paths run on the same scale. Returns the transformed
   matrix (rows = blocks, columns = treatments, in package treatment order and block
@@ -98,8 +110,6 @@ def buildRcbdMatrix(
     raise AnalysisError(
       f"assessment '{assessmentCode}' is {rating.dataType.value}; RCBD ANOVA requires a numeric assessment"
     )
-  if layout.designType is not DesignType.rcbd:
-    raise AnalysisError(f"analyzeRcbd requires an RCBD layout, got {layout.designType.value}")
   if layout.trialCode != package.trial.trialCode:
     raise AnalysisError(
       f"layout trialCode '{layout.trialCode}' does not match package trial '{package.trial.trialCode}'"

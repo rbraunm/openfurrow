@@ -36,7 +36,7 @@ from sqlalchemy import ForeignKey, Text, event, inspect, select
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, relationship
 
-storeVersion = 7
+storeVersion = 8
 
 
 class StoreError(RuntimeError):
@@ -74,6 +74,8 @@ class TrialRow(Base):
   randomizationMethod: Mapped[str]
   randomizationSeed: Mapped[int | None]
   firstBlockInTreatmentOrder: Mapped[bool]
+  mainPlotFactor: Mapped[str | None]
+  subPlotFactor: Mapped[str | None]
 
   planting: Mapped[PlantingRow | None] = relationship(
     back_populates="trial", cascade="all, delete-orphan"
@@ -82,6 +84,12 @@ class TrialRow(Base):
     back_populates="trial", cascade="all, delete-orphan"
   )
   weather: Mapped[list[WeatherRow]] = relationship(
+    back_populates="trial", cascade="all, delete-orphan"
+  )
+  factors: Mapped[list[FactorRow]] = relationship(
+    back_populates="trial", cascade="all, delete-orphan"
+  )
+  factorLevels: Mapped[list[FactorLevelRow]] = relationship(
     back_populates="trial", cascade="all, delete-orphan"
   )
   targets: Mapped[list[TargetRow]] = relationship(
@@ -181,6 +189,37 @@ class WeatherRow(Base):
   trial: Mapped[TrialRow] = relationship(back_populates="weather")
 
 
+class FactorRow(Base):
+  """One factor of a factorial trial. `ordinal` preserves package order."""
+
+  __tablename__ = "factor"
+
+  trialCode: Mapped[str] = mapped_column(
+    ForeignKey("trial.trialCode", ondelete="CASCADE"), primary_key=True
+  )
+  factorCode: Mapped[str] = mapped_column(primary_key=True)
+  ordinal: Mapped[int]
+  name: Mapped[str]
+
+  trial: Mapped[TrialRow] = relationship(back_populates="factors")
+
+
+class FactorLevelRow(Base):
+  """One level of a factor. `ordinal` preserves the factor's order of levels."""
+
+  __tablename__ = "factorLevel"
+
+  trialCode: Mapped[str] = mapped_column(
+    ForeignKey("trial.trialCode", ondelete="CASCADE"), primary_key=True
+  )
+  factorCode: Mapped[str] = mapped_column(primary_key=True)
+  levelCode: Mapped[str] = mapped_column(primary_key=True)
+  ordinal: Mapped[int]
+  name: Mapped[str]
+
+  trial: Mapped[TrialRow] = relationship(back_populates="factorLevels")
+
+
 class TargetRow(Base):
   """One target of the trial. `ordinal` preserves package order."""
 
@@ -211,6 +250,7 @@ class TreatmentRow(Base):
   ordinal: Mapped[int]
   name: Mapped[str]
   role: Mapped[str | None]
+  factorLevels: Mapped[str] = mapped_column(Text)
 
   trial: Mapped[TrialRow] = relationship(back_populates="treatments")
 
@@ -336,6 +376,7 @@ class PlotRow(Base):
   plotNumber: Mapped[int] = mapped_column(primary_key=True)
   block: Mapped[int]
   positionInBlock: Mapped[int]
+  mainPlot: Mapped[int | None]
   treatmentCode: Mapped[str]
 
   trial: Mapped[TrialRow] = relationship(back_populates="plots")

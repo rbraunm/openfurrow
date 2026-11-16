@@ -37,13 +37,17 @@ from openfurrow.analysis import (
   AnalysisError,
   AnovaResult,
   Assumptions,
+  FactorSeparation,
   MeanSeparation,
+  SplitPlotResult,
   analyzeRcbd as _analyzeRcbd,
+  analyzeSplitPlot as _analyzeSplitPlot,
+  separateFactorMeans as _separateFactorMeans,
   assessAssumptions as _assessAssumptions,
   separateMeans as _separateMeans,
 )
 from openfurrow.config import ImportProfile
-from openfurrow.design import generateRcbdLayout as _generateRcbdLayout
+from openfurrow.design import generateLayout as _generateLayout
 from openfurrow.exchange import (
   ExchangeError,
   exportJson as _exportJson,
@@ -63,6 +67,7 @@ from openfurrow.interop.fieldbook import (
 )
 from openfurrow.reports import buildReport as _buildReport
 from openfurrow.schema import (
+  DesignType,
   Observation,
   RandomizationMethod,
   TrialDocument,
@@ -151,7 +156,7 @@ class Workspace:
         f"trial '{package.trial.trialCode}' declares an imported layout; supply it as a "
         f"trial document, which carries the plots"
       )
-    layout = _generateRcbdLayout(package)
+    layout = _generateLayout(package)
     with _sessionScope(self._engine) as session:
       _savePackage(session, package, layout.plots)
 
@@ -204,10 +209,26 @@ class Workspace:
 
   # ---- analysis -----------------------------------------------------------
 
-  def analyze(self, trialCode: str, assessmentCode: str) -> AnovaResult:
-    """Run the RCBD ANOVA for one numeric assessment."""
+  def analyze(self, trialCode: str, assessmentCode: str) -> AnovaResult | SplitPlotResult:
+    """Run the ANOVA the trial's design calls for, for one numeric assessment."""
     package, layout, observations = self._loadContext(trialCode)
+    if package.design.designType is DesignType.splitPlot:
+      return _analyzeSplitPlot(assessmentCode, package, layout, observations)
     return _analyzeRcbd(assessmentCode, package, layout, observations)
+
+  def separateFactorMeans(
+    self,
+    trialCode: str,
+    assessmentCode: str,
+    factor: str,
+    significanceLevel: float = 0.05,
+    protected: bool = True,
+  ) -> FactorSeparation:
+    """Separate the level means of one factor of a split plot by Fisher's (Protected) LSD."""
+    result = self.analyze(trialCode, assessmentCode)
+    if not isinstance(result, SplitPlotResult):
+      raise AnalysisError(f"trial '{trialCode}' is not a split plot; it has no factors to separate")
+    return _separateFactorMeans(result, factor, significanceLevel=significanceLevel, protected=protected)
 
   def separateMeans(
     self,
@@ -218,6 +239,10 @@ class Workspace:
   ) -> MeanSeparation:
     """Separate treatment means by Fisher's (Protected) LSD for one assessment."""
     result = self.analyze(trialCode, assessmentCode)
+    if isinstance(result, SplitPlotResult):
+      raise AnalysisError(
+        f"trial '{trialCode}' is a split plot; its means are separated for each factor (separateFactorMeans)"
+      )
     return _separateMeans(result, significanceLevel=significanceLevel, protected=protected)
 
   def assessAssumptions(

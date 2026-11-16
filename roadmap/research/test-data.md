@@ -198,6 +198,24 @@ the treatment means, the ANOVA and the CV.
   error mean square of 110,558, F = 2.17 and a CV of 6.7%, the values reported from the
   book's tables.
 
+### D7. gomez.splitplot -- rice nitrogen by variety (split plot)
+
+**6 nitrogen levels (main plots) x 4 varieties (subplots) x 3 replications**, grain yield
+in kg/ha.
+
+- **Source:** Gomez & Gomez (1984), *Statistical Procedures for Agricultural Research*,
+  Table 3.7 (data) and Table 3.10 (ANOVA), section 3.4.2. Read from an openly posted scan
+  of the book and transcribed.
+- **Role:** the known answer for the split-plot analysis: both error strata, F values,
+  and the two coefficients of variation.
+- **Status:** IN USE. Fixture `tests/fixtures/gomezSplitPlot.csv`, validated by
+  `tests/testSplitPlot.py`, which reproduces Table 3.10 to its printed precision and
+  matches statsmodels at full precision.
+- **Confirmed on transcription:** the replication totals (128,873; 135,604; 130,004), the
+  totals of N0 and N5, of V1 and V4 and of two cells agree with the book's printed totals.
+  The book's Error(a) is computed from rounded sums (exact 1,419,678.81, printed
+  1,419,678), and its replication mean square is misprinted (541,228 for 541,288).
+
 ### D3. sweetpotato -- virus conditions (completely randomized)
 
 **4 virus conditions x 3 plots**, no blocks, harvested weight. The agricolae tutorial
@@ -258,6 +276,7 @@ confirmed as a pair of plot-level data and a matching published analysis.
 | gomez.seedrate                | single-factor RCBD  | numeric         | complete, not signif.| yes    |
 | missing-data variants         | RCBD + gap          | count           | incomplete (induced) | yes    |
 | beall.webworms                | factorial + subsamp | count           | complete, large      | future |
+| gomez.splitplot               | split-plot          | numeric         | complete, published  | yes    |
 | durban.splitplot              | split-plot          | numeric         | complete, large      | future |
 | fisher.barley                 | MET (g x e)         | numeric         | balanced across env  | future |
 

@@ -317,6 +317,10 @@
       "text": "aportada con el ensayo, no aleatorizada aquí",
       "status": "machineDraft"
     },
+    "report.design.mainPlotFactor": {
+      "text": "Factor de parcela principal",
+      "status": "machineDraft"
+    },
     "report.design.plots": {
       "text": "Parcelas",
       "status": "machineDraft"
@@ -327,6 +331,14 @@
     },
     "report.design.seed": {
       "text": "Semilla de aleatorización",
+      "status": "machineDraft"
+    },
+    "report.design.splitPlot": {
+      "text": "Diseño de parcelas divididas",
+      "status": "machineDraft"
+    },
+    "report.design.subPlotFactor": {
+      "text": "Factor de subparcela",
       "status": "machineDraft"
     },
     "report.design.treatments": {
@@ -593,6 +605,10 @@
       "text": "Semilla de aleatorización",
       "status": "machineDraft"
     },
+    "report.reproducibility.splitPlotMethodValue": {
+      "text": "ANOVA de parcelas divididas; {test} con el error propio de cada factor (alfa = {alpha})",
+      "status": "machineDraft"
+    },
     "report.reproducibility.transforms": {
       "text": "Transformaciones",
       "status": "machineDraft"
@@ -647,6 +663,50 @@
     },
     "report.soil.texture": {
       "text": "Textura",
+      "status": "machineDraft"
+    },
+    "report.splitPlot.assumptionsNotComputed": {
+      "text": "Las comprobaciones de supuestos aún no se calculan para diseños de parcelas divididas.",
+      "status": "machineDraft"
+    },
+    "report.splitPlot.cellMeansNote": {
+      "text": "Las comparaciones dentro de la interacción (un factor en un solo nivel del otro) requieren errores estándar propios y no se calculan aquí.",
+      "status": "machineDraft"
+    },
+    "report.splitPlot.column.level": {
+      "text": "Nivel",
+      "status": "machineDraft"
+    },
+    "report.splitPlot.cvMain": {
+      "text": "Coeficiente de variación, parcelas principales (a)",
+      "status": "machineDraft"
+    },
+    "report.splitPlot.cvSub": {
+      "text": "Coeficiente de variación, subparcelas (b)",
+      "status": "machineDraft"
+    },
+    "report.splitPlot.heading.cellMeans": {
+      "text": "Medias de tratamientos ({main} × {sub})",
+      "status": "machineDraft"
+    },
+    "report.splitPlot.heading.factorMeans": {
+      "text": "Medias de {factor}",
+      "status": "machineDraft"
+    },
+    "report.splitPlot.separation": {
+      "text": "Separación de medias: {method} (alfa = {alpha}), con el error propio de este factor. Efecto {significance} (P {probability}).",
+      "status": "machineDraft"
+    },
+    "report.splitPlot.source.interaction": {
+      "text": "{main} × {sub}",
+      "status": "machineDraft"
+    },
+    "report.splitPlot.source.mainPlotError": {
+      "text": "Error de parcela principal (a)",
+      "status": "machineDraft"
+    },
+    "report.splitPlot.source.subPlotError": {
+      "text": "Error de subparcela (b)",
       "status": "machineDraft"
     },
     "report.targets.column.code": {

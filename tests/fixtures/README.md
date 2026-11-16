@@ -75,3 +75,13 @@ treatment effect that is not significant.
   `agridat/gomez.seedrate`. agridat notes the data are used with permission of K. A. Gomez.
 - Published ANOVA: treatment SS 1,198,331; error df 15 SS 1,658,376 MS 110,558; F 2.17;
   CV 6.7%.
+
+## gomezSplitPlot.csv
+
+A split-plot trial of six nitrogen levels (main plots) and four rice varieties (subplots)
+in three replications, grain yield in kg/ha (`nitrogen, variety, replication, yield`).
+
+- Source: Gomez & Gomez (1984), Statistical Procedures for Agricultural Research, Table
+  3.7; the ANOVA it is checked against is Table 3.10. Transcribed from the book; the
+  transcription is checked against the book's printed replication, factor and cell
+  totals.

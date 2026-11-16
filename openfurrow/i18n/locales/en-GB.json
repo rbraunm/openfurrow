@@ -81,6 +81,66 @@
       "text": "in treatment order, not randomised",
       "status": "humanApproved"
     },
+    "report.design.splitPlot": {
+      "text": "Split-plot design",
+      "status": "humanApproved"
+    },
+    "report.design.mainPlotFactor": {
+      "text": "Main-plot factor",
+      "status": "humanApproved"
+    },
+    "report.design.subPlotFactor": {
+      "text": "Subplot factor",
+      "status": "humanApproved"
+    },
+    "report.splitPlot.source.mainPlotError": {
+      "text": "Main-plot error (a)",
+      "status": "humanApproved"
+    },
+    "report.splitPlot.source.subPlotError": {
+      "text": "Subplot error (b)",
+      "status": "humanApproved"
+    },
+    "report.splitPlot.source.interaction": {
+      "text": "{main} × {sub}",
+      "status": "humanApproved"
+    },
+    "report.splitPlot.cvMain": {
+      "text": "Coefficient of variation, main plots (a)",
+      "status": "humanApproved"
+    },
+    "report.splitPlot.cvSub": {
+      "text": "Coefficient of variation, subplots (b)",
+      "status": "humanApproved"
+    },
+    "report.splitPlot.heading.factorMeans": {
+      "text": "Means of {factor}",
+      "status": "humanApproved"
+    },
+    "report.splitPlot.separation": {
+      "text": "Mean separation: {method} (alpha = {alpha}), on this factor's own error. Effect {significance} (P {probability}).",
+      "status": "humanApproved"
+    },
+    "report.splitPlot.column.level": {
+      "text": "Level",
+      "status": "humanApproved"
+    },
+    "report.splitPlot.heading.cellMeans": {
+      "text": "Treatment means ({main} × {sub})",
+      "status": "humanApproved"
+    },
+    "report.splitPlot.cellMeansNote": {
+      "text": "Comparisons within the interaction (one factor at a single level of the other) need standard errors of their own and are not computed here.",
+      "status": "humanApproved"
+    },
+    "report.splitPlot.assumptionsNotComputed": {
+      "text": "Assumption checks are not computed for split-plot designs yet.",
+      "status": "humanApproved"
+    },
+    "report.reproducibility.splitPlotMethodValue": {
+      "text": "Split-plot ANOVA; {test} on each factor's own error (alpha = {alpha})",
+      "status": "humanApproved"
+    },
     "report.heading.treatments": {
       "text": "Treatments",
       "status": "humanApproved"
