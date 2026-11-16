@@ -234,3 +234,22 @@ def testReportPageOffersPrinting(served):
   _, client = served
   assert 'onclick="window.print()">Print</button>' in client.get("/trials/ENT-1/report").get_data(as_text=True)
   assert 'onclick="window.print()">Imprimir</button>' in client.get("/trials/ENT-1/report?locale=es").get_data(as_text=True)
+
+def testFieldMapOutlinesMainPlotsAndDrawsChecks(tmp_path):
+  from testSplitPlot import gomezPackageDict
+  from testChecks import packageDict as checksPackageDict
+  databasePath = str(tmp_path / "map.db")
+  workspace = Workspace.create(databasePath)
+  workspace.addPackage(TrialPackage.model_validate(gomezPackageDict()))
+  workspace.addPackage(TrialPackage.model_validate(checksPackageDict("paired")))
+  client = createApp(databasePath).test_client()
+  split = client.get("/trials/GOMEZ-3.7").get_data(as_text=True)
+  assert split.count('class="main-plot"') == 18
+  assert "Main plot 1: N" in split
+  paired = client.get("/trials/CHK-1").get_data(as_text=True)
+  layout = workspace.layoutFor("CHK-1")
+  cells = re.findall(r'<li class="plot( plot-check)?"[^>]*>\s*<span class="plot-number code">(\d+)</span>', paired)
+  order = [int(number) for _, number in cells]
+  for plot in layout.plots:
+    assert order[order.index(plot.plotNumber) + 1] == 10000 + plot.plotNumber
+  assert sum(1 for check, _ in cells if check) == len(layout.plots)

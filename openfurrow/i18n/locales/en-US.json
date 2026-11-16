@@ -1029,6 +1029,14 @@
       "text": "Treatments",
       "status": "source"
     },
+    "web.trial.mainPlotLabel": {
+      "text": "Main plot {number}: {level}",
+      "status": "source"
+    },
+    "web.trial.untreated": {
+      "text": "untreated",
+      "status": "source"
+    },
     "web.trial.enterData": {
       "text": "Enter data",
       "status": "source"

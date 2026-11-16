@@ -1237,6 +1237,10 @@
       "text": "Traitements",
       "status": "machineDraft"
     },
+    "web.trial.mainPlotLabel": {
+      "text": "Grande parcelle {number}: {level}",
+      "status": "machineDraft"
+    },
     "web.trial.noObservations": {
       "text": "Aucune observation pour l'instant. Importez-en pour lancer l'analyse.",
       "status": "machineDraft"
@@ -1255,6 +1259,10 @@
     },
     "web.trial.summary": {
       "text": "Résumé",
+      "status": "machineDraft"
+    },
+    "web.trial.untreated": {
+      "text": "non traité",
       "status": "machineDraft"
     },
     "web.trial.viewReport": {

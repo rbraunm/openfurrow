@@ -1029,6 +1029,14 @@
       "text": "Treatments",
       "status": "humanApproved"
     },
+    "web.trial.mainPlotLabel": {
+      "text": "Main plot {number}: {level}",
+      "status": "humanApproved"
+    },
+    "web.trial.untreated": {
+      "text": "untreated",
+      "status": "humanApproved"
+    },
     "web.trial.enterData": {
       "text": "Enter data",
       "status": "humanApproved"

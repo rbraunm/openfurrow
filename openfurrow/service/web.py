@@ -86,7 +86,7 @@ def createWebBlueprint(workspace: Workspace, config: OpenFurrowConfig | None = N
       "package": package,
       "observationCount": len(workspace.loadObservations(trialCode)),
       "contentHash": workspace.contentHashFor(trialCode),
-      "blocks": _blocks(layout),
+      "blocks": _blocks(layout, package),
       "legend": _legend(package),
     }
 
@@ -372,21 +372,35 @@ def _legend(package: TrialPackage) -> list[dict]:
   ]
 
 
-def _blocks(layout) -> list[dict]:
-  """Group the layout's plots by block, ordered for a field-walk display."""
+def _blocks(layout, package) -> list[dict]:
+  """The layout as the field is walked: blocks, the main plots of a split plot, and the plots.
+
+  A check plot is drawn right after the last plot it serves, so a strip between plots
+  sits where it lies and a half or a partner sits beside its plot.
+  """
+  levelNames = {}
+  if package.design.mainPlotFactor is not None:
+    factor = next(f for f in package.factors if f.factorCode == package.design.mainPlotFactor)
+    levelNames = {level.levelCode: level.name for level in factor.levels}
+  checksAfter: dict[int, list] = {}
+  positionOf = {plot.plotNumber: (plot.block, plot.positionInBlock) for plot in layout.plots}
+  for check in layout.checkPlots:
+    last = max(check.pairedPlots, key=lambda number: positionOf[number])
+    checksAfter.setdefault(last, []).append(check)
   grouped: dict[int, list] = {}
   for plot in layout.plots:
     grouped.setdefault(plot.block, []).append(plot)
   blocks = []
   for block in sorted(grouped):
-    plots = sorted(grouped[block], key=lambda plot: plot.positionInBlock)
-    blocks.append({
-      "block": block,
-      "plots": [
-        {"plotNumber": plot.plotNumber, "treatmentCode": plot.treatmentCode}
-        for plot in plots
-      ],
-    })
+    groups: list[dict] = []
+    for plot in sorted(grouped[block], key=lambda plot: plot.positionInBlock):
+      if not groups or groups[-1]["mainPlot"] != plot.mainPlot:
+        level = layout.mainPlotLevels[plot.treatmentCode] if plot.mainPlot is not None else None
+        groups.append({"mainPlot": plot.mainPlot, "level": levelNames.get(level), "cells": []})
+      groups[-1]["cells"].append({"plotNumber": plot.plotNumber, "treatmentCode": plot.treatmentCode, "isCheck": False})
+      for check in sorted(checksAfter.get(plot.plotNumber, []), key=lambda check: check.plotNumber):
+        groups[-1]["cells"].append({"plotNumber": check.plotNumber, "treatmentCode": None, "isCheck": True})
+    blocks.append({"block": block, "groups": groups})
   return blocks
 
 

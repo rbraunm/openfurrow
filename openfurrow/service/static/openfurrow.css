@@ -231,6 +231,12 @@ textarea {
   padding: 0.4rem 0.5rem;
 }
 .plot-number { font-size: 1rem; font-weight: 600; }
+.plot-check { border-style: dashed; border-inline-start: 1px dashed var(--furrow); background: transparent; }
+.main-plot {
+  flex: none; display: flex; flex-direction: column; gap: 0.3rem;
+  border: 2px solid var(--furrow); border-radius: var(--radius); padding: 0.35rem;
+}
+.main-plot-label { font-size: 0.72rem; color: var(--furrow); }
 .plot-treatment { font-size: 0.78rem; color: var(--furrow); }
 
 .footer {

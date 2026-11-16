@@ -89,12 +89,30 @@
     <div class="block">
       <div class="block-label code">{{ t.text('web.trial.blockLabel', block=t.integer(block.block)) }}</div>
       <ol class="plots">
-        {% for plot in block.plots %}
-        {% set color = (legend | selectattr('code', 'equalto', plot.treatmentCode) | first).color %}
-        <li class="plot" style="--treatment: {{ color }}">
-          <span class="plot-number code">{{ plot.plotNumber }}</span>
-          <span class="plot-treatment code">{{ plot.treatmentCode }}</span>
+        {% for group in block.groups %}
+        {% if group.mainPlot is not none %}
+        <li class="main-plot">
+          <span class="main-plot-label">{{ t.text('web.trial.mainPlotLabel', number=t.integer(group.mainPlot), level=group.level) }}</span>
+          <ol class="plots">
+        {% endif %}
+        {% for cell in group.cells %}
+        {% if cell.isCheck %}
+        <li class="plot plot-check">
+          <span class="plot-number code">{{ cell.plotNumber }}</span>
+          <span class="plot-treatment">{{ t.text('web.trial.untreated') }}</span>
         </li>
+        {% else %}
+        {% set color = (legend | selectattr('code', 'equalto', cell.treatmentCode) | first).color %}
+        <li class="plot" style="--treatment: {{ color }}">
+          <span class="plot-number code">{{ cell.plotNumber }}</span>
+          <span class="plot-treatment code">{{ cell.treatmentCode }}</span>
+        </li>
+        {% endif %}
+        {% endfor %}
+        {% if group.mainPlot is not none %}
+          </ol>
+        </li>
+        {% endif %}
         {% endfor %}
       </ol>
     </div>

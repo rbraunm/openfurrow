@@ -6,7 +6,7 @@ Findings, defects, checks and owner calls that the plans do not carry.
 Status tags: `fix` (a defect to correct), `build` (work to add), `check` (a suspicion to
 measure), `owner` (the owner's call), `done`.
 
-**Counts.** fix 0, build 16, check 0, owner 4, done 36; 56 in all.
+**Counts.** fix 0, build 15, check 0, owner 4, done 37; 56 in all.
 
 ## Owner decisions
 
@@ -251,9 +251,9 @@ measure), `owner` (the owner's call), `done`.
   the report says they are not computed.
 - **USR-12** `build` **Assumption checks for a split plot.** The RCBD checks do not carry
   over to two error strata; the report says they are not computed.
-- **USR-13** `build` **The field map of a split plot or a trial with checks.** The trial
-  page shows the plots of each block in order but does not outline the main plots or
-  draw the check plots.
+- **USR-13** `done` **The field map of a split plot or a trial with checks.** The map
+  outlines each main plot with its main-plot level, and draws each check plot dashed and
+  marked untreated, right after the last plot it serves.
 - **USR-8** `build` **What happened to a plot, and who changed a value.** A lost plot, a misapplied treatment or a
   difference between the plan and what was planted has no record. EPPO PP 1/181 asks for
   deviations to be noted and reported (decision 0015, "Consequences").

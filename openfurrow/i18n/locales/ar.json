@@ -1237,6 +1237,10 @@
       "text": "المعاملات",
       "status": "machineDraft"
     },
+    "web.trial.mainPlotLabel": {
+      "text": "القطعة الرئيسية {number}: {level}",
+      "status": "machineDraft"
+    },
     "web.trial.noObservations": {
       "text": "لا توجد مشاهدات بعد. استورد بعضها لتشغيل التحليل.",
       "status": "machineDraft"
@@ -1255,6 +1259,10 @@
     },
     "web.trial.summary": {
       "text": "الملخص",
+      "status": "machineDraft"
+    },
+    "web.trial.untreated": {
+      "text": "غير معامل",
       "status": "machineDraft"
     },
     "web.trial.viewReport": {

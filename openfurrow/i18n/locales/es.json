@@ -1237,6 +1237,10 @@
       "text": "Tratamientos",
       "status": "machineDraft"
     },
+    "web.trial.mainPlotLabel": {
+      "text": "Parcela principal {number}: {level}",
+      "status": "machineDraft"
+    },
     "web.trial.noObservations": {
       "text": "Aún no hay observaciones. Importe algunas para ejecutar el análisis.",
       "status": "machineDraft"
@@ -1255,6 +1259,10 @@
     },
     "web.trial.summary": {
       "text": "Resumen",
+      "status": "machineDraft"
+    },
+    "web.trial.untreated": {
+      "text": "sin tratar",
       "status": "machineDraft"
     },
     "web.trial.viewReport": {
