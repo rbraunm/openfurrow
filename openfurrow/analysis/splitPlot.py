@@ -117,6 +117,29 @@ def analyzeSplitPlot(
       matrix[:, treatmentIndex]
     )
 
+  treatmentMeans = [
+    TreatmentMean(treatmentCode=code, mean=float(matrix[:, index].mean()), observationCount=blockCount)
+    for index, code in enumerate(treatmentCodes)
+  ]
+  return twoStrataAnova(
+    assessmentCode, values, mainLevels, subLevels, design.mainPlotFactor, design.subPlotFactor,
+    transform, treatmentMeans, DesignType.splitPlot,
+  )
+
+
+def twoStrataAnova(
+  assessmentCode: str,
+  values: numpy.ndarray,
+  mainLevels: list[str],
+  subLevels: list[str],
+  mainPlotFactor: str,
+  subPlotFactor: str,
+  transform: Transform,
+  treatmentMeans: list[TreatmentMean],
+  designType: DesignType,
+) -> SplitPlotResult:
+  """The two-stratum ANOVA of values indexed [block, main-plot level, subplot level]."""
+  blockCount, mainCount, subCount = values.shape
   grandMean = float(values.mean())
   blockMeans = values.mean(axis=(1, 2))
   mainMeans = values.mean(axis=(0, 2))
@@ -182,10 +205,10 @@ def analyzeSplitPlot(
   ]
   return SplitPlotResult(
     assessmentCode=assessmentCode,
-    designType=DesignType.splitPlot,
+    designType=designType,
     transform=transform,
-    mainPlotFactor=design.mainPlotFactor,
-    subPlotFactor=design.subPlotFactor,
+    mainPlotFactor=mainPlotFactor,
+    subPlotFactor=subPlotFactor,
     blockCount=blockCount,
     grandMean=grandMean,
     mainPlotErrorMeanSquare=meanSquareMainError,
@@ -203,10 +226,7 @@ def analyzeSplitPlot(
       LevelMean(levelCode=code, mean=float(subMeans[index]), observationCount=blockCount * mainCount)
       for index, code in enumerate(subLevels)
     ],
-    treatmentMeans=[
-      TreatmentMean(treatmentCode=code, mean=float(matrix[:, index].mean()), observationCount=blockCount)
-      for index, code in enumerate(treatmentCodes)
-    ],
+    treatmentMeans=treatmentMeans,
   )
 
 

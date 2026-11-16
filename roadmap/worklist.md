@@ -6,7 +6,7 @@ Findings, defects, checks and owner calls that the plans do not carry.
 Status tags: `fix` (a defect to correct), `build` (work to add), `check` (a suspicion to
 measure), `owner` (the owner's call), `done`.
 
-**Counts.** fix 0, build 18, check 0, owner 5, done 31; 54 in all.
+**Counts.** fix 0, build 18, check 0, owner 4, done 33; 55 in all.
 
 ## Owner decisions
 
@@ -31,6 +31,8 @@ measure), `owner` (the owner's call), `done`.
 - **Oracles (2026-11-15):** finished trials that are openly available, from different
   sources and fields, are the yardstick; a private trial is not needed to start.
   Candidates are in `research/test-data.md`.
+- **Paired plot (2026-11-15):** the name covers several arrangements; all of them are
+  supported rather than one chosen (decision 0022, REC-14).
 - **Values outside their limits (2026-11-15):** a typed value outside its allowed range is
   flagged and kept once the user confirms it, and the record keeps the confirmation. It is
   not refused (REC-9).
@@ -245,8 +247,9 @@ measure), `owner` (the owner's call), `done`.
   the report says they are not computed.
 - **USR-12** `build` **Assumption checks for a split plot.** The RCBD checks do not carry
   over to two error strata; the report says they are not computed.
-- **USR-13** `build` **The field map of a split plot.** The trial page shows the plots of
-  each block in order but does not outline the main plots.
+- **USR-13** `build` **The field map of a split plot or a trial with checks.** The trial
+  page shows the plots of each block in order but does not outline the main plots or
+  draw the check plots.
 - **USR-8** `build` **What happened to a plot.** A lost plot, a misapplied treatment or a
   difference between the plan and what was planted has no record. EPPO PP 1/181 asks for
   deviations to be noted and reported (decision 0015, "Consequences").
@@ -297,12 +300,12 @@ sections added beside them. REC-9 needs data entry in the tool (USR-4).
   date order with rainfall, irrigation, minimum and maximum temperature and notes; the
   conditions on application days are with each application (REC-4). Reading a log from a
   file is REC-13.
-- **REC-14** `owner` **What a paired plot is.** The term covers different arrangements.
-  EPPO PP 1/152 has imbricated controls (untreated strips between plots, left out of the
-  analysis) and adjacent controls (each plot halved, one half left untreated, analysed as a
-  split plot); on-farm guides pair a treated strip with a check strip for a paired t-test;
-  ARM computes efficacy plot by plot against a paired untreated check. Which one the
-  specialist means is a question for the specialist, through the owner.
+- **REC-14** `done` **What a paired plot is.** The name covers three arrangements; the
+  owner decided to support all of them (decision 0022): imbricated strips, adjacent
+  halves and paired partners, with percent control by Abbott or Henderson-Tilton.
+- **REC-15** `build` **Plot sizes and the zones between plots.** Section 1.3 of the
+  standard asks for the number, size and shape of plots, gross and net plots and the
+  zones between them. Today none is recorded.
 - **REC-12** `build` **The site itself.** Section 1.1 of the standard: the site's address
   and coordinates, field or glasshouse, exposure and slope; and for perennial crops the
   spacing, training system, rootstock and age (section 1.2). Today the site is one line of
@@ -310,22 +313,11 @@ sections added beside them. REC-9 needs data entry in the tool (USR-4).
 - **REC-13** `build` **A weather log from a file.** Weather comes from a station or a
   service as a table of days; today it is typed into the trial file. Reading a CSV of
   days, with its units stated, would spare that.
-- **REC-7** `build` **Special randomizations.** Today: one design, the RCBD, with every
-  block shuffled independently. Plan: REP-1 (decision 0015) makes any layout a record,
-  so an arrangement made by hand or in another tool is held with its own plot numbers.
-  Then, after section 1.3: the arrangement of the untreated control (included,
-  imbricated, excluded), plot sizes and the zones between plots, and further designs in
-  the order the specialist's trials need them (completely randomized, Latin square,
-  split-plot, strip-plot). The specialist names the arrangements in use: the first
-  replicate left in treatment order, split plots, paired plots and the spatially balanced
-  RCBD. The first is built: a generated design may set `firstBlockInTreatmentOrder`, and
-  block 1 then keeps package order while the other blocks are shuffled (randomization step
-  6); the report says so. The split plot is built (decision 0020): two factors, main
-  plots in complete blocks, the project's own randomization, and the two-stratum
-  analysis checked against Gomez and Gomez Table 3.10. Still to come: the paired plot,
-  whose meaning differs between sources (REC-14). The spatially balanced RCBD is built
-  (decision 0021), by a procedure of the project's own since ARM's is not published. Any of them laid out
-  elsewhere can already be held as an imported layout.
+- **REC-7** `done` **Special randomizations.** The arrangements the specialist named are
+  built: the first replicate left in treatment order (a design option), the split plot
+  (decision 0020), the spatially balanced RCBD (decision 0021) and the paired plot in all
+  three of its meanings (decision 0022). Any arrangement laid out elsewhere comes in as an
+  imported layout. Plot sizes and the zones between plots are REC-15.
 - **REC-8** `done` **Assessment definitions.** Built as decision 0017 says: a rating holds
   what is rated and every rule its values obey (rating type, part rated, method, data
   type, unit, limits or categories, measurement kind, transform); an assessment is one

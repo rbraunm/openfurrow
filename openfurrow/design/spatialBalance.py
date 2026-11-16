@@ -174,4 +174,6 @@ def generateSpatiallyBalancedLayout(package: TrialPackage) -> TrialLayout:
     for block, order in enumerate(orders)
     for place, treatment in enumerate(order)
   ]
-  return TrialLayout.forPackage(package, plots)
+  from openfurrow.design.randomization import generatedCheckPlots
+
+  return TrialLayout.forPackage(package, plots, generatedCheckPlots(package, plots))

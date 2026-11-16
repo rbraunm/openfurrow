@@ -220,7 +220,7 @@ def testLayoutMixingMainPlotLevelsRejected():
   first, second = (plot for plot in plots if plot["block"] == 1 and plot["mainPlot"] in (1, 2) and plot["positionInBlock"] in (1, 5))
   first["treatmentCode"], second["treatmentCode"] = second["treatmentCode"], first["treatmentCode"]
   with pytest.raises(ValidationError, match="block 1, main plot 1 must hold the 4 subplots of one main-plot level"):
-    TrialLayout.forPackage(package, plots)
+    TrialLayout.forPackage(package, plots, [])
 
 
 def testRcbdAnalysisRefusesASplitPlot():

@@ -293,6 +293,90 @@
       "text": "Los residuos provienen del modelo aditivo de bloques y tratamientos y están restringidos (suman cero dentro de cada bloque y cada tratamiento), por lo que la prueba de normalidad es aproximada.",
       "status": "machineDraft"
     },
+    "report.checks.arrangement.adjacent": {
+      "text": "Cada parcela se divide y una mitad queda sin tratar; el análisis anterior usa las mitades tratadas.",
+      "status": "machineDraft"
+    },
+    "report.checks.arrangement.imbricated": {
+      "text": "Franjas sin tratar entre las parcelas; muestran la presión de la plaga y quedan fuera del análisis anterior.",
+      "status": "machineDraft"
+    },
+    "report.checks.arrangement.paired": {
+      "text": "Cada parcela tratada tiene su propio testigo sin tratar; el análisis anterior usa las parcelas tratadas.",
+      "status": "machineDraft"
+    },
+    "report.checks.checkMean": {
+      "text": "Media de las parcelas testigo",
+      "status": "machineDraft"
+    },
+    "report.checks.column.check": {
+      "text": "Testigo",
+      "status": "machineDraft"
+    },
+    "report.checks.column.degreesOfFreedom": {
+      "text": "gl",
+      "status": "machineDraft"
+    },
+    "report.checks.column.difference": {
+      "text": "Diferencia",
+      "status": "machineDraft"
+    },
+    "report.checks.column.efficacy": {
+      "text": "Porcentaje de control",
+      "status": "machineDraft"
+    },
+    "report.checks.column.probability": {
+      "text": "P",
+      "status": "machineDraft"
+    },
+    "report.checks.column.t": {
+      "text": "t",
+      "status": "machineDraft"
+    },
+    "report.checks.column.treated": {
+      "text": "Tratada",
+      "status": "machineDraft"
+    },
+    "report.checks.column.treatment": {
+      "text": "Tratamiento",
+      "status": "machineDraft"
+    },
+    "report.checks.efficacyMethod.abbott": {
+      "text": "Abbott",
+      "status": "machineDraft"
+    },
+    "report.checks.efficacyMethod.hendersonTilton": {
+      "text": "Henderson-Tilton",
+      "status": "machineDraft"
+    },
+    "report.checks.heading": {
+      "text": "Testigos sin tratar",
+      "status": "machineDraft"
+    },
+    "report.checks.heading.efficacy": {
+      "text": "Porcentaje de control ({method})",
+      "status": "machineDraft"
+    },
+    "report.checks.heading.halves": {
+      "text": "Mitades tratadas y sin tratar",
+      "status": "machineDraft"
+    },
+    "report.checks.heading.paired": {
+      "text": "Cada tratamiento frente a sus testigos",
+      "status": "machineDraft"
+    },
+    "report.checks.source.half": {
+      "text": "Mitad (tratada o sin tratar)",
+      "status": "machineDraft"
+    },
+    "report.checks.source.treatmentByHalf": {
+      "text": "Tratamiento × mitad",
+      "status": "machineDraft"
+    },
+    "report.checks.treatedMean": {
+      "text": "Media de las parcelas tratadas",
+      "status": "machineDraft"
+    },
     "report.design.arrangement": {
       "text": "Disposición en los bloques",
       "status": "machineDraft"

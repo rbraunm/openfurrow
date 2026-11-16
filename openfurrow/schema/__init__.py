@@ -5,6 +5,8 @@ from openfurrow.schema.application import Application, SoilMoisture
 from openfurrow.schema.assessment import (
   Assessment,
   AssessmentDataType,
+  Efficacy,
+  EfficacyMethod,
   MeasurementKind,
   Rating,
   Transform,
@@ -16,6 +18,7 @@ from openfurrow.schema.document import (
 )
 from openfurrow.schema.factor import Factor, FactorLevel
 from openfurrow.schema.layout import (
+  CheckPlot,
   PlotAssignment,
   TrialLayout,
 )
@@ -32,6 +35,7 @@ from openfurrow.schema.treatment import (
   TreatmentRole,
 )
 from openfurrow.schema.trialPackage import (
+  CheckArrangement,
   DesignSpecification,
   DesignType,
   RandomizationMethod,
@@ -44,6 +48,10 @@ __all__ = [
   "Application",
   "Assessment",
   "AssessmentDataType",
+  "CheckArrangement",
+  "CheckPlot",
+  "Efficacy",
+  "EfficacyMethod",
   "DesignSpecification",
   "DesignType",
   "Factor",

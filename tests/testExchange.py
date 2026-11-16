@@ -126,7 +126,7 @@ def testDatabaseAndJsonAgreeOnHash(tmp_path):
   document = sampleDocument()
   engine = createDatabase(str(tmp_path / "trials.db"))
   with sessionScope(engine) as session:
-    savePackage(session, document.package, document.layout)
+    savePackage(session, document.package, document.layout, document.checkPlots)
     saveObservations(session, "TRIAL-1", document.observations)
   with sessionScope(engine) as session:
     fromStore = TrialDocument(

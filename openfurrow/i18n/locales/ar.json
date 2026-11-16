@@ -293,6 +293,90 @@
       "text": "البواقي مشتقة من النموذج الجمعي للقطاعات والمعاملات وهي مقيدة (مجموعها صفر داخل كل قطاع وكل معاملة)، لذا فإن اختبار الاعتدالية تقريبي.",
       "status": "machineDraft"
     },
+    "report.checks.arrangement.adjacent": {
+      "text": "تُقسم كل قطعة ويُترك نصفها دون معاملة؛ يستخدم التحليل أعلاه الأنصاف المعاملة.",
+      "status": "machineDraft"
+    },
+    "report.checks.arrangement.imbricated": {
+      "text": "شرائط غير معاملة بين القطع؛ تُظهر ضغط الآفة وتُستبعد من التحليل أعلاه.",
+      "status": "machineDraft"
+    },
+    "report.checks.arrangement.paired": {
+      "text": "لكل قطعة معاملة شاهد خاص بها غير معامل؛ يستخدم التحليل أعلاه القطع المعاملة.",
+      "status": "machineDraft"
+    },
+    "report.checks.checkMean": {
+      "text": "متوسط قطع الشواهد",
+      "status": "machineDraft"
+    },
+    "report.checks.column.check": {
+      "text": "شاهد",
+      "status": "machineDraft"
+    },
+    "report.checks.column.degreesOfFreedom": {
+      "text": "د.ح",
+      "status": "machineDraft"
+    },
+    "report.checks.column.difference": {
+      "text": "الفرق",
+      "status": "machineDraft"
+    },
+    "report.checks.column.efficacy": {
+      "text": "نسبة المكافحة",
+      "status": "machineDraft"
+    },
+    "report.checks.column.probability": {
+      "text": "P",
+      "status": "machineDraft"
+    },
+    "report.checks.column.t": {
+      "text": "t",
+      "status": "machineDraft"
+    },
+    "report.checks.column.treated": {
+      "text": "معاملة",
+      "status": "machineDraft"
+    },
+    "report.checks.column.treatment": {
+      "text": "المعاملة",
+      "status": "machineDraft"
+    },
+    "report.checks.efficacyMethod.abbott": {
+      "text": "Abbott",
+      "status": "machineDraft"
+    },
+    "report.checks.efficacyMethod.hendersonTilton": {
+      "text": "Henderson-Tilton",
+      "status": "machineDraft"
+    },
+    "report.checks.heading": {
+      "text": "الشواهد غير المعاملة",
+      "status": "machineDraft"
+    },
+    "report.checks.heading.efficacy": {
+      "text": "نسبة المكافحة ({method})",
+      "status": "machineDraft"
+    },
+    "report.checks.heading.halves": {
+      "text": "الأنصاف المعاملة وغير المعاملة",
+      "status": "machineDraft"
+    },
+    "report.checks.heading.paired": {
+      "text": "كل معاملة مقابل شواهدها",
+      "status": "machineDraft"
+    },
+    "report.checks.source.half": {
+      "text": "النصف (معامل أو غير معامل)",
+      "status": "machineDraft"
+    },
+    "report.checks.source.treatmentByHalf": {
+      "text": "المعاملة × النصف",
+      "status": "machineDraft"
+    },
+    "report.checks.treatedMean": {
+      "text": "متوسط القطع المعاملة",
+      "status": "machineDraft"
+    },
     "report.design.arrangement": {
       "text": "الترتيب",
       "status": "machineDraft"

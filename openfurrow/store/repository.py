@@ -21,6 +21,7 @@ from sqlalchemy.orm import Session
 from openfurrow.store.database import (
   ApplicationRow,
   AssessmentRow,
+  CheckPlotRow,
   FactorLevelRow,
   FactorRow,
   RatingRow,
@@ -39,12 +40,14 @@ from openfurrow.schema.application import Application, SoilMoisture
 from openfurrow.schema.assessment import (
   AssessmentDataType,
   Assessment,
+  Efficacy,
+  EfficacyMethod,
   MeasurementKind,
   Rating,
   Transform,
 )
 from openfurrow.schema.factor import Factor, FactorLevel
-from openfurrow.schema.layout import PlotAssignment
+from openfurrow.schema.layout import CheckPlot, PlotAssignment
 from openfurrow.schema.observation import Observation
 from openfurrow.schema.quantity import Quantity
 from openfurrow.schema.target import Target, TargetKind
@@ -58,6 +61,7 @@ from openfurrow.schema.treatment import (
   TreatmentRole,
 )
 from openfurrow.schema.trialPackage import (
+  CheckArrangement,
   DesignSpecification,
   DesignType,
   RandomizationMethod,
@@ -94,8 +98,10 @@ def sessionScope(engine: Engine) -> Iterator[Session]:
     session.close()
 
 
-def savePackage(session: Session, package: TrialPackage, layout: list[PlotAssignment]) -> None:
-  """Persist a trial package with its layout. Raises if the trial code is already present."""
+def savePackage(
+  session: Session, package: TrialPackage, layout: list[PlotAssignment], checkPlots: list[CheckPlot],
+) -> None:
+  """Persist a trial package with its layout and check plots. Raises if the trial code is already present."""
   trialCode = package.trial.trialCode
   if session.get(TrialRow, trialCode) is not None:
     raise TrialExistsError(f"trial '{trialCode}' already exists; delete it first to replace it")
@@ -115,6 +121,7 @@ def savePackage(session: Session, package: TrialPackage, layout: list[PlotAssign
     randomizationMethod=package.design.randomizationMethod.value,
     randomizationSeed=package.design.randomizationSeed,
     firstBlockInTreatmentOrder=package.design.firstBlockInTreatmentOrder,
+    checkArrangement=package.design.checkArrangement.value,
     mainPlotFactor=package.design.mainPlotFactor,
     subPlotFactor=package.design.subPlotFactor,
   )
@@ -278,6 +285,13 @@ def savePackage(session: Session, package: TrialPackage, layout: list[PlotAssign
       sampleSizeValue=sampleSizeValue,
       sampleSizeUnit=sampleSizeUnit,
       notes=assessment.notes,
+      efficacyMethod=None if assessment.efficacy is None else assessment.efficacy.method.value,
+      efficacyBaselineAssessmentCode=None if assessment.efficacy is None else assessment.efficacy.baselineAssessmentCode,
+    ))
+  for check in checkPlots:
+    trial.checkPlots.append(CheckPlotRow(
+      trialCode=trialCode, plotNumber=check.plotNumber, block=check.block,
+      pairedPlots=json.dumps(check.pairedPlots),
     ))
   for plot in layout:
     trial.plots.append(PlotRow(
@@ -335,6 +349,9 @@ def loadPackage(session: Session, trialCode: str) -> TrialPackage:
       assessedBy=row.assessedBy,
       sampleSize=_quantity(row.sampleSizeValue, row.sampleSizeUnit),
       notes=row.notes,
+      efficacy=None if row.efficacyMethod is None else Efficacy(
+        method=EfficacyMethod(row.efficacyMethod), baselineAssessmentCode=row.efficacyBaselineAssessmentCode,
+      ),
     )
     for row in sorted(trial.assessments, key=lambda row: row.ordinal)
   ]
@@ -437,6 +454,7 @@ def loadPackage(session: Session, trialCode: str) -> TrialPackage:
       randomizationMethod=RandomizationMethod(trial.randomizationMethod),
       randomizationSeed=trial.randomizationSeed,
       firstBlockInTreatmentOrder=trial.firstBlockInTreatmentOrder,
+      checkArrangement=CheckArrangement(trial.checkArrangement),
       mainPlotFactor=trial.mainPlotFactor,
       subPlotFactor=trial.subPlotFactor,
     ),
@@ -463,6 +481,17 @@ def loadLayout(session: Session, trialCode: str) -> list[PlotAssignment]:
       treatmentCode=row.treatmentCode,
     )
     for row in rows
+  ]
+
+
+def loadCheckPlots(session: Session, trialCode: str) -> list[CheckPlot]:
+  """The stored check plots of a trial, by plot number. Raises if the trial is not stored."""
+  trial = session.get(TrialRow, trialCode)
+  if trial is None:
+    raise TrialNotFoundError(f"trial '{trialCode}' not found")
+  return [
+    CheckPlot(plotNumber=row.plotNumber, block=row.block, pairedPlots=json.loads(row.pairedPlots))
+    for row in sorted(trial.checkPlots, key=lambda row: row.plotNumber)
   ]
 
 

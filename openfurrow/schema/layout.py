@@ -11,7 +11,7 @@ from __future__ import annotations
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from openfurrow.schema.trialPackage import DesignType, TrialPackage
+from openfurrow.schema.trialPackage import CheckArrangement, DesignType, TrialPackage
 
 
 class PlotAssignment(BaseModel):
@@ -24,6 +24,49 @@ class PlotAssignment(BaseModel):
   positionInBlock: int = Field(ge=1, description="Plot position within the block, 1-based.")
   mainPlot: int | None = Field(default=None, ge=1, description="Split plot: the main plot within the block, 1-based.")
   treatmentCode: str = Field(min_length=1, description="Treatment placed in this plot.")
+
+
+class CheckPlot(BaseModel):
+  """An untreated check plot and the treated plot or plots it is compared with."""
+
+  model_config = ConfigDict(extra="forbid")
+
+  plotNumber: int = Field(gt=0, description="Field label; a generated check of plot 101 is 10101.")
+  block: int = Field(ge=1)
+  pairedPlots: list[int] = Field(min_length=1, description="The treated plots this check is compared with.")
+
+
+def checkCheckPlots(arrangement: CheckArrangement, plots: list[PlotAssignment], checkPlots: list[CheckPlot]) -> None:
+  """Raise unless the check plots fit the arrangement and the treated plots.
+
+  Every treated plot has exactly one check, in its own block. A strip between plots
+  (imbricated) may serve several plots; a half plot or a partner serves exactly one.
+  """
+  if arrangement is CheckArrangement.none:
+    if checkPlots:
+      raise ValueError("check plots are given, but the design has no checkArrangement")
+    return
+  if not checkPlots:
+    raise ValueError(f"a design with checkArrangement '{arrangement.value}' needs its check plots")
+  blockOf = {plot.plotNumber: plot.block for plot in plots}
+  numbers = [check.plotNumber for check in checkPlots]
+  clashing = sorted(set(numbers) & set(blockOf) | {n for n in numbers if numbers.count(n) > 1})
+  if clashing:
+    raise ValueError(f"check plot numbers used more than once or by treated plots: {clashing}")
+  served: list[int] = []
+  for check in checkPlots:
+    if arrangement is not CheckArrangement.imbricated and len(check.pairedPlots) != 1:
+      raise ValueError(f"check plot {check.plotNumber}: a {arrangement.value} check belongs to exactly one plot")
+    for plotNumber in check.pairedPlots:
+      if plotNumber not in blockOf:
+        raise ValueError(f"check plot {check.plotNumber} names plot {plotNumber}, which is not a treated plot")
+      if blockOf[plotNumber] != check.block:
+        raise ValueError(f"check plot {check.plotNumber} is in block {check.block}, its plot {plotNumber} is not")
+    served += check.pairedPlots
+  without = sorted(set(blockOf) - set(served))
+  twice = sorted({number for number in served if served.count(number) > 1})
+  if without or twice:
+    raise ValueError(f"every treated plot has exactly one check; without one {without}, with several {twice}")
 
 
 def checkCompleteBlocks(treatmentCodes: list[str], replications: int, plots: list[PlotAssignment]) -> None:
@@ -101,6 +144,8 @@ class TrialLayout(BaseModel):
   mainPlotLevels: dict[str, str] | None = Field(
     default=None, description="Split plot: each treatment's main-plot level.",
   )
+  checkArrangement: CheckArrangement
+  checkPlots: list[CheckPlot]
 
   @model_validator(mode="after")
   def plotsFormCompleteBlocks(self) -> TrialLayout:
@@ -111,17 +156,26 @@ class TrialLayout(BaseModel):
       checkMainPlots(self.mainPlotLevels, self.plots)
     elif any(plot.mainPlot is not None for plot in self.plots) or self.mainPlotLevels is not None:
       raise ValueError(f"a {self.designType.value} layout has no main plots")
+    checkCheckPlots(self.checkArrangement, self.plots, self.checkPlots)
     return self
 
+  def checkFor(self, plotNumber: int) -> CheckPlot:
+    """The check a treated plot is compared with."""
+    return next(check for check in self.checkPlots if plotNumber in check.pairedPlots)
+
   @classmethod
-  def forPackage(cls, package: TrialPackage, plots: list[PlotAssignment]) -> TrialLayout:
-    """The layout view of `plots` for the trial `package` describes."""
+  def forPackage(
+    cls, package: TrialPackage, plots: list[PlotAssignment], checkPlots: list[CheckPlot],
+  ) -> TrialLayout:
+    """The layout view of `plots` and `checkPlots` for the trial `package` describes."""
     return cls(
       trialCode=package.trial.trialCode,
       designType=package.design.designType,
       replications=package.design.replications,
       treatmentCodes=[treatment.treatmentCode for treatment in package.treatments],
       plots=plots,
+      checkArrangement=package.design.checkArrangement,
+      checkPlots=checkPlots,
       mainPlotLevels=(
         {treatment.treatmentCode: package.mainPlotLevelOf(treatment.treatmentCode) for treatment in package.treatments}
         if package.design.designType is DesignType.splitPlot else None

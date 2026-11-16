@@ -69,7 +69,7 @@ def importObservations(
     assessment.assessmentCode: package.ratingFor(assessment.assessmentCode)
     for assessment in package.assessments
   }
-  validPlots = {plot.plotNumber for plot in layout.plots}
+  validPlots = {plot.plotNumber for plot in layout.plots} | {check.plotNumber for check in layout.checkPlots}
 
   rows, fieldnames = _readRows(csvPath)
   if profile.format is ImportFormat.long:

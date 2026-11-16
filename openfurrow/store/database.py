@@ -36,7 +36,7 @@ from sqlalchemy import ForeignKey, Text, event, inspect, select
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, relationship
 
-storeVersion = 8
+storeVersion = 9
 
 
 class StoreError(RuntimeError):
@@ -74,6 +74,7 @@ class TrialRow(Base):
   randomizationMethod: Mapped[str]
   randomizationSeed: Mapped[int | None]
   firstBlockInTreatmentOrder: Mapped[bool]
+  checkArrangement: Mapped[str]
   mainPlotFactor: Mapped[str | None]
   subPlotFactor: Mapped[str | None]
 
@@ -108,6 +109,9 @@ class TrialRow(Base):
     back_populates="trial", cascade="all, delete-orphan"
   )
   assessments: Mapped[list[AssessmentRow]] = relationship(
+    back_populates="trial", cascade="all, delete-orphan"
+  )
+  checkPlots: Mapped[list[CheckPlotRow]] = relationship(
     back_populates="trial", cascade="all, delete-orphan"
   )
   plots: Mapped[list[PlotRow]] = relationship(
@@ -361,6 +365,8 @@ class AssessmentRow(Base):
   sampleSizeValue: Mapped[float | None]
   sampleSizeUnit: Mapped[str | None]
   notes: Mapped[str | None]
+  efficacyMethod: Mapped[str | None]
+  efficacyBaselineAssessmentCode: Mapped[str | None]
 
   trial: Mapped[TrialRow] = relationship(back_populates="assessments")
 
@@ -380,6 +386,21 @@ class PlotRow(Base):
   treatmentCode: Mapped[str]
 
   trial: Mapped[TrialRow] = relationship(back_populates="plots")
+
+
+class CheckPlotRow(Base):
+  """An untreated check plot; `pairedPlots` is a JSON list of the plots it serves."""
+
+  __tablename__ = "checkPlot"
+
+  trialCode: Mapped[str] = mapped_column(
+    ForeignKey("trial.trialCode", ondelete="CASCADE"), primary_key=True
+  )
+  plotNumber: Mapped[int] = mapped_column(primary_key=True)
+  block: Mapped[int]
+  pairedPlots: Mapped[str] = mapped_column(Text)
+
+  trial: Mapped[TrialRow] = relationship(back_populates="checkPlots")
 
 
 class ObservationRow(Base):

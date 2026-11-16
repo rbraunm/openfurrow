@@ -89,6 +89,90 @@
       "text": "spatially balanced (van Es et al. 2007)",
       "status": "humanApproved"
     },
+    "report.checks.heading": {
+      "text": "Untreated checks",
+      "status": "humanApproved"
+    },
+    "report.checks.arrangement.imbricated": {
+      "text": "Untreated strips between the plots; they show the pest pressure and are left out of the analysis above.",
+      "status": "humanApproved"
+    },
+    "report.checks.arrangement.adjacent": {
+      "text": "Each plot is halved and one half left untreated; the analysis above uses the treated halves.",
+      "status": "humanApproved"
+    },
+    "report.checks.arrangement.paired": {
+      "text": "Each treated plot has its own untreated partner; the analysis above uses the treated plots.",
+      "status": "humanApproved"
+    },
+    "report.checks.checkMean": {
+      "text": "Mean of the check plots",
+      "status": "humanApproved"
+    },
+    "report.checks.treatedMean": {
+      "text": "Mean of the treated plots",
+      "status": "humanApproved"
+    },
+    "report.checks.heading.halves": {
+      "text": "Treated and untreated halves",
+      "status": "humanApproved"
+    },
+    "report.checks.source.half": {
+      "text": "Half (treated or untreated)",
+      "status": "humanApproved"
+    },
+    "report.checks.source.treatmentByHalf": {
+      "text": "Treatment × half",
+      "status": "humanApproved"
+    },
+    "report.checks.heading.paired": {
+      "text": "Each treatment against its checks",
+      "status": "humanApproved"
+    },
+    "report.checks.column.treatment": {
+      "text": "Treatment",
+      "status": "humanApproved"
+    },
+    "report.checks.column.treated": {
+      "text": "Treated",
+      "status": "humanApproved"
+    },
+    "report.checks.column.check": {
+      "text": "Check",
+      "status": "humanApproved"
+    },
+    "report.checks.column.difference": {
+      "text": "Difference",
+      "status": "humanApproved"
+    },
+    "report.checks.column.t": {
+      "text": "t",
+      "status": "humanApproved"
+    },
+    "report.checks.column.degreesOfFreedom": {
+      "text": "df",
+      "status": "humanApproved"
+    },
+    "report.checks.column.probability": {
+      "text": "P",
+      "status": "humanApproved"
+    },
+    "report.checks.column.efficacy": {
+      "text": "Percent control",
+      "status": "humanApproved"
+    },
+    "report.checks.heading.efficacy": {
+      "text": "Percent control ({method})",
+      "status": "humanApproved"
+    },
+    "report.checks.efficacyMethod.abbott": {
+      "text": "Abbott",
+      "status": "humanApproved"
+    },
+    "report.checks.efficacyMethod.hendersonTilton": {
+      "text": "Henderson-Tilton",
+      "status": "humanApproved"
+    },
     "report.design.splitPlot": {
       "text": "Split-plot design",
       "status": "humanApproved"

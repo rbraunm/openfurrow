@@ -80,6 +80,7 @@ from openfurrow.store import (
   createDatabase as _createDatabase,
   deleteTrial as _deleteTrial,
   listTrials as _listTrials,
+  loadCheckPlots as _loadCheckPlots,
   loadLayout as _loadLayout,
   loadObservations as _loadObservations,
   loadPackage as _loadPackage,
@@ -158,7 +159,7 @@ class Workspace:
       )
     layout = _generateLayout(package)
     with _sessionScope(self._engine) as session:
-      _savePackage(session, package, layout.plots)
+      _savePackage(session, package, layout.plots, layout.checkPlots)
 
   def listTrials(self) -> list[tuple[str, str]]:
     """Every trial in the store as (trialCode, title) pairs."""
@@ -294,7 +295,7 @@ class Workspace:
     document = _importJson(jsonPath)
     trialCode = document.package.trial.trialCode
     with _sessionScope(self._engine) as session:
-      _savePackage(session, document.package, document.layout)
+      _savePackage(session, document.package, document.layout, document.checkPlots)
       _saveObservations(session, trialCode, document.observations)
     return trialCode
 
@@ -339,7 +340,8 @@ class Workspace:
 
   @staticmethod
   def _layoutIn(session, package: TrialPackage) -> TrialLayout:
-    return TrialLayout.forPackage(package, _loadLayout(session, package.trial.trialCode))
+    trialCode = package.trial.trialCode
+    return TrialLayout.forPackage(package, _loadLayout(session, trialCode), _loadCheckPlots(session, trialCode))
 
   def _loadContext(self, trialCode: str) -> tuple[TrialPackage, TrialLayout, list[Observation]]:
     """Load the package, the layout and the observations in one session."""
@@ -351,4 +353,6 @@ class Workspace:
 
   def _documentFor(self, trialCode: str) -> TrialDocument:
     package, layout, observations = self._loadContext(trialCode)
-    return TrialDocument(package=package, layout=layout.plots, observations=observations)
+    return TrialDocument(
+      package=package, layout=layout.plots, checkPlots=layout.checkPlots, observations=observations,
+    )

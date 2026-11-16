@@ -24,7 +24,7 @@ import json
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from openfurrow.schema.layout import PlotAssignment, checkCompleteBlocks
+from openfurrow.schema.layout import CheckPlot, PlotAssignment, TrialLayout
 from openfurrow.schema.observation import Observation
 from openfurrow.schema.trialPackage import RandomizationMethod, TrialPackage
 
@@ -36,28 +36,29 @@ class TrialDocument(BaseModel):
 
   package: TrialPackage
   layout: list[PlotAssignment]
+  checkPlots: list[CheckPlot] = Field(default_factory=list, description="Untreated checks beside the plots.")
   observations: list[Observation] = Field(default_factory=list)
 
   @model_validator(mode="after")
   def layoutBelongsToThePackage(self) -> TrialDocument:
     design = self.package.design
-    treatmentCodes = [treatment.treatmentCode for treatment in self.package.treatments]
-    checkCompleteBlocks(treatmentCodes, design.replications, self.layout)
+    TrialLayout.forPackage(self.package, self.layout, self.checkPlots)
 
     if design.randomizationMethod is not RandomizationMethod.imported:
       # Imported here, not at the top: the design package builds on this schema
       # package, so a top-level import would make the two depend on import order.
       from openfurrow.design.randomization import generateLayout
 
-      generated = generateLayout(self.package).plots
-      if _byPlotNumber(self.layout) != _byPlotNumber(generated):
+      generated = generateLayout(self.package)
+      if (_byPlotNumber(self.layout) != _byPlotNumber(generated.plots)
+          or _byPlotNumber(self.checkPlots) != _byPlotNumber(generated.checkPlots)):
         raise ValueError(
           f"the layout is not the one method '{design.randomizationMethod.value}' produces "
           f"from seed {design.randomizationSeed}; a layout made or changed elsewhere is "
           f"declared with randomizationMethod '{RandomizationMethod.imported.value}'"
         )
 
-    plotNumbers = {plot.plotNumber for plot in self.layout}
+    plotNumbers = {plot.plotNumber for plot in self.layout} | {check.plotNumber for check in self.checkPlots}
     stray = sorted({observation.plotNumber for observation in self.observations} - plotNumbers)
     if stray:
       raise ValueError(f"observations reference plots that are not in the layout: {stray}")
@@ -71,6 +72,10 @@ class TrialDocument(BaseModel):
         (plot.model_dump(mode="json") for plot in self.layout),
         key=lambda row: row["plotNumber"],
       ),
+      "checkPlots": sorted(
+        (check.model_dump(mode="json") for check in self.checkPlots),
+        key=lambda row: row["plotNumber"],
+      ),
       "observations": sorted(
         (observation.model_dump(mode="json") for observation in self.observations),
         key=lambda row: (row["plotNumber"], row["assessmentCode"]),
@@ -78,7 +83,7 @@ class TrialDocument(BaseModel):
     }
 
 
-def _byPlotNumber(plots: list[PlotAssignment]) -> dict[int, PlotAssignment]:
+def _byPlotNumber(plots: list[PlotAssignment] | list[CheckPlot]) -> dict[int, PlotAssignment | CheckPlot]:
   return {plot.plotNumber: plot for plot in plots}
 
 

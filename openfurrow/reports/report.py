@@ -32,7 +32,11 @@ import numpy
 
 from openfurrow.analysis import (
   AnalysisError,
+  analyzeEfficacy,
+  analyzeHalves,
   analyzeRcbd,
+  checkPairs,
+  compareWithChecks,
   analyzeSplitPlot,
   separateFactorMeans,
   assessAssumptions,
@@ -48,7 +52,7 @@ from openfurrow.schema.observation import Observation
 from openfurrow.schema.quantity import Quantity
 from openfurrow.schema.treatment import ActiveSubstance, TreatmentLine
 from openfurrow.schema.assessment import AssessmentDataType, Rating, Transform
-from openfurrow.schema.trialPackage import DesignType, RandomizationMethod, TrialPackage
+from openfurrow.schema.trialPackage import CheckArrangement, DesignType, RandomizationMethod, TrialPackage
 from openfurrow.version import softwareVersion
 
 # The precision p-values print at, and the value below which one rounds to zero at that
@@ -107,7 +111,9 @@ def inputHash(package: TrialPackage, layout: TrialLayout, observations: list[Obs
   affect it. Locale never enters: this is canonical data, not display.
   """
   return contentHash(
-    TrialDocument(package=package, layout=layout.plots, observations=list(observations))
+    TrialDocument(
+      package=package, layout=layout.plots, checkPlots=layout.checkPlots, observations=list(observations),
+    )
   )
 
 
@@ -638,6 +644,110 @@ def _assessmentSection(
   lines += _assumptionsSubsection(
     assessment.assessmentCode, package, layout, observations, significanceLevel, translator
   )
+  if package.design.checkArrangement is not CheckArrangement.none:
+    lines += _checksSubsections(assessment, package, layout, observations, significanceLevel, protected, translator)
+  return lines
+
+
+def _checksSubsections(
+  assessment, package, layout, observations, significanceLevel, protected, translator: Translator,
+) -> list[str]:
+  """The untreated checks beside the plots: their level, and the comparisons the arrangement calls for."""
+  code = assessment.assessmentCode
+  arrangement = package.design.checkArrangement
+  lines = [f"### {translator.text('report.checks.heading')}", ""]
+  try:
+    pairs = checkPairs(code, package, layout, observations)
+  except AnalysisError as error:
+    return lines + [translator.text("report.assessment.notAnalyzed", reason=str(error)), ""]
+  lines += [
+    translator.text(f"report.checks.arrangement.{arrangement.value}"),
+    "",
+    _field(translator, "report.checks.checkMean", translator.number(
+      sum(pair.check for pair in pairs) / len(pairs), decimals=3)),
+    _field(translator, "report.checks.treatedMean", translator.number(
+      sum(pair.treated for pair in pairs) / len(pairs), decimals=3)),
+    "",
+  ]
+  if arrangement is CheckArrangement.adjacent:
+    try:
+      halves = analyzeHalves(code, package, layout, observations)
+      sourceNames = {
+        "block": translator.text("report.anova.source.block"),
+        "mainPlot": translator.text("report.anova.source.treatment"),
+        "mainPlotError": translator.text("report.splitPlot.source.mainPlotError"),
+        "subPlot": translator.text("report.checks.source.half"),
+        "interaction": translator.text("report.checks.source.treatmentByHalf"),
+        "subPlotError": translator.text("report.splitPlot.source.subPlotError"),
+        "total": translator.text("report.anova.source.total"),
+      }
+      lines += [f"#### {translator.text('report.checks.heading.halves')}", ""]
+      lines += _anovaTable(halves.table, sourceNames, translator) + [""]
+    except AnalysisError as error:
+      lines += [translator.text("report.assessment.notAnalyzed", reason=str(error)), ""]
+  if arrangement is CheckArrangement.paired:
+    try:
+      comparisons = compareWithChecks(code, package, layout, observations)
+      header = " | ".join(
+        translator.text(f"report.checks.column.{column}")
+        for column in ("treatment", "treated", "check", "difference", "t", "degreesOfFreedom", "probability")
+      )
+      lines += [f"#### {translator.text('report.checks.heading.paired')}", "", f"| {header} |",
+                "|---|---:|---:|---:|---:|---:|---:|"]
+      for comparison in comparisons:
+        lines.append(
+          f"| {comparison.treatmentCode} | {translator.number(comparison.treatedMean, decimals=3)} "
+          f"| {translator.number(comparison.checkMean, decimals=3)} "
+          f"| {translator.number(comparison.meanDifference, decimals=3)} "
+          f"| {translator.number(comparison.tStatistic, decimals=2)} "
+          f"| {translator.integer(comparison.degreesOfFreedom)} | {_probabilityCell(comparison.pValue, translator)} |"
+        )
+      lines.append("")
+    except AnalysisError as error:
+      lines += [translator.text("report.assessment.notAnalyzed", reason=str(error)), ""]
+  if assessment.efficacy is not None:
+    lines += _efficacySubsection(assessment, package, layout, observations, significanceLevel, protected, translator)
+  return lines
+
+
+def _efficacySubsection(
+  assessment, package, layout, observations, significanceLevel, protected, translator: Translator,
+) -> list[str]:
+  method = translator.text(f"report.checks.efficacyMethod.{assessment.efficacy.method.value}")
+  lines = [f"#### {translator.text('report.checks.heading.efficacy', method=method)}", ""]
+  try:
+    result = analyzeEfficacy(assessment.assessmentCode, package, layout, observations)
+  except AnalysisError as error:
+    return lines + [translator.text("report.assessment.notAnalyzed", reason=str(error)), ""]
+  separation = separateMeans(result, significanceLevel=significanceLevel, protected=protected)
+  sourceNames = {
+    source: translator.text(f"report.anova.source.{source}") for source in ("block", "treatment", "error", "total")
+  }
+  alpha = translator.number(significanceLevel, decimals=2)
+  treatmentRow = next(row for row in result.table if row.source == "treatment")
+  significance = translator.text(
+    "report.means.significant" if separation.treatmentSignificant else "report.means.notSignificant"
+  )
+  lines += _anovaTable(result.table, sourceNames, translator)
+  lines += [
+    "",
+    translator.text(
+      "report.means.separation", method=translator.text(separation.methodKey), alpha=alpha,
+      significance=significance, probability=_probabilityStatement(treatmentRow.pValue, translator),
+    ),
+    "",
+    f"| {translator.text('report.means.column.treatment')} | {translator.text('report.checks.column.efficacy')} "
+    f"| {translator.text('report.means.column.group')} |",
+    "|---|---:|:--:|",
+    *(
+      f"| {group.treatmentCode} | {translator.number(group.mean, decimals=1)} | {group.group} |"
+      for group in separation.groups
+    ),
+    "",
+    _field(translator, "report.means.leastSignificantDifference",
+           translator.number(separation.leastSignificantDifference, decimals=2), alpha=alpha),
+    "",
+  ]
   return lines
 
 

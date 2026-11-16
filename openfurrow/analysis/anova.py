@@ -123,9 +123,10 @@ def buildBlockTreatmentMatrix(
   plotCellByNumber = {plot.plotNumber: (plot.treatmentCode, plot.block) for plot in layout.plots}
   plotNumberByCell = {cell: plotNumber for plotNumber, cell in plotCellByNumber.items()}
 
+  checkNumbers = {check.plotNumber for check in layout.checkPlots}
   cellValue: dict[tuple[str, int], float] = {}
   for observation in observations:
-    if observation.assessmentCode != assessmentCode:
+    if observation.assessmentCode != assessmentCode or observation.plotNumber in checkNumbers:
       continue
     cell = plotCellByNumber.get(observation.plotNumber)
     if cell is None:
@@ -176,9 +177,15 @@ def analyzeRcbd(
   observations: list[Observation],
 ) -> AnovaResult:
   """Run the RCBD ANOVA for one numeric assessment."""
-  matrix, treatmentCodes, blocks, transform = buildRcbdMatrix(assessmentCode, package, layout, observations)
-  treatmentCount = len(treatmentCodes)
-  blockCount = len(blocks)
+  matrix, treatmentCodes, _, transform = buildRcbdMatrix(assessmentCode, package, layout, observations)
+  return anovaFromMatrix(assessmentCode, matrix, treatmentCodes, transform)
+
+
+def anovaFromMatrix(
+  assessmentCode: str, matrix: numpy.ndarray, treatmentCodes: list[str], transform: Transform,
+) -> AnovaResult:
+  """The RCBD ANOVA of a complete block-by-treatment matrix of values on the analysed scale."""
+  blockCount, treatmentCount = matrix.shape
 
   grandMean = float(matrix.mean())
   treatmentMeansArray = matrix.mean(axis=0)

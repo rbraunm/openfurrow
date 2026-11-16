@@ -18,7 +18,7 @@ from enum import Enum
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from openfurrow.schema.application import Application
-from openfurrow.schema.assessment import Assessment, Rating
+from openfurrow.schema.assessment import AssessmentDataType, Assessment, Rating
 from openfurrow.schema.factor import Factor
 from openfurrow.schema.target import Target
 from openfurrow.schema.trialConditions import Planting, Soil, WeatherRecord
@@ -53,6 +53,20 @@ class TrialMetadata(BaseModel):
   organization: str | None = None
 
 
+class CheckArrangement(str, Enum):
+  """How untreated checks sit beside the treated plots (decision 0022).
+
+  `imbricated`: untreated strips between plots, compared with but left out of the analysis
+  (EPPO PP 1/152). `adjacent`: each plot halved, one half left untreated, the halves
+  analysed together. `paired`: each treated plot has its own untreated partner.
+  """
+
+  none = "none"
+  imbricated = "imbricated"
+  adjacent = "adjacent"
+  paired = "paired"
+
+
 class RandomizationMethod(str, Enum):
   """How a trial's layout came to be (decision 0015).
 
@@ -85,6 +99,9 @@ class DesignSpecification(BaseModel):
   )
   mainPlotFactor: str | None = Field(default=None, min_length=1, description="Split plot: the factor on main plots.")
   subPlotFactor: str | None = Field(default=None, min_length=1, description="Split plot: the factor on subplots.")
+  checkArrangement: CheckArrangement = Field(
+    default=CheckArrangement.none, description="Untreated checks beside the treated plots, and how.",
+  )
   firstBlockInTreatmentOrder: bool = Field(
     default=False,
     description="A generated layout leaves block 1 in treatment order, e.g. for field walks.",
@@ -107,6 +124,8 @@ class DesignSpecification(BaseModel):
       raise ValueError("a split plot's main-plot and subplot factors must differ")
     if not splitPlot and named != (None, None):
       raise ValueError(f"a {self.designType.value} design has no main-plot or subplot factor")
+    if splitPlot and self.checkArrangement is not CheckArrangement.none:
+      raise ValueError("untreated checks beside plots apply to an RCBD, not to a split plot yet")
     if self.randomizationMethod is RandomizationMethod.sha256SpatialBalance1 and splitPlot:
       raise ValueError("spatial balance applies to an RCBD's blocks, not to a split plot")
     if not generated and self.firstBlockInTreatmentOrder:
@@ -270,12 +289,32 @@ class TrialPackage(BaseModel):
         raise ValueError(
           f"assessment '{assessment.assessmentCode}': rating '{assessment.ratingCode}' is not declared in the package"
         )
+      if assessment.efficacy is not None:
+        self._checkEfficacy(assessment)
       timedFrom = assessment.timedFromApplicationCode
       if timedFrom is not None and timedFrom not in applicationCodes:
         raise ValueError(
           f"assessment '{assessment.assessmentCode}': application '{timedFrom}' is not declared in the package"
         )
     return self
+
+  def _checkEfficacy(self, assessment: Assessment) -> None:
+    code = assessment.assessmentCode
+    if self.design.checkArrangement is CheckArrangement.none:
+      raise ValueError(f"assessment '{code}': percent control needs untreated checks (design.checkArrangement)")
+    ratings = {rating.ratingCode: rating for rating in self.ratings}
+    if ratings[assessment.ratingCode].dataType is not AssessmentDataType.numeric:
+      raise ValueError(f"assessment '{code}': percent control needs a numeric rating")
+    baseline = assessment.efficacy.baselineAssessmentCode
+    if baseline is None:
+      return
+    if baseline == code:
+      raise ValueError(f"assessment '{code}': the baseline is another assessment, taken before application")
+    occasions = {other.assessmentCode: other for other in self.assessments}
+    if baseline not in occasions:
+      raise ValueError(f"assessment '{code}': baseline assessment '{baseline}' is not declared in the package")
+    if ratings[occasions[baseline].ratingCode].dataType is not AssessmentDataType.numeric:
+      raise ValueError(f"assessment '{code}': baseline assessment '{baseline}' is not numeric")
 
   def assessmentFor(self, assessmentCode: str) -> Assessment:
     """The assessment with this code; raises if the package has none."""

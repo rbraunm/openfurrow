@@ -293,6 +293,90 @@
       "text": "Les résidus proviennent du modèle additif blocs et traitements et sont contraints (leur somme est nulle dans chaque bloc et chaque traitement); le test de normalité est donc approximatif.",
       "status": "machineDraft"
     },
+    "report.checks.arrangement.adjacent": {
+      "text": "Chaque parcelle est divisée et une moitié reste non traitée; l'analyse ci-dessus porte sur les moitiés traitées.",
+      "status": "machineDraft"
+    },
+    "report.checks.arrangement.imbricated": {
+      "text": "Bandes non traitées entre les parcelles; elles montrent la pression du ravageur et sont exclues de l'analyse ci-dessus.",
+      "status": "machineDraft"
+    },
+    "report.checks.arrangement.paired": {
+      "text": "Chaque parcelle traitée a son propre témoin non traité; l'analyse ci-dessus porte sur les parcelles traitées.",
+      "status": "machineDraft"
+    },
+    "report.checks.checkMean": {
+      "text": "Moyenne des parcelles témoins",
+      "status": "machineDraft"
+    },
+    "report.checks.column.check": {
+      "text": "Témoin",
+      "status": "machineDraft"
+    },
+    "report.checks.column.degreesOfFreedom": {
+      "text": "ddl",
+      "status": "machineDraft"
+    },
+    "report.checks.column.difference": {
+      "text": "Différence",
+      "status": "machineDraft"
+    },
+    "report.checks.column.efficacy": {
+      "text": "Efficacité (%)",
+      "status": "machineDraft"
+    },
+    "report.checks.column.probability": {
+      "text": "P",
+      "status": "machineDraft"
+    },
+    "report.checks.column.t": {
+      "text": "t",
+      "status": "machineDraft"
+    },
+    "report.checks.column.treated": {
+      "text": "Traitée",
+      "status": "machineDraft"
+    },
+    "report.checks.column.treatment": {
+      "text": "Traitement",
+      "status": "machineDraft"
+    },
+    "report.checks.efficacyMethod.abbott": {
+      "text": "Abbott",
+      "status": "machineDraft"
+    },
+    "report.checks.efficacyMethod.hendersonTilton": {
+      "text": "Henderson-Tilton",
+      "status": "machineDraft"
+    },
+    "report.checks.heading": {
+      "text": "Témoins non traités",
+      "status": "machineDraft"
+    },
+    "report.checks.heading.efficacy": {
+      "text": "Efficacité ({method})",
+      "status": "machineDraft"
+    },
+    "report.checks.heading.halves": {
+      "text": "Moitiés traitées et non traitées",
+      "status": "machineDraft"
+    },
+    "report.checks.heading.paired": {
+      "text": "Chaque traitement face à ses témoins",
+      "status": "machineDraft"
+    },
+    "report.checks.source.half": {
+      "text": "Moitié (traitée ou non)",
+      "status": "machineDraft"
+    },
+    "report.checks.source.treatmentByHalf": {
+      "text": "Traitement × moitié",
+      "status": "machineDraft"
+    },
+    "report.checks.treatedMean": {
+      "text": "Moyenne des parcelles traitées",
+      "status": "machineDraft"
+    },
     "report.design.arrangement": {
       "text": "Disposition dans les blocs",
       "status": "machineDraft"

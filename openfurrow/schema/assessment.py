@@ -55,6 +55,33 @@ class Transform(str, Enum):
   logit = "logit"
 
 
+class EfficacyMethod(str, Enum):
+  """How percent control is worked out, plot by plot, against the plot's own check."""
+
+  abbott = "abbott"                    # 100 (1 - T / C)
+  hendersonTilton = "hendersonTilton"  # 100 (1 - (Ta Cb) / (Tb Ca)), b before, a after
+
+
+class Efficacy(BaseModel):
+  """Percent control for an assessment, against the untreated checks (decision 0022)."""
+
+  model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+
+  method: EfficacyMethod
+  baselineAssessmentCode: str | None = Field(
+    default=None, min_length=1, description="Henderson-Tilton: the assessment taken before application.",
+  )
+
+  @model_validator(mode="after")
+  def baselineGoesWithHendersonTilton(self) -> Efficacy:
+    needsBaseline = self.method is EfficacyMethod.hendersonTilton
+    if needsBaseline and self.baselineAssessmentCode is None:
+      raise ValueError("Henderson-Tilton needs the baselineAssessmentCode taken before application")
+    if not needsBaseline and self.baselineAssessmentCode is not None:
+      raise ValueError(f"{self.method.value} takes no baselineAssessmentCode")
+    return self
+
+
 class Rating(BaseModel):
   """What is rated and the rules its values must obey.
 
@@ -126,6 +153,7 @@ class Assessment(BaseModel):
   assessedBy: str | None = Field(default=None, min_length=1)
   sampleSize: Quantity | None = Field(default=None, description="E.g. 10 plants, 1 m2.")
   notes: str | None = Field(default=None, min_length=1)
+  efficacy: Efficacy | None = Field(default=None, description="Percent control against the untreated checks.")
 
   @field_validator("sampleSize")
   @classmethod

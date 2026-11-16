@@ -88,7 +88,7 @@ def clewerWheatTrial():
 
 def clewerWheatResult():
   rows, document = clewerWheatTrial()
-  layout = TrialLayout.forPackage(document.package, document.layout)
+  layout = TrialLayout.forPackage(document.package, document.layout, document.checkPlots)
   return rows, analyzeRcbd("YIELD", document.package, layout, document.observations)
 
 

@@ -54,18 +54,26 @@ _forbiddenHeaderChars = set('/?<>\\*|"')
 
 
 def writeFieldImport(package: TrialPackage, layout: TrialLayout, path: str | Path) -> None:
-  """Write the Field Book field-import CSV: one row per plot, ordered by plot number.
+  """Write the Field Book field-import CSV: one row per plot and per check plot, by plot number.
 
   Columns are plotNumber (unique id), block (primary order), positionInBlock
-  (secondary order), and treatment (a carried attribute).
+  (secondary order), and treatment (a carried attribute). A check plot takes the position
+  of the plot it serves and is labelled as its check, so it is collected beside it.
   """
   header = [fieldUniqueIDColumn, fieldPrimaryColumn, fieldSecondaryColumn, fieldTreatmentColumn]
   _rejectForbiddenHeaders(header)
   with open(path, "w", encoding="utf-8", newline="") as handle:
     writer = csv.writer(handle)
     writer.writerow(header)
-    for plot in sorted(layout.plots, key=lambda plot: plot.plotNumber):
-      writer.writerow([plot.plotNumber, plot.block, plot.positionInBlock, plot.treatmentCode])
+    positionOf = {plot.plotNumber: plot.positionInBlock for plot in layout.plots}
+    rows = [[plot.plotNumber, plot.block, plot.positionInBlock, plot.treatmentCode] for plot in layout.plots]
+    rows += [
+      [check.plotNumber, check.block, positionOf[check.pairedPlots[0]],
+       "untreated check of " + " ".join(str(number) for number in check.pairedPlots)]
+      for check in layout.checkPlots
+    ]
+    for row in sorted(rows, key=lambda row: row[0]):
+      writer.writerow(row)
 
 
 def writeTraitFile(package: TrialPackage, path: str | Path) -> None:

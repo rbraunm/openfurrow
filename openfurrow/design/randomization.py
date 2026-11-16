@@ -38,10 +38,22 @@ from __future__ import annotations
 
 from openfurrow.design.spatialBalance import generateSpatiallyBalancedLayout
 from openfurrow.design.stream import Sha256Stream, shuffled
-from openfurrow.schema.layout import PlotAssignment, TrialLayout
-from openfurrow.schema.trialPackage import DesignType, RandomizationMethod, TrialPackage
+from openfurrow.schema.layout import CheckPlot, PlotAssignment, TrialLayout
+from openfurrow.schema.trialPackage import CheckArrangement, DesignType, RandomizationMethod, TrialPackage
 
 _maxTreatmentsPerBlock = 99  # plotNumber = block * 100 + position; positions must stay 2-digit
+
+
+def generatedCheckPlots(package: TrialPackage, plots: list[PlotAssignment]) -> list[CheckPlot]:
+  """One untreated check beside each plot, numbered 10000 + the plot's number (decision 0022)."""
+  if package.design.checkArrangement is CheckArrangement.none:
+    return []
+  if package.design.replications > 99:
+    raise ValueError("generated check plots are numbered 10000 + plot number, which needs at most 99 blocks")
+  return [
+    CheckPlot(plotNumber=10000 + plot.plotNumber, block=plot.block, pairedPlots=[plot.plotNumber])
+    for plot in sorted(plots, key=lambda plot: plot.plotNumber)
+  ]
 
 
 def generateLayout(package: TrialPackage) -> TrialLayout:
@@ -91,7 +103,7 @@ def generateSplitPlotLayout(package: TrialPackage) -> TrialLayout:
           mainPlot=mainPlot,
           treatmentCode=treatmentFor[(mainLevels[mainIndex], subLevels[subIndex])],
         ))
-  return TrialLayout.forPackage(package, plots)
+  return TrialLayout.forPackage(package, plots, generatedCheckPlots(package, plots))
 
 
 def generateRcbdLayout(package: TrialPackage) -> TrialLayout:
@@ -134,4 +146,4 @@ def generateRcbdLayout(package: TrialPackage) -> TrialLayout:
         )
       )
 
-  return TrialLayout.forPackage(package, plots)
+  return TrialLayout.forPackage(package, plots, generatedCheckPlots(package, plots))

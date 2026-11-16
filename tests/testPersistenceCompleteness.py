@@ -20,7 +20,7 @@ import json
 from pydantic import BaseModel
 
 from openfurrow import TrialDocument, TrialPackage, Workspace, contentHash, schemaVersion
-from openfurrow.design import generateRcbdLayout
+from openfurrow.design import generateLayout
 
 # Every optional field populated with a value that differs from its default, and both a
 # numeric assessment (which carries transform/measurementKind/range) and an ordinal one
@@ -85,7 +85,7 @@ _maximalPackage = {
     {"applicationCode": "A", "timing": "BBCH 31"},
   ],
   "design": {"designType": "rcbd", "replications": 3, "randomizationMethod": "sha256FisherYates1", "randomizationSeed": 99,
-             "firstBlockInTreatmentOrder": True},
+             "firstBlockInTreatmentOrder": True, "checkArrangement": "paired"},
   "ratings": [
     {"ratingCode": "CT", "name": "Insect count", "ratingType": "pest count", "partRated": "whole plant",
      "method": "Beat sheet, 10 plants", "targetCode": "APHID", "dataType": "numeric", "unit": "per m2", "minValue": 0,
@@ -95,7 +95,8 @@ _maximalPackage = {
   "assessments": [
     {"assessmentCode": "CT14", "ratingCode": "CT", "timing": "14 DA-B", "date": "2025-06-03",
      "cropStage": "BBCH 59", "targetStage": "Adults", "timedFromApplicationCode": "B",
-     "assessedBy": "Field team", "sampleSize": {"value": 10, "unit": "plants"}, "notes": "Windy"},
+     "assessedBy": "Field team", "sampleSize": {"value": 10, "unit": "plants"}, "notes": "Windy",
+     "efficacy": {"method": "hendersonTilton", "baselineAssessmentCode": "CT0"}},
     {"assessmentCode": "SEV", "ratingCode": "SEV"},
     {"assessmentCode": "CT0", "ratingCode": "CT", "timing": "Before B"}
   ],
@@ -225,8 +226,9 @@ def _hashWith(mutate) -> str:
   data = copy.deepcopy(_maximalPackage)
   mutate(data)
   package = TrialPackage.model_validate(data)
+  layout = generateLayout(package)
   return contentHash(
-    TrialDocument(package=package, layout=generateRcbdLayout(package).plots, observations=[])
+    TrialDocument(package=package, layout=layout.plots, checkPlots=layout.checkPlots, observations=[])
   )
 
 
@@ -242,6 +244,7 @@ def testImportedLayoutSurvivesStoreAndExchange(tmp_path):
   """Plot numbers and assignments that no generator produced come back unchanged."""
   data = copy.deepcopy(_maximalPackage)
   data["design"] = {"designType": "rcbd", "replications": 3, "randomizationMethod": "imported"}
+  del data["assessments"][0]["efficacy"]
   plots = [
     {"plotNumber": 7, "block": 1, "positionInBlock": 1, "treatmentCode": "UTC"},
     {"plotNumber": 8, "block": 1, "positionInBlock": 2, "treatmentCode": "T2"},
@@ -294,7 +297,7 @@ def testAssessmentDateEntersContentHash():
 
 def testRatingAnAssessmentTakesEntersContentHash():
   def otherRating(data):
-    data["assessments"][2]["ratingCode"] = "SEV"
+    data["assessments"][1]["ratingCode"] = "CT"
   assert _hashWith(lambda data: None) != _hashWith(otherRating)
 
 
