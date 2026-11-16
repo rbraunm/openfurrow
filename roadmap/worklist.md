@@ -6,7 +6,7 @@ Findings, defects, checks and owner calls that the plans do not carry.
 Status tags: `fix` (a defect to correct), `build` (work to add), `check` (a suspicion to
 measure), `owner` (the owner's call), `done`.
 
-**Counts.** fix 0, build 18, check 0, owner 3, done 23; 44 in all.
+**Counts.** fix 0, build 17, check 0, owner 3, done 24; 44 in all.
 
 ## Owner decisions
 
@@ -121,13 +121,15 @@ measure), `owner` (the owner's call), `done`.
 - **VAL-2** `done` **The workflow gates `main`.** The ruleset "main validation" requires
   the workflow's final check, `validated`, on the default branch and has no bypass, so an
   administrator's merge cannot skip it; "main protections" still requires the pull
-  request. Read back from GitHub's list of rules in force on `main`. No pull request has
-  met the rule yet (VAL-3).
-- **VAL-3** `build` **`main` has none of the code.** It holds `README.md`, `LICENSE` and
-  `brief.md`, and its README says the project is in its definition phase. No
-  release or tag exists. Merge by pull request once the workflow passes. That pull request
-  is also the first to meet the gate: a merge attempted before `validated` has passed must
-  be refused. Whether the merge is tagged 0.1.0 is the owner's call.
+  request. Read back from GitHub's list of rules in force on `main`. The first pull
+  request under the rule was merged after `validated` had passed on it (VAL-3). A merge
+  before the check passes has not been attempted, so the refusal itself has not been
+  observed.
+- **VAL-3** `done` **`main` had none of the code.** It held `README.md`, `LICENSE` and
+  `brief.md`, and its README said the project was in its definition phase. Pull request 2
+  brought it up to the working tool on 2026-11-16, after the fixes of this worklist and
+  after `validated` passed on both of its runs (392 tests on each of four combinations).
+  `main` and `claude` are level. No tag was made; that remains the owner's call.
 - **VAL-4** `build` **A run against the newest libraries.** With the versions pinned
   (REP-2), nothing reports that a new release of a dependency breaks the project until
   someone moves the pins. A scheduled run of the workflow that installs without
