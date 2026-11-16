@@ -269,6 +269,102 @@
       "text": "Waterlogged",
       "status": "humanApproved"
     },
+    "report.heading.ratings": {
+      "text": "Ratings",
+      "status": "humanApproved"
+    },
+    "report.ratings.column.code": {
+      "text": "Code",
+      "status": "humanApproved"
+    },
+    "report.ratings.column.name": {
+      "text": "Name",
+      "status": "humanApproved"
+    },
+    "report.ratings.column.type": {
+      "text": "Rating type",
+      "status": "humanApproved"
+    },
+    "report.ratings.column.partRated": {
+      "text": "Part rated",
+      "status": "humanApproved"
+    },
+    "report.ratings.column.method": {
+      "text": "Method",
+      "status": "humanApproved"
+    },
+    "report.ratings.column.unit": {
+      "text": "Unit",
+      "status": "humanApproved"
+    },
+    "report.ratings.column.values": {
+      "text": "Values",
+      "status": "humanApproved"
+    },
+    "report.ratings.column.transform": {
+      "text": "Analysed on",
+      "status": "humanApproved"
+    },
+    "report.ratings.range": {
+      "text": "{low} to {high}",
+      "status": "humanApproved"
+    },
+    "report.ratings.atLeast": {
+      "text": "at least {low}",
+      "status": "humanApproved"
+    },
+    "report.ratings.atMost": {
+      "text": "at most {high}",
+      "status": "humanApproved"
+    },
+    "report.heading.assessments": {
+      "text": "Assessments",
+      "status": "humanApproved"
+    },
+    "report.assessments.column.code": {
+      "text": "Code",
+      "status": "humanApproved"
+    },
+    "report.assessments.column.rating": {
+      "text": "Rating",
+      "status": "humanApproved"
+    },
+    "report.assessments.column.timing": {
+      "text": "Timing",
+      "status": "humanApproved"
+    },
+    "report.assessments.column.date": {
+      "text": "Date",
+      "status": "humanApproved"
+    },
+    "report.assessments.column.cropStage": {
+      "text": "Crop stage",
+      "status": "humanApproved"
+    },
+    "report.assessments.column.targetStage": {
+      "text": "Target stage",
+      "status": "humanApproved"
+    },
+    "report.assessments.column.daysAfterApplication": {
+      "text": "Days after application",
+      "status": "humanApproved"
+    },
+    "report.assessments.column.assessedBy": {
+      "text": "Assessed by",
+      "status": "humanApproved"
+    },
+    "report.assessments.column.sampleSize": {
+      "text": "Sample size",
+      "status": "humanApproved"
+    },
+    "report.assessments.column.notes": {
+      "text": "Notes",
+      "status": "humanApproved"
+    },
+    "report.assessments.daysAfter": {
+      "text": "{days} DA-{application}",
+      "status": "humanApproved"
+    },
     "report.heading.assessment": {
       "text": "Assessment: {name} ({code})",
       "status": "humanApproved"

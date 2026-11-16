@@ -134,30 +134,31 @@ def testCompatibilityMapExcludesNone():
 
 # ---- schema fields ---------------------------------------------------------
 
-def _packageDict(assessment):
+def _packageDict(rating):
   return {
     "schemaVersion": schemaVersion,
     "trial": {"trialCode": "T1", "title": "t", "crop": "Maize", "season": "2025",
               "site": "s", "objective": "o"},
     "treatments": [{"treatmentCode": "A", "name": "A"}, {"treatmentCode": "B", "name": "B"}],
     "design": {"designType": "rcbd", "replications": 3, "randomizationMethod": "sha256FisherYates1", "randomizationSeed": 1},
-    "assessments": [assessment],
+    "ratings": [rating],
+    "assessments": [{"assessmentCode": rating["ratingCode"], "ratingCode": rating["ratingCode"]}],
   }
 
 
 def testNumericAssessmentAcceptsTransformAndKind():
   package = TrialPackage.model_validate(_packageDict(
-    {"assessmentCode": "Y", "name": "yield", "dataType": "numeric",
+    {"ratingCode": "Y", "name": "yield", "dataType": "numeric",
      "measurementKind": "count", "transform": "sqrt"}))
-  assessment = package.assessments[0]
+  assessment = package.ratings[0]
   assert assessment.transform is Transform.sqrt
   assert assessment.measurementKind is MeasurementKind.count
 
 
 def testNumericAssessmentDefaultsAreNoneAndUnspecified():
   package = TrialPackage.model_validate(_packageDict(
-    {"assessmentCode": "Y", "name": "yield", "dataType": "numeric"}))
-  assessment = package.assessments[0]
+    {"ratingCode": "Y", "name": "yield", "dataType": "numeric"}))
+  assessment = package.ratings[0]
   assert assessment.transform is Transform.none
   assert assessment.measurementKind is MeasurementKind.unspecified
 
@@ -166,29 +167,29 @@ def testSchemaAllowsAnyTransformOnNumericKindCheckIsSeparate():
   # The schema does not enforce transform/kind compatibility; that is the analysis
   # path's checkTransformKind. A numeric assessment may declare any of them.
   package = TrialPackage.model_validate(_packageDict(
-    {"assessmentCode": "Y", "name": "yield", "dataType": "numeric",
+    {"ratingCode": "Y", "name": "yield", "dataType": "numeric",
      "measurementKind": "count", "transform": "logit"}))
-  assert package.assessments[0].transform is Transform.logit
+  assert package.ratings[0].transform is Transform.logit
 
 
 def testNonNumericCannotDeclareTransform():
   with pytest.raises(ValueError, match="cannot declare a transform"):
     TrialPackage.model_validate(_packageDict(
-      {"assessmentCode": "C", "name": "color", "dataType": "categorical",
+      {"ratingCode": "C", "name": "color", "dataType": "categorical",
        "allowedValues": ["r", "g"], "transform": "sqrt"}))
 
 
 def testNonNumericCannotDeclareMeasurementKind():
   with pytest.raises(ValueError, match="cannot declare a measurementKind"):
     TrialPackage.model_validate(_packageDict(
-      {"assessmentCode": "C", "name": "color", "dataType": "categorical",
+      {"ratingCode": "C", "name": "color", "dataType": "categorical",
        "allowedValues": ["r", "g"], "measurementKind": "count"}))
 
 
 # ---- the transform enters the content hash (decision 0006) -----------------
 
 def _hashWith(**assessmentOverrides):
-  assessment = {"assessmentCode": "Y", "name": "yield", "dataType": "numeric"}
+  assessment = {"ratingCode": "Y", "name": "yield", "dataType": "numeric"}
   assessment.update(assessmentOverrides)
   package = TrialPackage.model_validate(_packageDict(assessment))
   return contentHash(TrialDocument(package=package, layout=generateRcbdLayout(package).plots))

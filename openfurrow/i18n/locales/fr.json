@@ -237,6 +237,50 @@
       "text": "Non analysé: l'AOV requiert une évaluation numérique (cette évaluation est de type {dataType}).",
       "status": "machineDraft"
     },
+    "report.assessments.column.assessedBy": {
+      "text": "Évalué par",
+      "status": "machineDraft"
+    },
+    "report.assessments.column.code": {
+      "text": "Code",
+      "status": "machineDraft"
+    },
+    "report.assessments.column.cropStage": {
+      "text": "Stade de la culture",
+      "status": "machineDraft"
+    },
+    "report.assessments.column.date": {
+      "text": "Date",
+      "status": "machineDraft"
+    },
+    "report.assessments.column.daysAfterApplication": {
+      "text": "Jours après application",
+      "status": "machineDraft"
+    },
+    "report.assessments.column.notes": {
+      "text": "Notes",
+      "status": "machineDraft"
+    },
+    "report.assessments.column.rating": {
+      "text": "Variable",
+      "status": "machineDraft"
+    },
+    "report.assessments.column.sampleSize": {
+      "text": "Taille d'échantillon",
+      "status": "machineDraft"
+    },
+    "report.assessments.column.targetStage": {
+      "text": "Stade de la cible",
+      "status": "machineDraft"
+    },
+    "report.assessments.column.timing": {
+      "text": "Moment",
+      "status": "machineDraft"
+    },
+    "report.assessments.daysAfter": {
+      "text": "{days} JAA-{application}",
+      "status": "machineDraft"
+    },
     "report.assumptions.note": {
       "text": "À titre indicatif seulement; ne modifie pas l'analyse ci-dessus (seuil de signification alpha = {alpha}).",
       "status": "machineDraft"
@@ -325,12 +369,20 @@
       "text": "Évaluation: {name} ({code})",
       "status": "machineDraft"
     },
+    "report.heading.assessments": {
+      "text": "Évaluations",
+      "status": "machineDraft"
+    },
     "report.heading.assumptions": {
       "text": "Vérification des hypothèses",
       "status": "machineDraft"
     },
     "report.heading.design": {
       "text": "Dispositif",
+      "status": "machineDraft"
+    },
+    "report.heading.ratings": {
+      "text": "Variables notées",
       "status": "machineDraft"
     },
     "report.heading.reproducibility": {
@@ -399,6 +451,50 @@
     },
     "report.method.fisherProtectedLSD": {
       "text": "PPDS protégée de Fisher",
+      "status": "machineDraft"
+    },
+    "report.ratings.atLeast": {
+      "text": "au moins {low}",
+      "status": "machineDraft"
+    },
+    "report.ratings.atMost": {
+      "text": "au plus {high}",
+      "status": "machineDraft"
+    },
+    "report.ratings.column.code": {
+      "text": "Code",
+      "status": "machineDraft"
+    },
+    "report.ratings.column.method": {
+      "text": "Méthode",
+      "status": "machineDraft"
+    },
+    "report.ratings.column.name": {
+      "text": "Nom",
+      "status": "machineDraft"
+    },
+    "report.ratings.column.partRated": {
+      "text": "Partie notée",
+      "status": "machineDraft"
+    },
+    "report.ratings.column.transform": {
+      "text": "Analysé sur l'échelle",
+      "status": "machineDraft"
+    },
+    "report.ratings.column.type": {
+      "text": "Type de notation",
+      "status": "machineDraft"
+    },
+    "report.ratings.column.unit": {
+      "text": "Unité",
+      "status": "machineDraft"
+    },
+    "report.ratings.column.values": {
+      "text": "Valeurs",
+      "status": "machineDraft"
+    },
+    "report.ratings.range": {
+      "text": "{low} à {high}",
       "status": "machineDraft"
     },
     "report.reproducibility.inputHash": {

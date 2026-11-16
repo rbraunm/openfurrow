@@ -17,7 +17,7 @@ from __future__ import annotations
 import math
 from collections.abc import Sequence
 
-from openfurrow.schema.trialPackage import MeasurementKind, Transform
+from openfurrow.schema.assessment import MeasurementKind, Transform
 
 # Which transforms suit which measurement kind. `none` is always allowed (omitted
 # here) and `unspecified` imposes no constraint -- the kind is declared, not

@@ -22,7 +22,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from openfurrow.analysis.anova import buildRcbdMatrix
 from openfurrow.analysis.distributions import fDistributionSurvival, inverseNormalCdf, normalCdf
 from openfurrow.analysis.transforms import preferredTransform
-from openfurrow.schema.trialPackage import MeasurementKind, Transform
+from openfurrow.schema.assessment import MeasurementKind, Transform
 
 shapiroWilkMinimum = 3
 
@@ -301,13 +301,13 @@ def assessAssumptions(assessmentCode, package, layout, observations, significanc
   if not 0.0 < significanceLevel < 1.0:
     raise ValueError(f"significanceLevel must be in (0, 1), got {significanceLevel}")
   matrix, _, _, transform = buildRcbdMatrix(assessmentCode, package, layout, observations)
-  assessment = next(a for a in package.assessments if a.assessmentCode == assessmentCode)
+  rating = package.ratingFor(assessmentCode)
   equalVariance = brownForsythe(matrix, significanceLevel)
   nonAdditivity = tukeyNonAdditivity(matrix, significanceLevel)
   normality = shapiroWilkResiduals(matrix, significanceLevel)
   recommendationKey, recommendationTransform, recommendationKind = recommendTransform(
     (equalVariance, nonAdditivity, normality),
-    assessment.measurementKind,
+    rating.measurementKind,
     transform,
     significanceLevel,
   )

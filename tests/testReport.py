@@ -31,23 +31,24 @@ def loadYatesCells():
   return cells
 
 
-def yatesPackage(extraAssessments=None):
-  assessments = [{"assessmentCode": "YIELD", "name": "Grain yield", "dataType": "numeric",
+def yatesPackage(extraRatings=None):
+  ratings = [{"ratingCode": "YIELD", "name": "Grain yield", "dataType": "numeric",
                   "unit": "qtr-lb/plot", "minValue": 0}]
-  if extraAssessments:
-    assessments.extend(extraAssessments)
+  if extraRatings:
+    ratings.extend(extraRatings)
   return TrialPackage.model_validate({
     "schemaVersion": schemaVersion,
     "trial": {"trialCode": "YATES-OATS", "title": "Yates oats variety", "crop": "Oats",
               "season": "1935", "site": "Rothamsted", "objective": "Compare oat variety yield"},
     "treatments": [{"treatmentCode": code, "name": code} for code in ["GoldenRain", "Marvellous", "Victory"]],
     "design": {"designType": "rcbd", "replications": 6, "randomizationMethod": "sha256FisherYates1", "randomizationSeed": 1},
-    "assessments": assessments,
+    "ratings": ratings,
+    "assessments": [{"assessmentCode": rating["ratingCode"], "ratingCode": rating["ratingCode"]} for rating in ratings],
   })
 
 
-def yatesInputs(extraAssessments=None, cells=None):
-  package = yatesPackage(extraAssessments)
+def yatesInputs(extraRatings=None, cells=None):
+  package = yatesPackage(extraRatings)
   layout = generateRcbdLayout(package)
   cells = cells if cells is not None else loadYatesCells()
   observations = [
@@ -72,7 +73,12 @@ def syntheticInputs():
     "trial": {"trialCode": "SYN", "title": "Synthetic", "crop": "x", "season": "x", "site": "x", "objective": "x"},
     "treatments": [{"treatmentCode": code, "name": code} for code in ["A", "B", "C", "D"]],
     "design": {"designType": "rcbd", "replications": 3, "randomizationMethod": "sha256FisherYates1", "randomizationSeed": 1},
-    "assessments": [{"assessmentCode": "Y", "name": "Yield", "dataType": "numeric"}],
+    "ratings": [
+      {"ratingCode": "Y", "name": "Yield", "dataType": "numeric"}
+    ],
+    "assessments": [
+      {"assessmentCode": "Y", "ratingCode": "Y"}
+    ],
   })
   layout = generateRcbdLayout(package)
   observations = [
@@ -174,7 +180,12 @@ def recordedPackage(change=None):
       {"applicationCode": "B", "timing": "BBCH 39"},
     ],
     "design": {"designType": "rcbd", "replications": 3, "randomizationMethod": "sha256FisherYates1", "randomizationSeed": 1},
-    "assessments": [{"assessmentCode": "Y", "name": "Yield", "dataType": "numeric"}],
+    "ratings": [
+      {"ratingCode": "Y", "name": "Yield", "dataType": "numeric"}
+    ],
+    "assessments": [
+      {"assessmentCode": "Y", "ratingCode": "Y"}
+    ],
   }
   if change:
     change(data)
@@ -252,7 +263,7 @@ def testReportTabulatesWhatIsRecordedOfEachApplication():
     "| Cloud cover | 30% | - |\n"
     "| Soil moisture | Moist | - |\n"
     "| Notes | Dew \\| light wind | - |\n"
-    "\n## Assessment: Yield (Y)"
+    "\n## Ratings"
   ) in report
 
 
@@ -262,7 +273,7 @@ def testReportHasARowForEveryFactAnApplicationCanHold():
   facts = set(type(package.applications[0]).model_fields) - {"applicationCode"}
   assert all(getattr(package.applications[0], fact) is not None for fact in facts)
   report = recordedReport()
-  section = report[report.index("## Applications"):report.index("## Assessment")]
+  section = report[report.index("## Applications"):report.index("## Ratings")]
   assert len(section.strip().splitlines()) == 4 + len(facts)
 
 
@@ -296,6 +307,74 @@ def testRecordedTrialRendersInEveryShippedLocale():
   for locale in ("en-US", "en-GB", "es", "fr", "ar"):
     report = recordedReport(locale=locale)
     assert report.count("| T2 |") == 2, locale
+
+
+# ---- ratings and assessment occasions (decision 0017) ---------------------
+
+def occasionsPackage():
+  """One rating taken twice, timed from an application, and a categorical rating."""
+  def addOccasions(data):
+    data["ratings"] = [
+      {"ratingCode": "SEV", "name": "Septoria severity", "ratingType": "disease severity",
+       "partRated": "flag leaf", "method": "Visual, 10 leaves", "dataType": "numeric", "unit": "%",
+       "minValue": 0, "maxValue": 100, "measurementKind": "proportion", "transform": "arcsinSqrt"},
+      {"ratingCode": "LODGE", "name": "Lodging", "dataType": "ordinal", "allowedValues": ["none", "slight", "severe"]},
+    ]
+    data["assessments"] = [
+      {"assessmentCode": "SEV0", "ratingCode": "SEV", "date": "2025-05-01", "timedFromApplicationCode": "A"},
+      {"assessmentCode": "SEV14", "ratingCode": "SEV", "timing": "14 DA-A", "date": "2025-05-16",
+       "cropStage": "BBCH 39", "targetStage": "Lesions on F-2", "timedFromApplicationCode": "A",
+       "assessedBy": "Field team", "sampleSize": {"value": 10, "unit": "leaves"}},
+      {"assessmentCode": "LODGE", "ratingCode": "LODGE"},
+    ]
+  return recordedPackage(addOccasions)
+
+
+def occasionsReport(locale="en-US"):
+  package = occasionsPackage()
+  return buildReport(package, generateRcbdLayout(package), [], locale=locale)
+
+
+def testReportListsWhatIsRated():
+  assert (
+    "## Ratings\n\n"
+    "| Code | Name | Rating type | Part rated | Method | Unit | Values | Analyzed on |\n"
+    "|---|---|---|---|---|---|---|---|\n"
+    "| SEV | Septoria severity | disease severity | flag leaf | Visual, 10 leaves | % | 0 to 100 | arcsine-square-root |\n"
+    "| LODGE | Lodging | - | - | - | - | none / slight / severe | - |\n"
+  ) in occasionsReport()
+
+
+def testReportListsEachOccasionWithDaysAfterItsApplication():
+  # A count before spraying is normal, so a day before the application reads -1.
+  assert (
+    "## Assessments\n\n"
+    "| Code | Rating | Timing | Date | Crop stage | Target stage | Days after application | Assessed by | Sample size |\n"
+    "|---|---|---|---|---|---|---|---|---|\n"
+    "| SEV0 | SEV | - | 05/01/2025 | - | - | -1 DA-A | - | - |\n"
+    "| SEV14 | SEV | 14 DA-A | 05/16/2025 | BBCH 39 | Lesions on F-2 | 14 DA-A | Field team | 10 leaves |\n"
+    "| LODGE | LODGE | - | - | - | - | - | - | - |\n"
+  ) in occasionsReport()
+
+
+def testEachOccasionOfARatingIsAnalysedOnItsOwn():
+  report = occasionsReport()
+  assert "## Assessment: Septoria severity (SEV0)" in report
+  assert "## Assessment: Septoria severity (SEV14)" in report
+  assert "## Assessment: Lodging (LODGE)" in report
+  assert "- Transforms: SEV = arcsinSqrt" in report
+
+
+def testReportStatesAOneSidedLimit():
+  report = buildReport(*yatesInputs())
+  assert "| YIELD | Grain yield | qtr-lb/plot | at least 0 |" in report
+
+
+def testRatingsAndAssessmentsRenderInEveryShippedLocale():
+  for locale in ("en-US", "en-GB", "es", "fr", "ar"):
+    assert occasionsReport(locale).count("| SEV14 |") == 1, locale
+  assert "| SEV14 | SEV | 14 DA-A | 16/05/2025 |" in occasionsReport("en-GB")
+  assert "| 0 a 100 |" in occasionsReport("es")
 
 
 # ---- input hash -----------------------------------------------------------
@@ -339,8 +418,8 @@ def testReportNotesMissingAssessment():
 
 
 def testReportNotesNonNumericAssessment():
-  report = buildReport(*yatesInputs(extraAssessments=[
-    {"assessmentCode": "LODGE", "name": "Lodging", "dataType": "ordinal",
+  report = buildReport(*yatesInputs(extraRatings=[
+    {"ratingCode": "LODGE", "name": "Lodging", "dataType": "ordinal",
      "allowedValues": ["none", "slight", "severe"]},
   ]))
   assert "## Assessment: Lodging (LODGE)" in report

@@ -2,7 +2,8 @@
 """Markdown trial report.
 
 Renders the deliverable an ARM user recognizes: the trial as recorded -- its design,
-its treatments with their product lines, its applications (decision 0016) -- then, for
+its treatments with their product lines, its applications (decision 0016), its ratings
+and the assessments they are taken on (decision 0017) -- then, for
 each numeric assessment, the AOV Means Table -- the analysis-of-variance table, the
 lettered treatment means, the grand mean, the coefficient of variation, and the LSD --
 followed by a reproducibility block (decision 0004): the method, the randomization
@@ -44,7 +45,8 @@ from openfurrow.schema.layout import TrialLayout
 from openfurrow.schema.observation import Observation
 from openfurrow.schema.quantity import Quantity
 from openfurrow.schema.treatment import ActiveSubstance, TreatmentLine
-from openfurrow.schema.trialPackage import AssessmentDataType, Transform, TrialPackage
+from openfurrow.schema.assessment import AssessmentDataType, Rating, Transform
+from openfurrow.schema.trialPackage import TrialPackage
 from openfurrow.version import softwareVersion
 
 # The precision p-values print at, and the value below which one rounds to zero at that
@@ -79,6 +81,8 @@ def buildReport(
   lines += _designSection(package, translator)
   lines += _treatmentsSection(package, translator)
   lines += _applicationsSection(package, translator)
+  lines += _ratingsSection(package, translator)
+  lines += _assessmentsSection(package, translator)
   for assessment in package.assessments:
     lines += _assessmentSection(
       assessment, package, layout, observations, significanceLevel, protected, translator
@@ -173,15 +177,10 @@ def _treatmentsSection(package: TrialPackage, translator: Translator) -> list[st
     for position, line in enumerate(treatment.lines):
       described = [treatment.name, role] if position == 0 else ["", ""]
       rows.append([treatment.treatmentCode, *described, *_lineCells(line, translator)])
-  filled = [column for column in range(len(header)) if any(row[column] for row in rows)]
   return [
     f"## {translator.text('report.heading.treatments')}",
     "",
-    *_table(
-      [header[column] for column in filled],
-      [[row[column] for column in filled] for row in rows],
-      translator,
-    ),
+    *_filledTable(header, rows, translator),
     "",
   ]
 
@@ -234,6 +233,97 @@ def _applicationsSection(package: TrialPackage, translator: Translator) -> list[
     *_table(header, rows, translator),
     "",
   ]
+
+
+def _ratingsSection(package: TrialPackage, translator: Translator) -> list[str]:
+  """What is rated: one row for each rating, columns nothing is recorded in left out."""
+  header = [
+    translator.text(f"report.ratings.column.{column}")
+    for column in ("code", "name", "type", "partRated", "method", "unit", "values", "transform")
+  ]
+  rows = [
+    [
+      rating.ratingCode,
+      rating.name,
+      rating.ratingType,
+      rating.partRated,
+      rating.method,
+      rating.unit,
+      _valuesText(rating, translator),
+      None if rating.transform is Transform.none else _scaleName(rating.transform, translator),
+    ]
+    for rating in package.ratings
+  ]
+  return [
+    f"## {translator.text('report.heading.ratings')}",
+    "",
+    *_filledTable(header, rows, translator),
+    "",
+  ]
+
+
+def _assessmentsSection(package: TrialPackage, translator: Translator) -> list[str]:
+  """Each occasion a rating is taken, with the days after its application worked out."""
+  header = [
+    translator.text(f"report.assessments.column.{column}")
+    for column in (
+      "code", "rating", "timing", "date", "cropStage", "targetStage", "daysAfterApplication",
+      "assessedBy", "sampleSize", "notes",
+    )
+  ]
+  rows = []
+  for assessment in package.assessments:
+    days = package.daysAfterApplication(assessment.assessmentCode)
+    rows.append([
+      assessment.assessmentCode,
+      assessment.ratingCode,
+      assessment.timing,
+      None if assessment.date is None else translator.date(assessment.date),
+      assessment.cropStage,
+      assessment.targetStage,
+      None if days is None else translator.text(
+        "report.assessments.daysAfter",
+        days=translator.integer(days),
+        application=assessment.timedFromApplicationCode,
+      ),
+      assessment.assessedBy,
+      None if assessment.sampleSize is None else _quantityText(assessment.sampleSize, translator),
+      assessment.notes,
+    ])
+  return [
+    f"## {translator.text('report.heading.assessments')}",
+    "",
+    *_filledTable(header, rows, translator),
+    "",
+  ]
+
+
+def _valuesText(rating: Rating, translator: Translator) -> str | None:
+  """A rating's allowed values: its categories, or the limits of a number."""
+  if rating.allowedValues is not None:
+    return " / ".join(rating.allowedValues)
+  low, high = rating.minValue, rating.maxValue
+
+  def number(value: float) -> str:
+    return translator.number(value, decimals=_authoredDecimals(value))
+
+  if low is not None and high is not None:
+    return translator.text("report.ratings.range", low=number(low), high=number(high))
+  if low is not None:
+    return translator.text("report.ratings.atLeast", low=number(low))
+  if high is not None:
+    return translator.text("report.ratings.atMost", high=number(high))
+  return None
+
+
+def _filledTable(header: list[str], rows: list[list[str | None]], translator: Translator) -> list[str]:
+  """A table without the columns no row has anything in."""
+  filled = [column for column in range(len(header)) if any(row[column] for row in rows)]
+  return _table(
+    [header[column] for column in filled],
+    [[row[column] for column in filled] for row in rows],
+    translator,
+  )
 
 
 def _applicationFacts(application: Application, translator: Translator) -> dict[str, str | None]:
@@ -297,12 +387,13 @@ def _quantityText(quantity: Quantity, translator: Translator) -> str:
 def _assessmentSection(
   assessment, package, layout, observations, significanceLevel, protected, translator: Translator
 ) -> list[str]:
+  rating = package.ratingFor(assessment.assessmentCode)
   lines = [
-    f"## {translator.text('report.heading.assessment', name=assessment.name, code=assessment.assessmentCode)}",
+    f"## {translator.text('report.heading.assessment', name=rating.name, code=assessment.assessmentCode)}",
     "",
   ]
-  if assessment.dataType is not AssessmentDataType.numeric:
-    lines.append(translator.text("report.assessment.notNumeric", dataType=assessment.dataType.value))
+  if rating.dataType is not AssessmentDataType.numeric:
+    lines.append(translator.text("report.assessment.notNumeric", dataType=rating.dataType.value))
     lines.append("")
     return lines
   try:
@@ -313,7 +404,7 @@ def _assessmentSection(
     return lines
 
   separation = separateMeans(result, significanceLevel=significanceLevel, protected=protected)
-  unit = f" ({assessment.unit})" if assessment.unit else ""
+  unit = f" ({rating.unit})" if rating.unit else ""
   alpha = translator.number(significanceLevel, decimals=2)
 
   lines.append(f"### {translator.text('report.heading.anova')}")
@@ -499,9 +590,9 @@ def _reproducibilitySection(
       )
     )
   transformed = [
-    f"{assessment.assessmentCode} = {assessment.transform.value}"
-    for assessment in package.assessments
-    if assessment.transform is not Transform.none
+    f"{rating.ratingCode} = {rating.transform.value}"
+    for rating in package.ratings
+    if rating.transform is not Transform.none
   ]
   if transformed:
     lines.append(_field(translator, "report.reproducibility.transforms", ", ".join(transformed)))

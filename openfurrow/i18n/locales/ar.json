@@ -237,6 +237,50 @@
       "text": "لم يُحلل: يتطلب تحليل التباين تقييمًا رقميًا (هذا التقييم من النوع {dataType}).",
       "status": "machineDraft"
     },
+    "report.assessments.column.assessedBy": {
+      "text": "قيّمه",
+      "status": "machineDraft"
+    },
+    "report.assessments.column.code": {
+      "text": "الرمز",
+      "status": "machineDraft"
+    },
+    "report.assessments.column.cropStage": {
+      "text": "طور المحصول",
+      "status": "machineDraft"
+    },
+    "report.assessments.column.date": {
+      "text": "التاريخ",
+      "status": "machineDraft"
+    },
+    "report.assessments.column.daysAfterApplication": {
+      "text": "أيام بعد التطبيق",
+      "status": "machineDraft"
+    },
+    "report.assessments.column.notes": {
+      "text": "ملاحظات",
+      "status": "machineDraft"
+    },
+    "report.assessments.column.rating": {
+      "text": "المتغير",
+      "status": "machineDraft"
+    },
+    "report.assessments.column.sampleSize": {
+      "text": "حجم العينة",
+      "status": "machineDraft"
+    },
+    "report.assessments.column.targetStage": {
+      "text": "طور الهدف",
+      "status": "machineDraft"
+    },
+    "report.assessments.column.timing": {
+      "text": "التوقيت",
+      "status": "machineDraft"
+    },
+    "report.assessments.daysAfter": {
+      "text": "{days} يوم بعد {application}",
+      "status": "machineDraft"
+    },
     "report.assumptions.note": {
       "text": "للاطلاع فقط؛ لا يغير التحليل أعلاه (مستوى المعنوية ألفا = {alpha}).",
       "status": "machineDraft"
@@ -325,12 +369,20 @@
       "text": "التقييم: {name} ({code})",
       "status": "machineDraft"
     },
+    "report.heading.assessments": {
+      "text": "التقييمات",
+      "status": "machineDraft"
+    },
     "report.heading.assumptions": {
       "text": "فحص الافتراضات",
       "status": "machineDraft"
     },
     "report.heading.design": {
       "text": "التصميم",
+      "status": "machineDraft"
+    },
+    "report.heading.ratings": {
+      "text": "المتغيرات المقيمة",
       "status": "machineDraft"
     },
     "report.heading.reproducibility": {
@@ -399,6 +451,50 @@
     },
     "report.method.fisherProtectedLSD": {
       "text": "أقل فرق معنوي محمي (فيشر)",
+      "status": "machineDraft"
+    },
+    "report.ratings.atLeast": {
+      "text": "{low} على الأقل",
+      "status": "machineDraft"
+    },
+    "report.ratings.atMost": {
+      "text": "{high} على الأكثر",
+      "status": "machineDraft"
+    },
+    "report.ratings.column.code": {
+      "text": "الرمز",
+      "status": "machineDraft"
+    },
+    "report.ratings.column.method": {
+      "text": "الطريقة",
+      "status": "machineDraft"
+    },
+    "report.ratings.column.name": {
+      "text": "الاسم",
+      "status": "machineDraft"
+    },
+    "report.ratings.column.partRated": {
+      "text": "الجزء المقيم",
+      "status": "machineDraft"
+    },
+    "report.ratings.column.transform": {
+      "text": "التحليل على مقياس",
+      "status": "machineDraft"
+    },
+    "report.ratings.column.type": {
+      "text": "نوع التقييم",
+      "status": "machineDraft"
+    },
+    "report.ratings.column.unit": {
+      "text": "الوحدة",
+      "status": "machineDraft"
+    },
+    "report.ratings.column.values": {
+      "text": "القيم",
+      "status": "machineDraft"
+    },
+    "report.ratings.range": {
+      "text": "{low} إلى {high}",
       "status": "machineDraft"
     },
     "report.reproducibility.inputHash": {

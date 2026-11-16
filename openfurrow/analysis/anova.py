@@ -24,7 +24,8 @@ from openfurrow.analysis.distributions import fDistributionSurvival
 from openfurrow.analysis.transforms import TransformError, applyTransform, checkTransformKind
 from openfurrow.schema.layout import TrialLayout
 from openfurrow.schema.observation import Observation
-from openfurrow.schema.trialPackage import AssessmentDataType, DesignType, Transform, TrialPackage
+from openfurrow.schema.assessment import AssessmentDataType, Transform
+from openfurrow.schema.trialPackage import DesignType, TrialPackage
 
 
 class AnalysisError(ValueError):
@@ -89,12 +90,13 @@ def buildRcbdMatrix(
   transform domain or kind violation -- rather than proceeding on an incomplete,
   non-numeric, or ill-transformed design.
   """
-  assessment = next((a for a in package.assessments if a.assessmentCode == assessmentCode), None)
-  if assessment is None:
-    raise AnalysisError(f"assessment '{assessmentCode}' is not defined in the trial package")
-  if assessment.dataType is not AssessmentDataType.numeric:
+  try:
+    rating = package.ratingFor(assessmentCode)
+  except KeyError as error:
+    raise AnalysisError(error.args[0]) from error
+  if rating.dataType is not AssessmentDataType.numeric:
     raise AnalysisError(
-      f"assessment '{assessmentCode}' is {assessment.dataType.value}; RCBD ANOVA requires a numeric assessment"
+      f"assessment '{assessmentCode}' is {rating.dataType.value}; RCBD ANOVA requires a numeric assessment"
     )
   if layout.designType is not DesignType.rcbd:
     raise AnalysisError(f"analyzeRcbd requires an RCBD layout, got {layout.designType.value}")
@@ -148,13 +150,13 @@ def buildRcbdMatrix(
   # see identical data. A domain or kind violation becomes an AnalysisError naming the
   # assessment -- the same fail-loud path as a missing cell.
   try:
-    checkTransformKind(assessment.transform, assessment.measurementKind)
-    if assessment.transform is not Transform.none:
-      transformedValues = applyTransform(assessment.transform, matrix.ravel().tolist())
+    checkTransformKind(rating.transform, rating.measurementKind)
+    if rating.transform is not Transform.none:
+      transformedValues = applyTransform(rating.transform, matrix.ravel().tolist())
       matrix = numpy.array(transformedValues, dtype=float).reshape(matrix.shape)
   except TransformError as error:
     raise AnalysisError(f"assessment '{assessmentCode}': {error}") from error
-  return matrix, treatmentCodes, blocks, assessment.transform
+  return matrix, treatmentCodes, blocks, rating.transform
 
 
 def analyzeRcbd(

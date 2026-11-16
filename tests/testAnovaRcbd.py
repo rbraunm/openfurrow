@@ -31,17 +31,18 @@ def loadYatesCells():
   return cells
 
 
-def yatesPackage(extraAssessments=None):
-  assessments = [{"assessmentCode": "YIELD", "name": "Grain yield", "dataType": "numeric", "minValue": 0}]
-  if extraAssessments:
-    assessments.extend(extraAssessments)
+def yatesPackage(extraRatings=None):
+  ratings = [{"ratingCode": "YIELD", "name": "Grain yield", "dataType": "numeric", "minValue": 0}]
+  if extraRatings:
+    ratings.extend(extraRatings)
   return TrialPackage.model_validate({
     "schemaVersion": schemaVersion,
     "trial": {"trialCode": "YATES-OATS", "title": "Yates oats variety", "crop": "Oats",
               "season": "1935", "site": "Rothamsted", "objective": "variety yield"},
     "treatments": [{"treatmentCode": code, "name": code} for code in yatesTreatments],
     "design": {"designType": "rcbd", "replications": 6, "randomizationMethod": "sha256FisherYates1", "randomizationSeed": 1},
-    "assessments": assessments,
+    "ratings": ratings,
+    "assessments": [{"assessmentCode": rating["ratingCode"], "ratingCode": rating["ratingCode"]} for rating in ratings],
   })
 
 
@@ -184,8 +185,8 @@ def testWholeTreatmentMissingRejected():
 # ---- fail-loud: preconditions --------------------------------------------
 
 def testNonNumericAssessmentRejected():
-  package = yatesPackage(extraAssessments=[
-    {"assessmentCode": "RATING", "name": "Lodging rating", "dataType": "ordinal",
+  package = yatesPackage(extraRatings=[
+    {"ratingCode": "RATING", "name": "Lodging rating", "dataType": "ordinal",
      "allowedValues": ["none", "slight", "severe"]},
   ])
   layout = generateRcbdLayout(package)
@@ -209,7 +210,12 @@ def testZeroErrorMeanSquareRejected():
               "site": "x", "objective": "x"},
     "treatments": [{"treatmentCode": "T1", "name": "T1"}, {"treatmentCode": "T2", "name": "T2"}],
     "design": {"designType": "rcbd", "replications": 2, "randomizationMethod": "sha256FisherYates1", "randomizationSeed": 1},
-    "assessments": [{"assessmentCode": "Y", "name": "y", "dataType": "numeric"}],
+    "ratings": [
+      {"ratingCode": "Y", "name": "y", "dataType": "numeric"}
+    ],
+    "assessments": [
+      {"assessmentCode": "Y", "ratingCode": "Y"}
+    ],
   })
   layout = generateRcbdLayout(package)
   additive = {("T1", 1): 11.0, ("T2", 1): 12.0, ("T1", 2): 21.0, ("T2", 2): 22.0}

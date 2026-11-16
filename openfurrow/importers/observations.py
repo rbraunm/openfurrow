@@ -23,7 +23,8 @@ from pydantic import BaseModel, ConfigDict
 
 from openfurrow.config.profile import ImportFormat, ImportProfile
 from openfurrow.schema.observation import Observation
-from openfurrow.schema.trialPackage import AssessmentDataType, AssessmentDefinition, TrialPackage
+from openfurrow.schema.assessment import AssessmentDataType, Rating
+from openfurrow.schema.trialPackage import TrialPackage
 from openfurrow.schema.layout import TrialLayout
 
 
@@ -64,7 +65,10 @@ def importObservations(
       f"layout trialCode '{layout.trialCode}' does not match package trial '{package.trial.trialCode}'"
     )
   profile = profile or ImportProfile()
-  assessments = {assessment.assessmentCode: assessment for assessment in package.assessments}
+  assessments = {
+    assessment.assessmentCode: package.ratingFor(assessment.assessmentCode)
+    for assessment in package.assessments
+  }
   validPlots = {plot.plotNumber for plot in layout.plots}
 
   rows, fieldnames = _readRows(csvPath)
@@ -89,7 +93,7 @@ def importObservations(
     seen.add(key)
 
     value, warning = _parseValue(
-      rawValue, assessments[assessmentCode], profile, rowNumber, plotNumber
+      rawValue, assessmentCode, assessments[assessmentCode], profile, rowNumber, plotNumber
     )
     observations.append(
       Observation(plotNumber=plotNumber, assessmentCode=assessmentCode, value=value)
@@ -168,7 +172,8 @@ def _parsePlotNumber(rawText: str, rowNumber: int) -> int:
 
 def _parseValue(
   rawText: str,
-  assessment: AssessmentDefinition,
+  assessmentCode: str,
+  rating: Rating,
   profile: ImportProfile,
   rowNumber: int,
   plotNumber: int,
@@ -177,19 +182,19 @@ def _parseValue(
   if text in profile.parsing.naTokens:
     warning = ImportWarning(
       kind="missingValue",
-      message=f"plot {plotNumber} assessment '{assessment.assessmentCode}': value treated as missing",
+      message=f"plot {plotNumber} assessment '{assessmentCode}': value treated as missing",
       rowNumber=rowNumber,
       plotNumber=plotNumber,
-      assessmentCode=assessment.assessmentCode,
+      assessmentCode=assessmentCode,
     )
     return None, warning
 
-  if assessment.dataType is AssessmentDataType.numeric:
-    return _parseNumeric(text, assessment, profile, rowNumber), None
-  return _parseCategorical(text, assessment, rowNumber), None
+  if rating.dataType is AssessmentDataType.numeric:
+    return _parseNumeric(text, assessmentCode, rating, profile, rowNumber), None
+  return _parseCategorical(text, assessmentCode, rating, rowNumber), None
 
 
-def _parseNumeric(text, assessment, profile, rowNumber):
+def _parseNumeric(text, assessmentCode, rating, profile, rowNumber):
   separator = profile.parsing.decimalSeparator
   normalized = text.replace(separator, ".") if separator != "." else text
   try:
@@ -197,25 +202,25 @@ def _parseNumeric(text, assessment, profile, rowNumber):
   except ValueError as error:
     raise ObservationImportError(
       f"row {rowNumber}: value '{text}' for numeric assessment "
-      f"'{assessment.assessmentCode}' is not a number"
+      f"'{assessmentCode}' is not a number"
     ) from error
-  if assessment.minValue is not None and value < assessment.minValue:
+  if rating.minValue is not None and value < rating.minValue:
     raise ObservationImportError(
-      f"row {rowNumber}: value {value} for assessment '{assessment.assessmentCode}' "
-      f"is below the minimum {assessment.minValue}"
+      f"row {rowNumber}: value {value} for assessment '{assessmentCode}' "
+      f"is below the minimum {rating.minValue}"
     )
-  if assessment.maxValue is not None and value > assessment.maxValue:
+  if rating.maxValue is not None and value > rating.maxValue:
     raise ObservationImportError(
-      f"row {rowNumber}: value {value} for assessment '{assessment.assessmentCode}' "
-      f"is above the maximum {assessment.maxValue}"
+      f"row {rowNumber}: value {value} for assessment '{assessmentCode}' "
+      f"is above the maximum {rating.maxValue}"
     )
   return value
 
 
-def _parseCategorical(text, assessment, rowNumber):
-  if assessment.allowedValues is None or text not in assessment.allowedValues:
+def _parseCategorical(text, assessmentCode, rating, rowNumber):
+  if rating.allowedValues is None or text not in rating.allowedValues:
     raise ObservationImportError(
-      f"row {rowNumber}: value '{text}' for assessment '{assessment.assessmentCode}' "
-      f"is not one of {assessment.allowedValues}"
+      f"row {rowNumber}: value '{text}' for assessment '{assessmentCode}' "
+      f"is not one of {rating.allowedValues}"
     )
   return text

@@ -66,7 +66,12 @@ def clewerWheatTrial():
               "season": "2001", "site": "Example 10.1", "objective": "Compare three new varieties with a standard"},
     "treatments": [{"treatmentCode": code, "name": code} for code in ["V1", "V2", "V3", "V4"]],
     "design": {"designType": "rcbd", "replications": 3, "randomizationMethod": "imported"},
-    "assessments": [{"assessmentCode": "YIELD", "name": "Grain yield", "dataType": "numeric", "unit": "t/ha"}],
+    "ratings": [
+      {"ratingCode": "YIELD", "name": "Grain yield", "dataType": "numeric", "unit": "t/ha"}
+    ],
+    "assessments": [
+      {"assessmentCode": "YIELD", "ratingCode": "YIELD"}
+    ],
   })
   layout = [
     {"plotNumber": int(row["row"]) * 100 + int(row["col"]), "block": int(row["block"][1:]),
@@ -135,7 +140,12 @@ def gomezSeedRateResult():
               "season": "1984", "site": "Table 2.5", "objective": "Compare six seeding rates"},
     "treatments": [{"treatmentCode": rate, "name": f"{rate} kg seed/ha"} for rate in rates],
     "design": {"designType": "rcbd", "replications": 4, "randomizationMethod": "sha256FisherYates1", "randomizationSeed": 1984},
-    "assessments": [{"assessmentCode": "YIELD", "name": "Grain yield", "dataType": "numeric", "unit": "kg/ha"}],
+    "ratings": [
+      {"ratingCode": "YIELD", "name": "Grain yield", "dataType": "numeric", "unit": "kg/ha"}
+    ],
+    "assessments": [
+      {"assessmentCode": "YIELD", "ratingCode": "YIELD"}
+    ],
   })
   layout = generateRcbdLayout(package)
   cells = {(row["rate"], int(row["rep"][1:])): float(row["yield"]) for row in rows}

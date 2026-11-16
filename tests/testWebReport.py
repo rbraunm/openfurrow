@@ -25,8 +25,12 @@ _packageDict = {
             "season": "2025", "site": "North Field", "objective": "Compare programs"},
   "treatments": [{"treatmentCode": code, "name": f"Treatment {code}"} for code in ["A", "B", "C", "D"]],
   "design": {"designType": "rcbd", "replications": 3, "randomizationMethod": "sha256FisherYates1", "randomizationSeed": 7},
-  "assessments": [{"assessmentCode": "YIELD", "name": "Grain yield", "dataType": "numeric",
-                   "unit": "kg/ha", "minValue": 0}],
+  "ratings": [
+    {"ratingCode": "YIELD", "name": "Grain yield", "dataType": "numeric", "unit": "kg/ha", "minValue": 0}
+  ],
+  "assessments": [
+    {"assessmentCode": "YIELD", "ratingCode": "YIELD"}
+  ],
 }
 _values = {
   ("A", 1): 106, ("A", 2): 99, ("A", 3): 95, ("B", 1): 103, ("B", 2): 100, ("B", 3): 94,
@@ -182,7 +186,12 @@ def testReportEscapesHtmlInTrialFields(client, workspace, tmp_path):
     "treatments": [{"treatmentCode": "A", "name": "<img src=x onerror=alert(1)>"},
                    {"treatmentCode": "B", "name": "B"}],
     "design": {"designType": "rcbd", "replications": 2, "randomizationMethod": "sha256FisherYates1", "randomizationSeed": 1},
-    "assessments": [{"assessmentCode": "Y", "name": "Yield", "dataType": "numeric", "minValue": 0}],
+    "ratings": [
+      {"ratingCode": "Y", "name": "Yield", "dataType": "numeric", "minValue": 0}
+    ],
+    "assessments": [
+      {"assessmentCode": "Y", "ratingCode": "Y"}
+    ],
   }
   client.post("/trials/new", data={"package": __import__("json").dumps(malicious)})
   body = client.get("/trials/XSS/report").get_data(as_text=True)

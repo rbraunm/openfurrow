@@ -49,10 +49,13 @@ def samplePackage(trialCode="TRIAL-1"):
     ],
     "applications": [{"applicationCode": "A", "timing": "BBCH 30"}],
     "design": {"designType": "rcbd", "replications": 4, "randomizationMethod": "sha256FisherYates1", "randomizationSeed": 42},
+    "ratings": [
+      {"ratingCode": "YIELD", "name": "Grain yield", "dataType": "numeric", "unit": "kg/ha", "minValue": 0},
+      {"ratingCode": "LODGE", "name": "Lodging", "dataType": "ordinal", "allowedValues": ["none", "slight", "severe"]}
+    ],
     "assessments": [
-      {"assessmentCode": "YIELD", "name": "Grain yield", "dataType": "numeric", "unit": "kg/ha", "minValue": 0},
-      {"assessmentCode": "LODGE", "name": "Lodging", "dataType": "ordinal",
-       "allowedValues": ["none", "slight", "severe"]},
+      {"assessmentCode": "YIELD", "ratingCode": "YIELD"},
+      {"assessmentCode": "LODGE", "ratingCode": "LODGE"}
     ],
   })
 

@@ -175,7 +175,8 @@ def _commandAdd(args) -> int:
   workspace.addPackage(package)
   print(
     f"Added trial '{package.trial.trialCode}' "
-    f"({len(package.treatments)} treatments, {len(package.assessments)} assessments, {package.plotCount} plots)"
+    f"({len(package.treatments)} treatments, {len(package.ratings)} ratings, "
+    f"{len(package.assessments)} assessments, {package.plotCount} plots)"
   )
   return 0
 
@@ -208,9 +209,12 @@ def _commandInfo(args) -> int:
     print("Applications:")
     for application in package.applications:
       print(f"  {_applicationLine(application)}")
+  print("Ratings:")
+  for rating in package.ratings:
+    print(f"  {_ratingLine(rating)}")
   print("Assessments:")
   for assessment in package.assessments:
-    print(f"  {_assessmentLine(assessment)}")
+    print(f"  {_assessmentLine(package, assessment)}")
   print(f"Observations: {len(observations)}")
   print(f"Content hash: {workspace.contentHashFor(args.trialCode)}")
   return 0
@@ -247,26 +251,38 @@ def _applicationLine(application) -> str:
   return "  ".join(parts)
 
 
-def _assessmentLine(assessment) -> str:
-  """One line describing an assessment, including its transform and measurement kind.
+def _ratingLine(rating) -> str:
+  """One line describing a rating, including its transform and measurement kind.
 
-  transform and measurementKind are only valid on numeric assessments and are shown
-  even at their defaults (none / unspecified), so the current setting is visible from
-  the CLI rather than only by reading the trial JSON. They are set in the package JSON
-  (the canonical design); this surfaces them, it does not add a second way to set them.
+  transform and measurementKind are only valid on numeric ratings and are shown even at
+  their defaults (none / unspecified), so the current setting is visible from the CLI
+  rather than only by reading the trial JSON. They are set in the package JSON (the
+  canonical design); this surfaces them, it does not add a second way to set them.
   """
-  parts = [f"{assessment.assessmentCode}  {assessment.dataType.value}"]
-  if assessment.unit:
-    parts.append(f"unit={assessment.unit}")
-  if assessment.dataType is AssessmentDataType.numeric:
-    if assessment.minValue is not None or assessment.maxValue is not None:
-      low = "" if assessment.minValue is None else assessment.minValue
-      high = "" if assessment.maxValue is None else assessment.maxValue
+  parts = [f"{rating.ratingCode}  {rating.dataType.value}"]
+  if rating.unit:
+    parts.append(f"unit={rating.unit}")
+  if rating.dataType is AssessmentDataType.numeric:
+    if rating.minValue is not None or rating.maxValue is not None:
+      low = "" if rating.minValue is None else rating.minValue
+      high = "" if rating.maxValue is None else rating.maxValue
       parts.append(f"range=[{low},{high}]")
-    parts.append(f"transform={assessment.transform.value}")
-    parts.append(f"kind={assessment.measurementKind.value}")
-  elif assessment.allowedValues:
-    parts.append("values=" + "/".join(assessment.allowedValues))
+    parts.append(f"transform={rating.transform.value}")
+    parts.append(f"kind={rating.measurementKind.value}")
+  else:
+    parts.append("values=" + "/".join(rating.allowedValues))
+  return "  ".join(parts)
+
+
+def _assessmentLine(package, assessment) -> str:
+  parts = [assessment.assessmentCode, f"rating={assessment.ratingCode}"]
+  if assessment.timing:
+    parts.append(f"timing={assessment.timing}")
+  if assessment.date is not None:
+    parts.append(f"date={assessment.date.isoformat()}")
+  days = package.daysAfterApplication(assessment.assessmentCode)
+  if days is not None:
+    parts.append(f"{days} days after {assessment.timedFromApplicationCode}")
   return "  ".join(parts)
 
 

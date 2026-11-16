@@ -21,6 +21,7 @@ from sqlalchemy.orm import Session
 from openfurrow.store.database import (
   ApplicationRow,
   AssessmentRow,
+  RatingRow,
   ObservationRow,
   PlotRow,
   StoreError,
@@ -29,6 +30,13 @@ from openfurrow.store.database import (
   TrialRow,
 )
 from openfurrow.schema.application import Application, SoilMoisture
+from openfurrow.schema.assessment import (
+  AssessmentDataType,
+  Assessment,
+  MeasurementKind,
+  Rating,
+  Transform,
+)
 from openfurrow.schema.layout import PlotAssignment
 from openfurrow.schema.observation import Observation
 from openfurrow.schema.quantity import Quantity
@@ -41,13 +49,9 @@ from openfurrow.schema.treatment import (
   TreatmentRole,
 )
 from openfurrow.schema.trialPackage import (
-  AssessmentDataType,
-  AssessmentDefinition,
   DesignSpecification,
   DesignType,
-  MeasurementKind,
   RandomizationMethod,
-  Transform,
   TrialMetadata,
   TrialPackage,
 )
@@ -159,20 +163,39 @@ def savePackage(session: Session, package: TrialPackage, layout: list[PlotAssign
       soilMoisture=application.soilMoisture.value if application.soilMoisture is not None else None,
       notes=application.notes,
     ))
+  for ordinal, rating in enumerate(package.ratings):
+    trial.ratings.append(RatingRow(
+      trialCode=trialCode,
+      ratingCode=rating.ratingCode,
+      ordinal=ordinal,
+      name=rating.name,
+      ratingType=rating.ratingType,
+      partRated=rating.partRated,
+      method=rating.method,
+      dataType=rating.dataType.value,
+      unit=rating.unit,
+      minValue=rating.minValue,
+      maxValue=rating.maxValue,
+      allowedValues=json.dumps(rating.allowedValues) if rating.allowedValues is not None else None,
+      measurementKind=rating.measurementKind.value,
+      transform=rating.transform.value,
+    ))
   for ordinal, assessment in enumerate(package.assessments):
+    sampleSizeValue, sampleSizeUnit = _valueAndUnit(assessment.sampleSize)
     trial.assessments.append(AssessmentRow(
       trialCode=trialCode,
       assessmentCode=assessment.assessmentCode,
       ordinal=ordinal,
-      name=assessment.name,
-      dataType=assessment.dataType.value,
-      unit=assessment.unit,
+      ratingCode=assessment.ratingCode,
       timing=assessment.timing,
-      minValue=assessment.minValue,
-      maxValue=assessment.maxValue,
-      allowedValues=json.dumps(assessment.allowedValues) if assessment.allowedValues is not None else None,
-      measurementKind=assessment.measurementKind.value,
-      transform=assessment.transform.value,
+      date=assessment.date,
+      cropStage=assessment.cropStage,
+      targetStage=assessment.targetStage,
+      timedFromApplicationCode=assessment.timedFromApplicationCode,
+      assessedBy=assessment.assessedBy,
+      sampleSizeValue=sampleSizeValue,
+      sampleSizeUnit=sampleSizeUnit,
+      notes=assessment.notes,
     ))
   for plot in layout:
     trial.plots.append(PlotRow(
@@ -217,19 +240,36 @@ def loadPackage(session: Session, trialCode: str) -> TrialPackage:
     _applicationFrom(row) for row in sorted(trial.applications, key=lambda row: row.ordinal)
   ]
   assessments = [
-    AssessmentDefinition(
+    Assessment(
       assessmentCode=row.assessmentCode,
+      ratingCode=row.ratingCode,
+      timing=row.timing,
+      date=row.date,
+      cropStage=row.cropStage,
+      targetStage=row.targetStage,
+      timedFromApplicationCode=row.timedFromApplicationCode,
+      assessedBy=row.assessedBy,
+      sampleSize=_quantity(row.sampleSizeValue, row.sampleSizeUnit),
+      notes=row.notes,
+    )
+    for row in sorted(trial.assessments, key=lambda row: row.ordinal)
+  ]
+  ratings = [
+    Rating(
+      ratingCode=row.ratingCode,
       name=row.name,
+      ratingType=row.ratingType,
+      partRated=row.partRated,
+      method=row.method,
       dataType=AssessmentDataType(row.dataType),
       unit=row.unit,
-      timing=row.timing,
       minValue=row.minValue,
       maxValue=row.maxValue,
       allowedValues=json.loads(row.allowedValues) if row.allowedValues is not None else None,
       measurementKind=MeasurementKind(row.measurementKind),
       transform=Transform(row.transform),
     )
-    for row in sorted(trial.assessments, key=lambda row: row.ordinal)
+    for row in sorted(trial.ratings, key=lambda row: row.ordinal)
   ]
   return TrialPackage(
     schemaVersion=trial.schemaVersion,
@@ -251,6 +291,7 @@ def loadPackage(session: Session, trialCode: str) -> TrialPackage:
     ),
     treatments=treatments,
     applications=applications,
+    ratings=ratings,
     assessments=assessments,
   )
 

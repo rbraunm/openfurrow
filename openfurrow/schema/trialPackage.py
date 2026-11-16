@@ -18,6 +18,7 @@ from enum import Enum
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from openfurrow.schema.application import Application
+from openfurrow.schema.assessment import Assessment, Rating
 from openfurrow.schema.treatment import Treatment
 from openfurrow.version import schemaVersion as currentSchemaVersion
 
@@ -26,42 +27,6 @@ class DesignType(str, Enum):
   """Experimental design used to lay out treatments into plots."""
 
   rcbd = "rcbd"  # randomized complete block design
-
-
-class AssessmentDataType(str, Enum):
-  """The kind of value an assessment records."""
-
-  numeric = "numeric"
-  categorical = "categorical"
-  ordinal = "ordinal"
-
-
-class MeasurementKind(str, Enum):
-  """What a numeric assessment measures, guiding transform choice and recommendation.
-
-  Declared, never inferred: unspecified is the default and is not second-guessed from
-  the data. It drives transform recommendation and the transform/kind sanity check.
-  """
-
-  unspecified = "unspecified"
-  count = "count"
-  proportion = "proportion"
-  continuous = "continuous"
-
-
-class Transform(str, Enum):
-  """A variance-stabilizing transform applied to a numeric assessment (decision 0006).
-
-  Declared per assessment. When set, the analysis runs on the transformed scale and
-  the transform enters the content hash. These are the plain forms with fail-loud
-  domains; offsets for zero and boundary values are a separate future slice.
-  """
-
-  none = "none"
-  sqrt = "sqrt"
-  log = "log"
-  arcsinSqrt = "arcsinSqrt"
-  logit = "logit"
 
 
 class TrialMetadata(BaseModel):
@@ -126,66 +91,6 @@ class DesignSpecification(BaseModel):
     return self
 
 
-class AssessmentDefinition(BaseModel):
-  """A trait or measurement to be collected, and the rules its values must obey.
-
-  Value-domain rules are tied to the data type and validated here so that
-  observation import can reject out-of-domain values against a single source of
-  truth: numeric assessments may bound a range; categorical and ordinal
-  assessments must enumerate their allowed values.
-  """
-
-  model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
-
-  assessmentCode: str = Field(min_length=1, description="Stable per-trial code, e.g. 'YIELD'.")
-  name: str = Field(min_length=1)
-  dataType: AssessmentDataType
-  unit: str | None = Field(default=None, description="Unit for numeric assessments, e.g. 'kg/ha'.")
-  timing: str | None = Field(default=None, description="Assessment date or growth stage.")
-  minValue: float | None = Field(default=None, description="Inclusive lower bound for numeric values.")
-  maxValue: float | None = Field(default=None, description="Inclusive upper bound for numeric values.")
-  allowedValues: list[str] | None = Field(default=None, description="Permitted values for categorical/ordinal.")
-  measurementKind: MeasurementKind = Field(
-    default=MeasurementKind.unspecified,
-    description="What a numeric assessment measures; guides transform recommendation. Declared, not inferred.",
-  )
-  transform: Transform = Field(
-    default=Transform.none,
-    description="Variance-stabilizing transform for a numeric assessment; enters the content hash (0006).",
-  )
-
-  @model_validator(mode="after")
-  def domainMatchesDataType(self) -> AssessmentDefinition:
-    code = self.assessmentCode
-    if self.dataType is AssessmentDataType.numeric:
-      if self.allowedValues is not None:
-        raise ValueError(f"assessment '{code}': numeric type cannot define allowedValues")
-      if self.minValue is not None and self.maxValue is not None and self.minValue > self.maxValue:
-        raise ValueError(
-          f"assessment '{code}': minValue {self.minValue} exceeds maxValue {self.maxValue}"
-        )
-    else:
-      if self.transform is not Transform.none:
-        raise ValueError(
-          f"assessment '{code}': {self.dataType.value} type cannot declare a transform"
-        )
-      if self.measurementKind is not MeasurementKind.unspecified:
-        raise ValueError(
-          f"assessment '{code}': {self.dataType.value} type cannot declare a measurementKind"
-        )
-      if self.minValue is not None or self.maxValue is not None:
-        raise ValueError(
-          f"assessment '{code}': {self.dataType.value} type cannot define a numeric range"
-        )
-      if not self.allowedValues:
-        raise ValueError(
-          f"assessment '{code}': {self.dataType.value} type must enumerate allowedValues"
-        )
-      if len(set(self.allowedValues)) != len(self.allowedValues):
-        raise ValueError(f"assessment '{code}': allowedValues contains duplicates")
-    return self
-
-
 class TrialPackage(BaseModel):
   """The complete design document for one trial.
 
@@ -203,7 +108,8 @@ class TrialPackage(BaseModel):
   treatments: list[Treatment] = Field(min_length=2, description="At least two treatments to compare.")
   applications: list[Application] = Field(default_factory=list)
   design: DesignSpecification
-  assessments: list[AssessmentDefinition] = Field(min_length=1)
+  ratings: list[Rating] = Field(min_length=1)
+  assessments: list[Assessment] = Field(min_length=1)
 
   @field_validator("schemaVersion")
   @classmethod
@@ -222,9 +128,17 @@ class TrialPackage(BaseModel):
       raise ValueError(f"duplicate treatmentCode values: {sorted(_duplicates(codes))}")
     return treatments
 
+  @field_validator("ratings")
+  @classmethod
+  def uniqueRatingCodes(cls, ratings: list[Rating]) -> list[Rating]:
+    codes = [rating.ratingCode for rating in ratings]
+    if len(set(codes)) != len(codes):
+      raise ValueError(f"duplicate ratingCode values: {sorted(_duplicates(codes))}")
+    return ratings
+
   @field_validator("assessments")
   @classmethod
-  def uniqueAssessmentCodes(cls, assessments: list[AssessmentDefinition]) -> list[AssessmentDefinition]:
+  def uniqueAssessmentCodes(cls, assessments: list[Assessment]) -> list[Assessment]:
     codes = [a.assessmentCode for a in assessments]
     if len(set(codes)) != len(codes):
       raise ValueError(f"duplicate assessmentCode values: {sorted(_duplicates(codes))}")
@@ -245,6 +159,47 @@ class TrialPackage(BaseModel):
             f"application(s) {unknown} are not declared in the package"
           )
     return self
+
+  @model_validator(mode="after")
+  def assessmentsNameDeclaredRatingsAndApplications(self) -> TrialPackage:
+    ratingCodes = {rating.ratingCode for rating in self.ratings}
+    applicationCodes = {application.applicationCode for application in self.applications}
+    for assessment in self.assessments:
+      if assessment.ratingCode not in ratingCodes:
+        raise ValueError(
+          f"assessment '{assessment.assessmentCode}': rating '{assessment.ratingCode}' is not declared in the package"
+        )
+      timedFrom = assessment.timedFromApplicationCode
+      if timedFrom is not None and timedFrom not in applicationCodes:
+        raise ValueError(
+          f"assessment '{assessment.assessmentCode}': application '{timedFrom}' is not declared in the package"
+        )
+    return self
+
+  def assessmentFor(self, assessmentCode: str) -> Assessment:
+    """The assessment with this code; raises if the package has none."""
+    for assessment in self.assessments:
+      if assessment.assessmentCode == assessmentCode:
+        return assessment
+    raise KeyError(f"assessment '{assessmentCode}' is not defined in the trial package")
+
+  def ratingFor(self, assessmentCode: str) -> Rating:
+    """The rating an assessment takes, which holds the rules its values obey."""
+    ratingCode = self.assessmentFor(assessmentCode).ratingCode
+    return next(rating for rating in self.ratings if rating.ratingCode == ratingCode)
+
+  def daysAfterApplication(self, assessmentCode: str) -> int | None:
+    """Days from the application an assessment is timed from; None until both have a date."""
+    assessment = self.assessmentFor(assessmentCode)
+    if assessment.timedFromApplicationCode is None or assessment.date is None:
+      return None
+    application = next(
+      application for application in self.applications
+      if application.applicationCode == assessment.timedFromApplicationCode
+    )
+    if application.date is None:
+      return None
+    return (assessment.date - application.date).days
 
   @property
   def plotCount(self) -> int:

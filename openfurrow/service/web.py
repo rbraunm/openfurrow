@@ -317,9 +317,12 @@ def _examplePackageJson() -> str:
     "design": {"designType": "rcbd", "replications": 4,
                "randomizationMethod": RandomizationMethod.sha256FisherYates1.value,
                "randomizationSeed": 20250601},
-    "assessments": [
-      {"assessmentCode": "YIELD", "name": "Grain yield", "dataType": "numeric",
+    "ratings": [
+      {"ratingCode": "YIELD", "name": "Grain yield", "dataType": "numeric",
        "unit": "kg/ha", "minValue": 0},
+    ],
+    "assessments": [
+      {"assessmentCode": "YIELD", "ratingCode": "YIELD", "timing": "Harvest"},
     ],
   }
   return json.dumps(example, indent=2)

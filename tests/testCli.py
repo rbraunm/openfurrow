@@ -31,7 +31,12 @@ demoPackage = {
             "site": "Field A", "objective": "Compare treatments"},
   "treatments": [{"treatmentCode": code, "name": code} for code in ["A", "B", "C", "D"]],
   "design": {"designType": "rcbd", "replications": 3, "randomizationMethod": "sha256FisherYates1", "randomizationSeed": 1},
-  "assessments": [{"assessmentCode": "YIELD", "name": "Yield", "dataType": "numeric", "unit": "kg/ha", "minValue": 0}],
+  "ratings": [
+    {"ratingCode": "YIELD", "name": "Yield", "dataType": "numeric", "unit": "kg/ha", "minValue": 0}
+  ],
+  "assessments": [
+    {"assessmentCode": "YIELD", "ratingCode": "YIELD"}
+  ],
 }
 demoValues = {
   ("A", 1): 106, ("A", 2): 99, ("A", 3): 95, ("B", 1): 103, ("B", 2): 100, ("B", 3): 94,
@@ -238,11 +243,13 @@ def testInfoSurfacesTransformAndMeasurementKind(tmp_path, capsys):
               "site": "Field A", "objective": "Compare"},
     "treatments": [{"treatmentCode": code, "name": code} for code in ["A", "B"]],
     "design": {"designType": "rcbd", "replications": 2, "randomizationMethod": "sha256FisherYates1", "randomizationSeed": 1},
+    "ratings": [
+      {"ratingCode": "CT", "name": "Insect count", "dataType": "numeric", "unit": "per m2", "minValue": 0, "transform": "sqrt", "measurementKind": "count"},
+      {"ratingCode": "SEV", "name": "Severity", "dataType": "ordinal", "allowedValues": ["none", "low", "high"]}
+    ],
     "assessments": [
-      {"assessmentCode": "CT", "name": "Insect count", "dataType": "numeric", "unit": "per m2",
-       "minValue": 0, "transform": "sqrt", "measurementKind": "count"},
-      {"assessmentCode": "SEV", "name": "Severity", "dataType": "ordinal",
-       "allowedValues": ["none", "low", "high"]},
+      {"assessmentCode": "CT", "ratingCode": "CT"},
+      {"assessmentCode": "SEV", "ratingCode": "SEV"}
     ],
   }
   packagePath = tmp_path / "info.json"
@@ -289,7 +296,7 @@ def testInfoListsTreatmentsAndApplications(tmp_path, capsys, validPackageDict):
     "Applications:\n"
     "  GS31  timing=BBCH 31\n"
     "  GS39  timing=BBCH 39\n"
-    "Assessments:\n"
+    "Ratings:\n"
   ) in out
 
 
@@ -299,7 +306,8 @@ def testInfoOfATrialWithoutApplicationsListsNone(project, capsys):
   capsys.readouterr()
   assert main(["info", project["db"], "DEMO"]) == 0
   out = capsys.readouterr().out
-  assert "Treatments:\n  A\n  B\n  C\n  D\nAssessments:\n" in out
+  assert "Treatments:\n  A\n  B\n  C\n  D\nRatings:\n" in out
+  assert "Assessments:\n  YIELD  rating=YIELD\n" in out
 
 
 def importedTrialDocument():

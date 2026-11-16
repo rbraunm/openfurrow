@@ -26,7 +26,12 @@ def buildResult(treatments, replications, cellValues, seed=1):
     "trial": {"trialCode": "SEP", "title": "sep", "crop": "x", "season": "x", "site": "x", "objective": "x"},
     "treatments": [{"treatmentCode": code, "name": code} for code in treatments],
     "design": {"designType": "rcbd", "replications": replications, "randomizationMethod": "sha256FisherYates1", "randomizationSeed": seed},
-    "assessments": [{"assessmentCode": "Y", "name": "y", "dataType": "numeric"}],
+    "ratings": [
+      {"ratingCode": "Y", "name": "y", "dataType": "numeric"}
+    ],
+    "assessments": [
+      {"assessmentCode": "Y", "ratingCode": "Y"}
+    ],
   })
   layout = generateRcbdLayout(package)
   observations = [

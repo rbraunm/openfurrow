@@ -269,6 +269,102 @@
       "text": "Waterlogged",
       "status": "source"
     },
+    "report.heading.ratings": {
+      "text": "Ratings",
+      "status": "source"
+    },
+    "report.ratings.column.code": {
+      "text": "Code",
+      "status": "source"
+    },
+    "report.ratings.column.name": {
+      "text": "Name",
+      "status": "source"
+    },
+    "report.ratings.column.type": {
+      "text": "Rating type",
+      "status": "source"
+    },
+    "report.ratings.column.partRated": {
+      "text": "Part rated",
+      "status": "source"
+    },
+    "report.ratings.column.method": {
+      "text": "Method",
+      "status": "source"
+    },
+    "report.ratings.column.unit": {
+      "text": "Unit",
+      "status": "source"
+    },
+    "report.ratings.column.values": {
+      "text": "Values",
+      "status": "source"
+    },
+    "report.ratings.column.transform": {
+      "text": "Analyzed on",
+      "status": "source"
+    },
+    "report.ratings.range": {
+      "text": "{low} to {high}",
+      "status": "source"
+    },
+    "report.ratings.atLeast": {
+      "text": "at least {low}",
+      "status": "source"
+    },
+    "report.ratings.atMost": {
+      "text": "at most {high}",
+      "status": "source"
+    },
+    "report.heading.assessments": {
+      "text": "Assessments",
+      "status": "source"
+    },
+    "report.assessments.column.code": {
+      "text": "Code",
+      "status": "source"
+    },
+    "report.assessments.column.rating": {
+      "text": "Rating",
+      "status": "source"
+    },
+    "report.assessments.column.timing": {
+      "text": "Timing",
+      "status": "source"
+    },
+    "report.assessments.column.date": {
+      "text": "Date",
+      "status": "source"
+    },
+    "report.assessments.column.cropStage": {
+      "text": "Crop stage",
+      "status": "source"
+    },
+    "report.assessments.column.targetStage": {
+      "text": "Target stage",
+      "status": "source"
+    },
+    "report.assessments.column.daysAfterApplication": {
+      "text": "Days after application",
+      "status": "source"
+    },
+    "report.assessments.column.assessedBy": {
+      "text": "Assessed by",
+      "status": "source"
+    },
+    "report.assessments.column.sampleSize": {
+      "text": "Sample size",
+      "status": "source"
+    },
+    "report.assessments.column.notes": {
+      "text": "Notes",
+      "status": "source"
+    },
+    "report.assessments.daysAfter": {
+      "text": "{days} DA-{application}",
+      "status": "source"
+    },
     "report.heading.assessment": {
       "text": "Assessment: {name} ({code})",
       "status": "source"

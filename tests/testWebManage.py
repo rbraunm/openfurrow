@@ -21,7 +21,12 @@ _packageDict = {
             "season": "2025", "site": "North Field", "objective": "Compare programs"},
   "treatments": [{"treatmentCode": code, "name": f"Treatment {code}"} for code in ["A", "B"]],
   "design": {"designType": "rcbd", "replications": 3, "randomizationMethod": "sha256FisherYates1", "randomizationSeed": 7},
-  "assessments": [{"assessmentCode": "YIELD", "name": "Yield", "dataType": "numeric", "minValue": 0}],
+  "ratings": [
+    {"ratingCode": "YIELD", "name": "Yield", "dataType": "numeric", "minValue": 0}
+  ],
+  "assessments": [
+    {"assessmentCode": "YIELD", "ratingCode": "YIELD"}
+  ],
 }
 
 

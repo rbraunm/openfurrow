@@ -62,12 +62,18 @@ _maximalPackage = {
     {"applicationCode": "A", "timing": "BBCH 31"},
   ],
   "design": {"designType": "rcbd", "replications": 3, "randomizationMethod": "sha256FisherYates1", "randomizationSeed": 99},
+  "ratings": [
+    {"ratingCode": "CT", "name": "Insect count", "ratingType": "pest count", "partRated": "whole plant",
+     "method": "Beat sheet, 10 plants", "dataType": "numeric", "unit": "per m2", "minValue": 0,
+     "maxValue": 500, "transform": "sqrt", "measurementKind": "count"},
+    {"ratingCode": "SEV", "name": "Severity", "dataType": "ordinal", "allowedValues": ["none", "low", "moderate", "high"]}
+  ],
   "assessments": [
-    {"assessmentCode": "CT", "name": "Insect count", "dataType": "numeric", "unit": "per m2",
-     "timing": "14 DAA", "minValue": 0, "maxValue": 500, "transform": "sqrt",
-     "measurementKind": "count"},
-    {"assessmentCode": "SEV", "name": "Severity", "dataType": "ordinal",
-     "allowedValues": ["none", "low", "moderate", "high"]},
+    {"assessmentCode": "CT14", "ratingCode": "CT", "timing": "14 DA-B", "date": "2025-06-03",
+     "cropStage": "BBCH 59", "targetStage": "Adults", "timedFromApplicationCode": "B",
+     "assessedBy": "Field team", "sampleSize": {"value": 10, "unit": "plants"}, "notes": "Windy"},
+    {"assessmentCode": "SEV", "ratingCode": "SEV"},
+    {"assessmentCode": "CT0", "ratingCode": "CT", "timing": "Before B"}
   ],
 }
 
@@ -191,14 +197,26 @@ def testImportedLayoutSurvivesStoreAndExchange(tmp_path):
 def testTransformEntersContentHash():
   """ADR 0006: the transform enters the content hash, so it cannot silently change results."""
   def toNone(data):
-    data["assessments"][0]["transform"] = "none"
+    data["ratings"][0]["transform"] = "none"
   assert _hashWith(lambda data: None) != _hashWith(toNone)
 
 
 def testMeasurementKindEntersContentHash():
   def toUnspecified(data):
-    data["assessments"][0]["measurementKind"] = "unspecified"
+    data["ratings"][0]["measurementKind"] = "unspecified"
   assert _hashWith(lambda data: None) != _hashWith(toUnspecified)
+
+
+def testAssessmentDateEntersContentHash():
+  def changeDate(data):
+    data["assessments"][0]["date"] = "2025-06-04"
+  assert _hashWith(lambda data: None) != _hashWith(changeDate)
+
+
+def testRatingAnAssessmentTakesEntersContentHash():
+  def otherRating(data):
+    data["assessments"][2]["ratingCode"] = "SEV"
+  assert _hashWith(lambda data: None) != _hashWith(otherRating)
 
 
 def testTreatmentRateEntersContentHash():
@@ -234,5 +252,5 @@ def testApplicationDateEntersContentHash():
 
 def testNumericBoundsEnterContentHash():
   def changeBound(data):
-    data["assessments"][0]["maxValue"] = 400
+    data["ratings"][0]["maxValue"] = 400
   assert _hashWith(lambda data: None) != _hashWith(changeBound)

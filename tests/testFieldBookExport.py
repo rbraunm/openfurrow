@@ -31,11 +31,13 @@ _packageDict = {
             "site": "Field A", "objective": "Compare treatments"},
   "treatments": [{"treatmentCode": code, "name": code} for code in ["A", "B", "C", "D"]],
   "design": {"designType": "rcbd", "replications": 3, "randomizationMethod": "sha256FisherYates1", "randomizationSeed": 7},
+  "ratings": [
+    {"ratingCode": "YIELD", "name": "Grain yield", "dataType": "numeric", "unit": "kg/ha", "minValue": 0, "maxValue": 200},
+    {"ratingCode": "SEV", "name": "Disease severity", "dataType": "ordinal", "allowedValues": ["none", "low", "moderate", "high"]}
+  ],
   "assessments": [
-    {"assessmentCode": "YIELD", "name": "Grain yield", "dataType": "numeric",
-     "unit": "kg/ha", "minValue": 0, "maxValue": 200},
-    {"assessmentCode": "SEV", "name": "Disease severity", "dataType": "ordinal",
-     "allowedValues": ["none", "low", "moderate", "high"]},
+    {"assessmentCode": "YIELD", "ratingCode": "YIELD"},
+    {"assessmentCode": "SEV", "ratingCode": "SEV"}
   ],
 }
 

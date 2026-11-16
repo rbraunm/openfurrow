@@ -177,7 +177,12 @@ def _stirretSetup(assessmentColumn):
               "season": "1935", "site": "Ottawa", "objective": "control"},
     "treatments": [{"treatmentCode": t, "name": t} for t in ("None", "Early", "Late", "Both")],
     "design": {"designType": "rcbd", "replications": 15, "randomizationMethod": "sha256FisherYates1", "randomizationSeed": 1},
-    "assessments": [{"assessmentCode": "y", "name": "count", "dataType": "numeric", "minValue": 0}],
+    "ratings": [
+      {"ratingCode": "y", "name": "count", "dataType": "numeric", "minValue": 0}
+    ],
+    "assessments": [
+      {"assessmentCode": "y", "ratingCode": "y"}
+    ],
   })
   layout = generateRcbdLayout(package)
   observations = [

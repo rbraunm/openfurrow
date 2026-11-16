@@ -68,10 +68,13 @@ def samplePackage(trialCode="TRIAL-1"):
     ],
     "applications": [{"applicationCode": "A", "timing": "BBCH 30"}],
     "design": {"designType": "rcbd", "replications": 4, "randomizationMethod": "sha256FisherYates1", "randomizationSeed": 42},
+    "ratings": [
+      {"ratingCode": "YIELD", "name": "Grain yield", "dataType": "numeric", "unit": "kg/ha", "minValue": 0},
+      {"ratingCode": "LODGE", "name": "Lodging", "dataType": "ordinal", "allowedValues": ["none", "slight", "severe"]}
+    ],
     "assessments": [
-      {"assessmentCode": "YIELD", "name": "Grain yield", "dataType": "numeric", "unit": "kg/ha", "minValue": 0},
-      {"assessmentCode": "LODGE", "name": "Lodging", "dataType": "ordinal",
-       "allowedValues": ["none", "slight", "severe"]},
+      {"assessmentCode": "YIELD", "ratingCode": "YIELD"},
+      {"assessmentCode": "LODGE", "ratingCode": "LODGE"}
     ],
   })
 
@@ -325,15 +328,18 @@ def testAssessmentTransformAndKindSurviveRoundTrip(engine):
               "site": "s", "objective": "o"},
     "treatments": [{"treatmentCode": code, "name": code} for code in ["A", "B"]],
     "design": {"designType": "rcbd", "replications": 2, "randomizationMethod": "sha256FisherYates1", "randomizationSeed": 1},
-    "assessments": [{"assessmentCode": "CT", "name": "Insect count", "dataType": "numeric",
-                     "unit": "per m2", "minValue": 0, "transform": "sqrt",
-                     "measurementKind": "count"}],
+    "ratings": [
+      {"ratingCode": "CT", "name": "Insect count", "dataType": "numeric", "unit": "per m2", "minValue": 0, "transform": "sqrt", "measurementKind": "count"}
+    ],
+    "assessments": [
+      {"assessmentCode": "CT", "ratingCode": "CT"}
+    ],
   })
   with sessionScope(engine) as session:
     savePackage(session, package, generateRcbdLayout(package).plots)
   with sessionScope(engine) as session:
     loaded = loadPackage(session, "TR-1")
-  assessment = loaded.assessments[0]
+  assessment = loaded.ratings[0]
   assert assessment.transform.value == "sqrt"
   assert assessment.measurementKind.value == "count"
   assert loaded == package

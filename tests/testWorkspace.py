@@ -39,8 +39,12 @@ _packageDict = {
             "site": "Field A", "objective": "Compare treatments"},
   "treatments": [{"treatmentCode": code, "name": code} for code in ["A", "B", "C", "D"]],
   "design": {"designType": "rcbd", "replications": 3, "randomizationMethod": "sha256FisherYates1", "randomizationSeed": 7},
-  "assessments": [{"assessmentCode": "YIELD", "name": "Yield", "dataType": "numeric",
-                   "unit": "kg/ha", "minValue": 0}],
+  "ratings": [
+    {"ratingCode": "YIELD", "name": "Yield", "dataType": "numeric", "unit": "kg/ha", "minValue": 0}
+  ],
+  "assessments": [
+    {"assessmentCode": "YIELD", "ratingCode": "YIELD"}
+  ],
 }
 # Clear treatment separation so the ANOVA is significant and mean separation splits.
 _values = {

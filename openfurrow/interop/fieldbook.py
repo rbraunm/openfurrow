@@ -25,7 +25,8 @@ import csv
 from pathlib import Path
 
 from openfurrow.config.profile import ImportFormat, ImportProfile
-from openfurrow.schema.trialPackage import AssessmentDataType, AssessmentDefinition, TrialPackage
+from openfurrow.schema.assessment import AssessmentDataType, Rating
+from openfurrow.schema.trialPackage import TrialPackage
 from openfurrow.schema.layout import TrialLayout
 
 # Field-import column roles. plotNumber is Field Book's unique id; block and
@@ -79,7 +80,7 @@ def writeTraitFile(package: TrialPackage, path: str | Path) -> None:
     writer = csv.writer(handle, quoting=csv.QUOTE_ALL)
     writer.writerow(_traitHeader)
     for position, assessment in enumerate(package.assessments, start=1):
-      writer.writerow(_traitRow(assessment, position))
+      writer.writerow(_traitRow(assessment.assessmentCode, package.ratingFor(assessment.assessmentCode), position))
 
 
 def fieldBookImportProfile() -> ImportProfile:
@@ -99,15 +100,15 @@ def fieldBookImportProfile() -> ImportProfile:
   )
 
 
-def _traitRow(assessment: AssessmentDefinition, position: int) -> list[str]:
-  numeric = assessment.dataType is AssessmentDataType.numeric
+def _traitRow(assessmentCode: str, rating: Rating, position: int) -> list[str]:
+  numeric = rating.dataType is AssessmentDataType.numeric
   traitFormat = "numeric" if numeric else "categorical"
-  minimum = _number(assessment.minValue) if numeric else ""
-  maximum = _number(assessment.maxValue) if numeric else ""
-  details = (assessment.unit or assessment.name) if numeric else assessment.name
-  categories = "/".join(assessment.allowedValues) if assessment.allowedValues else ""
+  minimum = _number(rating.minValue) if numeric else ""
+  maximum = _number(rating.maxValue) if numeric else ""
+  details = (rating.unit or rating.name) if numeric else rating.name
+  categories = "/".join(rating.allowedValues) if rating.allowedValues else ""
   return [
-    assessment.assessmentCode, traitFormat, "", minimum, maximum,
+    assessmentCode, traitFormat, "", minimum, maximum,
     details, categories, "true", str(position),
   ]
 

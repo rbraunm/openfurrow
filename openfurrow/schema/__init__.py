@@ -2,6 +2,13 @@
 """Pydantic models for the OpenFurrow trial package (import/export boundary)."""
 
 from openfurrow.schema.application import Application, SoilMoisture
+from openfurrow.schema.assessment import (
+  Assessment,
+  AssessmentDataType,
+  MeasurementKind,
+  Rating,
+  Transform,
+)
 from openfurrow.schema.document import (
   TrialDocument,
   canonicalBytes,
@@ -22,13 +29,9 @@ from openfurrow.schema.treatment import (
   TreatmentRole,
 )
 from openfurrow.schema.trialPackage import (
-  AssessmentDataType,
-  AssessmentDefinition,
   DesignSpecification,
   DesignType,
-  MeasurementKind,
   RandomizationMethod,
-  Transform,
   TrialMetadata,
   TrialPackage,
 )
@@ -36,8 +39,8 @@ from openfurrow.schema.trialPackage import (
 __all__ = [
   "ActiveSubstance",
   "Application",
+  "Assessment",
   "AssessmentDataType",
-  "AssessmentDefinition",
   "DesignSpecification",
   "DesignType",
   "MeasurementKind",
@@ -47,6 +50,7 @@ __all__ = [
   "Quantity",
   "RandomizationMethod",
   "RateBasis",
+  "Rating",
   "SoilMoisture",
   "Transform",
   "Treatment",

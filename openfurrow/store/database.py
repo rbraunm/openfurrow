@@ -11,7 +11,7 @@ Modeling choices, recorded in decisions 0001 and 0015:
 - The layout is stored, one row per plot (decision 0015). Which treatment stands on
   which plot is a fact about the field; the seed and the method's name on the trial
   row say how a generated layout was made, and are absent or `imported` otherwise.
-- Treatments and assessments carry an explicit `ordinal`. Their order is
+- Treatments, ratings and assessments carry an explicit `ordinal`. Their order is
   significant -- the randomizer permutes treatments in package order, and the input
   hash preserves list order -- so it must survive a round trip, which SQL row order
   does not guarantee without an ordering column.
@@ -36,7 +36,7 @@ from sqlalchemy import ForeignKey, Text, event, inspect, select
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, relationship
 
-storeVersion = 3
+storeVersion = 4
 
 
 class StoreError(RuntimeError):
@@ -81,6 +81,9 @@ class TrialRow(Base):
     back_populates="trial", cascade="all, delete-orphan"
   )
   applications: Mapped[list[ApplicationRow]] = relationship(
+    back_populates="trial", cascade="all, delete-orphan"
+  )
+  ratings: Mapped[list[RatingRow]] = relationship(
     back_populates="trial", cascade="all, delete-orphan"
   )
   assessments: Mapped[list[AssessmentRow]] = relationship(
@@ -170,8 +173,33 @@ class ApplicationRow(Base):
   trial: Mapped[TrialRow] = relationship(back_populates="applications")
 
 
+class RatingRow(Base):
+  """What is rated and its rules. `allowedValues` is stored as a JSON text column."""
+
+  __tablename__ = "rating"
+
+  trialCode: Mapped[str] = mapped_column(
+    ForeignKey("trial.trialCode", ondelete="CASCADE"), primary_key=True
+  )
+  ratingCode: Mapped[str] = mapped_column(primary_key=True)
+  ordinal: Mapped[int]
+  name: Mapped[str]
+  ratingType: Mapped[str | None]
+  partRated: Mapped[str | None]
+  method: Mapped[str | None]
+  dataType: Mapped[str]
+  unit: Mapped[str | None]
+  minValue: Mapped[float | None]
+  maxValue: Mapped[float | None]
+  allowedValues: Mapped[str | None] = mapped_column(Text)
+  measurementKind: Mapped[str]
+  transform: Mapped[str]
+
+  trial: Mapped[TrialRow] = relationship(back_populates="ratings")
+
+
 class AssessmentRow(Base):
-  """One assessment to collect. `allowedValues` is stored as a JSON text column."""
+  """One occasion a rating is taken; observations are keyed by its code."""
 
   __tablename__ = "assessment"
 
@@ -180,15 +208,16 @@ class AssessmentRow(Base):
   )
   assessmentCode: Mapped[str] = mapped_column(primary_key=True)
   ordinal: Mapped[int]
-  name: Mapped[str]
-  dataType: Mapped[str]
-  unit: Mapped[str | None]
+  ratingCode: Mapped[str]
   timing: Mapped[str | None]
-  minValue: Mapped[float | None]
-  maxValue: Mapped[float | None]
-  allowedValues: Mapped[str | None] = mapped_column(Text)
-  measurementKind: Mapped[str]
-  transform: Mapped[str]
+  date: Mapped[datetime.date | None]
+  cropStage: Mapped[str | None]
+  targetStage: Mapped[str | None]
+  timedFromApplicationCode: Mapped[str | None]
+  assessedBy: Mapped[str | None]
+  sampleSizeValue: Mapped[float | None]
+  sampleSizeUnit: Mapped[str | None]
+  notes: Mapped[str | None]
 
   trial: Mapped[TrialRow] = relationship(back_populates="assessments")
 

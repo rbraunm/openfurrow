@@ -36,8 +36,12 @@ def buildRcbd(values, transform="none", measurementKind="unspecified"):
               "site": "s", "objective": "o"},
     "treatments": [{"treatmentCode": treatment, "name": treatment} for treatment in treatments],
     "design": {"designType": "rcbd", "replications": len(blocks), "randomizationMethod": "sha256FisherYates1", "randomizationSeed": 1},
-    "assessments": [{"assessmentCode": "Y", "name": "y", "dataType": "numeric",
-                     "measurementKind": measurementKind, "transform": transform}],
+    "ratings": [
+      {"ratingCode": "Y", "name": "y", "dataType": "numeric", "measurementKind": measurementKind, "transform": transform}
+    ],
+    "assessments": [
+      {"assessmentCode": "Y", "ratingCode": "Y"}
+    ],
   })
   layout = generateRcbdLayout(package)
   observations = [

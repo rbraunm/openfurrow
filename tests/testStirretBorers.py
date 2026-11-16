@@ -94,9 +94,13 @@ def stirretPackage():
     },
     "treatments": [{"treatmentCode": code, "name": code} for code in stirretTreatments],
     "design": {"designType": "rcbd", "replications": 15, "randomizationMethod": "sha256FisherYates1", "randomizationSeed": 1},
+    "ratings": [
+      {"ratingCode": "count1", "name": "Borer count August 18", "dataType": "numeric", "minValue": 0},
+      {"ratingCode": "count2", "name": "Borer count October 19", "dataType": "numeric", "minValue": 0}
+    ],
     "assessments": [
-      {"assessmentCode": "count1", "name": "Borer count August 18", "dataType": "numeric", "minValue": 0},
-      {"assessmentCode": "count2", "name": "Borer count October 19", "dataType": "numeric", "minValue": 0},
+      {"assessmentCode": "count1", "ratingCode": "count1"},
+      {"assessmentCode": "count2", "ratingCode": "count2"}
     ],
   })
 

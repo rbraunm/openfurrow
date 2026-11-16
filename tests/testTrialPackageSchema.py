@@ -40,7 +40,7 @@ def testValidPackageConstructs(validPackageDict):
   assert len(package.treatments) == 3
   assert package.design.designType is DesignType.rcbd
   assert package.design.randomizationSeed == 42
-  assert package.assessments[1].dataType is AssessmentDataType.ordinal
+  assert package.ratings[1].dataType is AssessmentDataType.ordinal
 
 
 def testPlotCountIsTreatmentsTimesReplications(validPackageDict):
@@ -95,10 +95,10 @@ def testMixtureAndProgramAreLinesOfOneTreatment(validPackageDict):
 
 
 def testNumericRangeWithMinBelowMaxAccepted(validPackageDict):
-  validPackageDict["assessments"][0]["minValue"] = 0.0
-  validPackageDict["assessments"][0]["maxValue"] = 20000.0
+  validPackageDict["ratings"][0]["minValue"] = 0.0
+  validPackageDict["ratings"][0]["maxValue"] = 20000.0
   package = buildPackage(validPackageDict)
-  assert package.assessments[0].maxValue == 20000.0
+  assert package.ratings[0].maxValue == 20000.0
 
 
 # ---- schema version ------------------------------------------------------
@@ -319,7 +319,7 @@ def testSingleTreatmentRejected(validPackageDict):
 # ---- assessment rules ---------------------------------------------------
 
 def testNumericWithAllowedValuesRejected(validPackageDict):
-  validPackageDict["assessments"][0]["allowedValues"] = ["a", "b"]
+  validPackageDict["ratings"][0]["allowedValues"] = ["a", "b"]
   with pytest.raises(ValidationError) as excInfo:
     buildPackage(validPackageDict)
   assert any("numeric type cannot define allowedValues" in message
@@ -327,8 +327,8 @@ def testNumericWithAllowedValuesRejected(validPackageDict):
 
 
 def testNumericMinExceedsMaxRejected(validPackageDict):
-  validPackageDict["assessments"][0]["minValue"] = 100.0
-  validPackageDict["assessments"][0]["maxValue"] = 1.0
+  validPackageDict["ratings"][0]["minValue"] = 100.0
+  validPackageDict["ratings"][0]["maxValue"] = 1.0
   with pytest.raises(ValidationError) as excInfo:
     buildPackage(validPackageDict)
   assert any("minValue 100.0 exceeds maxValue 1.0" in message
@@ -336,7 +336,7 @@ def testNumericMinExceedsMaxRejected(validPackageDict):
 
 
 def testCategoricalWithoutAllowedValuesRejected(validPackageDict):
-  del validPackageDict["assessments"][1]["allowedValues"]
+  del validPackageDict["ratings"][1]["allowedValues"]
   with pytest.raises(ValidationError) as excInfo:
     buildPackage(validPackageDict)
   assert any("must enumerate allowedValues" in message
@@ -344,7 +344,7 @@ def testCategoricalWithoutAllowedValuesRejected(validPackageDict):
 
 
 def testOrdinalWithNumericRangeRejected(validPackageDict):
-  validPackageDict["assessments"][1]["minValue"] = 0.0
+  validPackageDict["ratings"][1]["minValue"] = 0.0
   with pytest.raises(ValidationError) as excInfo:
     buildPackage(validPackageDict)
   assert any("cannot define a numeric range" in message
@@ -352,7 +352,7 @@ def testOrdinalWithNumericRangeRejected(validPackageDict):
 
 
 def testDuplicateAllowedValuesRejected(validPackageDict):
-  validPackageDict["assessments"][1]["allowedValues"] = ["low", "low", "high"]
+  validPackageDict["ratings"][1]["allowedValues"] = ["low", "low", "high"]
   with pytest.raises(ValidationError) as excInfo:
     buildPackage(validPackageDict)
   assert any("allowedValues contains duplicates" in message
@@ -372,6 +372,61 @@ def testEmptyAssessmentsRejected(validPackageDict):
   with pytest.raises(ValidationError) as excInfo:
     buildPackage(validPackageDict)
   assert any(error["loc"][-1] == "assessments" for error in excInfo.value.errors())
+
+
+# ---- ratings and assessment occasions (decision 0017) -------------------
+
+def testOneRatingTakenOnSeveralOccasions(validPackageDict):
+  validPackageDict["applications"][0]["date"] = "2025-05-02"
+  validPackageDict["assessments"] = [
+    {"assessmentCode": "YIELD", "ratingCode": "YIELD"},
+    {"assessmentCode": "SEV7", "ratingCode": "SEV", "date": "2025-05-09", "timedFromApplicationCode": "GS31"},
+    {"assessmentCode": "SEV0", "ratingCode": "SEV", "date": "2025-05-01", "timedFromApplicationCode": "GS31"},
+    {"assessmentCode": "SEVX", "ratingCode": "SEV", "timedFromApplicationCode": "GS39"},
+  ]
+  package = buildPackage(validPackageDict)
+  assert package.ratingFor("SEV7") is package.ratingFor("SEV0") is package.ratings[1]
+  assert package.daysAfterApplication("SEV7") == 7
+  assert package.daysAfterApplication("SEV0") == -1
+  # GS39 has no date yet, YIELD is timed from nothing: neither has a count of days.
+  assert package.daysAfterApplication("SEVX") is None
+  assert package.daysAfterApplication("YIELD") is None
+
+
+def testAssessmentOfAnUndeclaredRatingRejected(validPackageDict):
+  validPackageDict["assessments"][1]["ratingCode"] = "LODGE"
+  assert any("assessment 'SEV': rating 'LODGE' is not declared in the package" in message
+             for message in errorMessages(rejection(validPackageDict)))
+
+
+def testAssessmentTimedFromAnUndeclaredApplicationRejected(validPackageDict):
+  validPackageDict["assessments"][1]["timedFromApplicationCode"] = "GS99"
+  assert any("assessment 'SEV': application 'GS99' is not declared in the package" in message
+             for message in errorMessages(rejection(validPackageDict)))
+
+
+def testDuplicateRatingCodeRejected(validPackageDict):
+  validPackageDict["ratings"][1]["ratingCode"] = "YIELD"
+  assert any("duplicate ratingCode values: ['YIELD']" in message
+             for message in errorMessages(rejection(validPackageDict)))
+
+
+def testNonPositiveSampleSizeRejected(validPackageDict):
+  validPackageDict["assessments"][0]["sampleSize"] = {"value": 0, "unit": "plants"}
+  assert any("sampleSize must be greater than zero, got 0.0" in message
+             for message in errorMessages(rejection(validPackageDict)))
+
+
+def testCategoryRatingWithAUnitRejected(validPackageDict):
+  validPackageDict["ratings"][1]["unit"] = "%"
+  assert any("rating 'SEV': ordinal type cannot declare a unit" in message
+             for message in errorMessages(rejection(validPackageDict)))
+
+
+def testAssessmentDateNotWrittenAsADateRejected(validPackageDict):
+  validPackageDict["assessments"][0]["date"] = 20250502
+  assert any("a date is written YYYY-MM-DD, got 20250502" in message
+             for message in errorMessages(rejection(validPackageDict)))
 
 
 # ---- design rules -------------------------------------------------------

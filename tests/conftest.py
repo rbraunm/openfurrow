@@ -35,11 +35,13 @@ _validPackage = {
     {"applicationCode": "GS39", "timing": "BBCH 39"},
   ],
   "design": {"designType": "rcbd", "replications": 4, "randomizationMethod": "sha256FisherYates1", "randomizationSeed": 42},
+  "ratings": [
+    {"ratingCode": "YIELD", "name": "Grain yield", "dataType": "numeric", "unit": "kg/ha", "minValue": 0.0},
+    {"ratingCode": "SEV", "name": "Disease severity", "dataType": "ordinal", "allowedValues": ["none", "low", "moderate", "high"]}
+  ],
   "assessments": [
-    {"assessmentCode": "YIELD", "name": "Grain yield", "dataType": "numeric",
-     "unit": "kg/ha", "minValue": 0.0},
-    {"assessmentCode": "SEV", "name": "Disease severity", "dataType": "ordinal",
-     "allowedValues": ["none", "low", "moderate", "high"]},
+    {"assessmentCode": "YIELD", "ratingCode": "YIELD"},
+    {"assessmentCode": "SEV", "ratingCode": "SEV"}
   ],
 }
 

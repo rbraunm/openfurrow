@@ -72,6 +72,27 @@ plotNumber,assessmentCode,value
     importObservations(path, package, layout)
 
 
+def testEachOccasionTakesItsRatingsRules(tmp_path, validPackageDict):
+  """A second occasion of a rating is held to that rating's limits, and named in the error."""
+  validPackageDict["ratings"][0]["maxValue"] = 9000
+  validPackageDict["assessments"].append({"assessmentCode": "YIELD2", "ratingCode": "YIELD"})
+  package = TrialPackage.model_validate(validPackageDict)
+  layout = generateRcbdLayout(package)
+  accepted = writeCsv(tmp_path, """
+plotNumber,assessmentCode,value
+101,YIELD,4800
+101,YIELD2,5100
+""")
+  values = {o.assessmentCode: o.value for o in importObservations(accepted, package, layout).observations}
+  assert values == {"YIELD": 4800.0, "YIELD2": 5100.0}
+  refused = writeCsv(tmp_path, """
+plotNumber,assessmentCode,value
+101,YIELD2,9500
+""")
+  with pytest.raises(ObservationImportError, match="value 9500.0 for assessment 'YIELD2' is above the maximum 9000.0"):
+    importObservations(refused, package, layout)
+
+
 def testNumericBelowMinimumRejected(tmp_path, packageAndLayout):
   package, layout = packageAndLayout  # YIELD has minValue 0
   path = writeCsv(tmp_path, """

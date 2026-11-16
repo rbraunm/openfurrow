@@ -237,6 +237,50 @@
       "text": "No analizado: el AOV requiere una evaluación numérica (esta evaluación es {dataType}).",
       "status": "machineDraft"
     },
+    "report.assessments.column.assessedBy": {
+      "text": "Evaluado por",
+      "status": "machineDraft"
+    },
+    "report.assessments.column.code": {
+      "text": "Código",
+      "status": "machineDraft"
+    },
+    "report.assessments.column.cropStage": {
+      "text": "Estadio del cultivo",
+      "status": "machineDraft"
+    },
+    "report.assessments.column.date": {
+      "text": "Fecha",
+      "status": "machineDraft"
+    },
+    "report.assessments.column.daysAfterApplication": {
+      "text": "Días después de la aplicación",
+      "status": "machineDraft"
+    },
+    "report.assessments.column.notes": {
+      "text": "Notas",
+      "status": "machineDraft"
+    },
+    "report.assessments.column.rating": {
+      "text": "Variable",
+      "status": "machineDraft"
+    },
+    "report.assessments.column.sampleSize": {
+      "text": "Tamaño de muestra",
+      "status": "machineDraft"
+    },
+    "report.assessments.column.targetStage": {
+      "text": "Estadio del objetivo",
+      "status": "machineDraft"
+    },
+    "report.assessments.column.timing": {
+      "text": "Momento",
+      "status": "machineDraft"
+    },
+    "report.assessments.daysAfter": {
+      "text": "{days} DDA-{application}",
+      "status": "machineDraft"
+    },
     "report.assumptions.note": {
       "text": "Solo informativo; no cambia el análisis anterior (nivel de significancia alfa = {alpha}).",
       "status": "machineDraft"
@@ -325,12 +369,20 @@
       "text": "Evaluación: {name} ({code})",
       "status": "machineDraft"
     },
+    "report.heading.assessments": {
+      "text": "Evaluaciones",
+      "status": "machineDraft"
+    },
     "report.heading.assumptions": {
       "text": "Verificación de supuestos",
       "status": "machineDraft"
     },
     "report.heading.design": {
       "text": "Diseño",
+      "status": "machineDraft"
+    },
+    "report.heading.ratings": {
+      "text": "Variables evaluadas",
       "status": "machineDraft"
     },
     "report.heading.reproducibility": {
@@ -399,6 +451,50 @@
     },
     "report.method.fisherProtectedLSD": {
       "text": "DMS protegida de Fisher",
+      "status": "machineDraft"
+    },
+    "report.ratings.atLeast": {
+      "text": "al menos {low}",
+      "status": "machineDraft"
+    },
+    "report.ratings.atMost": {
+      "text": "como máximo {high}",
+      "status": "machineDraft"
+    },
+    "report.ratings.column.code": {
+      "text": "Código",
+      "status": "machineDraft"
+    },
+    "report.ratings.column.method": {
+      "text": "Método",
+      "status": "machineDraft"
+    },
+    "report.ratings.column.name": {
+      "text": "Nombre",
+      "status": "machineDraft"
+    },
+    "report.ratings.column.partRated": {
+      "text": "Parte evaluada",
+      "status": "machineDraft"
+    },
+    "report.ratings.column.transform": {
+      "text": "Analizado en escala",
+      "status": "machineDraft"
+    },
+    "report.ratings.column.type": {
+      "text": "Tipo de evaluación",
+      "status": "machineDraft"
+    },
+    "report.ratings.column.unit": {
+      "text": "Unidad",
+      "status": "machineDraft"
+    },
+    "report.ratings.column.values": {
+      "text": "Valores",
+      "status": "machineDraft"
+    },
+    "report.ratings.range": {
+      "text": "{low} a {high}",
       "status": "machineDraft"
     },
     "report.reproducibility.inputHash": {

@@ -6,7 +6,7 @@ Findings, defects, checks and owner calls that the plans do not carry.
 Status tags: `fix` (a defect to correct), `build` (work to add), `check` (a suspicion to
 measure), `owner` (the owner's call), `done`.
 
-**Counts.** fix 0, build 16, check 0, owner 3, done 26; 45 in all.
+**Counts.** fix 0, build 16, check 0, owner 4, done 27; 47 in all.
 
 ## Owner decisions
 
@@ -38,6 +38,12 @@ measure), `owner` (the owner's call), `done`.
   and assessments, without waiting for the specialist unless the answers would change the
   shape. The questions on special randomizations and on an example of a trial's setup have
   been sent to the specialist.
+- **The specialist's answers (2026-11-15):** the special arrangements in use are the first
+  replicate left in treatment order, split plots, paired plots and the spatially balanced
+  RCBD (REC-7). No example of a trial's setup can be shared: the specialist's trials carry
+  a company's confidential details. The suggested route to a first user: a tool that
+  also collects data on a phone or tablet could interest a university group to try it
+  and publish the result, which could draw industry attention over some years (USR-9).
 
 ## Reproducibility (REP)
 
@@ -222,6 +228,12 @@ measure), `owner` (the owner's call), `done`.
   trial will most likely be one of these. Since REP-1 such a trial can be held: it comes in
   as a trial document whose package says `imported` and whose layout lists the plots
   (`import-json`, or the API). The path through the interface remains to build.
+- **USR-9** `owner` **Field collection for a university pilot.** The specialist's route to a
+  first user (Owner decisions, "The specialist's answers") needs data collected on a
+  phone or tablet. Decision 0014 already commits to collection apps after Field Book
+  interoperability; the file-based Field Book path exists today (export a field book,
+  collect, import the export). Whether that is enough to offer, or a collection app of the
+  project's own moves ahead of the rest of the first-user work, is the owner's call.
 - **USR-8** `build` **What happened to a plot.** A lost plot, a misapplied treatment or a
   difference between the plan and what was planted has no record. EPPO PP 1/181 asks for
   deviations to be noted and reported (decision 0015, "Consequences").
@@ -247,8 +259,8 @@ sections added beside them. REC-9 needs data entry in the tool (USR-4).
   irrigation as notes.
 - **REC-2** `build` **Pest information.** Today: nothing. Plan, after section 1.1: the
   trial's targets, each with a name, a scientific name or EPPO code and a kind (weed,
-  disease, insect, other). A target's stage and level are recorded where they occur: at
-  each application (REC-4) and at each assessment (REC-8).
+  disease, insect, other). A target's stage is already recorded as text at each
+  application and assessment; a rating then names the target it rates by code.
 - **REC-3** `done` **Treatment information.** Built as decision 0016 says: a treatment
   may state its role (test, reference, untreated control, other control) and has product
   lines, each a formulated product with its kind, formulation type, active substances and
@@ -279,15 +291,21 @@ sections added beside them. REC-9 needs data entry in the tool (USR-4).
   Then, after section 1.3: the arrangement of the untreated control (included,
   imbricated, excluded), plot sizes and the zones between plots, and further designs in
   the order the specialist's trials need them (completely randomized, Latin square,
-  split-plot, strip-plot). Which special arrangements are meant is a question for the
-  specialist.
-- **REC-8** `build` **Assessment definitions.** Today: a code, a name, a data type, a
-  unit, a free-text timing, a range or allowed values, a measurement kind and a
-  transform; one value per plot. Plan, after section 3.2: a definition (what is rated,
-  the rating type, unit and scale, the part rated, the method, limits or categories, the
-  transform) kept apart from its occasions (the date, the crop and pest stage, the days
-  after a named application, who assessed). A sample size, and subsamples within a plot
-  kept as entered, with the plot's value derived from them.
+  split-plot, strip-plot). The specialist names the arrangements in use: the first
+  replicate left in treatment order, split plots, paired plots and the spatially balanced
+  RCBD. The first is a generated layout with block 1 unshuffled; the others are designs of
+  their own, and an analysis to match each comes with it (USR-3). Any of them laid out
+  elsewhere can already be held as an imported layout.
+- **REC-8** `done` **Assessment definitions.** Built as decision 0017 says: a rating holds
+  what is rated and every rule its values obey (rating type, part rated, method, data
+  type, unit, limits or categories, measurement kind, transform); an assessment is one
+  occasion it is taken (timing, date, crop and target stage, the application it is timed
+  from, who assessed, sample size, notes). Each occasion is analysed on its own, and the
+  report shows days after application (14 DA-A), derived from the two dates. Subsamples
+  are REC-11; a rating's target waits for REC-2.
+- **REC-11** `build` **Subsamples within a plot.** Several values taken in one plot on one
+  occasion (ten leaves, four quadrats) kept as entered, with the plot's value derived from
+  them by a stated rule (mean, sum). Today one value per plot and assessment.
 - **REC-9** `build` **Validation rules for data entry.** Today: a value is checked on
   import against the range or allowed values, and one bad value rejects the file; the
   tool has no entry of its own (USR-4). Plan: entry in the tool, with the definition's

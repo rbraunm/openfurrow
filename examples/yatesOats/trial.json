@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "0.3.0",
+  "schemaVersion": "0.4.0",
   "trial": {
     "trialCode": "yatesOats1935",
     "title": "Yates oat variety trial",
@@ -20,7 +20,10 @@
     "randomizationMethod": "sha256FisherYates1",
     "randomizationSeed": 1
   },
+  "ratings": [
+    {"ratingCode": "yield", "name": "Grain yield", "dataType": "numeric", "unit": "qtr-lb/plot", "minValue": 0}
+  ],
   "assessments": [
-    {"assessmentCode": "yield", "name": "Grain yield", "dataType": "numeric", "unit": "qtr-lb/plot", "minValue": 0}
+    {"assessmentCode": "yield", "ratingCode": "yield"}
   ]
 }
