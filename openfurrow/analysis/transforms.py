@@ -83,6 +83,22 @@ def applyTransform(transform: Transform, values: Sequence[float], offset: float)
   raise TransformError(f"unknown transform: {transform}")
 
 
+def backTransformInterval(transform: Transform, low: float, high: float, offset: float) -> tuple[float, float]:
+  """Back-transform an interval on the analysed scale to the original scale.
+
+  The part of the interval outside the transform's range (below zero on the square-root
+  scale, outside 0 to pi/2 on the angular scale) has no value on the original scale, so
+  the interval is cut to the range first; inside it each back-transform is increasing.
+  """
+  if low > high:
+    raise TransformError(f"interval ends out of order: {low} > {high}")
+  if transform is Transform.sqrt:
+    low, high = max(low, 0.0), max(high, 0.0)
+  elif transform is Transform.arcsinSqrt:
+    low, high = min(max(low, 0.0), math.pi / 2), min(max(high, 0.0), math.pi / 2)
+  return backTransformMean(transform, low, offset), backTransformMean(transform, high, offset)
+
+
 def backTransformMean(transform: Transform, value: float, offset: float) -> float:
   """Back-transform a value from the transformed scale to the original scale, taking the offset off.
 

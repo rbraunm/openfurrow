@@ -88,6 +88,7 @@ class MeanSeparation(BaseModel):
   methodKey: str
   significanceLevel: float
   criticalDifference: float
+  standardError: float
   treatmentSignificant: bool
   groups: list[TreatmentGroup]
 
@@ -118,6 +119,7 @@ def separateMeans(
     methodKey=methodKeyFor(meanComparison),
     significanceLevel=significanceLevel,
     criticalDifference=difference,
+    standardError=math.sqrt(anovaResult.errorMeanSquare / anovaResult.blockCount),
     treatmentSignificant=treatmentSignificant,
     groups=[
       TreatmentGroup(treatmentCode=mean.treatmentCode, mean=mean.mean, group=letters[index])

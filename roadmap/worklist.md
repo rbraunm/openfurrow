@@ -6,7 +6,7 @@ Findings, defects, checks and owner calls that the plans do not carry.
 Status tags: `fix` (a defect to correct), `build` (work to add), `check` (a suspicion to
 measure), `owner` (the owner's call), `done`.
 
-**Counts.** fix 0, build 6, check 0, owner 4, done 48; 58 in all.
+**Counts.** fix 0, build 5, check 0, owner 4, done 49; 58 in all.
 
 ## Owner decisions
 
@@ -187,8 +187,10 @@ measure), `owner` (the owner's call), `done`.
   (drawn and recorded when left empty) or uploaded as planted (USR-7). Product lines,
   applications, factors, checks and the other parts of the record are still written as
   a trial file; their forms are USR-14.
-- **USR-2** `build` **Charts.** None exist; `milestones.md` lists means with letters and
-  error bars as future work.
+- **USR-2** `done` **Charts.** Built as decision 0032 says: a bar chart under every table of
+  separated means on the report page, with the letters and one standard error of a mean on
+  the analysis' own error, back-transformed after a transform. Interaction plots and charts
+  across trials stay in the milestones.
 - **USR-3** `build` **Analysis breadth.** One design (single-factor RCBD) and one
   comparison method (Fisher's LSD, protected or not). Which designs and tests come first
   depends on what the first user's trials need. The second opinion's ranking for a first

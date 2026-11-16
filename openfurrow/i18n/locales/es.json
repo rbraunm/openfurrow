@@ -309,6 +309,30 @@
       "text": "Los residuos de parcela principal provienen de las medias de parcela principal tras los efectos de bloque y de parcela principal (error a); los residuos de subparcela son la desviación de cada parcela respecto de su parcela principal tras los efectos de la combinación (error b). Ambos están restringidos, por lo que las pruebas de normalidad son aproximadas.",
       "status": "machineDraft"
     },
+    "report.chart.againstCheck": {
+      "text": "La tabla de arriba compara cada tratamiento con {check}.",
+      "status": "machineDraft"
+    },
+    "report.chart.factorMeans": {
+      "text": "Medias de {factor}",
+      "status": "machineDraft"
+    },
+    "report.chart.letters": {
+      "text": "Las barras que comparten una letra no difieren significativamente.",
+      "status": "machineDraft"
+    },
+    "report.chart.treatmentMeans": {
+      "text": "Medias de tratamiento: {mean}",
+      "status": "machineDraft"
+    },
+    "report.chart.whiskers": {
+      "text": "Las barras son medias; los bigotes son un error estándar de la media ({error}), del error del análisis.",
+      "status": "machineDraft"
+    },
+    "report.chart.whiskersTransformed": {
+      "text": "Las barras son medias retransformadas a la escala original; los bigotes son un error estándar ({error} en la escala {scale}), retransformado, por lo que pueden no ser simétricos.",
+      "status": "machineDraft"
+    },
     "report.check.excluded": {
       "text": "El testigo sin tratar ({check}) queda fuera de este análisis; su media registrada es {mean}.",
       "status": "machineDraft"

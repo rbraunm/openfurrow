@@ -26,6 +26,7 @@ the report.
 from __future__ import annotations
 
 import platform
+from contextvars import ContextVar
 from decimal import Decimal
 
 import numpy
@@ -51,7 +52,7 @@ from openfurrow.analysis import (
   separateMeans,
 )
 from openfurrow.analysis.meanSeparation import MeanComparison
-from openfurrow.analysis.transforms import backTransformMean
+from openfurrow.analysis.transforms import backTransformInterval, backTransformMean
 from openfurrow.i18n import Translator, sourceLocale, translatorFor
 from openfurrow.schema.application import Application
 from openfurrow.schema.document import TrialDocument, contentHash
@@ -61,7 +62,24 @@ from openfurrow.schema.quantity import Quantity
 from openfurrow.schema.treatment import ActiveSubstance, TreatmentLine, TreatmentRole
 from openfurrow.schema.assessment import AssessmentDataType, Rating, Transform, UntreatedCheck
 from openfurrow.schema.trialPackage import CheckArrangement, DesignType, RandomizationMethod, TrialPackage
+from openfurrow.reports.charts import ChartBar, MeansChart
 from openfurrow.version import softwareVersion
+
+# While a report is built for a page that draws charts, each table of means leaves a
+# marker line here and its chart beside it (decision 0032); the Markdown report has none.
+_chartSink: ContextVar[tuple[str, list[MeansChart]] | None] = ContextVar("chartSink", default=None)
+
+
+class ReportWithCharts:
+  """A report's Markdown with a marker line where each chart goes, and the charts in order."""
+
+  def __init__(self, markdown: str, marker: str, charts: list[MeansChart]) -> None:
+    self.markdown = markdown
+    self.marker = marker
+    self.charts = charts
+
+  def markerFor(self, index: int) -> str:
+    return f"{self.marker}{index}"
 
 # The precision p-values print at, and the value below which one rounds to zero at that
 # precision. Derived, not written twice: change the decimals and the threshold follows.
@@ -75,6 +93,53 @@ _scaleKeys = {
   Transform.arcsinSqrt: "report.scale.arcsinSqrt",
   Transform.logit: "report.scale.logit",
 }
+
+
+def buildReportWithCharts(
+  package: TrialPackage,
+  layout: TrialLayout,
+  observations: list[Observation],
+  marker: str,
+  significanceLevel: float = 0.05,
+  meanComparison: MeanComparison = MeanComparison.protectedLSD,
+  locale: str = sourceLocale,
+) -> ReportWithCharts:
+  """The report with a chart under each table of means; `marker` must not occur in the trial."""
+  if not marker.isalnum():
+    raise ValueError(f"a chart marker is letters and digits only, got {marker!r}")
+  charts: list[MeansChart] = []
+  token = _chartSink.set((marker, charts))
+  try:
+    markdown = buildReport(package, layout, observations, significanceLevel, meanComparison, locale)
+  finally:
+    _chartSink.reset(token)
+  return ReportWithCharts(markdown, marker, charts)
+
+
+def _chartLines(chart: MeansChart) -> list[str]:
+  sink = _chartSink.get()
+  if sink is None:
+    return []
+  marker, charts = sink
+  charts.append(chart)
+  return [f"{marker}{len(charts) - 1}", ""]
+
+
+def _meansChart(
+  title: str, axisTitle: str, means: list[tuple[str, float, str | None]], standardError: float,
+  transform: Transform, offset: float, decimals: int, closing: str, translator: Translator,
+) -> MeansChart:
+  """A chart of means given on the analysed scale, each with one standard error either side."""
+  bars = []
+  for label, mean, group in means:
+    low, high = backTransformInterval(transform, mean - standardError, mean + standardError, offset)
+    bars.append(ChartBar(label=label, mean=backTransformMean(transform, mean, offset), low=low, high=high, group=group))
+  error = translator.number(standardError, decimals=decimals)
+  whiskers = (
+    translator.text("report.chart.whiskers", error=error) if transform is Transform.none
+    else translator.text("report.chart.whiskersTransformed", error=error, scale=_scaleName(transform, offset, translator))
+  )
+  return MeansChart(title=title, axisTitle=axisTitle, caption=f"{whiskers} {closing}", decimals=decimals, bars=bars)
 
 
 def buildReport(
@@ -821,6 +886,12 @@ def _twoFactorMeans(
              translator.number(separation.criticalDifference, decimals=3), alpha=alpha),
       "",
     ]
+    meanHeader = translator.text(meanHeaderKey, unit=unit)
+    lines += _chartLines(_meansChart(
+      translator.text("report.chart.factorMeans", factor=factors[factorCode].name), meanHeader,
+      [(levelNames[group.levelCode], group.mean, group.group) for group in separation.groups], separation.standardError,
+      result.transform, result.transformOffset, 3, translator.text("report.chart.letters"), translator,
+    ))
   cellMeans = {mean.treatmentCode: mean.mean for mean in result.treatmentMeans}
   secondLevels = factors[secondFactor].levels
   lines += [
@@ -1088,7 +1159,14 @@ def _treatmentMeansLines(
              translator.number(comparison.criticalDifference, decimals=decimals + 1), alpha=alpha),
       "",
     ]
-    return lines
+    means = [(comparison.checkCode, comparison.checkMean, None)] + [
+      (row.treatmentCode, row.mean, None) for row in comparison.comparisons
+    ]
+    return lines + _chartLines(_meansChart(
+      translator.text("report.chart.treatmentMeans", mean=meanHeader), meanHeader, means, comparison.standardError,
+      result.transform, result.transformOffset, decimals,
+      translator.text("report.chart.againstCheck", check=comparison.checkCode), translator,
+    ))
 
   separation = separateMeans(result, significanceLevel=significanceLevel, meanComparison=meanComparison)
   significance = translator.text(
@@ -1115,7 +1193,11 @@ def _treatmentMeansLines(
   if meanComparison is MeanComparison.protectedLSD and not separation.treatmentSignificant:
     lines.append(f"- {translator.text('report.means.notSeparated')}")
   lines.append("")
-  return lines
+  return lines + _chartLines(_meansChart(
+    translator.text("report.chart.treatmentMeans", mean=meanHeader), meanHeader,
+    [(group.treatmentCode, group.mean, group.group) for group in separation.groups], separation.standardError,
+    result.transform, result.transformOffset, decimals, translator.text("report.chart.letters"), translator,
+  ))
 
 
 def _excludedCheckLines(assessment, package, layout, observations, translator: Translator) -> list[str]:

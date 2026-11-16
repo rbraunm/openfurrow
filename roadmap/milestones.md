@@ -91,8 +91,9 @@ studies, as a separate institution that the tool feeds -- is recorded in `vision
 
 **Analysis and visualization UI**
 - [x] Web UI -- the analyst workflow (see Done).
-- [ ] Visualization: means with letters/error bars, interaction plots, MET and across-year
-      summaries -- reproducible views over validated results, not a new source of truth.
+- [x] Means with letters and error bars (decision 0032).
+- [ ] Visualization: interaction plots, MET and across-year summaries -- reproducible views
+      over validated results, not a new source of truth.
 
 **Interoperability (the bridge)**
 - [ ] Import from the incumbent registry and analysis formats (migrate a protocol/product

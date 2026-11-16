@@ -309,6 +309,30 @@
       "text": "Les résidus des grandes parcelles viennent des moyennes des grandes parcelles après les effets bloc et grande parcelle (erreur a); les résidus des sous-parcelles sont l'écart de chaque parcelle à sa grande parcelle après les effets de la combinaison (erreur b). Les deux sont contraints; les tests de normalité sont donc approximatifs.",
       "status": "machineDraft"
     },
+    "report.chart.againstCheck": {
+      "text": "Le tableau ci-dessus compare chaque traitement à {check}.",
+      "status": "machineDraft"
+    },
+    "report.chart.factorMeans": {
+      "text": "Moyennes de {factor}",
+      "status": "machineDraft"
+    },
+    "report.chart.letters": {
+      "text": "Les barres qui partagent une lettre ne diffèrent pas significativement.",
+      "status": "machineDraft"
+    },
+    "report.chart.treatmentMeans": {
+      "text": "Moyennes des traitements: {mean}",
+      "status": "machineDraft"
+    },
+    "report.chart.whiskers": {
+      "text": "Les barres sont les moyennes; les moustaches valent une erreur type de la moyenne ({error}), tirée de l'erreur de l'analyse.",
+      "status": "machineDraft"
+    },
+    "report.chart.whiskersTransformed": {
+      "text": "Les barres sont les moyennes retransformées à l'échelle d'origine; les moustaches valent une erreur type ({error} sur l'échelle {scale}), retransformée, donc pas forcément symétrique.",
+      "status": "machineDraft"
+    },
     "report.check.excluded": {
       "text": "Le témoin non traité ({check}) est exclu de cette analyse; sa moyenne relevée est {mean}.",
       "status": "machineDraft"

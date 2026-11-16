@@ -250,6 +250,19 @@ textarea {
 .import { margin-block-start: 2.4rem; }
 .report-link { margin-block-start: 1.1rem; }
 .import-form { margin-block-start: 1rem; max-width: 44rem; }
+.chart { margin: 0.5rem 0 1.6rem; max-width: 100%; overflow-x: auto; }
+.chart figcaption { color: var(--furrow); font-size: 0.85rem; max-width: var(--measure); margin-block-start: 0.3rem; }
+.means-chart { display: block; max-width: none; font-family: var(--sans); }
+.means-chart .chart-grid { stroke: var(--line); stroke-width: 1; }
+.means-chart .chart-baseline { stroke: var(--furrow); stroke-width: 1; }
+.means-chart .chart-bar { fill: var(--accent); }
+.means-chart .chart-error { stroke: var(--ink); stroke-width: 1.5; fill: none; }
+.means-chart .chart-hit { fill: transparent; }
+.means-chart .chart-mark:hover .chart-bar { fill: var(--accent-ink); }
+.means-chart .chart-tick, .means-chart .chart-label { fill: var(--furrow); font-size: 12px; font-variant-numeric: tabular-nums; }
+.means-chart .chart-axis-title { fill: var(--furrow); font-size: 12px; }
+.means-chart .chart-letter { fill: var(--ink); font-size: 13px; font-weight: 600; }
+@media print { .chart { overflow: visible; break-inside: avoid; } }
 .import-map fieldset { border: 1px solid var(--line); padding: 0.6rem 0.9rem; margin-block: 1rem; max-width: 48rem; }
 .import-map fieldset label { display: block; margin-block: 0.25rem; }
 .field-row { margin-block: 0.6rem; }
@@ -282,10 +295,12 @@ fieldset.format label { display: block; padding: 0.15rem 0; font-size: 0.95rem; 
 .report h3 { font-family: var(--serif); font-weight: 600; font-size: 1.05rem; margin-block: 1.3rem 0.4rem; }
 .report ul { padding-inline-start: 1.2rem; }
 .report li { margin-block: 0.15rem; }
+.report p, .report li { overflow-wrap: anywhere; }
 .report table {
   border-collapse: collapse; width: 100%; margin-block: 0.8rem 1.2rem;
   font-family: var(--mono); font-size: 0.85rem; font-feature-settings: "tnum" 1;
 }
+@media screen and (max-width: 48rem) { .report table { display: block; overflow-x: auto; } }
 .report th, .report td {
   border: 1px solid var(--line); padding: 0.35rem 0.6rem; text-align: start;
 }

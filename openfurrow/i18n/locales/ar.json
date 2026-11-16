@@ -309,6 +309,30 @@
       "text": "بواقي القطع الرئيسية مأخوذة من متوسطات القطع الرئيسية بعد إزالة أثري القطاع والقطعة الرئيسية (الخطأ a)؛ وبواقي القطع الفرعية هي انحراف كل قطعة عن قطعتها الرئيسية بعد إزالة آثار التوليفة (الخطأ b). كلاهما مقيد، لذا فإن اختباري الاعتدالية تقريبيان.",
       "status": "machineDraft"
     },
+    "report.chart.againstCheck": {
+      "text": "يقارن الجدول أعلاه كل معاملة بـ {check}.",
+      "status": "machineDraft"
+    },
+    "report.chart.factorMeans": {
+      "text": "متوسطات {factor}",
+      "status": "machineDraft"
+    },
+    "report.chart.letters": {
+      "text": "الأعمدة التي تشترك في حرف لا تختلف اختلافًا معنويًا.",
+      "status": "machineDraft"
+    },
+    "report.chart.treatmentMeans": {
+      "text": "متوسطات المعاملات: {mean}",
+      "status": "machineDraft"
+    },
+    "report.chart.whiskers": {
+      "text": "الأعمدة متوسطات؛ والشعيرات خطأ معياري واحد للمتوسط ({error})، من خطأ التحليل.",
+      "status": "machineDraft"
+    },
+    "report.chart.whiskersTransformed": {
+      "text": "الأعمدة متوسطات أُعيد تحويلها إلى المقياس الأصلي؛ والشعيرات خطأ معياري واحد ({error} على مقياس {scale})، أُعيد تحويله، لذا قد لا تكون متماثلة.",
+      "status": "machineDraft"
+    },
     "report.check.excluded": {
       "text": "الشاهد غير المعامل ({check}) مستبعد من هذا التحليل؛ متوسطه المسجل {mean}.",
       "status": "machineDraft"

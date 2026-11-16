@@ -31,6 +31,7 @@ import base64
 import binascii
 import html
 import json
+import secrets
 
 import markdown as markdownLibrary
 from flask import Blueprint, Response, redirect, render_template, request, url_for
@@ -41,6 +42,7 @@ from openfurrow.i18n import MessageError, availableLocales, sourceLocale, transl
 from openfurrow.importers.entry import EntryRefused, readEntry, writeEntry
 from openfurrow.importers.layoutCsv import LayoutFileError, readLayoutCsv
 from openfurrow.importers.weatherCsv import WeatherFileError
+from openfurrow.reports.charts import meansFigure
 from openfurrow.interop.fieldbook import fieldBookTraitColumn, fieldBookValueColumn, fieldUniqueIDColumn
 from openfurrow.schema import TrialDocument
 from openfurrow.service.trialForm import FormProblem, emptyForm, formFromRequest, packageFromForm
@@ -348,15 +350,22 @@ def createWebBlueprint(workspace: Workspace, config: OpenFurrowConfig | None = N
   @blueprint.get("/trials/<trialCode>/report")
   def report(trialCode: str) -> Response:
     translator = _translator()
-    markdownReport = workspace.buildReport(
+    built = workspace.buildReportWithCharts(
       trialCode,
+      secrets.token_hex(12),
       significanceLevel=settings.analysis.significanceLevel,
       meanComparison=settings.analysis.meanComparison,
       locale=translator.locale,
     )
+    reportHtml = str(_renderMarkdown(built.markdown))
+    for index, chart in enumerate(built.charts):
+      paragraph = f"<p>{built.markerFor(index)}</p>"
+      if reportHtml.count(paragraph) != 1:
+        raise RuntimeError(f"chart {index} has {reportHtml.count(paragraph)} places in the rendered report")
+      reportHtml = reportHtml.replace(paragraph, meansFigure(chart, translator))
     context = {
       "trialCode": trialCode,
-      "reportHtml": _renderMarkdown(markdownReport),
+      "reportHtml": Markup(reportHtml),
     }
     return Response(render_template("report.html", **context, **_localeContext(translator)))
 

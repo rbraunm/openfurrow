@@ -76,6 +76,7 @@ class DunnettResult(BaseModel):
   significanceLevel: float
   criticalValue: float
   criticalDifference: float
+  standardError: float
   comparisons: list[CheckComparison]
 
 
@@ -111,6 +112,7 @@ def compareWithControl(
     significanceLevel=significanceLevel,
     criticalValue=critical,
     criticalDifference=difference,
+    standardError=math.sqrt(anovaResult.errorMeanSquare / anovaResult.blockCount),
     comparisons=[
       CheckComparison(
         treatmentCode=code, mean=mean, difference=mean - means[checkCode],

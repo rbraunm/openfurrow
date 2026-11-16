@@ -46,6 +46,7 @@ in `milestones.md`, a finding in `research/`), not turned into busywork ADRs.
 | 0029 | Dunnett against the check             | Accepted          | yes        | Mean comparison dunnett: every treatment against the one untreated control, two-sided, critical value from a native equicorrelated multivariate t (Gauss-Hermite inside the studentized-range outer integral), checked against the t, Dunnett's table and scipy; factor levels fall back to the protected LSD, named in the report. |
 | 0030 | Untreated check policy                | Accepted          | yes        | Each assessment states whether its analysis takes in the untreated control or leaves it out with its mean reported beside; never dropped silently. Excluding needs one untreated control and is refused in two-factor trials and with Dunnett. |
 | 0031 | Spreadsheet import                    | Accepted          | yes        | A CSV or an .xlsx sheet, read natively, is previewed and its columns mapped by the person before anything is saved; the import is reconciled per assessment and never replaces stored values. |
+| 0032 | Charts of means                       | Accepted          | yes        | A native SVG bar chart under every table of separated means on the report page, with the letters and one standard error of a mean on the analysis' own error, back-transformed after a transform. |
 
 ## Recorded elsewhere (not ADRs)
 

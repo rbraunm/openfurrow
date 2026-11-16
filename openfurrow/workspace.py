@@ -79,6 +79,7 @@ from openfurrow.interop.fieldbook import (
   writeTraitFile as _writeTraitFile,
 )
 from openfurrow.reports import buildReport as _buildReport
+from openfurrow.reports.report import ReportWithCharts, buildReportWithCharts as _buildReportWithCharts
 from openfurrow.schema import (
   DesignType,
   Observation,
@@ -340,6 +341,21 @@ class Workspace:
     package, layout, observations = self._loadContext(trialCode)
     return _buildReport(
       package, layout, observations,
+      significanceLevel=significanceLevel, meanComparison=meanComparison, locale=locale,
+    )
+
+  def buildReportWithCharts(
+    self,
+    trialCode: str,
+    marker: str,
+    significanceLevel: float = 0.05,
+    meanComparison: MeanComparison = MeanComparison.protectedLSD,
+    locale: str = sourceLocale,
+  ) -> ReportWithCharts:
+    """The report with a marker line where each chart of means goes, and the charts (decision 0032)."""
+    package, layout, observations = self._loadContext(trialCode)
+    return _buildReportWithCharts(
+      package, layout, observations, marker,
       significanceLevel=significanceLevel, meanComparison=meanComparison, locale=locale,
     )
 

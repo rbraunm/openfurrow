@@ -91,6 +91,7 @@ class FactorSeparation(BaseModel):
   methodKey: str
   significanceLevel: float
   criticalDifference: float
+  standardError: float
   factorSignificant: bool
   groups: list[LevelGroup]
 
@@ -297,6 +298,7 @@ def separateLevels(
     methodKey=methodKeyFor(meanComparison),
     significanceLevel=significanceLevel,
     criticalDifference=difference,
+    standardError=math.sqrt(errorMeanSquare / means[0].observationCount),
     factorSignificant=significant,
     groups=[
       LevelGroup(levelCode=mean.levelCode, mean=mean.mean, group=letters[index])

@@ -925,6 +925,30 @@
       "text": "Means were not separated: the treatment effect was not significant (protected LSD).",
       "status": "humanApproved"
     },
+    "report.chart.treatmentMeans": {
+      "text": "Treatment means: {mean}",
+      "status": "humanApproved"
+    },
+    "report.chart.factorMeans": {
+      "text": "Means of {factor}",
+      "status": "humanApproved"
+    },
+    "report.chart.whiskers": {
+      "text": "Bars are means; whiskers are one standard error of a mean ({error}), from the error of the analysis.",
+      "status": "humanApproved"
+    },
+    "report.chart.whiskersTransformed": {
+      "text": "Bars are means back-transformed to the original scale; whiskers are one standard error ({error} on the {scale} scale), back-transformed, so they need not be symmetric.",
+      "status": "humanApproved"
+    },
+    "report.chart.letters": {
+      "text": "Bars sharing a letter do not differ significantly.",
+      "status": "humanApproved"
+    },
+    "report.chart.againstCheck": {
+      "text": "The table above compares each treatment with {check}.",
+      "status": "humanApproved"
+    },
     "report.heading.assumptions": {
       "text": "Assumption checks",
       "status": "humanApproved"
