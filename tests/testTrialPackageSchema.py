@@ -556,6 +556,38 @@ def testWeatherOutOfOrderOrRepeatedRejected(validPackageDict, dates):
              for message in errorMessages(rejection(validPackageDict)))
 
 
+# ---- site and plots (decision 0024) --------------------------------------
+
+@pytest.mark.parametrize("site, message", [
+  ({"latitude": 91, "longitude": 0}, "less than or equal to 90"),
+  ({"latitude": 10, "longitude": -181}, "greater than or equal to -180"),
+  ({"latitude": 10}, "a position needs both latitude and longitude"),
+  ({}, "siteDetails holds nothing; leave it out instead"),
+])
+def testSiteDetailsAreChecked(validPackageDict, site, message):
+  validPackageDict["siteDetails"] = site
+  assert any(message in text for text in errorMessages(rejection(validPackageDict)))
+
+
+@pytest.mark.parametrize("dimensions, message", [
+  ({"grossLength": {"value": 8, "unit": "m"}, "netLength": {"value": 9, "unit": "m"}},
+   "netLength 9.0 m is larger than grossLength 8.0 m"),
+  ({"alleyWidth": {"value": 0, "unit": "m"}}, "alleyWidth must be greater than zero, got 0.0"),
+  ({}, "plotDimensions holds nothing; leave it out instead"),
+])
+def testPlotDimensionsAreChecked(validPackageDict, dimensions, message):
+  validPackageDict["design"]["plotDimensions"] = dimensions
+  assert any(message in text for text in errorMessages(rejection(validPackageDict)))
+
+
+def testNetPlotInAnotherUnitIsNotCompared(validPackageDict):
+  # 9 ft is shorter than 8 m; units are kept as written, not converted, so no comparison is made.
+  validPackageDict["design"]["plotDimensions"] = {
+    "grossLength": {"value": 8, "unit": "m"}, "netLength": {"value": 9, "unit": "ft"},
+  }
+  assert buildPackage(validPackageDict).design.plotDimensions.netLength.unit == "ft"
+
+
 # ---- design rules -------------------------------------------------------
 
 def testReplicationsBelowTwoRejected(validPackageDict):

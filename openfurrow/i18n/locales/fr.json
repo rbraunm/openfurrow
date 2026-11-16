@@ -505,6 +505,10 @@
       "text": "Reproductibilité",
       "status": "machineDraft"
     },
+    "report.heading.site": {
+      "text": "Site",
+      "status": "machineDraft"
+    },
     "report.heading.soil": {
       "text": "Sol",
       "status": "machineDraft"
@@ -605,8 +609,16 @@
       "text": "Densité de peuplement",
       "status": "machineDraft"
     },
+    "report.planting.plantedYear": {
+      "text": "Année de plantation",
+      "status": "machineDraft"
+    },
     "report.planting.precedingCrop": {
       "text": "Précédent cultural",
+      "status": "machineDraft"
+    },
+    "report.planting.rootstock": {
+      "text": "Porte-greffe",
       "status": "machineDraft"
     },
     "report.planting.rowSpacing": {
@@ -627,6 +639,34 @@
     },
     "report.planting.tillage": {
       "text": "Travail du sol",
+      "status": "machineDraft"
+    },
+    "report.planting.trainingSystem": {
+      "text": "Mode de conduite",
+      "status": "machineDraft"
+    },
+    "report.plot.alleyWidth": {
+      "text": "Allées entre parcelles",
+      "status": "machineDraft"
+    },
+    "report.plot.grossLength": {
+      "text": "Longueur de parcelle (brute)",
+      "status": "machineDraft"
+    },
+    "report.plot.grossWidth": {
+      "text": "Largeur de parcelle (brute)",
+      "status": "machineDraft"
+    },
+    "report.plot.netLength": {
+      "text": "Longueur de parcelle (nette, évaluée)",
+      "status": "machineDraft"
+    },
+    "report.plot.netWidth": {
+      "text": "Largeur de parcelle (nette, évaluée)",
+      "status": "machineDraft"
+    },
+    "report.plot.notes": {
+      "text": "Notes sur les parcelles",
       "status": "machineDraft"
     },
     "report.ratings.atLeast": {
@@ -723,6 +763,50 @@
     },
     "report.scale.sqrt": {
       "text": "racine carrée",
+      "status": "machineDraft"
+    },
+    "report.site.address": {
+      "text": "Adresse",
+      "status": "machineDraft"
+    },
+    "report.site.elevation": {
+      "text": "Altitude",
+      "status": "machineDraft"
+    },
+    "report.site.exposure": {
+      "text": "Exposition",
+      "status": "machineDraft"
+    },
+    "report.site.position": {
+      "text": "Position",
+      "status": "machineDraft"
+    },
+    "report.site.positionValue": {
+      "text": "{latitude}; {longitude}",
+      "status": "machineDraft"
+    },
+    "report.site.setting": {
+      "text": "Cultivé en",
+      "status": "machineDraft"
+    },
+    "report.site.setting.field": {
+      "text": "plein champ",
+      "status": "machineDraft"
+    },
+    "report.site.setting.glasshouse": {
+      "text": "serre",
+      "status": "machineDraft"
+    },
+    "report.site.setting.growthChamber": {
+      "text": "chambre de culture",
+      "status": "machineDraft"
+    },
+    "report.site.setting.other": {
+      "text": "autre",
+      "status": "machineDraft"
+    },
+    "report.site.slope": {
+      "text": "Pente",
       "status": "machineDraft"
     },
     "report.soil.fertilizerRegime": {

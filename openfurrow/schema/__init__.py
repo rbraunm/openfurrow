@@ -24,6 +24,7 @@ from openfurrow.schema.layout import (
 )
 from openfurrow.schema.observation import Observation
 from openfurrow.schema.quantity import Quantity
+from openfurrow.schema.site import PlotDimensions, Setting, SiteDetails
 from openfurrow.schema.target import Target, TargetKind
 from openfurrow.schema.trialConditions import Planting, Soil, WeatherRecord
 from openfurrow.schema.treatment import (
@@ -59,6 +60,7 @@ __all__ = [
   "MeasurementKind",
   "Observation",
   "Planting",
+  "PlotDimensions",
   "PlotAssignment",
   "ProductKind",
   "Quantity",
@@ -66,6 +68,8 @@ __all__ = [
   "RateBasis",
   "Rating",
   "Soil",
+  "Setting",
+  "SiteDetails",
   "SoilMoisture",
   "Target",
   "TargetKind",

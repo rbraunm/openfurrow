@@ -505,6 +505,10 @@
       "text": "قابلية إعادة الإنتاج",
       "status": "machineDraft"
     },
+    "report.heading.site": {
+      "text": "الموقع",
+      "status": "machineDraft"
+    },
     "report.heading.soil": {
       "text": "التربة",
       "status": "machineDraft"
@@ -605,8 +609,16 @@
       "text": "كثافة النباتات",
       "status": "machineDraft"
     },
+    "report.planting.plantedYear": {
+      "text": "سنة الغرس",
+      "status": "machineDraft"
+    },
     "report.planting.precedingCrop": {
       "text": "المحصول السابق",
+      "status": "machineDraft"
+    },
+    "report.planting.rootstock": {
+      "text": "الأصل",
       "status": "machineDraft"
     },
     "report.planting.rowSpacing": {
@@ -627,6 +639,34 @@
     },
     "report.planting.tillage": {
       "text": "الحراثة",
+      "status": "machineDraft"
+    },
+    "report.planting.trainingSystem": {
+      "text": "نظام التربية",
+      "status": "machineDraft"
+    },
+    "report.plot.alleyWidth": {
+      "text": "الممرات بين القطع",
+      "status": "machineDraft"
+    },
+    "report.plot.grossLength": {
+      "text": "طول القطعة (الإجمالي)",
+      "status": "machineDraft"
+    },
+    "report.plot.grossWidth": {
+      "text": "عرض القطعة (الإجمالي)",
+      "status": "machineDraft"
+    },
+    "report.plot.netLength": {
+      "text": "طول القطعة (الصافي، المقيَّم)",
+      "status": "machineDraft"
+    },
+    "report.plot.netWidth": {
+      "text": "عرض القطعة (الصافي، المقيَّم)",
+      "status": "machineDraft"
+    },
+    "report.plot.notes": {
+      "text": "ملاحظات القطع",
       "status": "machineDraft"
     },
     "report.ratings.atLeast": {
@@ -723,6 +763,50 @@
     },
     "report.scale.sqrt": {
       "text": "الجذر التربيعي",
+      "status": "machineDraft"
+    },
+    "report.site.address": {
+      "text": "العنوان",
+      "status": "machineDraft"
+    },
+    "report.site.elevation": {
+      "text": "الارتفاع",
+      "status": "machineDraft"
+    },
+    "report.site.exposure": {
+      "text": "التعرض",
+      "status": "machineDraft"
+    },
+    "report.site.position": {
+      "text": "الإحداثيات",
+      "status": "machineDraft"
+    },
+    "report.site.positionValue": {
+      "text": "{latitude}، {longitude}",
+      "status": "machineDraft"
+    },
+    "report.site.setting": {
+      "text": "مكان الزراعة",
+      "status": "machineDraft"
+    },
+    "report.site.setting.field": {
+      "text": "الحقل",
+      "status": "machineDraft"
+    },
+    "report.site.setting.glasshouse": {
+      "text": "دفيئة زجاجية",
+      "status": "machineDraft"
+    },
+    "report.site.setting.growthChamber": {
+      "text": "غرفة نمو",
+      "status": "machineDraft"
+    },
+    "report.site.setting.other": {
+      "text": "أخرى",
+      "status": "machineDraft"
+    },
+    "report.site.slope": {
+      "text": "الانحدار",
       "status": "machineDraft"
     },
     "report.soil.fertilizerRegime": {

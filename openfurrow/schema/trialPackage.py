@@ -20,6 +20,7 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator, model_valida
 from openfurrow.schema.application import Application
 from openfurrow.schema.assessment import AssessmentDataType, Assessment, Rating
 from openfurrow.schema.factor import Factor
+from openfurrow.schema.site import PlotDimensions, SiteDetails
 from openfurrow.schema.target import Target
 from openfurrow.schema.trialConditions import Planting, Soil, WeatherRecord
 from openfurrow.schema.treatment import Treatment
@@ -99,6 +100,7 @@ class DesignSpecification(BaseModel):
   )
   mainPlotFactor: str | None = Field(default=None, min_length=1, description="Split plot: the factor on main plots.")
   subPlotFactor: str | None = Field(default=None, min_length=1, description="Split plot: the factor on subplots.")
+  plotDimensions: PlotDimensions | None = None
   checkArrangement: CheckArrangement = Field(
     default=CheckArrangement.none, description="Untreated checks beside the treated plots, and how.",
   )
@@ -147,6 +149,7 @@ class TrialPackage(BaseModel):
 
   schemaVersion: str = Field(description="The schema this package is written in; must be the one this build reads.")
   trial: TrialMetadata
+  siteDetails: SiteDetails | None = None
   targets: list[Target] = Field(default_factory=list)
   factors: list[Factor] = Field(default_factory=list)
   planting: Planting | None = None

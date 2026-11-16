@@ -36,7 +36,7 @@ from sqlalchemy import ForeignKey, Text, event, inspect, select
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, relationship
 
-storeVersion = 10
+storeVersion = 11
 
 
 class StoreError(RuntimeError):
@@ -78,6 +78,12 @@ class TrialRow(Base):
   mainPlotFactor: Mapped[str | None]
   subPlotFactor: Mapped[str | None]
 
+  siteDetails: Mapped[SiteRow | None] = relationship(
+    back_populates="trial", cascade="all, delete-orphan"
+  )
+  plotDimensions: Mapped[PlotDimensionsRow | None] = relationship(
+    back_populates="trial", cascade="all, delete-orphan"
+  )
   planting: Mapped[PlantingRow | None] = relationship(
     back_populates="trial", cascade="all, delete-orphan"
   )
@@ -122,6 +128,49 @@ class TrialRow(Base):
   )
 
 
+class SiteRow(Base):
+  """The site's address, position and character; at most one row per trial."""
+
+  __tablename__ = "site"
+
+  trialCode: Mapped[str] = mapped_column(
+    ForeignKey("trial.trialCode", ondelete="CASCADE"), primary_key=True
+  )
+  address: Mapped[str | None]
+  latitude: Mapped[float | None]
+  longitude: Mapped[float | None]
+  elevationValue: Mapped[float | None]
+  elevationUnit: Mapped[str | None]
+  setting: Mapped[str | None]
+  exposure: Mapped[str | None]
+  slope: Mapped[str | None]
+
+  trial: Mapped[TrialRow] = relationship(back_populates="siteDetails")
+
+
+class PlotDimensionsRow(Base):
+  """The size of the plots and the zones between them; at most one row per trial."""
+
+  __tablename__ = "plotDimensions"
+
+  trialCode: Mapped[str] = mapped_column(
+    ForeignKey("trial.trialCode", ondelete="CASCADE"), primary_key=True
+  )
+  grossLengthValue: Mapped[float | None]
+  grossLengthUnit: Mapped[str | None]
+  grossWidthValue: Mapped[float | None]
+  grossWidthUnit: Mapped[str | None]
+  netLengthValue: Mapped[float | None]
+  netLengthUnit: Mapped[str | None]
+  netWidthValue: Mapped[float | None]
+  netWidthUnit: Mapped[str | None]
+  alleyWidthValue: Mapped[float | None]
+  alleyWidthUnit: Mapped[str | None]
+  notes: Mapped[str | None]
+
+  trial: Mapped[TrialRow] = relationship(back_populates="plotDimensions")
+
+
 class PlantingRow(Base):
   """How the crop was established; at most one row per trial."""
 
@@ -146,6 +195,9 @@ class PlantingRow(Base):
   emergenceDate: Mapped[datetime.date | None]
   precedingCrop: Mapped[str | None]
   tillage: Mapped[str | None]
+  trainingSystem: Mapped[str | None]
+  rootstock: Mapped[str | None]
+  plantedYear: Mapped[int | None]
   notes: Mapped[str | None]
 
   trial: Mapped[TrialRow] = relationship(back_populates="planting")

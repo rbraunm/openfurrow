@@ -379,6 +379,23 @@ def testReportPlacesPlantingSoilAndWeatherWhereTheStandardDoes():
   assert "## Planting" not in recordedReport() and "## Weather" not in recordedReport()
 
 
+def testReportDescribesTheSiteAndThePlots():
+  def addSite(data):
+    data["siteDetails"] = {"address": "Station Road", "latitude": 52.1234, "longitude": -0.5678,
+                           "elevation": {"value": 85, "unit": "m"}, "setting": "glasshouse"}
+    data["design"]["plotDimensions"] = {"grossLength": {"value": 10, "unit": "m"},
+                                        "netWidth": {"value": 1.5, "unit": "m"}}
+    data["planting"] = {"rootstock": "M9", "plantedYear": 2019}
+  package = recordedPackage(addSite)
+  report = buildReport(package, generateRcbdLayout(package), [])
+  assert (
+    "## Site\n\n- Address: Station Road\n- Position: 52.1234, -0.5678\n- Elevation: 85 m\n"
+    "- Grown in: a glasshouse\n\n## Planting\n\n- Rootstock: M9\n- Year planted: 2019\n\n## Design"
+  ) in report
+  assert "- Plot length (gross): 10 m\n- Plot width (net, assessed): 1.5 m\n" in report
+  assert "- Posición: 52,1234; -0,5678" in buildReport(package, generateRcbdLayout(package), [], locale="es")
+
+
 def testReportListsWhatIsRated():
   assert (
     "## Ratings\n\n"

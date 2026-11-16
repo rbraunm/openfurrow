@@ -84,6 +84,7 @@ def buildReport(
   translator = translatorFor(locale)
   lines: list[str] = []
   lines += _metadataSection(package, translator)
+  lines += _siteSection(package, translator)
   lines += _plantingSection(package, translator)
   lines += _designSection(package, translator)
   lines += _targetsSection(package, translator)
@@ -143,6 +144,27 @@ def _metadataSection(package: TrialPackage, translator: Translator) -> list[str]
   return lines
 
 
+def _siteSection(package: TrialPackage, translator: Translator) -> list[str]:
+  site = package.siteDetails
+  if site is None:
+    return []
+
+  def degrees(value: float) -> str:
+    return translator.number(value, decimals=_authoredDecimals(value))
+
+  facts = {
+    "address": site.address,
+    "position": None if site.latitude is None else translator.text(
+      "report.site.positionValue", latitude=degrees(site.latitude), longitude=degrees(site.longitude),
+    ),
+    "elevation": None if site.elevation is None else _quantityText(site.elevation, translator),
+    "setting": None if site.setting is None else translator.text(f"report.site.setting.{site.setting.value}"),
+    "exposure": site.exposure,
+    "slope": site.slope,
+  }
+  return _factList("report.heading.site", "report.site.", facts, translator)
+
+
 def _plantingSection(package: TrialPackage, translator: Translator) -> list[str]:
   planting = package.planting
   if planting is None:
@@ -166,6 +188,9 @@ def _plantingSection(package: TrialPackage, translator: Translator) -> list[str]
     "emergenceDate": day(planting.emergenceDate),
     "precedingCrop": planting.precedingCrop,
     "tillage": planting.tillage,
+    "trainingSystem": planting.trainingSystem,
+    "rootstock": planting.rootstock,
+    "plantedYear": None if planting.plantedYear is None else str(planting.plantedYear),
     "notes": planting.notes,
   }
   return _factList("report.heading.planting", "report.planting.", facts, translator)
@@ -241,6 +266,14 @@ def _designSection(package: TrialPackage, translator: Translator) -> list[str]:
     _field(translator, "report.design.blocks", translator.integer(design.replications)),
     _field(translator, "report.design.plots", translator.integer(package.plotCount)),
   ]
+  if design.plotDimensions is not None:
+    dimensions = design.plotDimensions
+    for name in ("grossLength", "grossWidth", "netLength", "netWidth", "alleyWidth"):
+      quantity = getattr(dimensions, name)
+      if quantity is not None:
+        lines.append(_field(translator, f"report.plot.{name}", _quantityText(quantity, translator)))
+    if dimensions.notes is not None:
+      lines.append(_field(translator, "report.plot.notes", dimensions.notes))
   if design.designType is DesignType.splitPlot:
     factors = {factor.factorCode: factor for factor in package.factors}
     lines.append(_field(translator, "report.design.mainPlotFactor", factors[design.mainPlotFactor].name))

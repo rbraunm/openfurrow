@@ -28,6 +28,8 @@ from openfurrow.store.database import (
   ObservationRow,
   PlotRow,
   PlantingRow,
+  PlotDimensionsRow,
+  SiteRow,
   SoilRow,
   StoreError,
   TargetRow,
@@ -50,6 +52,7 @@ from openfurrow.schema.factor import Factor, FactorLevel
 from openfurrow.schema.layout import CheckPlot, PlotAssignment
 from openfurrow.schema.observation import Observation
 from openfurrow.schema.quantity import Quantity
+from openfurrow.schema.site import PlotDimensions, Setting, SiteDetails
 from openfurrow.schema.target import Target, TargetKind
 from openfurrow.schema.trialConditions import Planting, Soil, WeatherRecord
 from openfurrow.schema.treatment import (
@@ -183,6 +186,35 @@ def savePackage(
       soilMoisture=application.soilMoisture.value if application.soilMoisture is not None else None,
       notes=application.notes,
     ))
+  if package.siteDetails is not None:
+    site = package.siteDetails
+    trial.siteDetails = SiteRow(
+      trialCode=trialCode,
+      address=site.address,
+      latitude=site.latitude,
+      longitude=site.longitude,
+      elevationValue=None if site.elevation is None else site.elevation.value,
+      elevationUnit=None if site.elevation is None else site.elevation.unit,
+      setting=None if site.setting is None else site.setting.value,
+      exposure=site.exposure,
+      slope=site.slope,
+    )
+  if package.design.plotDimensions is not None:
+    dimensions = package.design.plotDimensions
+    trial.plotDimensions = PlotDimensionsRow(
+      trialCode=trialCode,
+      grossLengthValue=None if dimensions.grossLength is None else dimensions.grossLength.value,
+      grossLengthUnit=None if dimensions.grossLength is None else dimensions.grossLength.unit,
+      grossWidthValue=None if dimensions.grossWidth is None else dimensions.grossWidth.value,
+      grossWidthUnit=None if dimensions.grossWidth is None else dimensions.grossWidth.unit,
+      netLengthValue=None if dimensions.netLength is None else dimensions.netLength.value,
+      netLengthUnit=None if dimensions.netLength is None else dimensions.netLength.unit,
+      netWidthValue=None if dimensions.netWidth is None else dimensions.netWidth.value,
+      netWidthUnit=None if dimensions.netWidth is None else dimensions.netWidth.unit,
+      alleyWidthValue=None if dimensions.alleyWidth is None else dimensions.alleyWidth.value,
+      alleyWidthUnit=None if dimensions.alleyWidth is None else dimensions.alleyWidth.unit,
+      notes=dimensions.notes,
+    )
   if package.planting is not None:
     planting = package.planting
     trial.planting = PlantingRow(
@@ -203,6 +235,9 @@ def savePackage(
       emergenceDate=planting.emergenceDate,
       precedingCrop=planting.precedingCrop,
       tillage=planting.tillage,
+      trainingSystem=planting.trainingSystem,
+      rootstock=planting.rootstock,
+      plantedYear=planting.plantedYear,
       notes=planting.notes,
     )
   if package.soil is not None:
@@ -342,6 +377,29 @@ def loadPackage(session: Session, trialCode: str) -> TrialPackage:
     )
     for row in sorted(trial.assessments, key=lambda row: row.ordinal)
   ]
+  siteDetails = None
+  if trial.siteDetails is not None:
+    row = trial.siteDetails
+    siteDetails = SiteDetails(
+      address=row.address,
+      latitude=row.latitude,
+      longitude=row.longitude,
+      elevation=_quantity(row.elevationValue, row.elevationUnit),
+      setting=None if row.setting is None else Setting(row.setting),
+      exposure=row.exposure,
+      slope=row.slope,
+    )
+  plotDimensions = None
+  if trial.plotDimensions is not None:
+    row = trial.plotDimensions
+    plotDimensions = PlotDimensions(
+      grossLength=_quantity(row.grossLengthValue, row.grossLengthUnit),
+      grossWidth=_quantity(row.grossWidthValue, row.grossWidthUnit),
+      netLength=_quantity(row.netLengthValue, row.netLengthUnit),
+      netWidth=_quantity(row.netWidthValue, row.netWidthUnit),
+      alleyWidth=_quantity(row.alleyWidthValue, row.alleyWidthUnit),
+      notes=row.notes,
+    )
   planting = None
   if trial.planting is not None:
     row = trial.planting
@@ -357,6 +415,9 @@ def loadPackage(session: Session, trialCode: str) -> TrialPackage:
       emergenceDate=row.emergenceDate,
       precedingCrop=row.precedingCrop,
       tillage=row.tillage,
+      trainingSystem=row.trainingSystem,
+      rootstock=row.rootstock,
+      plantedYear=row.plantedYear,
       notes=row.notes,
     )
   soil = None
@@ -430,6 +491,7 @@ def loadPackage(session: Session, trialCode: str) -> TrialPackage:
       investigator=trial.investigator,
       organization=trial.organization,
     ),
+    siteDetails=siteDetails,
     targets=targets,
     factors=factors,
     planting=planting,
@@ -444,6 +506,7 @@ def loadPackage(session: Session, trialCode: str) -> TrialPackage:
       checkArrangement=CheckArrangement(trial.checkArrangement),
       mainPlotFactor=trial.mainPlotFactor,
       subPlotFactor=trial.subPlotFactor,
+      plotDimensions=plotDimensions,
     ),
     treatments=treatments,
     applications=applications,

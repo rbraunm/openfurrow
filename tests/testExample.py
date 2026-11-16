@@ -14,7 +14,7 @@ from openfurrow.cli.main import main
 exampleDirectory = Path(__file__).parent.parent / "examples" / "yatesOats"
 trialPath = str(exampleDirectory / "trial.json")
 observationsPath = str(exampleDirectory / "observations.csv")
-knownInputHash = "2c01ace1e4e824d298ced26ff1360d02f18013f4c579ef984de97fb6c596f85b"
+knownInputHash = "7800f9d13c40399c2f479222e226d0094cd2238972f1c9c60f24b5012fc30d6a"
 
 
 def loadExample(database):

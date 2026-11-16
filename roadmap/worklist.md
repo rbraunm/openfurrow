@@ -6,7 +6,7 @@ Findings, defects, checks and owner calls that the plans do not carry.
 Status tags: `fix` (a defect to correct), `build` (work to add), `check` (a suspicion to
 measure), `owner` (the owner's call), `done`.
 
-**Counts.** fix 0, build 12, check 0, owner 4, done 41; 57 in all.
+**Counts.** fix 0, build 10, check 0, owner 4, done 43; 57 in all.
 
 ## Owner decisions
 
@@ -318,13 +318,11 @@ sections added beside them. REC-9 needs data entry in the tool (USR-4).
 - **REC-14** `done` **What a paired plot is.** The name covers three arrangements; the
   owner decided to support all of them (decision 0022): imbricated strips, adjacent
   halves and paired partners, with percent control by Abbott or Henderson-Tilton.
-- **REC-15** `build` **Plot sizes and the zones between plots.** Section 1.3 of the
-  standard asks for the number, size and shape of plots, gross and net plots and the
-  zones between them. Today none is recorded.
-- **REC-12** `build` **The site itself.** Section 1.1 of the standard: the site's address
-  and coordinates, field or glasshouse, exposure and slope; and for perennial crops the
-  spacing, training system, rootstock and age (section 1.2). Today the site is one line of
-  text.
+- **REC-15** `done` **Plot sizes and the zones between plots.** Built as decision 0024
+  says: gross and net length and width and the alleys, on the design, in the report.
+- **REC-12** `done` **The site itself.** Built as decision 0024 says: address, latitude and
+  longitude, elevation, setting, exposure and slope; and for perennial crops the training
+  system, rootstock and year planted beside the spacing planting already had.
 - **REC-13** `done` **A weather log from a file.** A CSV of days (a date, then rainfall,
   irrigation, minimum and maximum temperature with the unit in the header, and notes)
   replaces the trial's weather log, from the command line (`import-weather`) or the trial

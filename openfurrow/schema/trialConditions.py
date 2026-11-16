@@ -42,6 +42,9 @@ class Planting(BaseModel):
   emergenceDate: CalendarDate | None = None
   precedingCrop: str | None = Field(default=None, min_length=1)
   tillage: str | None = Field(default=None, min_length=1)
+  trainingSystem: str | None = Field(default=None, min_length=1, description="Perennial crops, e.g. 'trellis'.")
+  rootstock: str | None = Field(default=None, min_length=1, description="Perennial crops.")
+  plantedYear: int | None = Field(default=None, ge=1800, le=2200, description="Perennial crops: the year planted.")
   notes: str | None = Field(default=None, min_length=1)
 
   @field_validator("seedingRate", "plantDensity", "rowSpacing", "inRowSpacing", "sowingDepth")

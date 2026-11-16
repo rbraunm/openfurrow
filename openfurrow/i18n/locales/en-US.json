@@ -429,6 +429,90 @@
       "text": "Waterlogged",
       "status": "source"
     },
+    "report.heading.site": {
+      "text": "Site",
+      "status": "source"
+    },
+    "report.site.address": {
+      "text": "Address",
+      "status": "source"
+    },
+    "report.site.position": {
+      "text": "Position",
+      "status": "source"
+    },
+    "report.site.positionValue": {
+      "text": "{latitude}, {longitude}",
+      "status": "source"
+    },
+    "report.site.elevation": {
+      "text": "Elevation",
+      "status": "source"
+    },
+    "report.site.setting": {
+      "text": "Grown in",
+      "status": "source"
+    },
+    "report.site.setting.field": {
+      "text": "the field",
+      "status": "source"
+    },
+    "report.site.setting.glasshouse": {
+      "text": "a glasshouse",
+      "status": "source"
+    },
+    "report.site.setting.growthChamber": {
+      "text": "a growth chamber",
+      "status": "source"
+    },
+    "report.site.setting.other": {
+      "text": "other",
+      "status": "source"
+    },
+    "report.site.exposure": {
+      "text": "Exposure",
+      "status": "source"
+    },
+    "report.site.slope": {
+      "text": "Slope",
+      "status": "source"
+    },
+    "report.planting.trainingSystem": {
+      "text": "Training system",
+      "status": "source"
+    },
+    "report.planting.rootstock": {
+      "text": "Rootstock",
+      "status": "source"
+    },
+    "report.planting.plantedYear": {
+      "text": "Year planted",
+      "status": "source"
+    },
+    "report.plot.grossLength": {
+      "text": "Plot length (gross)",
+      "status": "source"
+    },
+    "report.plot.grossWidth": {
+      "text": "Plot width (gross)",
+      "status": "source"
+    },
+    "report.plot.netLength": {
+      "text": "Plot length (net, assessed)",
+      "status": "source"
+    },
+    "report.plot.netWidth": {
+      "text": "Plot width (net, assessed)",
+      "status": "source"
+    },
+    "report.plot.alleyWidth": {
+      "text": "Alleys between plots",
+      "status": "source"
+    },
+    "report.plot.notes": {
+      "text": "Plot notes",
+      "status": "source"
+    },
     "report.heading.planting": {
       "text": "Planting",
       "status": "source"

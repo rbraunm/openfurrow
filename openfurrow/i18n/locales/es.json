@@ -505,6 +505,10 @@
       "text": "Reproducibilidad",
       "status": "machineDraft"
     },
+    "report.heading.site": {
+      "text": "Sitio",
+      "status": "machineDraft"
+    },
     "report.heading.soil": {
       "text": "Suelo",
       "status": "machineDraft"
@@ -605,8 +609,16 @@
       "text": "Densidad de plantas",
       "status": "machineDraft"
     },
+    "report.planting.plantedYear": {
+      "text": "Año de plantación",
+      "status": "machineDraft"
+    },
     "report.planting.precedingCrop": {
       "text": "Cultivo anterior",
+      "status": "machineDraft"
+    },
+    "report.planting.rootstock": {
+      "text": "Portainjerto",
       "status": "machineDraft"
     },
     "report.planting.rowSpacing": {
@@ -627,6 +639,34 @@
     },
     "report.planting.tillage": {
       "text": "Labranza",
+      "status": "machineDraft"
+    },
+    "report.planting.trainingSystem": {
+      "text": "Sistema de conducción",
+      "status": "machineDraft"
+    },
+    "report.plot.alleyWidth": {
+      "text": "Calles entre parcelas",
+      "status": "machineDraft"
+    },
+    "report.plot.grossLength": {
+      "text": "Largo de parcela (bruto)",
+      "status": "machineDraft"
+    },
+    "report.plot.grossWidth": {
+      "text": "Ancho de parcela (bruto)",
+      "status": "machineDraft"
+    },
+    "report.plot.netLength": {
+      "text": "Largo de parcela (neto, evaluado)",
+      "status": "machineDraft"
+    },
+    "report.plot.netWidth": {
+      "text": "Ancho de parcela (neto, evaluado)",
+      "status": "machineDraft"
+    },
+    "report.plot.notes": {
+      "text": "Notas de parcela",
       "status": "machineDraft"
     },
     "report.ratings.atLeast": {
@@ -723,6 +763,50 @@
     },
     "report.scale.sqrt": {
       "text": "raíz cuadrada",
+      "status": "machineDraft"
+    },
+    "report.site.address": {
+      "text": "Dirección",
+      "status": "machineDraft"
+    },
+    "report.site.elevation": {
+      "text": "Altitud",
+      "status": "machineDraft"
+    },
+    "report.site.exposure": {
+      "text": "Exposición",
+      "status": "machineDraft"
+    },
+    "report.site.position": {
+      "text": "Posición",
+      "status": "machineDraft"
+    },
+    "report.site.positionValue": {
+      "text": "{latitude}; {longitude}",
+      "status": "machineDraft"
+    },
+    "report.site.setting": {
+      "text": "Cultivado en",
+      "status": "machineDraft"
+    },
+    "report.site.setting.field": {
+      "text": "campo",
+      "status": "machineDraft"
+    },
+    "report.site.setting.glasshouse": {
+      "text": "invernadero",
+      "status": "machineDraft"
+    },
+    "report.site.setting.growthChamber": {
+      "text": "cámara de crecimiento",
+      "status": "machineDraft"
+    },
+    "report.site.setting.other": {
+      "text": "otro",
+      "status": "machineDraft"
+    },
+    "report.site.slope": {
+      "text": "Pendiente",
       "status": "machineDraft"
     },
     "report.soil.fertilizerRegime": {

@@ -429,6 +429,90 @@
       "text": "Waterlogged",
       "status": "humanApproved"
     },
+    "report.heading.site": {
+      "text": "Site",
+      "status": "humanApproved"
+    },
+    "report.site.address": {
+      "text": "Address",
+      "status": "humanApproved"
+    },
+    "report.site.position": {
+      "text": "Position",
+      "status": "humanApproved"
+    },
+    "report.site.positionValue": {
+      "text": "{latitude}, {longitude}",
+      "status": "humanApproved"
+    },
+    "report.site.elevation": {
+      "text": "Elevation",
+      "status": "humanApproved"
+    },
+    "report.site.setting": {
+      "text": "Grown in",
+      "status": "humanApproved"
+    },
+    "report.site.setting.field": {
+      "text": "the field",
+      "status": "humanApproved"
+    },
+    "report.site.setting.glasshouse": {
+      "text": "a glasshouse",
+      "status": "humanApproved"
+    },
+    "report.site.setting.growthChamber": {
+      "text": "a growth chamber",
+      "status": "humanApproved"
+    },
+    "report.site.setting.other": {
+      "text": "other",
+      "status": "humanApproved"
+    },
+    "report.site.exposure": {
+      "text": "Exposure",
+      "status": "humanApproved"
+    },
+    "report.site.slope": {
+      "text": "Slope",
+      "status": "humanApproved"
+    },
+    "report.planting.trainingSystem": {
+      "text": "Training system",
+      "status": "humanApproved"
+    },
+    "report.planting.rootstock": {
+      "text": "Rootstock",
+      "status": "humanApproved"
+    },
+    "report.planting.plantedYear": {
+      "text": "Year planted",
+      "status": "humanApproved"
+    },
+    "report.plot.grossLength": {
+      "text": "Plot length (gross)",
+      "status": "humanApproved"
+    },
+    "report.plot.grossWidth": {
+      "text": "Plot width (gross)",
+      "status": "humanApproved"
+    },
+    "report.plot.netLength": {
+      "text": "Plot length (net, assessed)",
+      "status": "humanApproved"
+    },
+    "report.plot.netWidth": {
+      "text": "Plot width (net, assessed)",
+      "status": "humanApproved"
+    },
+    "report.plot.alleyWidth": {
+      "text": "Alleys between plots",
+      "status": "humanApproved"
+    },
+    "report.plot.notes": {
+      "text": "Plot notes",
+      "status": "humanApproved"
+    },
     "report.heading.planting": {
       "text": "Planting",
       "status": "humanApproved"

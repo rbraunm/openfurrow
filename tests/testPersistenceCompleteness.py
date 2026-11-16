@@ -32,12 +32,17 @@ _maximalPackage = {
     "site": "North Field", "objective": "Compare programs",
     "investigator": "Dr. Q", "organization": "Institute Z",
   },
+  "siteDetails": {
+    "address": "North Field, Station Road", "latitude": 52.1234, "longitude": -0.5678,
+    "elevation": {"value": 85, "unit": "m"}, "setting": "field", "exposure": "Open, south-facing", "slope": "2 %",
+  },
   "planting": {
     "cultivar": "Laureate", "cropEPPOCode": "HORVX", "sowingDate": "2025-03-20",
     "seedingRate": {"value": 350, "unit": "seeds/m2"}, "plantDensity": {"value": 290, "unit": "plants/m2"},
     "rowSpacing": {"value": 12.5, "unit": "cm"}, "inRowSpacing": {"value": 2.5, "unit": "cm"},
     "sowingDepth": {"value": 3, "unit": "cm"}, "emergenceDate": "2025-04-02",
-    "precedingCrop": "Oilseed rape", "tillage": "Plough, then power harrow", "notes": "Rolled after drilling",
+    "precedingCrop": "Oilseed rape", "tillage": "Plough, then power harrow", "trainingSystem": "None, arable",
+    "rootstock": "Own roots", "plantedYear": 2025, "notes": "Rolled after drilling",
   },
   "soil": {
     "soilType": "Luvisol", "texture": "silty clay loam", "pH": 6.8, "pHMethod": "water 1:2.5",
@@ -85,7 +90,10 @@ _maximalPackage = {
     {"applicationCode": "A", "timing": "BBCH 31"},
   ],
   "design": {"designType": "rcbd", "replications": 3, "randomizationMethod": "sha256FisherYates1", "randomizationSeed": 99,
-             "firstBlockInTreatmentOrder": True, "checkArrangement": "paired"},
+             "firstBlockInTreatmentOrder": True, "checkArrangement": "paired",
+             "plotDimensions": {"grossLength": {"value": 10, "unit": "m"}, "grossWidth": {"value": 2, "unit": "m"},
+                                "netLength": {"value": 8, "unit": "m"}, "netWidth": {"value": 1.5, "unit": "m"},
+                                "alleyWidth": {"value": 0.5, "unit": "m"}, "notes": "Discard rows at both sides"}},
   "ratings": [
     {"ratingCode": "CT", "name": "Insect count", "ratingType": "pest count", "partRated": "whole plant",
      "method": "Beat sheet, 10 plants", "targetCode": "APHID", "dataType": "numeric", "unit": "per m2", "minValue": 0,
