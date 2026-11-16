@@ -82,7 +82,7 @@ class TrialDocument(BaseModel):
       ),
       "observations": sorted(
         (observation.model_dump(mode="json") for observation in self.observations),
-        key=lambda row: (row["plotNumber"], row["assessmentCode"]),
+        key=lambda row: (row["plotNumber"], row["assessmentCode"], row["subsample"] or 0),
       ),
     }
 
@@ -99,14 +99,30 @@ def checkObservationValues(package: TrialPackage, observations: list[Observation
 
   A numeric value is a finite number and a category is one of the rating's values. A
   number outside the rating's limits is kept only when a person confirmed it, and a
-  confirmation on anything else is refused, so the flag always means what it says.
+  confirmation on anything else is refused, so the flag always means what it says. An
+  assessment that takes subsamples has each value numbered within its count; one that
+  does not has none; no plot, assessment and subsample appears twice (decision 0033).
   """
+  seen = set()
   for observation in observations:
     where = f"plot {observation.plotNumber}, assessment '{observation.assessmentCode}'"
     try:
       rating = package.ratingFor(observation.assessmentCode)
     except KeyError as error:
       raise ValueError(f"{where}: {error.args[0]}") from error
+    subsamples = package.assessmentFor(observation.assessmentCode).subsamples
+    if subsamples is None and observation.subsample is not None:
+      raise ValueError(f"{where}: subsample {observation.subsample} given, but the assessment takes no subsamples")
+    if subsamples is not None:
+      if observation.subsample is None:
+        raise ValueError(f"{where}: the assessment takes {subsamples.count} subsamples; the value has no subsample number")
+      if observation.subsample > subsamples.count:
+        raise ValueError(f"{where}: subsample {observation.subsample} is beyond the {subsamples.count} the assessment takes")
+      where += f", subsample {observation.subsample}"
+    key = (observation.plotNumber, observation.assessmentCode, observation.subsample)
+    if key in seen:
+      raise ValueError(f"{where}: given twice")
+    seen.add(key)
     value = observation.value
     outside = False
     if value is None:

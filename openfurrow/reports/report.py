@@ -52,6 +52,7 @@ from openfurrow.analysis import (
   separateMeans,
 )
 from openfurrow.analysis.meanSeparation import MeanComparison
+from openfurrow.analysis.subsamples import missingSubsamples, plotValues
 from openfurrow.analysis.transforms import backTransformInterval, backTransformMean
 from openfurrow.i18n import Translator, sourceLocale, translatorFor
 from openfurrow.schema.application import Application
@@ -60,7 +61,7 @@ from openfurrow.schema.layout import TrialLayout
 from openfurrow.schema.observation import Observation
 from openfurrow.schema.quantity import Quantity
 from openfurrow.schema.treatment import ActiveSubstance, TreatmentLine, TreatmentRole
-from openfurrow.schema.assessment import AssessmentDataType, Rating, Transform, UntreatedCheck
+from openfurrow.schema.assessment import AssessmentDataType, Rating, SubsampleRule, Transform, UntreatedCheck
 from openfurrow.schema.trialPackage import CheckArrangement, DesignType, RandomizationMethod, TrialPackage
 from openfurrow.reports.charts import ChartBar, MeansChart
 from openfurrow.version import softwareVersion
@@ -647,6 +648,7 @@ def _assessmentSection(
     lines.append(translator.text("report.assessment.notNumeric", dataType=rating.dataType.value))
     lines.append("")
     return lines
+  lines += _subsampleLines(assessment, package, observations, translator)
   if package.design.designType is DesignType.splitPlot:
     return lines + _splitPlotSubsections(
       assessment.assessmentCode, rating, package, layout, observations, significanceLevel, meanComparison, translator,
@@ -1200,14 +1202,30 @@ def _treatmentMeansLines(
   ))
 
 
+def _subsampleLines(assessment, package, observations, translator: Translator) -> list[str]:
+  """How the plot values come from the subsamples, and the plots short of some (decision 0033)."""
+  subsamples = assessment.subsamples
+  if subsamples is None:
+    return []
+  lines = [translator.text(f"report.subsamples.{subsamples.rule.value}", count=translator.integer(subsamples.count)), ""]
+  short = missingSubsamples(assessment.assessmentCode, package, observations)
+  if short and subsamples.rule is SubsampleRule.mean:
+    plots = ", ".join(
+      translator.text("report.subsamples.plotShort", plot=str(plot), missing=translator.integer(missing))
+      for plot, missing in short.items()
+    )
+    lines += [translator.text("report.subsamples.short", plots=plots), ""]
+  return lines
+
+
 def _excludedCheckLines(assessment, package, layout, observations, translator: Translator) -> list[str]:
   """A note that the untreated check is left out of the analysis, with its mean as recorded."""
   if assessment.untreatedCheck is UntreatedCheck.included:
     return []
   check = next(t.treatmentCode for t in package.treatments if t.role is TreatmentRole.untreatedControl)
   plots = {plot.plotNumber for plot in layout.plots if plot.treatmentCode == check}
-  values = [o.value for o in observations
-            if o.assessmentCode == assessment.assessmentCode and o.plotNumber in plots and o.value is not None]
+  derived = plotValues(assessment.assessmentCode, package, observations)
+  values = [derived[plot] for plot in plots if derived.get(plot) is not None]
   mean = (
     translator.number(sum(values) / len(values), decimals=3) if len(values) == len(plots)
     else translator.text("report.value.absent")

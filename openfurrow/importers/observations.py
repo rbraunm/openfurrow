@@ -114,6 +114,10 @@ def importTable(
     assessment.assessmentCode: package.ratingFor(assessment.assessmentCode)
     for assessment in package.assessments
   }
+  subsampleCounts = {
+    assessment.assessmentCode: assessment.subsamples.count
+    for assessment in package.assessments if assessment.subsamples is not None
+  }
   validPlots = {plot.plotNumber for plot in layout.plots} | {check.plotNumber for check in layout.checkPlots}
 
   rows = [
@@ -123,20 +127,34 @@ def importTable(
   if profile.format is ImportFormat.long:
     parsed = _parseLong(rows, fieldnames, profile, assessments)
   else:
-    parsed = _parseWide(rows, fieldnames, profile, assessments)
+    parsed = _parseWide(rows, fieldnames, profile, assessments, subsampleCounts)
 
   observations: list[Observation] = []
   warnings: list[ImportWarning] = []
-  seen: set[tuple[int, str]] = set()
-  for rowNumber, plotNumber, assessmentCode, rawValue in parsed:
+  seen: set[tuple[int, str, int | None]] = set()
+  for rowNumber, plotNumber, assessmentCode, subsample, rawValue in parsed:
     if plotNumber not in validPlots:
       raise ObservationImportError(
         f"row {rowNumber}: plot {plotNumber} is not in the trial layout"
       )
-    key = (plotNumber, assessmentCode)
-    if key in seen:
+    count = subsampleCounts.get(assessmentCode)
+    if count is None and subsample is not None:
       raise ObservationImportError(
-        f"row {rowNumber}: duplicate observation for plot {plotNumber} assessment '{assessmentCode}'"
+        f"row {rowNumber}: subsample {subsample} given, but assessment '{assessmentCode}' takes no subsamples"
+      )
+    if count is not None and subsample is None:
+      raise ObservationImportError(
+        f"row {rowNumber}: assessment '{assessmentCode}' takes {count} subsamples; the row gives no subsample number"
+      )
+    if count is not None and subsample > count:
+      raise ObservationImportError(
+        f"row {rowNumber}: subsample {subsample} is beyond the {count} assessment '{assessmentCode}' takes"
+      )
+    key = (plotNumber, assessmentCode, subsample)
+    if key in seen:
+      which = "" if subsample is None else f" subsample {subsample}"
+      raise ObservationImportError(
+        f"row {rowNumber}: duplicate observation for plot {plotNumber} assessment '{assessmentCode}'{which}"
       )
     seen.add(key)
 
@@ -144,7 +162,7 @@ def importTable(
       rawValue, assessmentCode, assessments[assessmentCode], profile, rowNumber, plotNumber
     )
     observations.append(
-      Observation(plotNumber=plotNumber, assessmentCode=assessmentCode, value=value)
+      Observation(plotNumber=plotNumber, assessmentCode=assessmentCode, value=value, subsample=subsample)
     )
     if warning is not None:
       warnings.append(warning)
@@ -160,7 +178,8 @@ def _requireColumns(fieldnames: list[str], needed: list[str], role: str) -> None
 
 def _parseLong(rows, fieldnames, profile, assessments):
   columns = profile.long
-  _requireColumns(fieldnames, [columns.plotNumber, columns.assessmentCode, columns.value], "long-format")
+  needed = [columns.plotNumber, columns.assessmentCode, columns.value] + ([columns.subsample] if columns.subsample else [])
+  _requireColumns(fieldnames, needed, "long-format")
   parsed = []
   for rowNumber, row in rows:
     plotNumber = _parsePlotNumber(row[columns.plotNumber], rowNumber)
@@ -169,11 +188,21 @@ def _parseLong(rows, fieldnames, profile, assessments):
       raise ObservationImportError(
         f"row {rowNumber}: assessment '{assessmentCode}' is not defined in the trial package"
       )
-    parsed.append((rowNumber, plotNumber, assessmentCode, row[columns.value]))
+    subsample = _parseSubsample(row[columns.subsample], rowNumber) if columns.subsample else None
+    parsed.append((rowNumber, plotNumber, assessmentCode, subsample, row[columns.value]))
   return parsed
 
 
-def _parseWide(rows, fieldnames, profile, assessments):
+def _parseSubsample(rawText: str, rowNumber: int) -> int | None:
+  text = (rawText or "").strip()
+  if not text:
+    return None
+  if not text.isdigit() or int(text) < 1:
+    raise ObservationImportError(f"row {rowNumber}: subsample '{rawText}' is not a whole number from 1")
+  return int(text)
+
+
+def _parseWide(rows, fieldnames, profile, assessments, subsampleCounts):
   columns = profile.wide
   _requireColumns(fieldnames, [columns.plotNumber], "wide-format plot")
   ignored = set(columns.ignoreColumns)
@@ -190,11 +219,27 @@ def _parseWide(rows, fieldnames, profile, assessments):
       f"wide-format assessment(s) not defined in the trial package: {unknown}"
     )
 
+  numbered: dict[str, int | None] = {}
+  for code in dict.fromkeys(assessmentColumns.values()):
+    columnsOf = [column for column, mapped in assessmentColumns.items() if mapped == code]
+    if code not in subsampleCounts:
+      if len(columnsOf) > 1:
+        raise ObservationImportError(
+          f"wide-format columns {columnsOf} all hold assessment '{code}', which takes no subsamples"
+        )
+      numbered[columnsOf[0]] = None
+      continue
+    if len(columnsOf) > subsampleCounts[code]:
+      raise ObservationImportError(
+        f"wide-format columns {columnsOf} hold assessment '{code}', which takes {subsampleCounts[code]} subsamples"
+      )
+    numbered |= {column: index for index, column in enumerate(columnsOf, start=1)}
+
   parsed = []
   for rowNumber, row in rows:
     plotNumber = _parsePlotNumber(row[columns.plotNumber], rowNumber)
     for column, assessmentCode in assessmentColumns.items():
-      parsed.append((rowNumber, plotNumber, assessmentCode, row[column]))
+      parsed.append((rowNumber, plotNumber, assessmentCode, numbered[column], row[column]))
   return parsed
 
 

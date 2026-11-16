@@ -981,6 +981,22 @@
       "text": "Erreur des sous-parcelles (b)",
       "status": "machineDraft"
     },
+    "report.subsamples.mean": {
+      "text": "La valeur de chaque parcelle est la moyenne de ses {count} sous-échantillons, sur ceux relevés.",
+      "status": "machineDraft"
+    },
+    "report.subsamples.plotShort": {
+      "text": "{plot} ({missing} manquants)",
+      "status": "machineDraft"
+    },
+    "report.subsamples.short": {
+      "text": "Parcelles à sous-échantillons manquants, leur moyenne prise sur les autres: {plots}.",
+      "status": "machineDraft"
+    },
+    "report.subsamples.sum": {
+      "text": "La valeur de chaque parcelle est la somme de ses {count} sous-échantillons.",
+      "status": "machineDraft"
+    },
     "report.targets.column.code": {
       "text": "Code",
       "status": "machineDraft"
@@ -1313,6 +1329,22 @@
       "text": "Enregistré.",
       "status": "machineDraft"
     },
+    "web.entry.subsampleLabel": {
+      "text": "sous-échantillon {number}",
+      "status": "machineDraft"
+    },
+    "web.entry.subsampleRule.mean": {
+      "text": "leur moyenne",
+      "status": "machineDraft"
+    },
+    "web.entry.subsampleRule.sum": {
+      "text": "leur somme",
+      "status": "machineDraft"
+    },
+    "web.entry.subsamples": {
+      "text": "Chaque parcelle prend {count} sous-échantillons; la valeur de la parcelle est {rule}.",
+      "status": "machineDraft"
+    },
     "web.footer.offline": {
       "text": "Fonctionne hors ligne. Vos données restent sur cette machine.",
       "status": "machineDraft"
@@ -1557,6 +1589,10 @@
       "text": "Une ligne par valeur",
       "status": "machineDraft"
     },
+    "web.importFile.noSubsamples": {
+      "text": "Aucune (pas de sous-échantillons)",
+      "status": "machineDraft"
+    },
     "web.importFile.plotColumn": {
       "text": "Colonne des numéros de parcelle",
       "status": "machineDraft"
@@ -1625,6 +1661,10 @@
       "text": "Afficher cette feuille",
       "status": "machineDraft"
     },
+    "web.importFile.subsampleColumn": {
+      "text": "Colonne des numéros de sous-échantillon",
+      "status": "machineDraft"
+    },
     "web.importFile.valueColumn": {
       "text": "Colonne des valeurs",
       "status": "machineDraft"
@@ -1635,6 +1675,10 @@
     },
     "web.importFile.wideLegend": {
       "text": "Une ligne par parcelle",
+      "status": "machineDraft"
+    },
+    "web.importFile.wideSubsamples": {
+      "text": "Une évaluation à sous-échantillons peut prendre plusieurs colonnes, une par sous-échantillon, dans l'ordre du fichier: {codes}.",
       "status": "machineDraft"
     },
     "web.locale.draftNotice": {

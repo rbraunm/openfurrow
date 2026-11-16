@@ -2,7 +2,8 @@
 """Observation schema: the long-format observation atom.
 
 One observation is one value for one assessment on one plot -- the same atom
-BrAPI and Field Book's database export use. The value is stored already typed:
+BrAPI and Field Book's database export use -- or, for an assessment that takes
+subsamples, one subsample of that plot, numbered from 1 (decision 0033). The value is stored already typed:
 numeric assessments hold a float, categorical and ordinal assessments hold the
 string code, and an explicitly missing value holds None. The model is strict so
 a categorical code that happens to look numeric (e.g. "3") is not silently
@@ -23,6 +24,9 @@ class Observation(BaseModel):
   plotNumber: int = Field(gt=0, description="Plot this value was collected on.")
   assessmentCode: str = Field(min_length=1, description="Assessment this value belongs to.")
   value: float | str | None = Field(description="Typed value; None means explicitly missing.")
+  subsample: int | None = Field(
+    default=None, ge=1, description="Which subsample of the plot, when the assessment takes subsamples.",
+  )
   outOfRangeConfirmed: bool = Field(
     default=False,
     description="A person confirmed this value although it is outside its rating's limits (decision 0023).",

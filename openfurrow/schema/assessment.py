@@ -63,6 +63,22 @@ class UntreatedCheck(str, Enum):
   excluded = "excluded"  # left out of the analysis, its mean reported beside it
 
 
+class SubsampleRule(str, Enum):
+  """How a plot's value comes from its subsamples (decision 0033)."""
+
+  mean = "mean"  # the mean of the subsamples recorded
+  sum = "sum"    # the total; every subsample must be recorded
+
+
+class Subsamples(BaseModel):
+  """Several values taken in each plot on one occasion, and how the plot's value is derived."""
+
+  model_config = ConfigDict(extra="forbid")
+
+  count: int = Field(ge=2, description="Subsamples taken in each plot, e.g. 10 leaves.")
+  rule: SubsampleRule
+
+
 class EfficacyMethod(str, Enum):
   """How percent control is worked out, plot by plot, against the plot's own check."""
 
@@ -173,6 +189,9 @@ class Assessment(BaseModel):
   untreatedCheck: UntreatedCheck = Field(
     default=UntreatedCheck.included,
     description="Whether the analysis takes in the untreated control treatment or leaves it beside the table.",
+  )
+  subsamples: Subsamples | None = Field(
+    default=None, description="Several values per plot, the plot's value derived from them (decision 0033).",
   )
 
   @field_validator("sampleSize")

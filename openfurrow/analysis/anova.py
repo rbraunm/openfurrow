@@ -124,17 +124,19 @@ def buildBlockTreatmentMatrix(
   plotCellByNumber = {plot.plotNumber: (plot.treatmentCode, plot.block) for plot in layout.plots}
   plotNumberByCell = {cell: plotNumber for plotNumber, cell in plotCellByNumber.items()}
 
+  from openfurrow.analysis.subsamples import plotValues
+
   checkNumbers = {check.plotNumber for check in layout.checkPlots}
   cellValue: dict[tuple[str, int], float] = {}
-  for observation in observations:
-    if observation.assessmentCode != assessmentCode or observation.plotNumber in checkNumbers:
+  for plotNumber, value in plotValues(assessmentCode, package, observations).items():
+    if plotNumber in checkNumbers:
       continue
-    cell = plotCellByNumber.get(observation.plotNumber)
+    cell = plotCellByNumber.get(plotNumber)
     if cell is None:
-      raise AnalysisError(f"observation references plot {observation.plotNumber} not in the layout")
-    if observation.value is None:
+      raise AnalysisError(f"observation references plot {plotNumber} not in the layout")
+    if value is None:
       continue  # explicitly missing; caught by the completeness check below
-    cellValue[cell] = float(observation.value)
+    cellValue[cell] = float(value)
 
   missing = [
     (plotNumberByCell.get((treatmentCode, block)), treatmentCode, block)

@@ -1637,6 +1637,50 @@
       "text": "Choose how the file is laid out.",
       "status": "humanApproved"
     },
+    "web.importFile.subsampleColumn": {
+      "text": "Column with the subsample numbers",
+      "status": "humanApproved"
+    },
+    "web.importFile.noSubsamples": {
+      "text": "None (no subsamples)",
+      "status": "humanApproved"
+    },
+    "web.importFile.wideSubsamples": {
+      "text": "An assessment that takes subsamples can take several columns, one per subsample, in the order of the file: {codes}.",
+      "status": "humanApproved"
+    },
+    "web.entry.subsamples": {
+      "text": "Each plot takes {count} subsamples; the plot's value is {rule}.",
+      "status": "humanApproved"
+    },
+    "web.entry.subsampleRule.mean": {
+      "text": "their mean",
+      "status": "humanApproved"
+    },
+    "web.entry.subsampleRule.sum": {
+      "text": "their sum",
+      "status": "humanApproved"
+    },
+    "web.entry.subsampleLabel": {
+      "text": "subsample {number}",
+      "status": "humanApproved"
+    },
+    "report.subsamples.mean": {
+      "text": "Each plot's value is the mean of its {count} subsamples, over those recorded.",
+      "status": "humanApproved"
+    },
+    "report.subsamples.sum": {
+      "text": "Each plot's value is the sum of its {count} subsamples.",
+      "status": "humanApproved"
+    },
+    "report.subsamples.short": {
+      "text": "Plots short of subsamples, their mean taken over the rest: {plots}.",
+      "status": "humanApproved"
+    },
+    "report.subsamples.plotShort": {
+      "text": "{plot} ({missing} missing)",
+      "status": "humanApproved"
+    },
     "web.import.error": {
       "text": "Import failed: {reason}",
       "status": "humanApproved"

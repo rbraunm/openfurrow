@@ -24,6 +24,7 @@ import math
 import numpy
 from pydantic import BaseModel, ConfigDict
 
+from openfurrow.analysis.subsamples import plotValues
 from openfurrow.analysis.anova import AnalysisError, AnovaResult, TreatmentMean, anovaFromMatrix
 from openfurrow.analysis.distributions import tDistributionSurvival
 from openfurrow.analysis.splitPlot import SplitPlotResult, twoStrataAnova
@@ -90,9 +91,8 @@ def checkPairs(
   if rating.dataType is not AssessmentDataType.numeric:
     raise AnalysisError(f"assessment '{assessmentCode}' is {rating.dataType.value}; checks are compared on numbers")
   values = {
-    observation.plotNumber: observation.value
-    for observation in observations
-    if observation.assessmentCode == assessmentCode and observation.value is not None
+    plotNumber: value for plotNumber, value in plotValues(assessmentCode, package, observations).items()
+    if value is not None
   }
   needed = [plot.plotNumber for plot in layout.plots] + [check.plotNumber for check in layout.checkPlots]
   missing = sorted(number for number in needed if number not in values)

@@ -230,7 +230,7 @@ def testObservationsCsvCarriesLayoutAndValues(tmp_path):
 
   with path.open() as handle:
     rows = list(csv.DictReader(handle))
-  assert list(rows[0].keys()) == ["plotNumber", "block", "treatment", "assessmentCode", "value"]
+  assert list(rows[0].keys()) == ["plotNumber", "block", "treatment", "checkFor", "assessmentCode", "subsample", "value"]
   assert len(rows) == len(document.observations)
   for row in rows:
     expectedBlock, expectedTreatment = plotInfo[int(row["plotNumber"])]

@@ -981,6 +981,22 @@
       "text": "Error de subparcela (b)",
       "status": "machineDraft"
     },
+    "report.subsamples.mean": {
+      "text": "El valor de cada parcela es la media de sus {count} submuestras, sobre las registradas.",
+      "status": "machineDraft"
+    },
+    "report.subsamples.plotShort": {
+      "text": "{plot} ({missing} faltantes)",
+      "status": "machineDraft"
+    },
+    "report.subsamples.short": {
+      "text": "Parcelas con submuestras faltantes, su media sobre las demás: {plots}.",
+      "status": "machineDraft"
+    },
+    "report.subsamples.sum": {
+      "text": "El valor de cada parcela es la suma de sus {count} submuestras.",
+      "status": "machineDraft"
+    },
     "report.targets.column.code": {
       "text": "Código",
       "status": "machineDraft"
@@ -1313,6 +1329,22 @@
       "text": "Guardado.",
       "status": "machineDraft"
     },
+    "web.entry.subsampleLabel": {
+      "text": "submuestra {number}",
+      "status": "machineDraft"
+    },
+    "web.entry.subsampleRule.mean": {
+      "text": "su media",
+      "status": "machineDraft"
+    },
+    "web.entry.subsampleRule.sum": {
+      "text": "su suma",
+      "status": "machineDraft"
+    },
+    "web.entry.subsamples": {
+      "text": "Cada parcela lleva {count} submuestras; el valor de la parcela es {rule}.",
+      "status": "machineDraft"
+    },
     "web.footer.offline": {
       "text": "Funciona sin conexión. Sus datos permanecen en este equipo.",
       "status": "machineDraft"
@@ -1557,6 +1589,10 @@
       "text": "Una fila por valor",
       "status": "machineDraft"
     },
+    "web.importFile.noSubsamples": {
+      "text": "Ninguna (sin submuestras)",
+      "status": "machineDraft"
+    },
     "web.importFile.plotColumn": {
       "text": "Columna con los números de parcela",
       "status": "machineDraft"
@@ -1625,6 +1661,10 @@
       "text": "Mostrar esta hoja",
       "status": "machineDraft"
     },
+    "web.importFile.subsampleColumn": {
+      "text": "Columna con los números de submuestra",
+      "status": "machineDraft"
+    },
     "web.importFile.valueColumn": {
       "text": "Columna con los valores",
       "status": "machineDraft"
@@ -1635,6 +1675,10 @@
     },
     "web.importFile.wideLegend": {
       "text": "Una fila por parcela",
+      "status": "machineDraft"
+    },
+    "web.importFile.wideSubsamples": {
+      "text": "Una evaluación con submuestras puede tomar varias columnas, una por submuestra, en el orden del archivo: {codes}.",
       "status": "machineDraft"
     },
     "web.locale.draftNotice": {

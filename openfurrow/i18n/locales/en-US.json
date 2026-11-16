@@ -1637,6 +1637,50 @@
       "text": "Choose how the file is laid out.",
       "status": "source"
     },
+    "web.importFile.subsampleColumn": {
+      "text": "Column with the subsample numbers",
+      "status": "source"
+    },
+    "web.importFile.noSubsamples": {
+      "text": "None (no subsamples)",
+      "status": "source"
+    },
+    "web.importFile.wideSubsamples": {
+      "text": "An assessment that takes subsamples can take several columns, one per subsample, in the order of the file: {codes}.",
+      "status": "source"
+    },
+    "web.entry.subsamples": {
+      "text": "Each plot takes {count} subsamples; the plot's value is {rule}.",
+      "status": "source"
+    },
+    "web.entry.subsampleRule.mean": {
+      "text": "their mean",
+      "status": "source"
+    },
+    "web.entry.subsampleRule.sum": {
+      "text": "their sum",
+      "status": "source"
+    },
+    "web.entry.subsampleLabel": {
+      "text": "subsample {number}",
+      "status": "source"
+    },
+    "report.subsamples.mean": {
+      "text": "Each plot's value is the mean of its {count} subsamples, over those recorded.",
+      "status": "source"
+    },
+    "report.subsamples.sum": {
+      "text": "Each plot's value is the sum of its {count} subsamples.",
+      "status": "source"
+    },
+    "report.subsamples.short": {
+      "text": "Plots short of subsamples, their mean taken over the rest: {plots}.",
+      "status": "source"
+    },
+    "report.subsamples.plotShort": {
+      "text": "{plot} ({missing} missing)",
+      "status": "source"
+    },
     "web.import.error": {
       "text": "Import failed: {reason}",
       "status": "source"

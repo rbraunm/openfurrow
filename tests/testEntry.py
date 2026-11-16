@@ -132,7 +132,7 @@ def testConfirmationTravelsThroughStoreExportAndHash(tmp_path, served):
   assert stored[plots[0]].outOfRangeConfirmed is True and stored[checks[0]].outOfRangeConfirmed is False
   exported = tmp_path / "doc.json"
   workspace.exportDocument("ENT-1", str(exported))
-  assert {"plotNumber": plots[0], "assessmentCode": "SEV", "value": 120.0, "outOfRangeConfirmed": True} in json.loads(
+  assert {"plotNumber": plots[0], "assessmentCode": "SEV", "value": 120.0, "outOfRangeConfirmed": True, "subsample": None} in json.loads(
     exported.read_text(encoding="utf-8"))["observations"]
   other = Workspace.create(str(tmp_path / "other.db"))
   other.importDocument(str(exported))

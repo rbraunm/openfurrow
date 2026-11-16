@@ -10,6 +10,8 @@ from openfurrow.schema.assessment import (
   MeasurementKind,
   Rating,
   Transform,
+  SubsampleRule,
+  Subsamples,
   UntreatedCheck,
 )
 from openfurrow.schema.document import (
@@ -75,6 +77,8 @@ __all__ = [
   "Target",
   "TargetKind",
   "Transform",
+  "SubsampleRule",
+  "Subsamples",
   "UntreatedCheck",
   "Treatment",
   "TreatmentLine",

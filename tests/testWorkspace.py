@@ -252,7 +252,7 @@ def testExportObservationsCsvWritesEveryRow(trial):
   workspace.exportObservationsCsv("WS-1", csvPath)
   with open(csvPath, encoding="utf-8") as handle:
     rows = list(csv.reader(handle))
-  assert rows[0] == ["plotNumber", "block", "treatment", "assessmentCode", "value"]
+  assert rows[0] == ["plotNumber", "block", "treatment", "checkFor", "assessmentCode", "subsample", "value"]
   assert len(rows) - 1 == trial["package"].plotCount
 
 

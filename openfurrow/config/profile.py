@@ -36,12 +36,15 @@ class LongColumns(BaseModel):
   plotNumber: str = Field(default="plotNumber", min_length=1)
   assessmentCode: str = Field(default="assessmentCode", min_length=1)
   value: str = Field(default="value", min_length=1)
+  subsample: str | None = Field(
+    default=None, min_length=1, description="The column numbering subsamples, for assessments that take them.",
+  )
 
   @model_validator(mode="after")
   def distinctColumns(self) -> LongColumns:
-    names = [self.plotNumber, self.assessmentCode, self.value]
+    names = [self.plotNumber, self.assessmentCode, self.value] + ([self.subsample] if self.subsample else [])
     if len(set(names)) != len(names):
-      raise ValueError("long-format plotNumber, assessmentCode, and value must map to distinct columns")
+      raise ValueError("long-format plotNumber, assessmentCode, value and subsample must map to distinct columns")
     return self
 
 
@@ -51,7 +54,9 @@ class WideColumns(BaseModel):
   The plot identifier is one named column. Assessment columns may be mapped
   explicitly, each column name to the assessment code it holds; if omitted, every
   column that is neither the plot column nor an ignored column is taken as the
-  assessment of the same code and validated against the trial at import time.
+  assessment of the same code and validated against the trial at import time. Several
+  columns may hold one assessment only when it takes subsamples: they are its subsamples
+  in the order of the file (decision 0033), which the importer checks against the trial.
   """
 
   model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
@@ -74,10 +79,6 @@ class WideColumns(BaseModel):
     if self.assessmentColumns is not None:
       if not self.assessmentColumns:
         raise ValueError("wide-format assessmentColumns, if given, must be non-empty")
-      codes = list(self.assessmentColumns.values())
-      repeated = sorted({code for code in codes if codes.count(code) > 1})
-      if repeated:
-        raise ValueError(f"wide-format assessmentColumns maps more than one column to {repeated}")
       if self.plotNumber in self.assessmentColumns:
         raise ValueError(f"wide-format plot column '{self.plotNumber}' is also an assessment column")
       overlap = set(self.assessmentColumns) & set(self.ignoreColumns)

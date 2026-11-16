@@ -981,6 +981,22 @@
       "text": "خطأ القطع الفرعية (b)",
       "status": "machineDraft"
     },
+    "report.subsamples.mean": {
+      "text": "قيمة كل قطعة هي متوسط عيناتها الفرعية الـ {count}، على المسجَّل منها.",
+      "status": "machineDraft"
+    },
+    "report.subsamples.plotShort": {
+      "text": "{plot} ({missing} مفقودة)",
+      "status": "machineDraft"
+    },
+    "report.subsamples.short": {
+      "text": "قطع تنقصها عينات فرعية، أُخذ متوسطها على الباقي: {plots}.",
+      "status": "machineDraft"
+    },
+    "report.subsamples.sum": {
+      "text": "قيمة كل قطعة هي مجموع عيناتها الفرعية الـ {count}.",
+      "status": "machineDraft"
+    },
     "report.targets.column.code": {
       "text": "الرمز",
       "status": "machineDraft"
@@ -1313,6 +1329,22 @@
       "text": "تم الحفظ.",
       "status": "machineDraft"
     },
+    "web.entry.subsampleLabel": {
+      "text": "العينة الفرعية {number}",
+      "status": "machineDraft"
+    },
+    "web.entry.subsampleRule.mean": {
+      "text": "متوسطها",
+      "status": "machineDraft"
+    },
+    "web.entry.subsampleRule.sum": {
+      "text": "مجموعها",
+      "status": "machineDraft"
+    },
+    "web.entry.subsamples": {
+      "text": "تأخذ كل قطعة {count} عينات فرعية؛ وقيمة القطعة هي {rule}.",
+      "status": "machineDraft"
+    },
     "web.footer.offline": {
       "text": "يعمل دون اتصال. تبقى بياناتك على هذا الجهاز.",
       "status": "machineDraft"
@@ -1557,6 +1589,10 @@
       "text": "صف لكل قيمة",
       "status": "machineDraft"
     },
+    "web.importFile.noSubsamples": {
+      "text": "لا شيء (بلا عينات فرعية)",
+      "status": "machineDraft"
+    },
     "web.importFile.plotColumn": {
       "text": "عمود أرقام القطع",
       "status": "machineDraft"
@@ -1625,6 +1661,10 @@
       "text": "اعرض هذه الورقة",
       "status": "machineDraft"
     },
+    "web.importFile.subsampleColumn": {
+      "text": "عمود أرقام العينات الفرعية",
+      "status": "machineDraft"
+    },
     "web.importFile.valueColumn": {
       "text": "عمود القيم",
       "status": "machineDraft"
@@ -1635,6 +1675,10 @@
     },
     "web.importFile.wideLegend": {
       "text": "صف لكل قطعة",
+      "status": "machineDraft"
+    },
+    "web.importFile.wideSubsamples": {
+      "text": "يمكن للتقييم ذي العينات الفرعية أن يأخذ عدة أعمدة، عمودًا لكل عينة فرعية، بترتيب الملف: {codes}.",
       "status": "machineDraft"
     },
     "web.locale.draftNotice": {

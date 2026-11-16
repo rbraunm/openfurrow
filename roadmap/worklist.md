@@ -6,7 +6,7 @@ Findings, defects, checks and owner calls that the plans do not carry.
 Status tags: `fix` (a defect to correct), `build` (work to add), `check` (a suspicion to
 measure), `owner` (the owner's call), `done`.
 
-**Counts.** fix 0, build 5, check 0, owner 4, done 49; 58 in all.
+**Counts.** fix 0, build 4, check 0, owner 4, done 50; 58 in all.
 
 ## Owner decisions
 
@@ -283,6 +283,7 @@ measure), `owner` (the owner's call), `done`.
 - **USR-14** `build` **Forms for the rest of the record.** Product lines, applications,
   targets, planting, soil, weather, factors, checks and percent control are entered in a
   trial file today; the form covers the trial, treatments, blocks, layout and assessments.
+  Subsamples (decision 0033) are among them.
 - **USR-8** `build` **What happened to a plot, and who changed a value.** A lost plot, a misapplied treatment or a
   difference between the plan and what was planted has no record. EPPO PP 1/181 asks for
   deviations to be noted and reported (decision 0015, "Consequences").
@@ -360,9 +361,11 @@ sections added beside them. REC-9 needs data entry in the tool (USR-4).
   from, who assessed, sample size, notes). Each occasion is analysed on its own, and the
   report shows days after application (14 DA-A), derived from the two dates. Subsamples
   are REC-11; a rating's target came with REC-2.
-- **REC-11** `build` **Subsamples within a plot.** Several values taken in one plot on one
-  occasion (ten leaves, four quadrats) kept as entered, with the plot's value derived from
-  them by a stated rule (mean, sum). Today one value per plot and assessment.
+- **REC-11** `done` **Subsamples within a plot.** Built as decision 0033 says, after ARM's
+  practice checked at the source: every subsample kept, the analysis on plot values by the
+  assessment's rule (a mean over those recorded, the short plots named; a sum only when
+  complete); entered as a row per plot, imported long or wide. The trial form does not offer
+  them yet (USR-14).
 - **REC-16** `build` **The file as received.** The readiness bar asks for "the original data
   kept as received" and the brief for the resolved column mapping to be recorded. An import
   keeps neither: the observations are saved, the file and the mapping are not. To keep: the

@@ -309,6 +309,13 @@ class TrialPackage(BaseModel):
         )
       if assessment.efficacy is not None:
         self._checkEfficacy(assessment)
+      if assessment.subsamples is not None:
+        rating = next(rating for rating in self.ratings if rating.ratingCode == assessment.ratingCode)
+        if rating.dataType is not AssessmentDataType.numeric:
+          raise ValueError(
+            f"assessment '{assessment.assessmentCode}': subsamples give a plot value by a mean or a sum, "
+            f"so they need a numeric rating, not {rating.dataType.value}"
+          )
       if assessment.untreatedCheck is UntreatedCheck.excluded:
         controls = [t.treatmentCode for t in self.treatments if t.role is TreatmentRole.untreatedControl]
         if len(controls) != 1:

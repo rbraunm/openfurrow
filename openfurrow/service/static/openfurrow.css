@@ -330,6 +330,7 @@ fieldset.format label { display: block; padding: 0.15rem 0; font-size: 0.95rem; 
 .entry-table { border-collapse: collapse; width: 100%; max-width: 48rem; margin-block: 1rem; }
 .entry-table th, .entry-table td { text-align: start; padding: 0.35rem 0.6rem; border-block-end: 1px solid var(--line); }
 .entry-table input[type="text"] { width: 8rem; font: inherit; }
+.entry-table:has(th + th + th + th + th + th + th) input[type="text"] { width: 4.5rem; }
 .entry-table tr.refused { background: color-mix(in srgb, #D55E00 12%, transparent); }
 .entry-table tr.flagged { background: color-mix(in srgb, #E69F00 16%, transparent); }
 .entry-problem { font-weight: 600; }

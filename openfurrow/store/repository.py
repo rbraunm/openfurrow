@@ -44,6 +44,8 @@ from openfurrow.schema.assessment import (
   Assessment,
   Efficacy,
   EfficacyMethod,
+  Subsamples,
+  SubsampleRule,
   UntreatedCheck,
   MeasurementKind,
   Rating,
@@ -312,6 +314,8 @@ def savePackage(
       efficacyMethod=None if assessment.efficacy is None else assessment.efficacy.method.value,
       efficacyBaselineAssessmentCode=None if assessment.efficacy is None else assessment.efficacy.baselineAssessmentCode,
       untreatedCheck=assessment.untreatedCheck.value,
+      subsampleCount=None if assessment.subsamples is None else assessment.subsamples.count,
+      subsampleRule=None if assessment.subsamples is None else assessment.subsamples.rule.value,
     ))
   for check in checkPlots:
     trial.checkPlots.append(CheckPlotRow(
@@ -378,6 +382,9 @@ def loadPackage(session: Session, trialCode: str) -> TrialPackage:
         method=EfficacyMethod(row.efficacyMethod), baselineAssessmentCode=row.efficacyBaselineAssessmentCode,
       ),
       untreatedCheck=UntreatedCheck(row.untreatedCheck),
+      subsamples=None if row.subsampleCount is None else Subsamples(
+        count=row.subsampleCount, rule=SubsampleRule(row.subsampleRule),
+      ),
     )
     for row in sorted(trial.assessments, key=lambda row: row.ordinal)
   ]
@@ -555,17 +562,18 @@ def saveObservations(session: Session, trialCode: str, observations: list[Observ
   if session.get(TrialRow, trialCode) is None:
     raise TrialNotFoundError(f"trial '{trialCode}' not found; save the package first")
   for observation in observations:
-    key = (trialCode, observation.plotNumber, observation.assessmentCode)
+    key = (trialCode, observation.plotNumber, observation.assessmentCode, observation.subsample or 0)
     if session.get(ObservationRow, key) is not None:
       raise TrialExistsError(
         f"observation already exists for plot {observation.plotNumber}, "
-        f"assessment '{observation.assessmentCode}' in trial '{trialCode}'"
+        f"assessment '{observation.assessmentCode}' subsample {observation.subsample} in trial '{trialCode}'"
       )
     numericValue, textValue = _splitValue(observation.value)
     session.add(ObservationRow(
       trialCode=trialCode,
       plotNumber=observation.plotNumber,
       assessmentCode=observation.assessmentCode,
+      subsample=observation.subsample or 0,
       numericValue=numericValue,
       textValue=textValue,
       outOfRangeConfirmed=observation.outOfRangeConfirmed,
@@ -580,13 +588,14 @@ def loadObservations(session: Session, trialCode: str) -> list[Observation]:
   rows = session.execute(
     select(ObservationRow)
     .where(ObservationRow.trialCode == trialCode)
-    .order_by(ObservationRow.plotNumber, ObservationRow.assessmentCode)
+    .order_by(ObservationRow.plotNumber, ObservationRow.assessmentCode, ObservationRow.subsample)
   ).scalars().all()
   return [
     Observation(
       plotNumber=row.plotNumber,
       assessmentCode=row.assessmentCode,
       value=_joinValue(row.numericValue, row.textValue),
+      subsample=row.subsample or None,
       outOfRangeConfirmed=row.outOfRangeConfirmed,
     )
     for row in rows

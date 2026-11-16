@@ -244,8 +244,8 @@ def testForeignKeyEnforcedForOrphanObservation(engine):
   # itself (SQLite foreign keys enabled via pragma), not just by the repository.
   with pytest.raises(IntegrityError):
     with Session(engine) as session:
-      session.add(ObservationRow(trialCode="GHOST", plotNumber=1, assessmentCode="YIELD",
-                                 numericValue=1.0, textValue=None))
+      session.add(ObservationRow(trialCode="GHOST", plotNumber=1, assessmentCode="YIELD", subsample=0,
+                                 numericValue=1.0, textValue=None, outOfRangeConfirmed=False))
       session.commit()
 
 

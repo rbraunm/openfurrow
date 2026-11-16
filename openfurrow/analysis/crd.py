@@ -14,6 +14,7 @@ import numpy
 
 from openfurrow.analysis.anova import AnalysisError, AnovaResult, AnovaSource, TreatmentMean
 from openfurrow.analysis.distributions import fDistributionSurvival
+from openfurrow.analysis.subsamples import plotValues
 from openfurrow.analysis.transforms import TransformError, applyTransform, checkTransformKind
 from openfurrow.schema.assessment import AssessmentDataType, Transform
 from openfurrow.schema.layout import TrialLayout
@@ -36,8 +37,8 @@ def buildCrdMatrix(
   analysed = set(package.analysedTreatmentCodes(assessmentCode))
   treatmentOf = {plot.plotNumber: plot.treatmentCode for plot in layout.plots if plot.treatmentCode in analysed}
   values = {
-    o.plotNumber: float(o.value) for o in observations
-    if o.assessmentCode == assessmentCode and o.value is not None and o.plotNumber in treatmentOf
+    plotNumber: float(value) for plotNumber, value in plotValues(assessmentCode, package, observations).items()
+    if value is not None and plotNumber in treatmentOf
   }
   missing = sorted(number for number in treatmentOf if number not in values)
   if missing:

@@ -221,6 +221,9 @@ def createWebBlueprint(workspace: Workspace, config: OpenFurrowConfig | None = N
         {"code": assessment.assessmentCode, "rating": package.ratingFor(assessment.assessmentCode)}
         for assessment in package.assessments
       ],
+      "subsampleAssessments": ", ".join(
+        f"{a.assessmentCode} ({a.subsamples.count})" for a in package.assessments if a.subsamples is not None
+      ),
     }
     if request.method == "GET":
       return Response(render_template("importFile.html", **context, **_localeContext(translator)))
@@ -235,7 +238,7 @@ def createWebBlueprint(workspace: Workspace, config: OpenFurrowConfig | None = N
         "mapping": mapping,
       }
       if request.form.get("action") == "import" and sameSheet:
-        result = workspace.importObservationTable(trialCode, table, _profileFor(mapping, table, settings.importProfile))
+        result = workspace.importObservationTable(trialCode, table, _profileFor(mapping, table, settings.importProfile, package))
         context["imported"] = {
           "count": len(result.observations),
           "warnings": [warning.message for warning in result.warnings],
@@ -268,10 +271,12 @@ def createWebBlueprint(workspace: Workspace, config: OpenFurrowConfig | None = N
     if assessmentCode not in {a.assessmentCode for a in package.assessments}:
       return Response(f"no assessment '{assessmentCode}' in trial '{trialCode}'", status=404)
     rating = package.ratingFor(assessmentCode)
+    subsamples = package.assessmentFor(assessmentCode).subsamples
     separator = translator.decimalSeparator
     stored = {
-      o.plotNumber: o for o in workspace.loadObservations(trialCode) if o.assessmentCode == assessmentCode
+      (o.plotNumber, o.subsample): o for o in workspace.loadObservations(trialCode) if o.assessmentCode == assessmentCode
     }
+    numbers = [None] if subsamples is None else list(range(1, subsamples.count + 1))
     rows = [
       {"plotNumber": p.plotNumber, "block": p.block, "treatmentCode": p.treatmentCode, "checkOf": None}
       for p in layout.plots
@@ -282,33 +287,40 @@ def createWebBlueprint(workspace: Workspace, config: OpenFurrowConfig | None = N
     ]
     rows.sort(key=lambda row: row["plotNumber"])
     for row in rows:
-      observation = stored.get(row["plotNumber"])
-      row["text"] = writeEntry(observation.value if observation else None, separator)
-      row["confirmed"] = bool(observation and observation.outOfRangeConfirmed)
-      row["problem"], row["flagged"] = None, False
+      row["cells"] = []
+      for subsample in numbers:
+        observation = stored.get((row["plotNumber"], subsample))
+        row["cells"].append({
+          "name": str(row["plotNumber"]) if subsample is None else f"{row['plotNumber']}-{subsample}",
+          "subsample": subsample,
+          "text": writeEntry(observation.value if observation else None, separator),
+          "confirmed": bool(observation and observation.outOfRangeConfirmed),
+          "problem": None, "flagged": False,
+        })
 
     saved = request.args.get("saved") == "1"
     refused = flagged = False
     if request.method == "POST":
       entered = []
       for row in rows:
-        number = row["plotNumber"]
-        row["text"] = request.form.get(f"value-{number}", "")
-        ticked = request.form.get(f"confirm-{number}") == "yes"
-        try:
-          value = readEntry(row["text"], rating, separator)
-        except EntryRefused as refusal:
-          row["problem"] = translator.text(refusal.reasonKey, **refusal.placeholders)
-          refused = True
-          continue
-        outside = isinstance(value, float) and isOutOfRange(rating, value)
-        row["confirmed"] = outside and ticked
-        if outside and not ticked:
-          row["flagged"] = flagged = True
-        if value is not None:
-          entered.append(Observation(
-            plotNumber=number, assessmentCode=assessmentCode, value=value, outOfRangeConfirmed=outside,
-          ))
+        for cell in row["cells"]:
+          cell["text"] = request.form.get(f"value-{cell['name']}", "")
+          ticked = request.form.get(f"confirm-{cell['name']}") == "yes"
+          try:
+            value = readEntry(cell["text"], rating, separator)
+          except EntryRefused as refusal:
+            cell["problem"] = translator.text(refusal.reasonKey, **refusal.placeholders)
+            refused = True
+            continue
+          outside = isinstance(value, float) and isOutOfRange(rating, value)
+          cell["confirmed"] = outside and ticked
+          if outside and not ticked:
+            cell["flagged"] = flagged = True
+          if value is not None:
+            entered.append(Observation(
+              plotNumber=row["plotNumber"], assessmentCode=assessmentCode, value=value,
+              outOfRangeConfirmed=outside, subsample=cell["subsample"],
+            ))
       if not refused and not flagged:
         workspace.recordValues(trialCode, assessmentCode, entered)
         return redirect(_localized(
@@ -320,7 +332,8 @@ def createWebBlueprint(workspace: Workspace, config: OpenFurrowConfig | None = N
       "numeric": rating.dataType is AssessmentDataType.numeric,
       "limits": _limitsText(rating, translator),
       "rows": rows,
-      "entered": sum(1 for row in rows if row["text"].strip()),
+      "subsampleNumbers": [number for number in numbers if number is not None],
+      "entered": sum(1 for row in rows if any(cell["text"].strip() for cell in row["cells"])),
       "saved": saved and request.method == "GET",
       "refused": refused,
       "flagged": flagged,
@@ -423,6 +436,7 @@ class _MappingProblem(Exception):
 _plotColumnNames = {"plotnumber", "plot", "plotno", "plotid", "parcela", "parcelle"}
 _assessmentColumnNames = {"assessmentcode", "assessment", "trait"}
 _valueColumnNames = {"value", "valor", "valeur"}
+_subsampleColumnNames = {"subsample", "subsamplenumber", "submuestra", "souséchantillon", "sample"}
 
 
 def _normalized(name: str) -> str:
@@ -453,6 +467,7 @@ def _suggestedMapping(table, package, profile) -> dict:
                                   _normalized(fieldUniqueIDColumn)})
   assessment = find(_assessmentColumnNames | {_normalized(profile.long.assessmentCode), _normalized(fieldBookTraitColumn)})
   value = find(_valueColumnNames | {_normalized(profile.long.value), _normalized(fieldBookValueColumn)})
+  subsample = find(_subsampleColumnNames)
   codes = {_normalized(a.assessmentCode): a.assessmentCode for a in package.assessments}
   return {
     "shape": "long" if assessment is not None and value is not None else "wide",
@@ -461,6 +476,7 @@ def _suggestedMapping(table, package, profile) -> dict:
     "longPlot": plot,
     "longAssessment": assessment,
     "longValue": value,
+    "longSubsample": subsample,
     "decimal": profile.parsing.decimalSeparator,
   }
 
@@ -477,11 +493,12 @@ def _formMapping(table) -> dict:
     "longPlot": index("longPlot"),
     "longAssessment": index("longAssessment"),
     "longValue": index("longValue"),
+    "longSubsample": index("longSubsample"),
     "decimal": request.form.get("decimal", ""),
   }
 
 
-def _profileFor(mapping, table, base):
+def _profileFor(mapping, table, base, package):
   """The import profile the person's mapping states; every choice must be made."""
   if mapping["decimal"] not in (".", ","):
     raise _MappingProblem("web.importFile.problem.decimal")
@@ -493,7 +510,9 @@ def _profileFor(mapping, table, base):
     columns = {header[index]: code for index, code in mapping["columns"].items() if code}
     if not columns:
       raise _MappingProblem("web.importFile.problem.noAssessmentColumn")
-    if len(set(columns.values())) != len(columns):
+    takesSubsamples = {a.assessmentCode for a in package.assessments if a.subsamples is not None}
+    codes = [code for code in columns.values() if code not in takesSubsamples]
+    if len(set(codes)) != len(codes):
       raise _MappingProblem("web.importFile.problem.repeatedAssessment")
     return base.withOverrides(
       format="wide", parsing=parsing,
@@ -503,11 +522,13 @@ def _profileFor(mapping, table, base):
     chosen = [mapping["longPlot"], mapping["longAssessment"], mapping["longValue"]]
     if None in chosen:
       raise _MappingProblem("web.importFile.problem.longColumns")
-    if len(set(chosen)) != 3:
+    subsample = mapping["longSubsample"]
+    if len(set(chosen + ([subsample] if subsample is not None else []))) != len(chosen) + (subsample is not None):
       raise _MappingProblem("web.importFile.problem.sameColumn")
     return base.withOverrides(
       format="long", parsing=parsing,
-      long={"plotNumber": header[chosen[0]], "assessmentCode": header[chosen[1]], "value": header[chosen[2]]},
+      long={"plotNumber": header[chosen[0]], "assessmentCode": header[chosen[1]], "value": header[chosen[2]],
+            "subsample": None if subsample is None else header[subsample]},
     )
   raise _MappingProblem("web.importFile.problem.shape")
 

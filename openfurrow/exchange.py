@@ -55,16 +55,24 @@ def exportObservationsCsv(document: TrialDocument, path: str) -> None:
   """Write observations as long-format CSV, annotated with block and treatment.
 
   Block and treatment come from the document's layout, giving a file that is
-  directly analyzable in a spreadsheet or R. A missing value is written as an
-  empty cell.
+  directly analyzable in a spreadsheet or R. An untreated check beside the plots has
+  no treatment and names the plots it is the check for. A missing value, and the
+  subsample of a value that is not one, are written as empty cells.
   """
-  plotInfo = {plot.plotNumber: (plot.block, plot.treatmentCode) for plot in document.layout}
-  orderedObservations = sorted(document.observations, key=lambda row: (row.plotNumber, row.assessmentCode))
+  plotInfo = {plot.plotNumber: (plot.block, plot.treatmentCode, "") for plot in document.layout}
+  plotInfo |= {
+    check.plotNumber: (check.block, "", " ".join(str(number) for number in check.pairedPlots))
+    for check in document.checkPlots
+  }
+  orderedObservations = sorted(
+    document.observations, key=lambda row: (row.plotNumber, row.assessmentCode, row.subsample or 0),
+  )
 
   with open(path, "w", encoding="utf-8", newline="") as handle:
     writer = csv.writer(handle)
-    writer.writerow(["plotNumber", "block", "treatment", "assessmentCode", "value"])
+    writer.writerow(["plotNumber", "block", "treatment", "checkFor", "assessmentCode", "subsample", "value"])
     for observation in orderedObservations:
-      block, treatment = plotInfo[observation.plotNumber]
+      block, treatment, checkFor = plotInfo[observation.plotNumber]
       value = "" if observation.value is None else observation.value
-      writer.writerow([observation.plotNumber, block, treatment, observation.assessmentCode, value])
+      subsample = "" if observation.subsample is None else observation.subsample
+      writer.writerow([observation.plotNumber, block, treatment, checkFor, observation.assessmentCode, subsample, value])

@@ -21,6 +21,7 @@
 <section class="entry" aria-label="{{ rating.name }}">
   <h2>{{ rating.name }} <span class="code">{{ assessment.assessmentCode }}</span></h2>
   <p class="intro">{{ t.text('web.entry.intro') }}{% if limits %} {{ t.text('web.entry.limits', limits=limits) }}{% endif %}</p>
+  {% if subsampleNumbers %}<p class="intro">{{ t.text('web.entry.subsamples', count=t.integer(subsampleNumbers | length), rule=t.text('web.entry.subsampleRule.' ~ assessment.subsamples.rule.value)) }}</p>{% endif %}
 
   {% if saved %}
   <div class="notice" role="status">{{ t.text('web.entry.saved') }} {{ t.text('web.entry.completeness', entered=t.integer(entered), total=t.integer(rows | length)) }}</div>
@@ -39,22 +40,32 @@
           <th scope="col">{{ t.text('web.entry.column.plot') }}</th>
           <th scope="col">{{ t.text('web.entry.column.block') }}</th>
           <th scope="col">{{ t.text('web.entry.column.treatment') }}</th>
+          {% if subsampleNumbers %}
+          {% for number in subsampleNumbers %}<th scope="col" class="code">{{ t.integer(number) }}</th>{% endfor %}
+          {% else %}
           <th scope="col">{{ t.text('web.entry.column.value') }}</th>
+          {% endif %}
           <th scope="col">{{ t.text('web.entry.column.note') }}</th>
         </tr>
       </thead>
       <tbody>
         {% for row in rows %}
-        <tr class="{{ 'refused' if row.problem else ('flagged' if row.flagged else '') }}">
+        {% set problems = row.cells | selectattr('problem') | list %}
+        {% set flags = row.cells | selectattr('flagged') | list %}
+        <tr class="{{ 'refused' if problems else ('flagged' if flags else '') }}">
           <td class="code">{{ row.plotNumber }}</td>
           <td class="code">{{ t.integer(row.block) }}</td>
           <td>{% if row.checkOf %}{{ t.text('web.entry.checkOf', plots=row.checkOf) }}{% else %}<span class="code">{{ row.treatmentCode }}</span>{% endif %}</td>
-          <td><input type="text" inputmode="{{ 'decimal' if numeric else 'text' }}" dir="auto" name="value-{{ row.plotNumber }}" value="{{ row.text }}" aria-label="{{ t.text('web.entry.column.plot') }} {{ row.plotNumber }}"></td>
+          {% for cell in row.cells %}
+          <td><input type="text" inputmode="{{ 'decimal' if numeric else 'text' }}" dir="auto" name="value-{{ cell.name }}" value="{{ cell.text }}" aria-label="{{ t.text('web.entry.column.plot') }} {{ row.plotNumber }}{% if cell.subsample %} {{ t.text('web.entry.subsampleLabel', number=t.integer(cell.subsample)) }}{% endif %}"></td>
+          {% endfor %}
           <td>
-            {% if row.problem %}<span class="entry-problem">{{ row.problem }}</span>{% endif %}
-            {% if row.flagged or row.confirmed %}
-            <label class="entry-confirm"><input type="checkbox" name="confirm-{{ row.plotNumber }}" value="yes" {% if row.confirmed %}checked{% endif %}> {{ t.text('web.entry.outOfRange') }}</label>
+            {% for cell in row.cells %}
+            {% if cell.problem %}<span class="entry-problem">{% if cell.subsample %}{{ t.integer(cell.subsample) }}: {% endif %}{{ cell.problem }}</span>{% endif %}
+            {% if cell.flagged or cell.confirmed %}
+            <label class="entry-confirm"><input type="checkbox" name="confirm-{{ cell.name }}" value="yes" {% if cell.confirmed %}checked{% endif %}> {% if cell.subsample %}{{ t.integer(cell.subsample) }}: {% endif %}{{ t.text('web.entry.outOfRange') }}</label>
             {% endif %}
+            {% endfor %}
           </td>
         </tr>
         {% endfor %}

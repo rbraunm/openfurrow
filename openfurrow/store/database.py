@@ -36,7 +36,7 @@ from sqlalchemy import ForeignKey, Text, event, inspect, select
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, relationship
 
-storeVersion = 13
+storeVersion = 14
 
 
 class StoreError(RuntimeError):
@@ -421,6 +421,8 @@ class AssessmentRow(Base):
   efficacyMethod: Mapped[str | None]
   efficacyBaselineAssessmentCode: Mapped[str | None]
   untreatedCheck: Mapped[str]
+  subsampleCount: Mapped[int | None]
+  subsampleRule: Mapped[str | None]
 
   trial: Mapped[TrialRow] = relationship(back_populates="assessments")
 
@@ -467,6 +469,8 @@ class ObservationRow(Base):
   )
   plotNumber: Mapped[int] = mapped_column(primary_key=True)
   assessmentCode: Mapped[str] = mapped_column(primary_key=True)
+  # 0 is the plot's own value; 1 and up number the subsamples of an assessment that takes them.
+  subsample: Mapped[int] = mapped_column(primary_key=True)
   numericValue: Mapped[float | None]
   textValue: Mapped[str | None]
   outOfRangeConfirmed: Mapped[bool]

@@ -48,9 +48,9 @@ def testLongColumnsMustBeDistinct():
 
 # ---- wide-format validation ----------------------------------------------
 
-def testWideAssessmentColumnsRejectTwoColumnsForOneAssessment():
-  with pytest.raises(ValidationError, match=r"maps more than one column to \['YIELD'\]"):
-    WideColumns(plotNumber="Plot", assessmentColumns={"Yield 1": "YIELD", "Yield 2": "YIELD"})
+def testLongSubsampleColumnMustBeItsOwn():
+  with pytest.raises(ValidationError, match="must map to distinct columns"):
+    LongColumns(plotNumber="plot", assessmentCode="code", value="value", subsample="value")
 
 
 def testWidePlotColumnCannotBeAssessmentColumn():

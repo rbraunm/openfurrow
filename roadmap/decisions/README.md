@@ -47,6 +47,7 @@ in `milestones.md`, a finding in `research/`), not turned into busywork ADRs.
 | 0030 | Untreated check policy                | Accepted          | yes        | Each assessment states whether its analysis takes in the untreated control or leaves it out with its mean reported beside; never dropped silently. Excluding needs one untreated control and is refused in two-factor trials and with Dunnett. |
 | 0031 | Spreadsheet import                    | Accepted          | yes        | A CSV or an .xlsx sheet, read natively, is previewed and its columns mapped by the person before anything is saved; the import is reconciled per assessment and never replaces stored values. |
 | 0032 | Charts of means                       | Accepted          | yes        | A native SVG bar chart under every table of separated means on the report page, with the letters and one standard error of a mean on the analysis' own error, back-transformed after a transform. |
+| 0033 | Subsamples                            | Accepted          | yes        | An assessment may take subsamples, each kept as entered; the analysis runs on plot values by its rule: a mean over those recorded with the short plots named, or a sum only when complete. |
 
 ## Recorded elsewhere (not ADRs)
 

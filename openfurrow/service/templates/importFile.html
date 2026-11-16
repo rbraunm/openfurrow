@@ -81,6 +81,7 @@
       </select>
     </div>
     <p class="intro">{{ t.text('web.importFile.wideIntro') }}</p>
+    {% if subsampleAssessments %}<p class="intro">{{ t.text('web.importFile.wideSubsamples', codes=subsampleAssessments) }}</p>{% endif %}
   </fieldset>
 
   <div class="table-scroll">
@@ -111,11 +112,11 @@
 
   <fieldset class="import-long">
     <legend>{{ t.text('web.importFile.longLegend') }}</legend>
-    {% for field, key in (('longPlot', 'web.importFile.plotColumn'), ('longAssessment', 'web.importFile.assessmentColumn'), ('longValue', 'web.importFile.valueColumn')) %}
+    {% for field, key in (('longPlot', 'web.importFile.plotColumn'), ('longAssessment', 'web.importFile.assessmentColumn'), ('longValue', 'web.importFile.valueColumn'), ('longSubsample', 'web.importFile.subsampleColumn')) %}
     <div class="field-row">
       <label class="field-label" for="{{ field }}">{{ t.text(key) }}</label>
       <select id="{{ field }}" name="{{ field }}">
-        <option value="">{{ t.text('web.importFile.choose') }}</option>
+        <option value="">{{ t.text('web.importFile.noSubsamples' if field == 'longSubsample' else 'web.importFile.choose') }}</option>
         {% for name in table.header %}<option value="{{ loop.index0 }}" {% if mapping[field] == loop.index0 %}selected{% endif %}>{{ name }}</option>{% endfor %}
       </select>
     </div>
