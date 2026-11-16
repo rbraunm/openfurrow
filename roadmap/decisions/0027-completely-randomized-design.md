@@ -16,8 +16,8 @@ where the units are uniform. The tool had only blocked designs (worklist USR-3).
 - **Generated layouts** list every treatment as often as it is replicated and shuffle the
   whole list once on the `sha256FisherYates1` stream; plot k of the list is 100 + k.
 - **The analysis** is treatment against experimental error, with the means separated on
-  the error as for the RCBD. Assumption checks for a CRD are not computed yet (worklist
-  USR-12); the report says so.
+  the error as for the RCBD. The assumption checks are Brown-Forsythe and Shapiro-Wilk
+  on the departures from the treatment means (decision 0006).
 - **Not with a CRD yet:** factors, untreated checks beside plots, spatial balance and a
   first block left in order, each refused by name.
 - The trial form offers the CRD beside the RCBD.

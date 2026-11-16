@@ -17,6 +17,10 @@
       "text": "{name}: {statistic}. {reading}",
       "status": "machineDraft"
     },
+    "diagnostic.mainPlotNormality.name": {
+      "text": "Normalidad de los residuos de parcela principal (Shapiro-Wilk)",
+      "status": "machineDraft"
+    },
     "diagnostic.nonAdditivity.clear": {
       "text": "Sin evidencia de no aditividad",
       "status": "machineDraft"
@@ -42,7 +46,7 @@
       "status": "machineDraft"
     },
     "diagnostic.notComputed.needsTwoByTwo": {
-      "text": "no calculado: requiere al menos dos tratamientos y dos bloques",
+      "text": "no calculado: requiere al menos dos tratamientos y dos parcelas de cada uno",
       "status": "machineDraft"
     },
     "diagnostic.notComputed.noDeviationVariation": {
@@ -79,6 +83,10 @@
     },
     "diagnostic.recommendation.generic": {
       "text": "se señalaron supuestos; si son datos de conteo o proporción, declarar un measurementKind y una transformación estabilizadora de varianza en la evaluación puede ayudar (las transformaciones nunca se aplican automáticamente).",
+      "status": "machineDraft"
+    },
+    "diagnostic.subPlotNormality.name": {
+      "text": "Normalidad de los residuos de subparcela (Shapiro-Wilk)",
       "status": "machineDraft"
     },
     "report.anova.coefficientOfVariation": {
@@ -289,8 +297,16 @@
       "text": "Recomendación: {recommendation}",
       "status": "machineDraft"
     },
-    "report.assumptions.residualsNote": {
+    "report.assumptions.residualsNote.crd": {
+      "text": "Los residuos son el valor de cada parcela menos la media de su tratamiento; suman cero dentro de cada tratamiento, por lo que la prueba de normalidad es aproximada.",
+      "status": "machineDraft"
+    },
+    "report.assumptions.residualsNote.rcbd": {
       "text": "Los residuos provienen del modelo aditivo de bloques y tratamientos y están restringidos (suman cero dentro de cada bloque y cada tratamiento), por lo que la prueba de normalidad es aproximada.",
+      "status": "machineDraft"
+    },
+    "report.assumptions.residualsNote.splitPlot": {
+      "text": "Los residuos de parcela principal provienen de las medias de parcela principal tras los efectos de bloque y de parcela principal (error a); los residuos de subparcela son la desviación de cada parcela respecto de su parcela principal tras los efectos de la combinación (error b). Ambos están restringidos, por lo que las pruebas de normalidad son aproximadas.",
       "status": "machineDraft"
     },
     "report.check.excluded": {
@@ -379,10 +395,6 @@
     },
     "report.checks.treatedMean": {
       "text": "Media de las parcelas tratadas",
-      "status": "machineDraft"
-    },
-    "report.crd.assumptionsNotComputed": {
-      "text": "Las comprobaciones de supuestos aún no se calculan para diseños completamente al azar.",
       "status": "machineDraft"
     },
     "report.design.arrangement": {
@@ -907,10 +919,6 @@
     },
     "report.soil.texture": {
       "text": "Textura",
-      "status": "machineDraft"
-    },
-    "report.splitPlot.assumptionsNotComputed": {
-      "text": "Las comprobaciones de supuestos aún no se calculan para diseños de parcelas divididas.",
       "status": "machineDraft"
     },
     "report.splitPlot.column.level": {

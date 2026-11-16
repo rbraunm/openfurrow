@@ -17,6 +17,10 @@
       "text": "{name}: {statistic}. {reading}",
       "status": "machineDraft"
     },
+    "diagnostic.mainPlotNormality.name": {
+      "text": "اعتدالية بواقي القطع الرئيسية (Shapiro-Wilk)",
+      "status": "machineDraft"
+    },
     "diagnostic.nonAdditivity.clear": {
       "text": "لا يوجد دليل على عدم الجمعية",
       "status": "machineDraft"
@@ -42,7 +46,7 @@
       "status": "machineDraft"
     },
     "diagnostic.notComputed.needsTwoByTwo": {
-      "text": "لم يُحسب: يتطلب معاملتين وقطاعين على الأقل",
+      "text": "لم يُحسب: يتطلب معاملتين وقطعتين على الأقل من كل منهما",
       "status": "machineDraft"
     },
     "diagnostic.notComputed.noDeviationVariation": {
@@ -79,6 +83,10 @@
     },
     "diagnostic.recommendation.generic": {
       "text": "أُشير إلى مخالفة الافتراضات؛ إذا كانت هذه بيانات عد أو نسب، فقد يفيد تصريح measurementKind وتحويل مثبت للتباين في التقييم (لا تُطبق التحويلات تلقائيًا أبدًا).",
+      "status": "machineDraft"
+    },
+    "diagnostic.subPlotNormality.name": {
+      "text": "اعتدالية بواقي القطع الفرعية (Shapiro-Wilk)",
       "status": "machineDraft"
     },
     "report.anova.coefficientOfVariation": {
@@ -289,8 +297,16 @@
       "text": "التوصية: {recommendation}",
       "status": "machineDraft"
     },
-    "report.assumptions.residualsNote": {
+    "report.assumptions.residualsNote.crd": {
+      "text": "البواقي هي قيمة كل قطعة مطروحًا منها متوسط معاملتها؛ مجموعها صفر داخل كل معاملة، لذا فإن اختبار الاعتدالية تقريبي.",
+      "status": "machineDraft"
+    },
+    "report.assumptions.residualsNote.rcbd": {
       "text": "البواقي مشتقة من النموذج الجمعي للقطاعات والمعاملات وهي مقيدة (مجموعها صفر داخل كل قطاع وكل معاملة)، لذا فإن اختبار الاعتدالية تقريبي.",
+      "status": "machineDraft"
+    },
+    "report.assumptions.residualsNote.splitPlot": {
+      "text": "بواقي القطع الرئيسية مأخوذة من متوسطات القطع الرئيسية بعد إزالة أثري القطاع والقطعة الرئيسية (الخطأ a)؛ وبواقي القطع الفرعية هي انحراف كل قطعة عن قطعتها الرئيسية بعد إزالة آثار التوليفة (الخطأ b). كلاهما مقيد، لذا فإن اختباري الاعتدالية تقريبيان.",
       "status": "machineDraft"
     },
     "report.check.excluded": {
@@ -379,10 +395,6 @@
     },
     "report.checks.treatedMean": {
       "text": "متوسط القطع المعاملة",
-      "status": "machineDraft"
-    },
-    "report.crd.assumptionsNotComputed": {
-      "text": "لا تُحسب فحوص الافتراضات للتصاميم العشوائية الكاملة بعد.",
       "status": "machineDraft"
     },
     "report.design.arrangement": {
@@ -907,10 +919,6 @@
     },
     "report.soil.texture": {
       "text": "القوام",
-      "status": "machineDraft"
-    },
-    "report.splitPlot.assumptionsNotComputed": {
-      "text": "لا تُحسب فحوص الافتراضات لتصاميم القطع المنشقة بعد.",
       "status": "machineDraft"
     },
     "report.splitPlot.column.level": {

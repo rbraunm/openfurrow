@@ -21,10 +21,10 @@ from openfurrow.schema.observation import Observation
 from openfurrow.schema.trialPackage import DesignType, TrialPackage
 
 
-def analyzeCrd(
+def buildCrdMatrix(
   assessmentCode: str, package: TrialPackage, layout: TrialLayout, observations: list[Observation],
-) -> AnovaResult:
-  """Run the one-way ANOVA of a completely randomized design for one numeric assessment."""
+) -> tuple[numpy.ndarray, list[str]]:
+  """The analysed values on the rating's scale, one column per treatment, and the treatment codes."""
   if layout.designType is not DesignType.crd:
     raise AnalysisError(f"analyzeCrd requires a completely randomized layout, got {layout.designType.value}")
   try:
@@ -53,7 +53,15 @@ def analyzeCrd(
       ).reshape(matrix.shape)
   except TransformError as error:
     raise AnalysisError(f"assessment '{assessmentCode}': {error}") from error
+  return matrix, treatmentCodes
 
+
+def analyzeCrd(
+  assessmentCode: str, package: TrialPackage, layout: TrialLayout, observations: list[Observation],
+) -> AnovaResult:
+  """Run the one-way ANOVA of a completely randomized design for one numeric assessment."""
+  matrix, treatmentCodes = buildCrdMatrix(assessmentCode, package, layout, observations)
+  rating = package.ratingFor(assessmentCode)
   replicates, treatmentCount = matrix.shape
   grandMean = float(matrix.mean())
   means = matrix.mean(axis=0)

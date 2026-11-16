@@ -30,20 +30,28 @@ Two separable capabilities, governed by one rule: neither acts silently.
 
 **Diagnostics are always-on and report-only.** They are pure information about
 whether the assumptions hold. They never alter the analysis, so adding them cannot
-hide anything. There are three, computed on every numeric analysis and shown in a
-report "Assumptions" block:
+hide anything. They are computed on every numeric analysis and shown in a report
+"Assumptions" block, each design getting the checks its model supports:
 
 - **Equal variance: Brown-Forsythe** -- Levene's test using absolute deviations
   from the per-treatment *median* (robust to non-normality). It is itself an F-test
   on those deviations, so it reuses the native F-distribution with no new special
   functions.
-- **Non-additivity: Tukey's one-degree-of-freedom test** -- RCBD-specific, cheap,
-  reuses the F-distribution. It is the assumption most easily forgotten in a blocked
-  design.
+  Every design; a split plot's treatments are its combinations, with the blocks as their
+  plots.
+- **Non-additivity: Tukey's one-degree-of-freedom test** -- RCBD only (single-factor and
+  factorial), cheap, reuses the F-distribution. It is the assumption most easily
+  forgotten in a blocked design. A CRD has no blocks to interact with; a split plot's
+  block-by-main-plot interaction is its Error(a), so there is no remainder to test.
 - **Normality of residuals: Shapiro-Wilk** -- computed on the model residuals, which
   is standard practice (equivalent to `shapiro.test(residuals(m))`), with the usual
   caveat, stated in the block, that residuals are constrained rather than
   independent. SW is the gold-standard normality test and is what a reviewer expects.
+  One test per error stratum: the RCBD's additive-model residuals, the CRD's
+  departures from the treatment means, and for a split plot both the main-plot
+  residuals (block-and-main-plot model on the main-plot means, Error(a)) and the subplot
+  residuals (Error(b)). The residuals of each design are checked against statsmodels'
+  least-squares residuals of the same model.
 
 **Transforms are explicit, never inferred.** A per-assessment transform -- `none`,
 `sqrt`, `log`, `arcsinSqrt`, `logit` -- is declared by the owner on the assessment

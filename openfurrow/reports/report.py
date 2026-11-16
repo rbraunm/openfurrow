@@ -647,13 +647,7 @@ def _assessmentSection(
     lines += _factorialSubsections(
       assessment.assessmentCode, rating, package, layout, observations, significanceLevel, meanComparison, translator,
     )
-  if package.design.designType is DesignType.crd:
-    lines += [f"### {translator.text('report.heading.assumptions')}", "",
-              translator.text("report.crd.assumptionsNotComputed"), ""]
-  else:
-    lines += _assumptionsSubsection(
-      assessment.assessmentCode, package, layout, observations, significanceLevel, translator
-    )
+  lines += _assumptionsSubsection(assessment.assessmentCode, package, layout, observations, significanceLevel, translator)
   if package.design.checkArrangement is not CheckArrangement.none:
     lines += _checksSubsections(assessment, package, layout, observations, significanceLevel, meanComparison, translator)
   return lines
@@ -782,12 +776,7 @@ def _splitPlotSubsections(
     ),
     splitPlotInteractionComparisons(result, significanceLevel), meanComparison, unit, alpha, translator,
   )
-  lines += [
-    f"### {translator.text('report.heading.assumptions')}",
-    "",
-    translator.text("report.splitPlot.assumptionsNotComputed"),
-    "",
-  ]
+  lines += _assumptionsSubsection(assessmentCode, package, layout, observations, significanceLevel, translator)
   return lines
 
 
@@ -935,11 +924,15 @@ def _assumptionsSubsection(
     "",
     translator.text("report.assumptions.note", alpha=translator.number(significanceLevel, decimals=2)),
     "",
-    _diagnosticLine(assumptions.equalVariance, translator),
-    _diagnosticLine(assumptions.nonAdditivity, translator),
-    _diagnosticLine(assumptions.normality, translator),
+    *(
+      _diagnosticLine(outcome, translator)
+      for outcome in (
+        assumptions.equalVariance, assumptions.nonAdditivity, assumptions.mainPlotNormality, assumptions.normality,
+      )
+      if outcome is not None
+    ),
     "",
-    translator.text("report.assumptions.residualsNote"),
+    translator.text(assumptions.residualsNoteKey),
     "",
   ]
   if assumptions.recommendationKey:

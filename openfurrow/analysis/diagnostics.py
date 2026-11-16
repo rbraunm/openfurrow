@@ -1,10 +1,10 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Assumption diagnostics for the RCBD ANOVA (decision 0006).
+"""Assumption diagnostics for the ANOVA of every design (decision 0006).
 
-These are report-only: they never change the analysis. This module starts with
-the Shapiro-Wilk normality test on a sample; the variance-homogeneity
-(Brown-Forsythe) and non-additivity (Tukey) tests, and the report assembly, are
-added alongside it.
+These are report-only: they never change the analysis. Each design gets the checks its
+model supports: Brown-Forsythe across treatments for all; Tukey's non-additivity for the
+RCBD, the only model with a block-by-treatment remainder to test; Shapiro-Wilk on the
+residuals of each error stratum (one for the RCBD and CRD, two for the split plot).
 
 Shapiro-Wilk follows Royston's AS R94 (the algorithm R's shapiro.test and
 scipy.stats.shapiro use), which needs only the normal CDF and its inverse -- no
@@ -20,9 +20,12 @@ import numpy
 from pydantic import BaseModel, ConfigDict, Field
 
 from openfurrow.analysis.anova import buildRcbdMatrix
+from openfurrow.analysis.crd import buildCrdMatrix
+from openfurrow.analysis.splitPlot import buildSplitPlotValues
 from openfurrow.analysis.distributions import fDistributionSurvival, inverseNormalCdf, normalCdf
 from openfurrow.analysis.transforms import preferredTransform
 from openfurrow.schema.assessment import MeasurementKind, Transform
+from openfurrow.schema.trialPackage import DesignType
 
 shapiroWilkMinimum = 3
 
@@ -115,9 +118,9 @@ def _shapiroWilkPValue(w, n):
   return 1.0 - normalCdf((y - mu) / sigma)
 
 
-# ---- assumption diagnostics for the RCBD (decision 0006) -----------------
-# All three are report-only: they never change the ANOVA. Brown-Forsythe and
-# Tukey reuse the native F-distribution; Shapiro-Wilk runs on the model residuals.
+# ---- assumption diagnostics (decision 0006) -------------------------------
+# Report-only: they never change the ANOVA. Brown-Forsythe and Tukey reuse the
+# native F-distribution; Shapiro-Wilk runs on the model residuals.
 
 
 class DiagnosticOutcome(BaseModel):
@@ -158,15 +161,17 @@ class Assumptions(BaseModel):
   assessmentCode: str
   significanceLevel: float
   equalVariance: DiagnosticOutcome
-  nonAdditivity: DiagnosticOutcome
+  nonAdditivity: DiagnosticOutcome | None = None
+  mainPlotNormality: DiagnosticOutcome | None = None
   normality: DiagnosticOutcome
+  residualsNoteKey: str
   recommendationKey: str | None = None
   recommendationTransform: Transform | None = None
   recommendationKind: MeasurementKind | None = None
 
 
 def brownForsythe(matrix, significanceLevel=0.05):
-  """Brown-Forsythe equal-variance test across treatments (columns of matrix).
+  """Brown-Forsythe equal-variance test across treatments (columns of matrix, one row per plot of each).
 
   Levene's test on absolute deviations from each treatment's median -- an F-test
   robust to non-normality. Returns a DiagnosticOutcome.
@@ -238,17 +243,39 @@ def tukeyNonAdditivity(matrix, significanceLevel=0.05):
                 else "diagnostic.nonAdditivity.clear"))
 
 
-def shapiroWilkResiduals(matrix, significanceLevel=0.05):
-  """Shapiro-Wilk normality test on the additive-model residuals.
+def rcbdResiduals(matrix):
+  """y_ij - (treatment mean + block mean - grand mean), from a block-by-treatment matrix."""
+  grand = float(matrix.mean())
+  return (matrix - matrix.mean(axis=0)[None, :] - matrix.mean(axis=1)[:, None] + grand).ravel()
 
-  Residual_ij = y_ij - (treatment mean + block mean - grand mean). Standard
-  practice runs the test on these fitted residuals; they are constrained rather
+
+def crdResiduals(matrix):
+  """Each plot's value less its treatment mean, from a replicate-by-treatment matrix."""
+  return (matrix - matrix.mean(axis=0)[None, :]).ravel()
+
+
+def splitPlotResiduals(values):
+  """The main-plot and subplot residuals of values indexed [block, main-plot level, subplot level].
+
+  The main-plot residuals are those of the block-and-main-plot model on the main-plot
+  means (the Error(a) stratum); the subplot residuals are each value less its main plot's
+  mean and its combination's departure from its main-plot level (the Error(b) stratum).
+  """
+  grand = float(values.mean())
+  mainPlotMeans = values.mean(axis=2)
+  mainResiduals = mainPlotMeans - values.mean(axis=(1, 2))[:, None] - values.mean(axis=(0, 2))[None, :] + grand
+  cellMeans = values.mean(axis=0)
+  subResiduals = values - mainPlotMeans[:, :, None] - cellMeans[None, :, :] + values.mean(axis=(0, 2))[None, :, None]
+  return mainResiduals.ravel(), subResiduals.ravel()
+
+
+def shapiroWilkResiduals(residuals, significanceLevel=0.05, nameKey="diagnostic.normality.name"):
+  """Shapiro-Wilk normality test on a model's fitted residuals.
+
+  Standard practice runs the test on the fitted residuals; they are constrained rather
   than independent, a caveat the report states. Returns a DiagnosticOutcome.
   """
-  nameKey = "diagnostic.normality.name"
-  grand = float(matrix.mean())
-  fitted = matrix.mean(axis=0)[None, :] + matrix.mean(axis=1)[:, None] - grand
-  residuals = (matrix - fitted).flatten()
+  residuals = numpy.asarray(residuals, dtype=float)
   count = int(residuals.size)
   if count < shapiroWilkMinimum:
     return DiagnosticOutcome(
@@ -293,22 +320,35 @@ def recommendTransform(outcomes, measurementKind, currentTransform, significance
 def assessAssumptions(assessmentCode, package, layout, observations, significanceLevel=0.05):
   """Compute the report-only ANOVA assumption diagnostics for one assessment.
 
-  Diagnostics never change the analysis (decision 0006). Reuses the validated RCBD
-  matrix, so a non-numeric or incomplete design raises the same AnalysisError as the
-  ANOVA. Includes an advisory transform recommendation when assumptions are flagged and
-  no transform is applied; the recommendation is never acted on automatically.
+  Diagnostics never change the analysis (decision 0006). Reuses the validated matrix of
+  the design's own ANOVA, so a non-numeric or incomplete design raises the same
+  AnalysisError. Includes an advisory transform recommendation when assumptions are
+  flagged and no transform is applied; the recommendation is never acted on automatically.
   """
   if not 0.0 < significanceLevel < 1.0:
     raise ValueError(f"significanceLevel must be in (0, 1), got {significanceLevel}")
-  matrix, _, _, transform = buildRcbdMatrix(assessmentCode, package, layout, observations)
   rating = package.ratingFor(assessmentCode)
+  designType = package.design.designType
+  nonAdditivity = None
+  mainPlotNormality = None
+  if designType is DesignType.splitPlot:
+    values, _, _, matrix, _, _ = buildSplitPlotValues(assessmentCode, package, layout, observations)
+    mainResiduals, subResiduals = splitPlotResiduals(values)
+    mainPlotNormality = shapiroWilkResiduals(mainResiduals, significanceLevel, "diagnostic.mainPlotNormality.name")
+    normality = shapiroWilkResiduals(subResiduals, significanceLevel, "diagnostic.subPlotNormality.name")
+  elif designType is DesignType.crd:
+    matrix, _ = buildCrdMatrix(assessmentCode, package, layout, observations)
+    normality = shapiroWilkResiduals(crdResiduals(matrix), significanceLevel)
+  else:
+    matrix, _, _, _ = buildRcbdMatrix(assessmentCode, package, layout, observations)
+    nonAdditivity = tukeyNonAdditivity(matrix, significanceLevel)
+    normality = shapiroWilkResiduals(rcbdResiduals(matrix), significanceLevel)
   equalVariance = brownForsythe(matrix, significanceLevel)
-  nonAdditivity = tukeyNonAdditivity(matrix, significanceLevel)
-  normality = shapiroWilkResiduals(matrix, significanceLevel)
+  outcomes = [outcome for outcome in (equalVariance, nonAdditivity, mainPlotNormality, normality) if outcome is not None]
   recommendationKey, recommendationTransform, recommendationKind = recommendTransform(
-    (equalVariance, nonAdditivity, normality),
+    outcomes,
     rating.measurementKind,
-    transform,
+    rating.transform,
     significanceLevel,
   )
   return Assumptions(
@@ -316,7 +356,9 @@ def assessAssumptions(assessmentCode, package, layout, observations, significanc
     significanceLevel=significanceLevel,
     equalVariance=equalVariance,
     nonAdditivity=nonAdditivity,
+    mainPlotNormality=mainPlotNormality,
     normality=normality,
+    residualsNoteKey=f"report.assumptions.residualsNote.{designType.value}",
     recommendationKey=recommendationKey,
     recommendationTransform=recommendationTransform,
     recommendationKind=recommendationKind,

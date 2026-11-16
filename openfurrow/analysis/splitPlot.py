@@ -95,13 +95,13 @@ class FactorSeparation(BaseModel):
   groups: list[LevelGroup]
 
 
-def analyzeSplitPlot(
+def buildSplitPlotValues(
   assessmentCode: str,
   package: TrialPackage,
   layout: TrialLayout,
   observations: list[Observation],
-) -> SplitPlotResult:
-  """Run the split-plot ANOVA for one numeric assessment."""
+) -> tuple[numpy.ndarray, list[str], list[str], numpy.ndarray, list[str], Transform]:
+  """The values indexed [block, main-plot level, subplot level], with the levels and the block-by-treatment matrix."""
   if layout.designType is not DesignType.splitPlot:
     raise AnalysisError(f"analyzeSplitPlot requires a split-plot layout, got {layout.designType.value}")
   design = package.design
@@ -119,7 +119,21 @@ def analyzeSplitPlot(
     values[:, mainLevels.index(levels[design.mainPlotFactor]), subLevels.index(levels[design.subPlotFactor])] = (
       matrix[:, treatmentIndex]
     )
+  return values, mainLevels, subLevels, matrix, treatmentCodes, transform
 
+
+def analyzeSplitPlot(
+  assessmentCode: str,
+  package: TrialPackage,
+  layout: TrialLayout,
+  observations: list[Observation],
+) -> SplitPlotResult:
+  """Run the split-plot ANOVA for one numeric assessment."""
+  design = package.design
+  values, mainLevels, subLevels, matrix, treatmentCodes, transform = buildSplitPlotValues(
+    assessmentCode, package, layout, observations,
+  )
+  blockCount = values.shape[0]
   treatmentMeans = [
     TreatmentMean(treatmentCode=code, mean=float(matrix[:, index].mean()), observationCount=blockCount)
     for index, code in enumerate(treatmentCodes)

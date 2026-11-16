@@ -149,7 +149,6 @@ def testSplitPlotReportShowsBothErrorStrata():
   assert "- Coefficient of variation, subplots (b): 10.79%" in report
   assert "### Means of Nitrogen" in report and "### Means of Variety" in report
   assert "| N | V1 | V2 | V3 | V4 |" in report
-  assert "Assumption checks are not computed for split-plot designs yet." in report
 
 
 # ---- the package --------------------------------------------------------------

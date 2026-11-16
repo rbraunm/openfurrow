@@ -36,7 +36,8 @@ analysis.
   sqrt(2 Eb / r) and two main-plot means at one subplot level on
   sqrt(2 [(b - 1) Eb + Ea] / rb) with the weighted t of Gomez and Gomez Table 5.6, and the
   combination table is lettered within rows when the interaction is significant (USR-11).
-  Assumption checks are not computed (USR-12); the report says so.
+  The assumption checks are Brown-Forsythe across the combinations and Shapiro-Wilk on
+  each stratum's residuals (decision 0006).
 - **Validated** against Gomez and Gomez Table 3.10 to its printed precision, and against
   statsmodels at full precision.
 

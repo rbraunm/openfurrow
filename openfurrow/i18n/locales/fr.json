@@ -17,6 +17,10 @@
       "text": "{name}: {statistic}. {reading}",
       "status": "machineDraft"
     },
+    "diagnostic.mainPlotNormality.name": {
+      "text": "Normalité des résidus des grandes parcelles (Shapiro-Wilk)",
+      "status": "machineDraft"
+    },
     "diagnostic.nonAdditivity.clear": {
       "text": "Aucun signe de non-additivité",
       "status": "machineDraft"
@@ -42,7 +46,7 @@
       "status": "machineDraft"
     },
     "diagnostic.notComputed.needsTwoByTwo": {
-      "text": "non calculé: requiert au moins deux traitements et deux blocs",
+      "text": "non calculé: requiert au moins deux traitements et deux parcelles de chacun",
       "status": "machineDraft"
     },
     "diagnostic.notComputed.noDeviationVariation": {
@@ -79,6 +83,10 @@
     },
     "diagnostic.recommendation.generic": {
       "text": "des hypothèses ont été signalées; s'il s'agit de comptages ou de proportions, déclarer un measurementKind et une transformation stabilisatrice de variance sur l'évaluation peut aider (les transformations ne sont jamais appliquées automatiquement).",
+      "status": "machineDraft"
+    },
+    "diagnostic.subPlotNormality.name": {
+      "text": "Normalité des résidus des sous-parcelles (Shapiro-Wilk)",
       "status": "machineDraft"
     },
     "report.anova.coefficientOfVariation": {
@@ -289,8 +297,16 @@
       "text": "Recommandation: {recommendation}",
       "status": "machineDraft"
     },
-    "report.assumptions.residualsNote": {
+    "report.assumptions.residualsNote.crd": {
+      "text": "Les résidus sont la valeur de chaque parcelle moins la moyenne de son traitement; leur somme est nulle dans chaque traitement, le test de normalité est donc approximatif.",
+      "status": "machineDraft"
+    },
+    "report.assumptions.residualsNote.rcbd": {
       "text": "Les résidus proviennent du modèle additif blocs et traitements et sont contraints (leur somme est nulle dans chaque bloc et chaque traitement); le test de normalité est donc approximatif.",
+      "status": "machineDraft"
+    },
+    "report.assumptions.residualsNote.splitPlot": {
+      "text": "Les résidus des grandes parcelles viennent des moyennes des grandes parcelles après les effets bloc et grande parcelle (erreur a); les résidus des sous-parcelles sont l'écart de chaque parcelle à sa grande parcelle après les effets de la combinaison (erreur b). Les deux sont contraints; les tests de normalité sont donc approximatifs.",
       "status": "machineDraft"
     },
     "report.check.excluded": {
@@ -379,10 +395,6 @@
     },
     "report.checks.treatedMean": {
       "text": "Moyenne des parcelles traitées",
-      "status": "machineDraft"
-    },
-    "report.crd.assumptionsNotComputed": {
-      "text": "Les vérifications des hypothèses ne sont pas encore calculées pour les dispositifs complètement randomisés.",
       "status": "machineDraft"
     },
     "report.design.arrangement": {
@@ -907,10 +919,6 @@
     },
     "report.soil.texture": {
       "text": "Texture",
-      "status": "machineDraft"
-    },
-    "report.splitPlot.assumptionsNotComputed": {
-      "text": "Les vérifications des hypothèses ne sont pas encore calculées pour les dispositifs en parcelles divisées.",
       "status": "machineDraft"
     },
     "report.splitPlot.column.level": {

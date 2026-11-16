@@ -20,6 +20,7 @@ from openfurrow.analysis.diagnostics import (
   DiagnosticOutcome,
   assessAssumptions,
   brownForsythe,
+  rcbdResiduals,
   recommendTransform,
   shapiroWilk,
   shapiroWilkMinimum,
@@ -151,10 +152,11 @@ def testTukeyNotComputedWhenTooFewErrorDf():
 def testShapiroWilkResidualsMatchesScipyOnResiduals():
   rng = np.random.default_rng(303)
   matrix = 50.0 + np.add.outer(rng.normal(0, 5, 10), rng.normal(0, 4, 4)) + rng.normal(0, 2, (10, 4))
-  grand = float(matrix.mean())
-  fitted = matrix.mean(axis=0)[None, :] + matrix.mean(axis=1)[:, None] - grand
-  residuals = (matrix - fitted).flatten()
-  outcome = shapiroWilkResiduals(matrix)
+  frame = pd.DataFrame([{"y": float(matrix[i, j]), "block": i, "treatment": j}
+                        for i in range(matrix.shape[0]) for j in range(matrix.shape[1])])
+  residuals = smf.ols("y ~ C(treatment) + C(block)", data=frame).fit().resid
+  assert rcbdResiduals(matrix) == pytest.approx(residuals.to_numpy(), abs=1e-9)
+  outcome = shapiroWilkResiduals(rcbdResiduals(matrix))
   reference = stats.shapiro(residuals.tolist())
   assert outcome.statisticName == "W"
   assert outcome.statistic == pytest.approx(reference.statistic, abs=1e-7)

@@ -53,10 +53,6 @@
       "text": "Completely randomised design",
       "status": "humanApproved"
     },
-    "report.crd.assumptionsNotComputed": {
-      "text": "Assumption checks are not computed for completely randomised designs yet.",
-      "status": "humanApproved"
-    },
     "report.reproducibility.crdMethodValue": {
       "text": "One-way ANOVA (completely randomised); {test} (alpha = {alpha})",
       "status": "humanApproved"
@@ -259,10 +255,6 @@
     },
     "report.factorial.heading": {
       "text": "Factorial analysis",
-      "status": "humanApproved"
-    },
-    "report.splitPlot.assumptionsNotComputed": {
-      "text": "Assumption checks are not computed for split-plot designs yet.",
       "status": "humanApproved"
     },
     "report.reproducibility.splitPlotMethodValue": {
@@ -941,8 +933,16 @@
       "text": "Reported only; these do not change the analysis above (significance level alpha = {alpha}).",
       "status": "humanApproved"
     },
-    "report.assumptions.residualsNote": {
+    "report.assumptions.residualsNote.rcbd": {
       "text": "Residuals are from the additive block-and-treatment model and are constrained (they sum to zero within each block and each treatment), so the normality test is approximate.",
+      "status": "humanApproved"
+    },
+    "report.assumptions.residualsNote.crd": {
+      "text": "Residuals are each plot's value less its treatment mean; they sum to zero within each treatment, so the normality test is approximate.",
+      "status": "humanApproved"
+    },
+    "report.assumptions.residualsNote.splitPlot": {
+      "text": "Main-plot residuals come from the main-plot means after the block and main-plot effects (error a); subplot residuals are each plot's departure from its main plot after the combination effects (error b). Both are constrained, so the normality tests are approximate.",
       "status": "humanApproved"
     },
     "report.assumptions.recommendation": {
@@ -1589,6 +1589,14 @@
       "text": "Normality of residuals (Shapiro-Wilk)",
       "status": "humanApproved"
     },
+    "diagnostic.mainPlotNormality.name": {
+      "text": "Normality of main-plot residuals (Shapiro-Wilk)",
+      "status": "humanApproved"
+    },
+    "diagnostic.subPlotNormality.name": {
+      "text": "Normality of subplot residuals (Shapiro-Wilk)",
+      "status": "humanApproved"
+    },
     "diagnostic.normality.flagged": {
       "text": "Residuals depart from normality",
       "status": "humanApproved"
@@ -1598,7 +1606,7 @@
       "status": "humanApproved"
     },
     "diagnostic.notComputed.needsTwoByTwo": {
-      "text": "not computed: needs at least two treatments and two blocks",
+      "text": "not computed: needs at least two treatments and two plots of each",
       "status": "humanApproved"
     },
     "diagnostic.notComputed.noDeviationVariation": {

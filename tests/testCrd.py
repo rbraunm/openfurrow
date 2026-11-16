@@ -130,7 +130,6 @@ def testReportAndPages(tmp_path):
   assert "- Design: Completely randomized design" in report
   assert "| Treatment | 6 | 5587174.9286 | 931195.8214 | 9.83 | < 0.0001 |" in report
   assert "| Error | 21 | 1990237.5000 | 94773.2143 | - | - |" in report
-  assert "Assumption checks are not computed for completely randomized designs yet." in report
   assert "One-way ANOVA (completely randomized)" in report
   databasePath = str(tmp_path / "trials.db")
   workspace = Workspace.create(databasePath)

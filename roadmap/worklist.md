@@ -6,7 +6,7 @@ Findings, defects, checks and owner calls that the plans do not carry.
 Status tags: `fix` (a defect to correct), `build` (work to add), `check` (a suspicion to
 measure), `owner` (the owner's call), `done`.
 
-**Counts.** fix 0, build 7, check 0, owner 4, done 46; 57 in all.
+**Counts.** fix 0, build 6, check 0, owner 4, done 47; 57 in all.
 
 ## Owner decisions
 
@@ -270,9 +270,9 @@ measure), `owner` (the owner's call), `done`.
   a factorial RCBD uses its one error for both. Under the protected rule the letters appear
   only when the interaction is significant. Checked against the book's 482.8 kg/ha and LSD
   of 980 (its tabulated t, 2.029, is 2.0281 exactly) and its weighted-t example (2.178).
-- **USR-12** `build` **Assumption checks for a split plot and a CRD.** The RCBD checks do
-  not carry over to two error strata or to a design without blocks; the report says they
-  are not computed.
+- **USR-12** `done` **Assumption checks for a split plot and a CRD.** Brown-Forsythe for
+  both; Shapiro-Wilk on the CRD's residuals and on each split-plot stratum; Tukey's
+  non-additivity stays RCBD-only (decision 0006).
 - **USR-13** `done` **The field map of a split plot or a trial with checks.** The map
   outlines each main plot with its main-plot level, and draws each check plot dashed and
   marked untreated, right after the last plot it serves.
