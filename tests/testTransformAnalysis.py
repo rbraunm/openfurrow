@@ -18,6 +18,7 @@ import statsmodels.api as sm
 import statsmodels.formula.api as smf
 from scipy import stats
 
+from openfurrow.analysis import MeanComparison
 from openfurrow import schemaVersion
 from openfurrow.analysis import AnalysisError, analyzeRcbd, assessAssumptions, separateMeans
 from openfurrow.analysis.transforms import backTransformMean
@@ -111,7 +112,7 @@ def testProtectedLsdSeparatesAllTreatmentsOnTransformedScale():
   values = syntheticCounts()
   package, layout, observations = buildRcbd(values, transform="sqrt", measurementKind="count")
   result = analyzeRcbd("Y", package, layout, observations)
-  separation = separateMeans(result, significanceLevel=0.05, protected=True)
+  separation = separateMeans(result, significanceLevel=0.05, meanComparison=MeanComparison.protectedLSD)
   assert {row.treatmentCode for row in separation.groups} == {m.treatmentCode for m in result.treatmentMeans}
 
 

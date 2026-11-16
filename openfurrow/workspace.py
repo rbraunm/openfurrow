@@ -39,6 +39,7 @@ from openfurrow.analysis import (
   Assumptions,
   FactorSeparation,
   FactorialResult,
+  MeanComparison,
   MeanSeparation,
   SplitPlotResult,
   analyzeCrd as _analyzeCrd,
@@ -233,17 +234,17 @@ class Workspace:
     assessmentCode: str,
     factor: str,
     significanceLevel: float = 0.05,
-    protected: bool = True,
+    meanComparison: MeanComparison = MeanComparison.protectedLSD,
   ) -> FactorSeparation:
     """Separate the level means of one factor of a split plot or a two-factor RCBD by Fisher's (Protected) LSD."""
     result = self.analyze(trialCode, assessmentCode)
     if isinstance(result, SplitPlotResult):
-      return _separateFactorMeans(result, factor, significanceLevel=significanceLevel, protected=protected)
+      return _separateFactorMeans(result, factor, significanceLevel=significanceLevel, meanComparison=meanComparison)
     package, layout, observations = self._loadContext(trialCode)
     if not package.factors:
       raise AnalysisError(f"trial '{trialCode}' has no factors to separate")
     factorial = _analyzeFactorialRcbd(assessmentCode, package, layout, observations)
-    return _separateFactorialMeans(factorial, factor, significanceLevel=significanceLevel, protected=protected)
+    return _separateFactorialMeans(factorial, factor, significanceLevel=significanceLevel, meanComparison=meanComparison)
 
   def analyzeFactorial(self, trialCode: str, assessmentCode: str) -> FactorialResult:
     """The factorial ANOVA of a two-factor RCBD (decision 0025)."""
@@ -255,7 +256,7 @@ class Workspace:
     trialCode: str,
     assessmentCode: str,
     significanceLevel: float = 0.05,
-    protected: bool = True,
+    meanComparison: MeanComparison = MeanComparison.protectedLSD,
   ) -> MeanSeparation:
     """Separate treatment means by Fisher's (Protected) LSD for one assessment."""
     result = self.analyze(trialCode, assessmentCode)
@@ -263,7 +264,7 @@ class Workspace:
       raise AnalysisError(
         f"trial '{trialCode}' is a split plot; its means are separated for each factor (separateFactorMeans)"
       )
-    return _separateMeans(result, significanceLevel=significanceLevel, protected=protected)
+    return _separateMeans(result, significanceLevel=significanceLevel, meanComparison=meanComparison)
 
   def assessAssumptions(
     self,
@@ -281,7 +282,7 @@ class Workspace:
     self,
     trialCode: str,
     significanceLevel: float = 0.05,
-    protected: bool = True,
+    meanComparison: MeanComparison = MeanComparison.protectedLSD,
     locale: str = sourceLocale,
   ) -> str:
     """Build the full Markdown trial report (the AOV Means Table and provenance).
@@ -292,7 +293,7 @@ class Workspace:
     package, layout, observations = self._loadContext(trialCode)
     return _buildReport(
       package, layout, observations,
-      significanceLevel=significanceLevel, protected=protected, locale=locale,
+      significanceLevel=significanceLevel, meanComparison=meanComparison, locale=locale,
     )
 
   # ---- exchange, hashing, verification ------------------------------------

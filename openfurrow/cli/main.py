@@ -24,7 +24,7 @@ import json
 import sys
 from pathlib import Path
 
-from openfurrow.config import MeanComparison, defaultConfig, loadConfig
+from openfurrow.config import defaultConfig, loadConfig
 from openfurrow.schema import AssessmentDataType, TrialPackage
 from openfurrow.importers.weatherCsv import WeatherFileError
 from openfurrow.workspace import (
@@ -339,11 +339,10 @@ def _commandImport(args) -> int:
 def _commandReport(args) -> int:
   workspace = Workspace.open(args.database)
   config = _configFor(args)
-  protected = config.analysis.meanComparison is MeanComparison.protectedLSD
   report = workspace.buildReport(
     args.trialCode,
     significanceLevel=config.analysis.significanceLevel,
-    protected=protected,
+    meanComparison=config.analysis.meanComparison,
     locale=args.locale,
   )
   if args.output:

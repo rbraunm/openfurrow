@@ -18,6 +18,8 @@ from enum import Enum
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
+from openfurrow.analysis.meanSeparation import MeanComparison
+
 
 class ImportFormat(str, Enum):
   """Shape of an observation CSV."""
@@ -140,13 +142,6 @@ class ImportProfile(BaseModel):
     if parsing:
       data["parsing"].update(parsing)
     return ImportProfile.model_validate(data)
-
-
-class MeanComparison(str, Enum):
-  """Mean-separation test applied after a significant treatment effect."""
-
-  protectedLSD = "protectedLSD"  # Fisher's LSD, only when the treatment F is significant
-  lsd = "lsd"  # unprotected Fisher's LSD, applied regardless
 
 
 class AnalysisSettings(BaseModel):

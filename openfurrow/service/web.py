@@ -331,7 +331,7 @@ def createWebBlueprint(workspace: Workspace, config: OpenFurrowConfig | None = N
     markdownReport = workspace.buildReport(
       trialCode,
       significanceLevel=settings.analysis.significanceLevel,
-      protected=settings.analysis.meanComparison.value == "protectedLSD",
+      meanComparison=settings.analysis.meanComparison,
       locale=translator.locale,
     )
     context = {

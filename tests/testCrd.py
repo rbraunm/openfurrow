@@ -84,7 +84,7 @@ def testMeansAreSeparatedOnTheError():
   scipyStats = pytest.importorskip("scipy.stats")
   result = analyzeCrd("Y", *gomezInputs())
   separation = separateMeans(result)
-  assert separation.leastSignificantDifference == pytest.approx(
+  assert separation.criticalDifference == pytest.approx(
     scipyStats.t.ppf(0.975, 21) * (2 * result.errorMeanSquare / 4) ** 0.5, rel=1e-9)
   assert separation.groups[0].treatmentCode == "DolMix2" and separation.groups[-1].treatmentCode == "Control"
 

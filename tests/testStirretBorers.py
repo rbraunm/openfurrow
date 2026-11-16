@@ -29,6 +29,7 @@ from pathlib import Path
 
 import pytest
 
+from openfurrow.analysis import MeanComparison
 from openfurrow import schemaVersion
 from openfurrow.analysis import analyzeRcbd, separateMeans
 from openfurrow.design import generateRcbdLayout
@@ -199,9 +200,9 @@ def testCount2MatchesReferenceAnova():
 
 def testProtectedLsdSeparatesCount1Groups():
   result = analyze("count1")
-  separation = separateMeans(result, significanceLevel=0.05, protected=True)
+  separation = separateMeans(result, significanceLevel=0.05, meanComparison=MeanComparison.protectedLSD)
   assert separation.treatmentSignificant is True
-  assert separation.leastSignificantDifference == pytest.approx(11.322116964764346, abs=1e-6)
+  assert separation.criticalDifference == pytest.approx(11.322116964764346, abs=1e-6)
   group = {row.treatmentCode: row.group for row in separation.groups}
   # The two effective spore programs (Both, Late) separate from None and Early.
   assert group["Early"] == group["None"]
@@ -216,7 +217,7 @@ def testReportRendersForRealCountTrial():
   package = stirretPackage()
   layout = generateRcbdLayout(package)
   observations = stirretObservations(package, layout)
-  report = buildReport(package, layout, observations, significanceLevel=0.05, protected=True)
+  report = buildReport(package, layout, observations, significanceLevel=0.05, meanComparison=MeanComparison.protectedLSD)
   assert len(report.strip()) > 500
   assert "Borer count August 18" in report
   assert "Borer count October 19" in report

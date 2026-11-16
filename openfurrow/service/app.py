@@ -30,7 +30,7 @@ from flask import Flask, Response, request
 from pydantic import BaseModel, ValidationError
 from werkzeug.exceptions import RequestEntityTooLarge
 
-from openfurrow.config import ImportProfile, OpenFurrowConfig, MeanComparison, defaultConfig
+from openfurrow.config import ImportProfile, OpenFurrowConfig, defaultConfig
 from openfurrow.i18n import MessageError, availableLocales, sourceLocale
 from openfurrow.schema import TrialPackage
 from openfurrow.service.web import createWebBlueprint
@@ -141,8 +141,6 @@ def _registerRoutes(application: Flask, workspace: Workspace, config: OpenFurrow
     except ValueError:
       raise AnalysisError(f"significanceLevel '{value}' is not a number")
 
-  def _protected() -> bool:
-    return config.analysis.meanComparison is MeanComparison.protectedLSD
 
   @application.get("/health")
   def health() -> Response:
@@ -225,7 +223,7 @@ def _registerRoutes(application: Flask, workspace: Workspace, config: OpenFurrow
   @application.get("/api/trials/<trialCode>/means/<assessmentCode>")
   def separateMeans(trialCode: str, assessmentCode: str) -> Response:
     return _json(workspace.separateMeans(
-      trialCode, assessmentCode, significanceLevel=_alpha(), protected=_protected(),
+      trialCode, assessmentCode, significanceLevel=_alpha(), meanComparison=config.analysis.meanComparison,
     ))
 
   @application.get("/api/trials/<trialCode>/assumptions/<assessmentCode>")
@@ -240,7 +238,7 @@ def _registerRoutes(application: Flask, workspace: Workspace, config: OpenFurrow
     markdown = workspace.buildReport(
       trialCode,
       significanceLevel=_alpha(),
-      protected=_protected(),
+      meanComparison=config.analysis.meanComparison,
       locale=request.args.get("locale", sourceLocale),
     )
     return Response(markdown, status=200, mimetype="text/markdown; charset=utf-8")

@@ -43,8 +43,10 @@ from openfurrow.analysis.splitPlot import (
   separateFactorMeans,
 )
 from openfurrow.analysis.meanSeparation import (
+  MeanComparison,
   MeanSeparation,
   TreatmentGroup,
+  criticalDifference,
   letterGroups,
   methodKeyFor,
   separateMeans,
@@ -63,6 +65,7 @@ __all__ = [
   "FactorSeparation",
   "LevelGroup",
   "LevelMean",
+  "MeanComparison",
   "MeanSeparation",
   "PairedComparison",
   "PlotEfficacy",
@@ -79,6 +82,7 @@ __all__ = [
   "assessAssumptions",
   "checkPairs",
   "compareWithChecks",
+  "criticalDifference",
   "letterGroups",
   "methodKeyFor",
   "plotEfficacies",

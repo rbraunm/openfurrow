@@ -965,6 +965,14 @@
       "text": "Fisher's LSD",
       "status": "source"
     },
+    "report.method.tukeyHSD": {
+      "text": "Tukey's HSD",
+      "status": "source"
+    },
+    "report.means.honestlySignificantDifference": {
+      "text": "HSD (alpha = {alpha})",
+      "status": "source"
+    },
     "report.reproducibility.seed": {
       "text": "Randomization seed",
       "status": "source"

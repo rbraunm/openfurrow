@@ -26,6 +26,7 @@ from pydantic import BaseModel, ConfigDict
 from openfurrow.analysis.anova import AnalysisError, AnovaSource, TreatmentMean, buildRcbdMatrix
 from openfurrow.analysis.distributions import fDistributionSurvival
 from openfurrow.analysis.distributions import tCriticalValue
+from openfurrow.analysis.meanSeparation import MeanComparison
 from openfurrow.analysis.splitPlot import (
   FactorSeparation,
   InteractionComparisons,
@@ -148,9 +149,10 @@ def analyzeFactorialRcbd(
 
 
 def separateFactorialMeans(
-  result: FactorialResult, factor: str, significanceLevel: float = 0.05, protected: bool = True,
+  result: FactorialResult, factor: str, significanceLevel: float = 0.05,
+  meanComparison: MeanComparison = MeanComparison.protectedLSD,
 ) -> FactorSeparation:
-  """Separate the level means of one factor of a two-factor RCBD by Fisher's LSD on the error."""
+  """Separate the level means of one factor of a two-factor RCBD by the chosen test on the error."""
   if factor == result.firstFactor:
     means, source = result.firstFactorMeans, "firstFactor"
   elif factor == result.secondFactor:
@@ -159,7 +161,7 @@ def separateFactorialMeans(
     raise AnalysisError(f"'{factor}' is not a factor of this trial ({result.firstFactor}, {result.secondFactor})")
   row = next(row for row in result.table if row.source == source)
   return separateLevels(
-    factor, means, result.errorMeanSquare, result.errorDegreesOfFreedom, row.pValue, significanceLevel, protected,
+    factor, means, result.errorMeanSquare, result.errorDegreesOfFreedom, row.pValue, significanceLevel, meanComparison,
   )
 
 

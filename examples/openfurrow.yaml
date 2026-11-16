@@ -56,7 +56,8 @@ analysis:
   significanceLevel: 0.05
 
   # protectedLSD runs Fisher's LSD only when the treatment F test is significant;
-  # lsd always separates means. Other tests (Duncan's, SNK, Tukey's, Dunnett's) are
+  # lsd always separates means; tukeyHSD compares all pairs by Tukey's honestly significant
+  # difference. Other tests (Duncan's, SNK, Dunnett's) are
   # future scope -- see roadmap/milestones.md.
   meanComparison: protectedLSD
 

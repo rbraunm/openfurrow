@@ -14,6 +14,7 @@ from pathlib import Path
 import pytest
 from pydantic import ValidationError
 
+from openfurrow.analysis import MeanComparison
 from openfurrow import ImportProfile, TrialPackage, Workspace, schemaVersion
 from openfurrow.analysis import AnalysisError, analyzeFactorialRcbd, analyzeRcbd, separateFactorialMeans
 from openfurrow.design import generateLayout
@@ -113,7 +114,7 @@ def testEachFactorIsSeparatedOnTheOneError():
   scipyStats = pytest.importorskip("scipy.stats")
   result = analyzeFactorialRcbd("Y", *gomezInputs())
   nitrogenSeparation = separateFactorialMeans(result, "N")
-  assert nitrogenSeparation.leastSignificantDifference == pytest.approx(
+  assert nitrogenSeparation.criticalDifference == pytest.approx(
     scipyStats.t.ppf(0.975, 42) * math.sqrt(2 * result.errorMeanSquare / 12), rel=1e-9)
   # Nitrogen totals in the book: 41.800 for N0 up to 69.560 for N4, over 12 plots each.
   assert nitrogenSeparation.groups[0].levelCode == "N4" and nitrogenSeparation.groups[0].mean == pytest.approx(69.560 / 12)
@@ -190,5 +191,5 @@ def testFactorialCombinationsUseTheOneError():
   report = buildReport(*gomezInputs())
   assert "No letters: the Variety × Nitrogen interaction is not significant" in report
   assert "| V1 | 3.124 | 4.724 | 4.460 | 5.717 | 5.823 |" in report
-  unprotected = buildReport(*gomezInputs(), protected=False)
+  unprotected = buildReport(*gomezInputs(), meanComparison=MeanComparison.lsd)
   assert "Letters in a row compare the Nitrogen levels at that Variety level." in unprotected

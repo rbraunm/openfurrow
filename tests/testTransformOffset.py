@@ -13,6 +13,7 @@ from pathlib import Path
 import pytest
 from pydantic import ValidationError
 
+from openfurrow.analysis import MeanComparison
 from openfurrow import TrialPackage, schemaVersion
 from openfurrow.analysis import analyzeRcbd, separateMeans
 from openfurrow.analysis.transforms import TransformError, applyTransform, backTransformMean
@@ -66,11 +67,11 @@ def testTransformedMeansMatchGomezTable717():
 
 def testLsdOnTheTransformedScaleMatchesGomez():
   scipyStats = pytest.importorskip("scipy.stats")
-  separation = separateMeans(analyzeRcbd("L", *larvaeInputs()), protected=False)
+  separation = separateMeans(analyzeRcbd("L", *larvaeInputs()), meanComparison=MeanComparison.lsd)
   # The book prints 0.4313 from its tabulated t (2.064, exactly 2.0639) and its rounded error MS.
-  assert round(separation.leastSignificantDifference, 4) == round(
+  assert round(separation.criticalDifference, 4) == round(
     scipyStats.t.ppf(0.975, 24) * math.sqrt(2 * 2.09615 / 24 / 4), 4)
-  assert abs(separation.leastSignificantDifference - 0.4313) < 0.0005
+  assert abs(separation.criticalDifference - 0.4313) < 0.0005
 
 
 def testNaturalLogGivesTheSameF():

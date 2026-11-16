@@ -30,7 +30,7 @@ from pydantic import BaseModel, ConfigDict
 
 from openfurrow.analysis.anova import AnalysisError, AnovaSource, TreatmentMean, buildBlockTreatmentMatrix
 from openfurrow.analysis.distributions import fDistributionSurvival, tCriticalValue
-from openfurrow.analysis.meanSeparation import letterGroups, methodKeyFor
+from openfurrow.analysis.meanSeparation import MeanComparison, criticalDifference, letterGroups, methodKeyFor
 from openfurrow.schema.assessment import Transform
 from openfurrow.schema.layout import TrialLayout
 from openfurrow.schema.observation import Observation
@@ -83,14 +83,14 @@ class LevelGroup(BaseModel):
 
 
 class FactorSeparation(BaseModel):
-  """Fisher's LSD over the levels of one factor of a split plot."""
+  """The level means of one factor separated by the chosen test."""
 
   model_config = ConfigDict(extra="forbid")
 
   factorCode: str
   methodKey: str
   significanceLevel: float
-  leastSignificantDifference: float
+  criticalDifference: float
   factorSignificant: bool
   groups: list[LevelGroup]
 
@@ -239,9 +239,9 @@ def separateFactorMeans(
   result: SplitPlotResult,
   factor: str,
   significanceLevel: float = 0.05,
-  protected: bool = True,
+  meanComparison: MeanComparison = MeanComparison.protectedLSD,
 ) -> FactorSeparation:
-  """Separate the level means of the main-plot or the subplot factor by Fisher's LSD."""
+  """Separate the level means of the main-plot or the subplot factor by the chosen test."""
   if factor == result.mainPlotFactor:
     means, source = result.mainPlotMeans, "mainPlot"
     errorMeanSquare, errorDf = result.mainPlotErrorMeanSquare, result.mainPlotErrorDegreesOfFreedom
@@ -254,7 +254,7 @@ def separateFactorMeans(
       f"nor the subplot factor '{result.subPlotFactor}'"
     )
   row = next(row for row in result.table if row.source == source)
-  return separateLevels(factor, means, errorMeanSquare, errorDf, row.pValue, significanceLevel, protected)
+  return separateLevels(factor, means, errorMeanSquare, errorDf, row.pValue, significanceLevel, meanComparison)
 
 
 def separateLevels(
@@ -264,26 +264,25 @@ def separateLevels(
   errorDf: int,
   pValue: float | None,
   significanceLevel: float,
-  protected: bool,
+  meanComparison: MeanComparison,
 ) -> FactorSeparation:
-  """Fisher's LSD over the level means of one factor, on the error that factor is tested against."""
+  """The level means of one factor separated by the chosen test, on the error that factor is tested against."""
   if not 0.0 < significanceLevel < 1.0:
     raise AnalysisError(f"significance level must be in (0, 1), got {significanceLevel}")
-  perLevel = means[0].observationCount
-  leastSignificantDifference = (
-    tCriticalValue(significanceLevel / 2.0, errorDf) * math.sqrt(2.0 * errorMeanSquare / perLevel)
+  difference = criticalDifference(
+    meanComparison, significanceLevel, len(means), errorMeanSquare, errorDf, means[0].observationCount,
   )
   significant = pValue is not None and pValue <= significanceLevel
   ordered = sorted(means, key=lambda mean: mean.mean, reverse=True)
-  if protected and not significant:
+  if meanComparison is MeanComparison.protectedLSD and not significant:
     letters = ["a"] * len(ordered)
   else:
-    letters = letterGroups([mean.mean for mean in ordered], leastSignificantDifference)
+    letters = letterGroups([mean.mean for mean in ordered], difference)
   return FactorSeparation(
     factorCode=factor,
-    methodKey=methodKeyFor(protected),
+    methodKey=methodKeyFor(meanComparison),
     significanceLevel=significanceLevel,
-    leastSignificantDifference=leastSignificantDifference,
+    criticalDifference=difference,
     factorSignificant=significant,
     groups=[
       LevelGroup(levelCode=mean.levelCode, mean=mean.mean, group=letters[index])

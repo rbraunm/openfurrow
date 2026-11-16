@@ -569,6 +569,10 @@
       "text": "Tratamiento",
       "status": "machineDraft"
     },
+    "report.means.honestlySignificantDifference": {
+      "text": "DHS (alfa = {alpha})",
+      "status": "machineDraft"
+    },
     "report.means.leastSignificantDifference": {
       "text": "DMS (alfa = {alpha})",
       "status": "machineDraft"
@@ -595,6 +599,10 @@
     },
     "report.method.fisherProtectedLSD": {
       "text": "DMS protegida de Fisher",
+      "status": "machineDraft"
+    },
+    "report.method.tukeyHSD": {
+      "text": "DHS de Tukey",
       "status": "machineDraft"
     },
     "report.planting.cropEPPOCode": {

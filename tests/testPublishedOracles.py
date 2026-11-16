@@ -16,6 +16,7 @@ import statsmodels.api as statsmodelsApi
 import statsmodels.formula.api as statsmodelsFormula
 from scipy import stats
 
+from openfurrow.analysis import MeanComparison
 from openfurrow import schemaVersion
 from openfurrow.analysis import analyzeRcbd, separateMeans
 from openfurrow.design import generateRcbdLayout
@@ -119,10 +120,10 @@ def testClewerWheatMatchesStatsmodels():
 def testClewerWheatSeparatesIntoOverlappingGroups():
   """The variety effect is significant, and the LSD leaves one variety in both groups."""
   _, result = clewerWheatResult()
-  separation = separateMeans(result, significanceLevel=0.05, protected=True)
+  separation = separateMeans(result, significanceLevel=0.05, meanComparison=MeanComparison.protectedLSD)
   expectedLsd = stats.t.ppf(0.975, 6) * (2 * 0.40 / 3) ** 0.5
   assert separation.treatmentSignificant is True
-  assert separation.leastSignificantDifference == pytest.approx(expectedLsd, rel=1e-9)
+  assert separation.criticalDifference == pytest.approx(expectedLsd, rel=1e-9)
   # 8.30 and 7.60 are within the LSD of 1.264; so are 7.60, 6.60 and 6.50; 8.30 and 6.60 are not.
   assert [(group.treatmentCode, group.group) for group in separation.groups] == [
     ("V4", "a"), ("V2", "ab"), ("V3", "b"), ("V1", "b"),
@@ -175,6 +176,6 @@ def testGomezSeedRateMatchesStatsmodels():
 def testGomezSeedRateIsNotSeparatedUnderProtection():
   """The treatment effect is not significant, so the protected LSD separates nothing."""
   _, result = gomezSeedRateResult()
-  separation = separateMeans(result, significanceLevel=0.05, protected=True)
+  separation = separateMeans(result, significanceLevel=0.05, meanComparison=MeanComparison.protectedLSD)
   assert separation.treatmentSignificant is False
   assert {group.group for group in separation.groups} == {"a"}

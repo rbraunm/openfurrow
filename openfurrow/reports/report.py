@@ -49,6 +49,7 @@ from openfurrow.analysis import (
   methodKeyFor,
   separateMeans,
 )
+from openfurrow.analysis.meanSeparation import MeanComparison
 from openfurrow.analysis.transforms import backTransformMean
 from openfurrow.i18n import Translator, sourceLocale, translatorFor
 from openfurrow.schema.application import Application
@@ -80,7 +81,7 @@ def buildReport(
   layout: TrialLayout,
   observations: list[Observation],
   significanceLevel: float = 0.05,
-  protected: bool = True,
+  meanComparison: MeanComparison = MeanComparison.protectedLSD,
   locale: str = sourceLocale,
 ) -> str:
   """Build the full Markdown trial report, rendered in `locale`."""
@@ -103,10 +104,10 @@ def buildReport(
   lines += _assessmentsSection(package, translator)
   for assessment in package.assessments:
     lines += _assessmentSection(
-      assessment, package, layout, observations, significanceLevel, protected, translator
+      assessment, package, layout, observations, significanceLevel, meanComparison, translator
     )
   lines += _reproducibilitySection(
-    package, layout, observations, significanceLevel, protected, translator
+    package, layout, observations, significanceLevel, meanComparison, translator
   )
   return "\n".join(lines).rstrip() + "\n"
 
@@ -569,7 +570,7 @@ def _quantityText(quantity: Quantity, translator: Translator) -> str:
 
 
 def _assessmentSection(
-  assessment, package, layout, observations, significanceLevel, protected, translator: Translator
+  assessment, package, layout, observations, significanceLevel, meanComparison, translator: Translator
 ) -> list[str]:
   rating = package.ratingFor(assessment.assessmentCode)
   lines = [
@@ -582,7 +583,7 @@ def _assessmentSection(
     return lines
   if package.design.designType is DesignType.splitPlot:
     return lines + _splitPlotSubsections(
-      assessment.assessmentCode, rating, package, layout, observations, significanceLevel, protected, translator,
+      assessment.assessmentCode, rating, package, layout, observations, significanceLevel, meanComparison, translator,
     )
   try:
     analyze = analyzeCrd if package.design.designType is DesignType.crd else analyzeRcbd
@@ -592,7 +593,7 @@ def _assessmentSection(
     lines.append("")
     return lines
 
-  separation = separateMeans(result, significanceLevel=significanceLevel, protected=protected)
+  separation = separateMeans(result, significanceLevel=significanceLevel, meanComparison=meanComparison)
   unit = f" ({rating.unit})" if rating.unit else ""
   alpha = translator.number(significanceLevel, decimals=2)
 
@@ -679,17 +680,17 @@ def _assessmentSection(
     lines.append("")
   lines.append(_field(
     translator,
-    "report.means.leastSignificantDifference",
-    translator.number(separation.leastSignificantDifference, decimals=3),
+    _differenceKey(meanComparison),
+    translator.number(separation.criticalDifference, decimals=3),
     alpha=alpha,
   ))
-  if protected and not separation.treatmentSignificant:
+  if meanComparison is MeanComparison.protectedLSD and not separation.treatmentSignificant:
     lines.append(f"- {translator.text('report.means.notSeparated')}")
   lines.append("")
 
   if package.factors:
     lines += _factorialSubsections(
-      assessment.assessmentCode, rating, package, layout, observations, significanceLevel, protected, translator,
+      assessment.assessmentCode, rating, package, layout, observations, significanceLevel, meanComparison, translator,
     )
   if package.design.designType is DesignType.crd:
     lines += [f"### {translator.text('report.heading.assumptions')}", "",
@@ -699,12 +700,12 @@ def _assessmentSection(
       assessment.assessmentCode, package, layout, observations, significanceLevel, translator
     )
   if package.design.checkArrangement is not CheckArrangement.none:
-    lines += _checksSubsections(assessment, package, layout, observations, significanceLevel, protected, translator)
+    lines += _checksSubsections(assessment, package, layout, observations, significanceLevel, meanComparison, translator)
   return lines
 
 
 def _checksSubsections(
-  assessment, package, layout, observations, significanceLevel, protected, translator: Translator,
+  assessment, package, layout, observations, significanceLevel, meanComparison, translator: Translator,
 ) -> list[str]:
   """The untreated checks beside the plots: their level, and the comparisons the arrangement calls for."""
   code = assessment.assessmentCode
@@ -760,12 +761,12 @@ def _checksSubsections(
     except AnalysisError as error:
       lines += [translator.text("report.assessment.notAnalyzed", reason=str(error)), ""]
   if assessment.efficacy is not None:
-    lines += _efficacySubsection(assessment, package, layout, observations, significanceLevel, protected, translator)
+    lines += _efficacySubsection(assessment, package, layout, observations, significanceLevel, meanComparison, translator)
   return lines
 
 
 def _efficacySubsection(
-  assessment, package, layout, observations, significanceLevel, protected, translator: Translator,
+  assessment, package, layout, observations, significanceLevel, meanComparison, translator: Translator,
 ) -> list[str]:
   method = translator.text(f"report.checks.efficacyMethod.{assessment.efficacy.method.value}")
   lines = [f"#### {translator.text('report.checks.heading.efficacy', method=method)}", ""]
@@ -773,7 +774,7 @@ def _efficacySubsection(
     result = analyzeEfficacy(assessment.assessmentCode, package, layout, observations)
   except AnalysisError as error:
     return lines + [translator.text("report.assessment.notAnalyzed", reason=str(error)), ""]
-  separation = separateMeans(result, significanceLevel=significanceLevel, protected=protected)
+  separation = separateMeans(result, significanceLevel=significanceLevel, meanComparison=meanComparison)
   sourceNames = {
     source: translator.text(f"report.anova.source.{source}") for source in ("block", "treatment", "error", "total")
   }
@@ -798,15 +799,15 @@ def _efficacySubsection(
       for group in separation.groups
     ),
     "",
-    _field(translator, "report.means.leastSignificantDifference",
-           translator.number(separation.leastSignificantDifference, decimals=2), alpha=alpha),
+    _field(translator, _differenceKey(meanComparison),
+           translator.number(separation.criticalDifference, decimals=2), alpha=alpha),
     "",
   ]
   return lines
 
 
 def _splitPlotSubsections(
-  assessmentCode, rating, package, layout, observations, significanceLevel, protected, translator: Translator,
+  assessmentCode, rating, package, layout, observations, significanceLevel, meanComparison, translator: Translator,
 ) -> list[str]:
   """The split-plot ANOVA, each factor's separated means, and the cell means (decision 0020)."""
   try:
@@ -841,11 +842,11 @@ def _splitPlotSubsections(
   ]
   lines += _twoFactorMeans(
     result, package, result.mainPlotFactor, result.subPlotFactor,
-    lambda factorCode: separateFactorMeans(result, factorCode, significanceLevel=significanceLevel, protected=protected),
+    lambda factorCode: separateFactorMeans(result, factorCode, significanceLevel=significanceLevel, meanComparison=meanComparison),
     lambda factorCode: next(
       row for row in result.table if row.source == ("mainPlot" if factorCode == result.mainPlotFactor else "subPlot")
     ),
-    splitPlotInteractionComparisons(result, significanceLevel), protected, unit, alpha, translator,
+    splitPlotInteractionComparisons(result, significanceLevel), meanComparison, unit, alpha, translator,
   )
   lines += [
     f"### {translator.text('report.heading.assumptions')}",
@@ -857,7 +858,7 @@ def _splitPlotSubsections(
 
 
 def _twoFactorMeans(
-  result, package, firstFactor, secondFactor, separate, rowFor, comparisons, protected, unit, alpha, translator,
+  result, package, firstFactor, secondFactor, separate, rowFor, comparisons, meanComparison, unit, alpha, translator,
 ) -> list[str]:
   """Each factor's level means with their letters, then the combination means with theirs.
 
@@ -893,8 +894,8 @@ def _twoFactorMeans(
         for group in separation.groups
       ),
       "",
-      _field(translator, "report.means.leastSignificantDifference",
-             translator.number(separation.leastSignificantDifference, decimals=3), alpha=alpha),
+      _field(translator, _differenceKey(meanComparison),
+             translator.number(separation.criticalDifference, decimals=3), alpha=alpha),
       "",
     ]
   cellMeans = {mean.treatmentCode: mean.mean for mean in result.treatmentMeans}
@@ -908,7 +909,7 @@ def _twoFactorMeans(
   treatmentFor = {
     (t.factorLevels[firstFactor], t.factorLevels[secondFactor]): t.treatmentCode for t in package.treatments
   }
-  lettered = comparisons.interactionSignificant or not protected
+  lettered = comparisons.interactionSignificant or meanComparison is MeanComparison.lsd
   withinRow = comparisons.secondWithinFirst.leastSignificantDifference
   for firstLevel in factors[firstFactor].levels:
     rowMeans = [cellMeans[treatmentFor[(firstLevel.levelCode, level.levelCode)]] for level in secondLevels]
@@ -941,7 +942,7 @@ def _twoFactorMeans(
 
 
 def _factorialSubsections(
-  assessmentCode, rating, package, layout, observations, significanceLevel, protected, translator: Translator,
+  assessmentCode, rating, package, layout, observations, significanceLevel, meanComparison, translator: Translator,
 ) -> list[str]:
   """The treatment line of a two-factor RCBD split into its factors (decision 0025)."""
   try:
@@ -964,11 +965,11 @@ def _factorialSubsections(
   lines += _anovaTable(result.table, sourceNames, translator) + [""]
   lines += _twoFactorMeans(
     result, package, result.firstFactor, result.secondFactor,
-    lambda factorCode: separateFactorialMeans(result, factorCode, significanceLevel=significanceLevel, protected=protected),
+    lambda factorCode: separateFactorialMeans(result, factorCode, significanceLevel=significanceLevel, meanComparison=meanComparison),
     lambda factorCode: next(
       row for row in result.table if row.source == ("firstFactor" if factorCode == result.firstFactor else "secondFactor")
     ),
-    factorialInteractionComparisons(result, significanceLevel), protected, unit, alpha, translator,
+    factorialInteractionComparisons(result, significanceLevel), meanComparison, unit, alpha, translator,
   )
   return lines
 
@@ -1052,9 +1053,9 @@ def _diagnosticLine(outcome, translator: Translator) -> str:
 
 
 def _reproducibilitySection(
-  package, layout, observations, significanceLevel, protected, translator: Translator
+  package, layout, observations, significanceLevel, meanComparison, translator: Translator
 ) -> list[str]:
-  test = translator.text(methodKeyFor(protected))
+  test = translator.text(methodKeyFor(meanComparison))
   methodKey = {
     DesignType.splitPlot: "report.reproducibility.splitPlotMethodValue",
     DesignType.crd: "report.reproducibility.crdMethodValue",
@@ -1104,6 +1105,12 @@ def _reproducibilitySection(
   )
   lines.append("")
   return lines
+
+
+def _differenceKey(meanComparison: MeanComparison) -> str:
+  if meanComparison is MeanComparison.tukeyHSD:
+    return "report.means.honestlySignificantDifference"
+  return "report.means.leastSignificantDifference"
 
 
 def _scaleName(transform, offset: float, translator: Translator) -> str:

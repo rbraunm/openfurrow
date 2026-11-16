@@ -20,6 +20,7 @@ from pathlib import Path
 import pytest
 from pydantic import ValidationError
 
+from openfurrow.analysis import MeanComparison
 from openfurrow import schemaVersion
 from openfurrow.analysis import analyzeRcbd, assessAssumptions, separateMeans
 from openfurrow.config import defaultConfig
@@ -163,7 +164,7 @@ def testAnalyzeMatchesPrimitive(trial):
 def testSeparateMeansMatchesPrimitive(trial):
   workspace = _populated(trial)
   result = workspace.analyze("WS-1", "YIELD")
-  expected = separateMeans(result, significanceLevel=0.05, protected=True)
+  expected = separateMeans(result, significanceLevel=0.05, meanComparison=MeanComparison.protectedLSD)
   assert workspace.separateMeans("WS-1", "YIELD") == expected
   # The designed separation is significant, so groups are not all one letter.
   assert expected.treatmentSignificant is True
@@ -184,7 +185,7 @@ def testReportMatchesPrimitive(trial):
   package = workspace.loadPackage("WS-1")
   layout = workspace.layoutFor("WS-1")
   observations = workspace.loadObservations("WS-1")
-  expected = buildReport(package, layout, observations, significanceLevel=0.05, protected=True)
+  expected = buildReport(package, layout, observations, significanceLevel=0.05, meanComparison=MeanComparison.protectedLSD)
   assert workspace.buildReport("WS-1") == expected
 
 

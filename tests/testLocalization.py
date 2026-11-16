@@ -25,6 +25,7 @@ from pathlib import Path
 
 import pytest
 
+from openfurrow.analysis import MeanComparison
 from openfurrow import (
   Application,
   ProductKind,
@@ -355,10 +356,11 @@ def testMeanSeparationCarriesAKeyNotAMethodName(workspace):
   English. testDiagnosticsCarryKeysNotSentences already forbade this for diagnostics;
   mean separation was the gap it did not cover.
   """
-  for protected, expected in ((True, "report.method.fisherProtectedLSD"),
-                              (False, "report.method.fisherLSD")):
+  for meanComparison, expected in ((MeanComparison.protectedLSD, "report.method.fisherProtectedLSD"),
+                                   (MeanComparison.lsd, "report.method.fisherLSD"),
+                                   (MeanComparison.tukeyHSD, "report.method.tukeyHSD")):
     separation = workspace.separateMeans(
-      "L10N-1", "YIELD", significanceLevel=0.05, protected=protected)
+      "L10N-1", "YIELD", significanceLevel=0.05, meanComparison=meanComparison)
     assert separation.methodKey == expected
     assert " " not in separation.methodKey
 

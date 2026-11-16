@@ -118,9 +118,9 @@ def testEachFactorIsSeparatedOnItsOwnError():
   nitrogen = separateFactorMeans(result, "N")
   variety = separateFactorMeans(result, "V")
   # Nitrogen on Error(a): 10 df, 12 plots per level; variety on Error(b): 36 df, 18 plots per level.
-  assert nitrogen.leastSignificantDifference == pytest.approx(
+  assert nitrogen.criticalDifference == pytest.approx(
     scipyStats.t.ppf(0.975, 10) * math.sqrt(2 * result.mainPlotErrorMeanSquare / 12), rel=1e-9)
-  assert variety.leastSignificantDifference == pytest.approx(
+  assert variety.criticalDifference == pytest.approx(
     scipyStats.t.ppf(0.975, 36) * math.sqrt(2 * result.subPlotErrorMeanSquare / 18), rel=1e-9)
   assert nitrogen.factorSignificant and variety.factorSignificant
   # The variety totals in the book: V1 117,964 down to V4 65,558, over 18 plots each.

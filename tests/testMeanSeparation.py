@@ -12,6 +12,7 @@ import math
 
 import pytest
 
+from openfurrow.analysis import MeanComparison
 from openfurrow import schemaVersion
 from openfurrow.analysis import AnalysisError, analyzeRcbd, separateMeans
 from openfurrow.analysis.meanSeparation import _letterFor, letterGroups
@@ -86,7 +87,7 @@ def testLetterForSequence():
 # ---- protected behavior ---------------------------------------------------
 
 def testProtectedSeparatesSignificantTrial():
-  separation = separateMeans(syntheticResult(), significanceLevel=0.05, protected=True)
+  separation = separateMeans(syntheticResult(), significanceLevel=0.05, meanComparison=MeanComparison.protectedLSD)
   assert separation.treatmentSignificant is True
   assert separation.methodKey == "report.method.fisherProtectedLSD"
   byTreatment = {group.treatmentCode: group.group for group in separation.groups}
@@ -107,13 +108,13 @@ def testProtectedCollapsesWhenTreatmentNotSignificant():
     ("Victory", 4): 91.5, ("Victory", 5): 92.0, ("Victory", 6): 89.5,
   }
   result = buildResult(["GoldenRain", "Marvellous", "Victory"], 6, cells)
-  separation = separateMeans(result, significanceLevel=0.05, protected=True)
+  separation = separateMeans(result, significanceLevel=0.05, meanComparison=MeanComparison.protectedLSD)
   assert separation.treatmentSignificant is False
   assert {group.group for group in separation.groups} == {"a"}
 
 
 def testUnprotectedRunsAndIsLabelled():
-  separation = separateMeans(syntheticResult(), significanceLevel=0.05, protected=False)
+  separation = separateMeans(syntheticResult(), significanceLevel=0.05, meanComparison=MeanComparison.lsd)
   assert separation.methodKey == "report.method.fisherLSD"
   byTreatment = {group.treatmentCode: group.group for group in separation.groups}
   assert byTreatment == {"A": "a", "B": "a", "C": "b", "D": "b"}
@@ -130,7 +131,7 @@ def testLeastSignificantDifferenceMatchesFormula():
   expected = stats.t.ppf(0.975, result.errorDegreesOfFreedom) * math.sqrt(
     2.0 * result.errorMeanSquare / perTreatment
   )
-  assert separation.leastSignificantDifference == pytest.approx(expected, rel=1e-9)
+  assert separation.criticalDifference == pytest.approx(expected, rel=1e-9)
 
 
 # ---- fail-loud ------------------------------------------------------------

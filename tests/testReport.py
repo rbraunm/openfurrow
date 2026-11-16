@@ -12,6 +12,7 @@ from pathlib import Path
 
 import pytest
 
+from openfurrow.analysis import MeanComparison
 from openfurrow import schemaVersion
 from openfurrow.analysis import AnalysisError
 from openfurrow.design import generateRcbdLayout
@@ -136,7 +137,7 @@ def testReportSeparatesSignificantTrial():
 
 
 def testReportUnprotectedLabel():
-  report = buildReport(*syntheticInputs(), protected=False)
+  report = buildReport(*syntheticInputs(), meanComparison=MeanComparison.lsd)
   assert "Fisher's LSD (alpha = 0.05)" in report
   assert "Protected" not in report
 

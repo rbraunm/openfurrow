@@ -1,33 +1,54 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Fisher's LSD mean separation for an RCBD ANOVA.
+"""Mean separation for an ANOVA: Fisher's LSD, protected or not, and Tukey's HSD.
 
-Computes the least significant difference and a compact letter display over the
-treatment means: means that share a letter are not significantly different at the
-chosen level. By default the test is *protected* (Fisher's Protected LSD): the
-separation is only performed when the treatment F is significant, matching ARM's
-default and the standard recommendation; an unprotected LSD separates regardless.
+Each method compares every pair of treatment means against one critical difference and
+shows the result as a compact letter display: means that share a letter are not
+significantly different at the chosen level.
 
-The least significant difference is
+- **Fisher's protected LSD** (the default, as in ARM): t(alpha/2, error df) *
+  sqrt(2 MS error / n), applied only when the treatment F is significant.
+- **Fisher's LSD**: the same difference, applied regardless of F.
+- **Tukey's HSD**: q(1 - alpha; t, error df) * sqrt(MS error / n), q being the
+  studentized range of the t means; it holds the chance of any false difference among
+  all pairs at alpha, and is applied regardless of F.
 
-    LSD = t(alpha/2, error df) * sqrt(2 * MS_error / n)
-
-with n the number of observations per treatment mean (the block count in a
-balanced RCBD). The t critical value is self-authored (decision 0002).
-
-The letter grouping uses the fact that the LSD is a single constant threshold and
-the means are sorted: a run of consecutive means is mutually non-significant
-exactly when its spread is within the LSD, so the maximal non-significant groups
-are contiguous intervals. Each maximal interval is one letter.
+n is the number of observations per mean. The t and q quantiles are self-authored
+(decision 0002). Because the critical difference is one constant and the means are
+sorted, a run of consecutive means is mutually non-significant exactly when its spread
+is within it, so the maximal non-significant groups are contiguous intervals, each one
+letter.
 """
 
 from __future__ import annotations
 
 import math
 
+from enum import Enum
+
 from pydantic import BaseModel, ConfigDict
 
 from openfurrow.analysis.anova import AnalysisError, AnovaResult
 from openfurrow.analysis.distributions import tCriticalValue
+from openfurrow.analysis.studentizedRange import studentizedRangeQuantile
+
+
+class MeanComparison(str, Enum):
+  """The test that separates means after an analysis of variance."""
+
+  protectedLSD = "protectedLSD"  # Fisher's LSD, only when the treatment F is significant
+  lsd = "lsd"  # Fisher's LSD, applied regardless
+  tukeyHSD = "tukeyHSD"  # Tukey's honestly significant difference, applied regardless
+
+
+def criticalDifference(
+  meanComparison: MeanComparison, significanceLevel: float, meanCount: int,
+  errorMeanSquare: float, errorDegreesOfFreedom: int, perMean: int,
+) -> float:
+  """The difference two of `meanCount` means must exceed to be called different."""
+  if meanComparison is MeanComparison.tukeyHSD:
+    q = studentizedRangeQuantile(1.0 - significanceLevel, meanCount, errorDegreesOfFreedom)
+    return q * math.sqrt(errorMeanSquare / perMean)
+  return tCriticalValue(significanceLevel / 2.0, errorDegreesOfFreedom) * math.sqrt(2.0 * errorMeanSquare / perMean)
 
 
 class TreatmentGroup(BaseModel):
@@ -40,7 +61,7 @@ class TreatmentGroup(BaseModel):
   group: str
 
 
-def methodKeyFor(protected: bool) -> str:
+def methodKeyFor(meanComparison: MeanComparison) -> str:
   """The catalog key naming the separation method.
 
   The analysis layer names the method with a key, never with a sentence (decision
@@ -48,17 +69,21 @@ def methodKeyFor(protected: bool) -> str:
   the one place that knows which method ran. The reproducibility section resolves the
   same key from the same function, so the two cannot describe different methods.
   """
-  return "report.method.fisherProtectedLSD" if protected else "report.method.fisherLSD"
+  return {
+    MeanComparison.protectedLSD: "report.method.fisherProtectedLSD",
+    MeanComparison.lsd: "report.method.fisherLSD",
+    MeanComparison.tukeyHSD: "report.method.tukeyHSD",
+  }[meanComparison]
 
 
 class MeanSeparation(BaseModel):
-  """The result of mean separation: the LSD and the lettered treatment means."""
+  """The result of mean separation: the critical difference and the lettered treatment means."""
 
   model_config = ConfigDict(extra="forbid")
 
   methodKey: str
   significanceLevel: float
-  leastSignificantDifference: float
+  criticalDifference: float
   treatmentSignificant: bool
   groups: list[TreatmentGroup]
 
@@ -66,36 +91,32 @@ class MeanSeparation(BaseModel):
 def separateMeans(
   anovaResult: AnovaResult,
   significanceLevel: float = 0.05,
-  protected: bool = True,
+  meanComparison: MeanComparison = MeanComparison.protectedLSD,
 ) -> MeanSeparation:
-  """Separate treatment means by Fisher's (Protected) LSD."""
+  """Separate treatment means by the chosen test."""
   if not 0.0 < significanceLevel < 1.0:
     raise AnalysisError(f"significance level must be in (0, 1), got {significanceLevel}")
-
-  perTreatment = anovaResult.blockCount
-  criticalT = tCriticalValue(significanceLevel / 2.0, anovaResult.errorDegreesOfFreedom)
-  leastSignificantDifference = criticalT * math.sqrt(2.0 * anovaResult.errorMeanSquare / perTreatment)
-
+  difference = criticalDifference(
+    meanComparison, significanceLevel, anovaResult.treatmentCount,
+    anovaResult.errorMeanSquare, anovaResult.errorDegreesOfFreedom, anovaResult.blockCount,
+  )
   treatmentRow = next(row for row in anovaResult.table if row.source == "treatment")
   treatmentSignificant = treatmentRow.pValue is not None and treatmentRow.pValue <= significanceLevel
   ordered = sorted(anovaResult.treatmentMeans, key=lambda mean: mean.mean, reverse=True)
   means = [mean.mean for mean in ordered]
-  if protected and not treatmentSignificant:
-    # Protected: no separation when the treatment effect is not significant.
+  if meanComparison is MeanComparison.protectedLSD and not treatmentSignificant:
     letters = ["a"] * len(ordered)
   else:
-    letters = letterGroups(means, leastSignificantDifference)
-
-  groups = [
-    TreatmentGroup(treatmentCode=mean.treatmentCode, mean=mean.mean, group=letters[index])
-    for index, mean in enumerate(ordered)
-  ]
+    letters = letterGroups(means, difference)
   return MeanSeparation(
-    methodKey=methodKeyFor(protected),
+    methodKey=methodKeyFor(meanComparison),
     significanceLevel=significanceLevel,
-    leastSignificantDifference=leastSignificantDifference,
+    criticalDifference=difference,
     treatmentSignificant=treatmentSignificant,
-    groups=groups,
+    groups=[
+      TreatmentGroup(treatmentCode=mean.treatmentCode, mean=mean.mean, group=letters[index])
+      for index, mean in enumerate(ordered)
+    ],
   )
 
 
