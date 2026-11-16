@@ -6,7 +6,7 @@ Findings, defects, checks and owner calls that the plans do not carry.
 Status tags: `fix` (a defect to correct), `build` (work to add), `check` (a suspicion to
 measure), `owner` (the owner's call), `done`.
 
-**Counts.** fix 0, build 6, check 0, owner 4, done 47; 57 in all.
+**Counts.** fix 0, build 6, check 0, owner 4, done 48; 58 in all.
 
 ## Owner decisions
 
@@ -206,8 +206,10 @@ measure), `owner` (the owner's call), `done`.
   policy for the check in each assessment's analysis (decision 0030). Still to come:
   Dunnett with unequal replication, and missing plots (the analysis refuses an incomplete
   table, decision 0003).
-- **USR-4** `build` **Data entry.** Values can be typed in the tool (REC-9) or arrive by
-  CSV or a Field Book export. No Excel import yet (the brief lists it second after CSV).
+- **USR-4** `done` **Data entry.** Built as decision 0031 says: a CSV or an `.xlsx` sheet
+  (read natively) is previewed, its columns mapped by the person, imported, and reconciled
+  per assessment against the plots; an import never replaces stored values. Typed entry is
+  REC-9; keeping the file and the mapping with the trial is REC-16.
 - **USR-5** `done` **A printable report.** The report page has a Print button and a print
   stylesheet: the site header, links and footer are left off, headings stay with what
   follows them and tables are not split where they fit on a page. Measured by printing the
@@ -359,6 +361,11 @@ sections added beside them. REC-9 needs data entry in the tool (USR-4).
 - **REC-11** `build` **Subsamples within a plot.** Several values taken in one plot on one
   occasion (ten leaves, four quadrats) kept as entered, with the plot's value derived from
   them by a stated rule (mean, sum). Today one value per plot and assessment.
+- **REC-16** `build` **The file as received.** The readiness bar asks for "the original data
+  kept as received" and the brief for the resolved column mapping to be recorded. An import
+  keeps neither: the observations are saved, the file and the mapping are not. To keep: the
+  file's bytes and hash, the sheet, the mapping and when it was imported, exported with the
+  trial.
 - **REC-9** `done` **Validation rules for data entry.** Built as decision 0023 says: an entry
   page per assessment, values checked in two strengths. What cannot be a value is refused
   and nothing saved; a value outside its limits is saved only once ticked, and the

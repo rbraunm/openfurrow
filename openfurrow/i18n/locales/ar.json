@@ -1445,28 +1445,12 @@
       "text": "ملف CSV",
       "status": "machineDraft"
     },
-    "web.import.formatFieldBook": {
-      "text": "تصدير Field Book (صيغة قاعدة البيانات)",
-      "status": "machineDraft"
-    },
-    "web.import.formatLabel": {
-      "text": "الصيغة",
-      "status": "machineDraft"
-    },
-    "web.import.formatOpenFurrow": {
-      "text": "CSV الخاص بـ OpenFurrow (قطعة، تقييم، قيمة)",
-      "status": "machineDraft"
-    },
     "web.import.heading": {
       "text": "استيراد المشاهدات",
       "status": "machineDraft"
     },
     "web.import.intro": {
-      "text": "ارفع البيانات المجموعة بصيغة CSV. تُفحص القيم مقابل التخطيط قبل حفظ أي شيء.",
-      "status": "machineDraft"
-    },
-    "web.import.result": {
-      "text": "تم استيراد {count} من المشاهدات.",
+      "text": "ارفع البيانات المجموعة كملف CSV أو مصنف Excel ‏(.xlsx). سترى الجدول وتحدد ما يحمله كل عمود قبل حفظ أي شيء.",
       "status": "machineDraft"
     },
     "web.import.submit": {
@@ -1475,6 +1459,158 @@
     },
     "web.import.warningsHeading": {
       "text": "تحذيرات",
+      "status": "machineDraft"
+    },
+    "web.importFile.another": {
+      "text": "اختر ملفًا آخر",
+      "status": "machineDraft"
+    },
+    "web.importFile.assessmentColumn": {
+      "text": "عمود رموز التقييمات",
+      "status": "machineDraft"
+    },
+    "web.importFile.choose": {
+      "text": "اختر عمودًا",
+      "status": "machineDraft"
+    },
+    "web.importFile.column.assessment": {
+      "text": "التقييم",
+      "status": "machineDraft"
+    },
+    "web.importFile.column.missing": {
+      "text": "معلَّمة مفقودة",
+      "status": "machineDraft"
+    },
+    "web.importFile.column.plotsWithout": {
+      "text": "قطع غير موجودة في الملف",
+      "status": "machineDraft"
+    },
+    "web.importFile.column.values": {
+      "text": "القيم",
+      "status": "machineDraft"
+    },
+    "web.importFile.columnHolds": {
+      "text": "ما يحمله العمود {column}",
+      "status": "machineDraft"
+    },
+    "web.importFile.decimal": {
+      "text": "الفاصلة العشرية في الملف",
+      "status": "machineDraft"
+    },
+    "web.importFile.decimalComma": {
+      "text": "فاصلة (12,5)",
+      "status": "machineDraft"
+    },
+    "web.importFile.decimalPoint": {
+      "text": "نقطة (12.5)",
+      "status": "machineDraft"
+    },
+    "web.importFile.done": {
+      "text": "تم استيراد {count} من المشاهدات من {file}.",
+      "status": "machineDraft"
+    },
+    "web.importFile.doneHeading": {
+      "text": "تم الاستيراد",
+      "status": "machineDraft"
+    },
+    "web.importFile.fileLabel": {
+      "text": "ملف CSV أو مصنف Excel ‏(.xlsx)",
+      "status": "machineDraft"
+    },
+    "web.importFile.ignore": {
+      "text": "تجاهل",
+      "status": "machineDraft"
+    },
+    "web.importFile.import": {
+      "text": "استيراد",
+      "status": "machineDraft"
+    },
+    "web.importFile.longIntro": {
+      "text": "يجب أن يحمل عمود التقييم رموز تقييمات التجربة: {codes}.",
+      "status": "machineDraft"
+    },
+    "web.importFile.longLegend": {
+      "text": "صف لكل قيمة",
+      "status": "machineDraft"
+    },
+    "web.importFile.plotColumn": {
+      "text": "عمود أرقام القطع",
+      "status": "machineDraft"
+    },
+    "web.importFile.plotCount": {
+      "text": "تضم التجربة {count} قطعة.",
+      "status": "machineDraft"
+    },
+    "web.importFile.preview": {
+      "text": "معاينة",
+      "status": "machineDraft"
+    },
+    "web.importFile.previewIntro": {
+      "text": "{file}: {rows} صفًا؛ تُعرض العشرة الأولى. حدد كيف رُتب الملف وما يحمله كل عمود. لا يُحفظ شيء حتى تضغط استيراد.",
+      "status": "machineDraft"
+    },
+    "web.importFile.problem.decimal": {
+      "text": "اختر الفاصلة العشرية التي يستخدمها الملف.",
+      "status": "machineDraft"
+    },
+    "web.importFile.problem.longColumns": {
+      "text": "اختر الأعمدة التي تحمل أرقام القطع ورموز التقييمات والقيم.",
+      "status": "machineDraft"
+    },
+    "web.importFile.problem.noAssessmentColumn": {
+      "text": "اختر التقييم الذي يحمله عمود واحد على الأقل.",
+      "status": "machineDraft"
+    },
+    "web.importFile.problem.noFile": {
+      "text": "اختر ملفًا للاستيراد.",
+      "status": "machineDraft"
+    },
+    "web.importFile.problem.plotColumn": {
+      "text": "اختر العمود الذي يحمل أرقام القطع.",
+      "status": "machineDraft"
+    },
+    "web.importFile.problem.repeatedAssessment": {
+      "text": "عمودان مضبوطان على التقييم نفسه؛ لا يأتي كل تقييم إلا من عمود واحد.",
+      "status": "machineDraft"
+    },
+    "web.importFile.problem.sameColumn": {
+      "text": "يجب أن تأتي القطعة والتقييم والقيمة من ثلاثة أعمدة مختلفة.",
+      "status": "machineDraft"
+    },
+    "web.importFile.problem.shape": {
+      "text": "اختر كيف رُتب الملف.",
+      "status": "machineDraft"
+    },
+    "web.importFile.shapeLegend": {
+      "text": "كيف رُتب الملف",
+      "status": "machineDraft"
+    },
+    "web.importFile.shapeLong": {
+      "text": "صف لكل قيمة، مع أعمدة للقطعة والتقييم والقيمة",
+      "status": "machineDraft"
+    },
+    "web.importFile.shapeWide": {
+      "text": "صف لكل قطعة وعمود لكل تقييم",
+      "status": "machineDraft"
+    },
+    "web.importFile.sheet": {
+      "text": "الورقة",
+      "status": "machineDraft"
+    },
+    "web.importFile.showSheet": {
+      "text": "اعرض هذه الورقة",
+      "status": "machineDraft"
+    },
+    "web.importFile.valueColumn": {
+      "text": "عمود القيم",
+      "status": "machineDraft"
+    },
+    "web.importFile.wideIntro": {
+      "text": "تحت عنوان كل عمود، اختر التقييم الذي يحمله أو اتركه متجاهَلًا.",
+      "status": "machineDraft"
+    },
+    "web.importFile.wideLegend": {
+      "text": "صف لكل قطعة",
       "status": "machineDraft"
     },
     "web.locale.draftNotice": {
@@ -1539,6 +1675,10 @@
     },
     "web.trial.enterIntro": {
       "text": "اكتب القيم قطعةً قطعة. تُفحص كل قيمة عند الحفظ.",
+      "status": "machineDraft"
+    },
+    "web.trial.importData": {
+      "text": "استيراد ملف",
       "status": "machineDraft"
     },
     "web.trial.layoutHeading": {

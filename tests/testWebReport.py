@@ -9,6 +9,7 @@ actual HTML table in their language. The report is display: opening it in any lo
 must not change the trial's content hash.
 """
 
+import base64
 from io import BytesIO
 
 import csv
@@ -77,43 +78,41 @@ def _fieldBookCsv(workspace) -> bytes:
   return buffer.getvalue().encode()
 
 
-def _upload(data: bytes, fieldFormat: str = "openfurrow"):
-  return {"file": (BytesIO(data), "obs.csv"), "format": fieldFormat}
+def _importLong(client, data: bytes, fileName: str = "obs.csv"):
+  """Upload a file, then import it with the plot, assessment and value in its first three columns."""
+  preview = client.post("/trials/D2-1/import", data={"file": (BytesIO(data), fileName), "action": "preview"},
+                        content_type="multipart/form-data")
+  assert preview.status_code == 200
+  return client.post("/trials/D2-1/import", data={
+    "fileName": fileName, "fileData": base64.b64encode(data).decode(), "previewedSheet": "",
+    "shape": "long", "longPlot": "0", "longAssessment": "1", "longValue": "2", "decimal": ".", "action": "import",
+  })
 
 
 # ---- import ---------------------------------------------------------------
 
 def testImportOpenFurrowCsvShowsCount(client, workspace):
-  response = client.post(
-    "/trials/D2-1/observations", data=_upload(_openFurrowCsv(workspace)),
-    content_type="multipart/form-data",
-  )
+  response = _importLong(client, _openFurrowCsv(workspace))
   assert response.status_code == 200
-  assert "Imported 12 observations" in response.get_data(as_text=True)
+  assert "Imported 12 observations from obs.csv." in response.get_data(as_text=True)
   assert len(workspace.loadObservations("D2-1")) == 12
 
 
 def testImportFieldBookExportShowsCount(client, workspace):
-  response = client.post(
-    "/trials/D2-1/observations", data=_upload(_fieldBookCsv(workspace), "fieldbook"),
-    content_type="multipart/form-data",
-  )
+  response = _importLong(client, _fieldBookCsv(workspace))
   assert response.status_code == 200
   assert "Imported 12 observations" in response.get_data(as_text=True)
   assert len(workspace.loadObservations("D2-1")) == 12
 
 
 def testImportWithNoFileFailsLoud(client):
-  response = client.post("/trials/D2-1/observations", data={"format": "openfurrow"},
-                         content_type="multipart/form-data")
+  response = client.post("/trials/D2-1/import", data={"action": "preview"}, content_type="multipart/form-data")
   assert response.status_code == 400
-  assert "Import failed" in response.get_data(as_text=True)
+  assert "Choose a file to import." in response.get_data(as_text=True)
 
 
 def testImportBadValueFailsLoudAndSavesNothing(client, workspace):
-  bad = b"plotNumber,assessmentCode,value\n101,YIELD,notanumber\n"
-  response = client.post("/trials/D2-1/observations", data=_upload(bad),
-                         content_type="multipart/form-data")
+  response = _importLong(client, b"plotNumber,assessmentCode,value\n101,YIELD,notanumber\n")
   assert response.status_code == 400
   assert "Import failed" in response.get_data(as_text=True)
   assert workspace.loadObservations("D2-1") == []
@@ -122,8 +121,7 @@ def testImportBadValueFailsLoudAndSavesNothing(client, workspace):
 def testReportLinkAppearsOnlyAfterObservations(client, workspace):
   # Before import: no report link.
   assert "View report" not in client.get("/trials/D2-1").get_data(as_text=True)
-  client.post("/trials/D2-1/observations", data=_upload(_openFurrowCsv(workspace)),
-              content_type="multipart/form-data")
+  _importLong(client, _openFurrowCsv(workspace))
   assert "View report" in client.get("/trials/D2-1").get_data(as_text=True)
 
 
@@ -131,8 +129,7 @@ def testReportLinkAppearsOnlyAfterObservations(client, workspace):
 
 @pytest.fixture
 def populated(client, workspace):
-  client.post("/trials/D2-1/observations", data=_upload(_openFurrowCsv(workspace)),
-              content_type="multipart/form-data")
+  _importLong(client, _openFurrowCsv(workspace))
   return workspace
 
 

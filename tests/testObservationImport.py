@@ -179,14 +179,13 @@ plotNumber,YIELD,SEV
 
 def testWideExplicitAssessmentColumnsSelectsSubset(tmp_path, packageAndLayout):
   package, layout = packageAndLayout
-  profile = ImportProfile().withOverrides(format="wide", wide={"assessmentColumns": ["YIELD"]})
+  profile = ImportProfile().withOverrides(format="wide", wide={"assessmentColumns": {"Yield kg": "YIELD"}})
   path = writeCsv(tmp_path, """
-plotNumber,YIELD,SEV
+plotNumber,Yield kg,SEV
 101,4800,low
 """)
   result = importObservations(path, package, layout, profile)
-  # Only YIELD selected; the SEV column is ignored.
-  assert {o.assessmentCode for o in result.observations} == {"YIELD"}
+  assert [(o.plotNumber, o.assessmentCode, o.value) for o in result.observations] == [(101, "YIELD", 4800.0)]
 
 
 def testWideInferredUnknownColumnRejected(tmp_path, packageAndLayout):

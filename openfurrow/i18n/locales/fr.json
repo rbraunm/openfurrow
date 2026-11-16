@@ -1445,28 +1445,12 @@
       "text": "Fichier CSV",
       "status": "machineDraft"
     },
-    "web.import.formatFieldBook": {
-      "text": "Export Field Book (format base de données)",
-      "status": "machineDraft"
-    },
-    "web.import.formatLabel": {
-      "text": "Format",
-      "status": "machineDraft"
-    },
-    "web.import.formatOpenFurrow": {
-      "text": "CSV OpenFurrow (parcelle, évaluation, valeur)",
-      "status": "machineDraft"
-    },
     "web.import.heading": {
       "text": "Importer des observations",
       "status": "machineDraft"
     },
     "web.import.intro": {
-      "text": "Téléversez les données collectées au format CSV. Les valeurs sont vérifiées contre le plan avant tout enregistrement.",
-      "status": "machineDraft"
-    },
-    "web.import.result": {
-      "text": "{count} observations importées.",
+      "text": "Téléversez les données collectées en fichier CSV ou en classeur Excel (.xlsx). Vous voyez le tableau et indiquez ce que contient chaque colonne avant tout enregistrement.",
       "status": "machineDraft"
     },
     "web.import.submit": {
@@ -1475,6 +1459,158 @@
     },
     "web.import.warningsHeading": {
       "text": "Avertissements",
+      "status": "machineDraft"
+    },
+    "web.importFile.another": {
+      "text": "Choisir un autre fichier",
+      "status": "machineDraft"
+    },
+    "web.importFile.assessmentColumn": {
+      "text": "Colonne des codes d'évaluation",
+      "status": "machineDraft"
+    },
+    "web.importFile.choose": {
+      "text": "Choisissez une colonne",
+      "status": "machineDraft"
+    },
+    "web.importFile.column.assessment": {
+      "text": "Évaluation",
+      "status": "machineDraft"
+    },
+    "web.importFile.column.missing": {
+      "text": "Marquées manquantes",
+      "status": "machineDraft"
+    },
+    "web.importFile.column.plotsWithout": {
+      "text": "Parcelles absentes du fichier",
+      "status": "machineDraft"
+    },
+    "web.importFile.column.values": {
+      "text": "Valeurs",
+      "status": "machineDraft"
+    },
+    "web.importFile.columnHolds": {
+      "text": "Contenu de la colonne {column}",
+      "status": "machineDraft"
+    },
+    "web.importFile.decimal": {
+      "text": "Séparateur décimal du fichier",
+      "status": "machineDraft"
+    },
+    "web.importFile.decimalComma": {
+      "text": "Virgule (12,5)",
+      "status": "machineDraft"
+    },
+    "web.importFile.decimalPoint": {
+      "text": "Point (12.5)",
+      "status": "machineDraft"
+    },
+    "web.importFile.done": {
+      "text": "{count} observations importées depuis {file}.",
+      "status": "machineDraft"
+    },
+    "web.importFile.doneHeading": {
+      "text": "Importé",
+      "status": "machineDraft"
+    },
+    "web.importFile.fileLabel": {
+      "text": "Fichier CSV ou classeur Excel (.xlsx)",
+      "status": "machineDraft"
+    },
+    "web.importFile.ignore": {
+      "text": "Ignorer",
+      "status": "machineDraft"
+    },
+    "web.importFile.import": {
+      "text": "Importer",
+      "status": "machineDraft"
+    },
+    "web.importFile.longIntro": {
+      "text": "La colonne d'évaluation doit contenir les codes d'évaluation de l'essai: {codes}.",
+      "status": "machineDraft"
+    },
+    "web.importFile.longLegend": {
+      "text": "Une ligne par valeur",
+      "status": "machineDraft"
+    },
+    "web.importFile.plotColumn": {
+      "text": "Colonne des numéros de parcelle",
+      "status": "machineDraft"
+    },
+    "web.importFile.plotCount": {
+      "text": "L'essai compte {count} parcelles.",
+      "status": "machineDraft"
+    },
+    "web.importFile.preview": {
+      "text": "Aperçu",
+      "status": "machineDraft"
+    },
+    "web.importFile.previewIntro": {
+      "text": "{file}: {rows} lignes; les dix premières sont affichées. Indiquez la disposition du fichier et ce que contient chaque colonne. Rien n'est enregistré avant que vous n'appuyiez sur Importer.",
+      "status": "machineDraft"
+    },
+    "web.importFile.problem.decimal": {
+      "text": "Choisissez le séparateur décimal du fichier.",
+      "status": "machineDraft"
+    },
+    "web.importFile.problem.longColumns": {
+      "text": "Choisissez les colonnes des numéros de parcelle, des codes d'évaluation et des valeurs.",
+      "status": "machineDraft"
+    },
+    "web.importFile.problem.noAssessmentColumn": {
+      "text": "Choisissez l'évaluation que contient au moins une colonne.",
+      "status": "machineDraft"
+    },
+    "web.importFile.problem.noFile": {
+      "text": "Choisissez un fichier à importer.",
+      "status": "machineDraft"
+    },
+    "web.importFile.problem.plotColumn": {
+      "text": "Choisissez la colonne des numéros de parcelle.",
+      "status": "machineDraft"
+    },
+    "web.importFile.problem.repeatedAssessment": {
+      "text": "Deux colonnes portent la même évaluation; chaque évaluation ne peut venir que d'une colonne.",
+      "status": "machineDraft"
+    },
+    "web.importFile.problem.sameColumn": {
+      "text": "La parcelle, l'évaluation et la valeur doivent venir de trois colonnes différentes.",
+      "status": "machineDraft"
+    },
+    "web.importFile.problem.shape": {
+      "text": "Choisissez la disposition du fichier.",
+      "status": "machineDraft"
+    },
+    "web.importFile.shapeLegend": {
+      "text": "Disposition du fichier",
+      "status": "machineDraft"
+    },
+    "web.importFile.shapeLong": {
+      "text": "Une ligne par valeur, avec des colonnes pour la parcelle, l'évaluation et la valeur",
+      "status": "machineDraft"
+    },
+    "web.importFile.shapeWide": {
+      "text": "Une ligne par parcelle, une colonne par évaluation",
+      "status": "machineDraft"
+    },
+    "web.importFile.sheet": {
+      "text": "Feuille",
+      "status": "machineDraft"
+    },
+    "web.importFile.showSheet": {
+      "text": "Afficher cette feuille",
+      "status": "machineDraft"
+    },
+    "web.importFile.valueColumn": {
+      "text": "Colonne des valeurs",
+      "status": "machineDraft"
+    },
+    "web.importFile.wideIntro": {
+      "text": "Sous l'en-tête de chaque colonne, choisissez l'évaluation qu'elle contient, ou laissez-la ignorée.",
+      "status": "machineDraft"
+    },
+    "web.importFile.wideLegend": {
+      "text": "Une ligne par parcelle",
       "status": "machineDraft"
     },
     "web.locale.draftNotice": {
@@ -1539,6 +1675,10 @@
     },
     "web.trial.enterIntro": {
       "text": "Saisissez les valeurs parcelle par parcelle. Chacune est vérifiée à l'enregistrement.",
+      "status": "machineDraft"
+    },
+    "web.trial.importData": {
+      "text": "Importer un fichier",
       "status": "machineDraft"
     },
     "web.trial.layoutHeading": {

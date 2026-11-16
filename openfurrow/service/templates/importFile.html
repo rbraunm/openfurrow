@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+{% block title %}{{ t.text('web.import.heading') }} - {{ package.trial.trialCode }} - {{ t.text('web.app.name') }}{% endblock %}
+{% block content %}
+{% set localeArgument = locale if locale != 'en-US' else none %}
+<p class="back"><a href="{{ url_for('web.trial', trialCode=package.trial.trialCode, locale=localeArgument) }}">{{ ('&rarr;' if direction == 'rtl' else '&larr;') | safe }} {{ t.text('web.entry.back') }}</a></p>
+
+<div class="page-head">
+  <h1>{{ t.text('web.import.heading') }}</h1>
+  <p class="code trial-code">{{ package.trial.trialCode }}</p>
+</div>
+
+{% if problem %}
+<div class="error" role="alert">{{ problem }}</div>
+{% endif %}
+
+{% if imported %}
+<section class="import-done" aria-label="{{ t.text('web.importFile.doneHeading') }}">
+  <div class="notice" role="status">{{ t.text('web.importFile.done', count=t.integer(imported.count), file=fileName) }}</div>
+  <table class="entry-table import-counts">
+    <thead>
+      <tr>
+        <th scope="col">{{ t.text('web.importFile.column.assessment') }}</th>
+        <th scope="col">{{ t.text('web.importFile.column.values') }}</th>
+        <th scope="col">{{ t.text('web.importFile.column.missing') }}</th>
+        <th scope="col">{{ t.text('web.importFile.column.plotsWithout') }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for count in imported.assessments %}
+      <tr>
+        <td class="code">{{ count.assessmentCode }}</td>
+        <td class="code">{{ t.integer(count.values) }}</td>
+        <td class="code">{{ t.integer(count.missing) }}</td>
+        <td class="code">{% if count.plotsWithout %}{{ count.plotsWithout | join(', ') }}{% else %}-{% endif %}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <p class="intro">{{ t.text('web.importFile.plotCount', count=t.integer(imported.plotCount)) }}</p>
+  {% if imported.warnings %}
+  <details open>
+    <summary>{{ t.text('web.import.warningsHeading') }}</summary>
+    <ul>{% for warning in imported.warnings %}<li>{{ warning }}</li>{% endfor %}</ul>
+  </details>
+  {% endif %}
+  <p><a class="button" href="{{ url_for('web.trial', trialCode=package.trial.trialCode, locale=localeArgument) }}">{{ t.text('web.entry.back') }}</a></p>
+</section>
+
+{% elif table %}
+<form class="import-map" method="post" action="{{ url_for('web.importFile', trialCode=package.trial.trialCode, locale=localeArgument) }}">
+  <input type="hidden" name="fileName" value="{{ fileName }}">
+  <input type="hidden" name="fileData" value="{{ fileData }}">
+  <input type="hidden" name="previewedSheet" value="{{ table.sheetName or '' }}">
+  <button class="visually-hidden" type="submit" name="action" value="preview" tabindex="-1" aria-hidden="true"></button>
+
+  <p class="intro">{{ t.text('web.importFile.previewIntro', file=fileName, rows=t.integer(table.rows | length)) }}</p>
+
+  {% if table.sheetNames | length > 1 %}
+  <div class="field-row">
+    <label class="field-label" for="sheet">{{ t.text('web.importFile.sheet') }}</label>
+    <select id="sheet" name="sheet">
+      {% for name in table.sheetNames %}<option value="{{ name }}" {% if name == table.sheetName %}selected{% endif %}>{{ name }}</option>{% endfor %}
+    </select>
+    <button class="button button-quiet" type="submit" name="action" value="preview">{{ t.text('web.importFile.showSheet') }}</button>
+  </div>
+  {% endif %}
+
+  <fieldset class="import-shape">
+    <legend>{{ t.text('web.importFile.shapeLegend') }}</legend>
+    <label><input type="radio" name="shape" value="wide" {% if mapping.shape == 'wide' %}checked{% endif %}> {{ t.text('web.importFile.shapeWide') }}</label>
+    <label><input type="radio" name="shape" value="long" {% if mapping.shape == 'long' %}checked{% endif %}> {{ t.text('web.importFile.shapeLong') }}</label>
+  </fieldset>
+
+  <fieldset class="import-wide">
+    <legend>{{ t.text('web.importFile.wideLegend') }}</legend>
+    <div class="field-row">
+      <label class="field-label" for="plot">{{ t.text('web.importFile.plotColumn') }}</label>
+      <select id="plot" name="plot">
+        <option value="">{{ t.text('web.importFile.choose') }}</option>
+        {% for name in table.header %}<option value="{{ loop.index0 }}" {% if mapping.plot == loop.index0 %}selected{% endif %}>{{ name }}</option>{% endfor %}
+      </select>
+    </div>
+    <p class="intro">{{ t.text('web.importFile.wideIntro') }}</p>
+  </fieldset>
+
+  <div class="table-scroll">
+    <table class="entry-table import-preview">
+      <thead>
+        <tr>{% for name in table.header %}<th scope="col" dir="auto">{{ name }}</th>{% endfor %}</tr>
+        <tr class="import-columns">
+          {% for name in table.header %}
+          {% set column = loop.index0 %}
+          <td>
+            <select name="column-{{ column }}" aria-label="{{ t.text('web.importFile.columnHolds', column=name) }}">
+              <option value="">{{ t.text('web.importFile.ignore') }}</option>
+              {% for choice in assessments %}
+              <option value="{{ choice.code }}" {% if mapping.columns.get(column) == choice.code %}selected{% endif %}>{{ choice.code }} - {{ choice.rating.name }}{% if choice.rating.unit %} ({{ choice.rating.unit }}){% endif %}</option>
+              {% endfor %}
+            </select>
+          </td>
+          {% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in table.rows[:10] %}
+        <tr>{% for cell in row %}<td dir="auto">{{ cell }}</td>{% endfor %}</tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <fieldset class="import-long">
+    <legend>{{ t.text('web.importFile.longLegend') }}</legend>
+    {% for field, key in (('longPlot', 'web.importFile.plotColumn'), ('longAssessment', 'web.importFile.assessmentColumn'), ('longValue', 'web.importFile.valueColumn')) %}
+    <div class="field-row">
+      <label class="field-label" for="{{ field }}">{{ t.text(key) }}</label>
+      <select id="{{ field }}" name="{{ field }}">
+        <option value="">{{ t.text('web.importFile.choose') }}</option>
+        {% for name in table.header %}<option value="{{ loop.index0 }}" {% if mapping[field] == loop.index0 %}selected{% endif %}>{{ name }}</option>{% endfor %}
+      </select>
+    </div>
+    {% endfor %}
+    <p class="intro">{{ t.text('web.importFile.longIntro', codes=assessments | map(attribute='code') | join(', ')) }}</p>
+  </fieldset>
+
+  <div class="field-row">
+    <label class="field-label" for="decimal">{{ t.text('web.importFile.decimal') }}</label>
+    <select id="decimal" name="decimal">
+      <option value="." {% if mapping.decimal == '.' %}selected{% endif %}>{{ t.text('web.importFile.decimalPoint') }}</option>
+      <option value="," {% if mapping.decimal == ',' %}selected{% endif %}>{{ t.text('web.importFile.decimalComma') }}</option>
+    </select>
+  </div>
+
+  <div class="form-actions">
+    <button class="button" type="submit" name="action" value="import">{{ t.text('web.importFile.import') }}</button>
+    <a class="button button-quiet" href="{{ url_for('web.importFile', trialCode=package.trial.trialCode, locale=localeArgument) }}">{{ t.text('web.importFile.another') }}</a>
+  </div>
+</form>
+
+{% else %}
+<section class="import" aria-label="{{ t.text('web.import.heading') }}">
+  <p class="intro">{{ t.text('web.import.intro') }}</p>
+  <form class="import-form" method="post" enctype="multipart/form-data"
+        action="{{ url_for('web.importFile', trialCode=package.trial.trialCode, locale=localeArgument) }}">
+    <div class="file-row">
+      <label class="field-label" for="obs-file">{{ t.text('web.importFile.fileLabel') }}</label>
+      <input type="file" id="obs-file" name="file" accept=".csv,.xlsx,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
+    </div>
+    <div class="form-actions"><button class="button" type="submit" name="action" value="preview">{{ t.text('web.importFile.preview') }}</button></div>
+  </form>
+</section>
+{% endif %}
+{% endblock %}

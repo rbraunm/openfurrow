@@ -64,9 +64,14 @@ from openfurrow.exchange import (
 )
 from openfurrow.i18n import MessageError, availableLocales, sourceLocale
 from openfurrow.importers import (
+  AssessmentCount,
   ImportResult,
   ObservationImportError,
-  importObservations as _importObservations,
+  SheetTable,
+  SpreadsheetError,
+  countByAssessment as _countByAssessment,
+  importTable as _importTable,
+  readTable as _readTable,
 )
 from openfurrow.interop.fieldbook import (
   fieldBookImportProfile as _fieldBookImportProfile,
@@ -201,23 +206,56 @@ class Workspace:
 
   # ---- observations -------------------------------------------------------
 
+  @staticmethod
+  def readObservationTable(fileName: str, data: bytes, sheetName: str | None = None) -> SheetTable:
+    """Read a .csv or .xlsx file's bytes into a table to preview and map (decision 0031)."""
+    try:
+      return _readTable(fileName, data, sheetName)
+    except SpreadsheetError as error:
+      raise ObservationImportError(str(error)) from error
+
   def importObservations(
     self,
     trialCode: str,
-    csvPath: str,
+    path: str,
     importProfile: ImportProfile,
+    sheetName: str | None = None,
   ) -> ImportResult:
-    """Import observations from a CSV file against the trial's layout and save them.
+    """Import observations from a .csv or .xlsx file against the trial's layout and save them."""
+    file = Path(path)
+    return self.importObservationTable(
+      trialCode, self.readObservationTable(file.name, file.read_bytes(), sheetName), importProfile,
+    )
 
-    Values are validated against the package and layout at the boundary; a bad
-    plot, code, or out-of-domain value is rejected rather than partially saved.
+  def importObservationTable(self, trialCode: str, table: SheetTable, importProfile: ImportProfile) -> ImportResult:
+    """Import a table's observations against the trial's layout and save them.
+
+    Values are validated against the package and layout at the boundary; a bad plot,
+    code, or out-of-domain value is rejected rather than partially saved. An import
+    adds values and never replaces stored ones: a plot and assessment the trial already
+    holds a value for refuses the whole file.
     """
     with _sessionScope(self._engine) as session:
       package = _loadPackage(session, trialCode)
       layout = self._layoutIn(session, package)
-      result = _importObservations(csvPath, package, layout, importProfile)
+      result = _importTable(table, package, layout, importProfile)
+      stored = {(o.plotNumber, o.assessmentCode) for o in _loadObservations(session, trialCode)}
+      clashes = sorted(
+        (o.plotNumber, o.assessmentCode) for o in result.observations if (o.plotNumber, o.assessmentCode) in stored
+      )
+      if clashes:
+        shown = ", ".join(f"plot {plot} '{code}'" for plot, code in clashes[:5])
+        raise ObservationImportError(
+          f"trial '{trialCode}' already holds {len(clashes)} of these values ({shown}"
+          f"{', ...' if len(clashes) > 5 else ''}); an import never replaces stored values, so change "
+          f"them on the entry page"
+        )
       _saveObservations(session, trialCode, result.observations)
     return result
+
+  def countImported(self, trialCode: str, result: ImportResult) -> list[AssessmentCount]:
+    """Each imported assessment's values against the trial's plots."""
+    return _countByAssessment(result, self.layoutFor(trialCode))
 
   # ---- analysis -----------------------------------------------------------
 
@@ -396,12 +434,7 @@ class Workspace:
     unique-id column is the plot, `trait` the assessment code, `value` the value;
     the provenance columns (timestamp, person, device_name, ...) are ignored.
     """
-    with _sessionScope(self._engine) as session:
-      package = _loadPackage(session, trialCode)
-      layout = self._layoutIn(session, package)
-      result = _importObservations(databaseCsvPath, package, layout, _fieldBookImportProfile())
-      _saveObservations(session, trialCode, result.observations)
-    return result
+    return self.importObservations(trialCode, databaseCsvPath, _fieldBookImportProfile())
 
   # ---- internals ----------------------------------------------------------
 

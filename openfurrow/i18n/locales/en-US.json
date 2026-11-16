@@ -1442,19 +1442,7 @@
       "status": "source"
     },
     "web.import.intro": {
-      "text": "Upload collected data as CSV. Values are checked against the layout before anything is saved.",
-      "status": "source"
-    },
-    "web.import.formatLabel": {
-      "text": "Format",
-      "status": "source"
-    },
-    "web.import.formatOpenFurrow": {
-      "text": "OpenFurrow CSV (plot, assessment, value)",
-      "status": "source"
-    },
-    "web.import.formatFieldBook": {
-      "text": "Field Book export (database format)",
+      "text": "Upload the collected data as a CSV file or an Excel workbook (.xlsx). You see the table and say which column holds what before anything is saved.",
       "status": "source"
     },
     "web.import.fileLabel": {
@@ -1465,12 +1453,164 @@
       "text": "Import",
       "status": "source"
     },
-    "web.import.result": {
-      "text": "Imported {count} observations.",
-      "status": "source"
-    },
     "web.import.warningsHeading": {
       "text": "Warnings",
+      "status": "source"
+    },
+    "web.trial.importData": {
+      "text": "Import a file",
+      "status": "source"
+    },
+    "web.importFile.fileLabel": {
+      "text": "CSV file or Excel workbook (.xlsx)",
+      "status": "source"
+    },
+    "web.importFile.preview": {
+      "text": "Preview",
+      "status": "source"
+    },
+    "web.importFile.previewIntro": {
+      "text": "{file}: {rows} rows; the first ten are shown. Say how the file is laid out and which column holds what. Nothing is saved until you press Import.",
+      "status": "source"
+    },
+    "web.importFile.sheet": {
+      "text": "Sheet",
+      "status": "source"
+    },
+    "web.importFile.showSheet": {
+      "text": "Show this sheet",
+      "status": "source"
+    },
+    "web.importFile.shapeLegend": {
+      "text": "How the file is laid out",
+      "status": "source"
+    },
+    "web.importFile.shapeWide": {
+      "text": "One row per plot, one column per assessment",
+      "status": "source"
+    },
+    "web.importFile.shapeLong": {
+      "text": "One row per value, with columns for the plot, the assessment and the value",
+      "status": "source"
+    },
+    "web.importFile.wideLegend": {
+      "text": "One row per plot",
+      "status": "source"
+    },
+    "web.importFile.wideIntro": {
+      "text": "Under each column heading, choose the assessment it holds, or leave it ignored.",
+      "status": "source"
+    },
+    "web.importFile.longLegend": {
+      "text": "One row per value",
+      "status": "source"
+    },
+    "web.importFile.longIntro": {
+      "text": "The assessment column must hold the trial's assessment codes: {codes}.",
+      "status": "source"
+    },
+    "web.importFile.plotColumn": {
+      "text": "Column with the plot numbers",
+      "status": "source"
+    },
+    "web.importFile.assessmentColumn": {
+      "text": "Column with the assessment codes",
+      "status": "source"
+    },
+    "web.importFile.valueColumn": {
+      "text": "Column with the values",
+      "status": "source"
+    },
+    "web.importFile.choose": {
+      "text": "Choose a column",
+      "status": "source"
+    },
+    "web.importFile.ignore": {
+      "text": "Ignore",
+      "status": "source"
+    },
+    "web.importFile.columnHolds": {
+      "text": "What column {column} holds",
+      "status": "source"
+    },
+    "web.importFile.decimal": {
+      "text": "Decimal mark in the file",
+      "status": "source"
+    },
+    "web.importFile.decimalPoint": {
+      "text": "Point (12.5)",
+      "status": "source"
+    },
+    "web.importFile.decimalComma": {
+      "text": "Comma (12,5)",
+      "status": "source"
+    },
+    "web.importFile.import": {
+      "text": "Import",
+      "status": "source"
+    },
+    "web.importFile.another": {
+      "text": "Choose another file",
+      "status": "source"
+    },
+    "web.importFile.doneHeading": {
+      "text": "Imported",
+      "status": "source"
+    },
+    "web.importFile.done": {
+      "text": "Imported {count} observations from {file}.",
+      "status": "source"
+    },
+    "web.importFile.column.assessment": {
+      "text": "Assessment",
+      "status": "source"
+    },
+    "web.importFile.column.values": {
+      "text": "Values",
+      "status": "source"
+    },
+    "web.importFile.column.missing": {
+      "text": "Marked missing",
+      "status": "source"
+    },
+    "web.importFile.column.plotsWithout": {
+      "text": "Plots not in the file",
+      "status": "source"
+    },
+    "web.importFile.plotCount": {
+      "text": "The trial has {count} plots.",
+      "status": "source"
+    },
+    "web.importFile.problem.noFile": {
+      "text": "Choose a file to import.",
+      "status": "source"
+    },
+    "web.importFile.problem.decimal": {
+      "text": "Choose the decimal mark the file uses.",
+      "status": "source"
+    },
+    "web.importFile.problem.plotColumn": {
+      "text": "Choose the column that holds the plot numbers.",
+      "status": "source"
+    },
+    "web.importFile.problem.noAssessmentColumn": {
+      "text": "Choose the assessment at least one column holds.",
+      "status": "source"
+    },
+    "web.importFile.problem.repeatedAssessment": {
+      "text": "Two columns are set to the same assessment; each assessment can come from one column only.",
+      "status": "source"
+    },
+    "web.importFile.problem.longColumns": {
+      "text": "Choose the columns that hold the plot numbers, the assessment codes and the values.",
+      "status": "source"
+    },
+    "web.importFile.problem.sameColumn": {
+      "text": "The plot, the assessment and the value must come from three different columns.",
+      "status": "source"
+    },
+    "web.importFile.problem.shape": {
+      "text": "Choose how the file is laid out.",
       "status": "source"
     },
     "web.import.error": {

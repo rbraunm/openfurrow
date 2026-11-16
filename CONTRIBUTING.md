@@ -81,6 +81,8 @@ validation status. The oracles, strongest first:
 - **statsmodels** -- an independent implementation, used as a cross-check oracle and a
   test-only dependency. It validates; it is never part of the runtime analysis path
   (decision 0002).
+- **scipy** and **openpyxl** -- test-only cross-checks for the assumption tests and Dunnett's
+  distribution (scipy), and for the native `.xlsx` reader (openpyxl, decision 0031).
 - **agricolae** (R) -- a reference for mean-separation behavior (Fisher's Protected LSD,
   alpha 0.05), consulted for parity, not vendored.
 

@@ -48,14 +48,14 @@ def testLongColumnsMustBeDistinct():
 
 # ---- wide-format validation ----------------------------------------------
 
-def testWideAssessmentColumnsRejectDuplicates():
-  with pytest.raises(ValidationError, match="assessmentColumns contains duplicates"):
-    WideColumns(plotNumber="Plot", assessmentColumns=["YIELD", "YIELD"])
+def testWideAssessmentColumnsRejectTwoColumnsForOneAssessment():
+  with pytest.raises(ValidationError, match=r"maps more than one column to \['YIELD'\]"):
+    WideColumns(plotNumber="Plot", assessmentColumns={"Yield 1": "YIELD", "Yield 2": "YIELD"})
 
 
 def testWidePlotColumnCannotBeAssessmentColumn():
   with pytest.raises(ValidationError, match="also an assessment column"):
-    WideColumns(plotNumber="Plot", assessmentColumns=["Plot", "YIELD"])
+    WideColumns(plotNumber="Plot", assessmentColumns={"Plot": "P", "Yield": "YIELD"})
 
 
 def testWidePlotColumnCannotBeIgnored():
@@ -65,7 +65,7 @@ def testWidePlotColumnCannotBeIgnored():
 
 def testWideAssessmentAndIgnoreCannotOverlap():
   with pytest.raises(ValidationError, match="both assessed and ignored"):
-    WideColumns(plotNumber="Plot", assessmentColumns=["YIELD"], ignoreColumns=["YIELD"])
+    WideColumns(plotNumber="Plot", assessmentColumns={"YIELD": "YIELD"}, ignoreColumns=["YIELD"])
 
 
 def testWideAssessmentColumnsInferredByDefault():
@@ -105,8 +105,8 @@ import:
   wide:
     plotNumber: Plot
     assessmentColumns:
-      - Yield
-      - Severity
+      Yield (kg): Yield
+      Severity: Severity
     ignoreColumns:
       - Entry
   parsing:
@@ -116,7 +116,7 @@ import:
   config = loadConfig(path)
   assert config.importProfile.format is ImportFormat.wide
   assert config.importProfile.wide.plotNumber == "Plot"
-  assert config.importProfile.wide.assessmentColumns == ["Yield", "Severity"]
+  assert config.importProfile.wide.assessmentColumns == {"Yield (kg)": "Yield", "Severity": "Severity"}
   assert config.importProfile.wide.ignoreColumns == ["Entry"]
   assert config.importProfile.parsing.decimalSeparator == ","
 

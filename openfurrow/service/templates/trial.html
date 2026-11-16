@@ -39,35 +39,7 @@
   <h2>{{ t.text('web.import.heading') }}</h2>
   <p class="intro">{{ t.text('web.import.intro') }}</p>
 
-  {% if result %}
-  <div class="notice" role="status">
-    {{ t.text('web.import.result', count=t.integer(result.imported)) }}
-    {% if result.warnings %}
-    <details open>
-      <summary>{{ t.text('web.import.warningsHeading') }}</summary>
-      <ul>{% for warning in result.warnings %}<li>{{ warning }}</li>{% endfor %}</ul>
-    </details>
-    {% endif %}
-  </div>
-  {% endif %}
-  {% if importError %}
-  <div class="error" role="alert">{{ t.text('web.import.error', reason=importError) }}</div>
-  {% endif %}
-
-  <form class="import-form" method="post"
-        action="{{ url_for('web.importObservations', trialCode=package.trial.trialCode, locale=locale if locale != 'en-US' else none) }}"
-        enctype="multipart/form-data">
-    <fieldset class="format">
-      <legend>{{ t.text('web.import.formatLabel') }}</legend>
-      <label><input type="radio" name="format" value="openfurrow" checked> {{ t.text('web.import.formatOpenFurrow') }}</label>
-      <label><input type="radio" name="format" value="fieldbook"> {{ t.text('web.import.formatFieldBook') }}</label>
-    </fieldset>
-    <div class="file-row">
-      <label class="field-label" for="obs-file">{{ t.text('web.import.fileLabel') }}</label>
-      <input type="file" id="obs-file" name="file" accept=".csv,text/csv">
-    </div>
-    <div class="form-actions"><button class="button" type="submit">{{ t.text('web.import.submit') }}</button></div>
-  </form>
+  <p><a class="button" href="{{ url_for('web.importFile', trialCode=package.trial.trialCode, locale=locale if locale != 'en-US' else none) }}">{{ t.text('web.trial.importData') }}</a></p>
 </section>
 
 <section class="weather" aria-label="{{ t.text('web.weather.heading') }}">

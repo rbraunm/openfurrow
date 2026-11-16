@@ -19,13 +19,16 @@ Like the CLI and the JSON API, these views are thin over the `Workspace` facade:
 resolve a request into one or two facade calls and render. No statistics, no store
 access, no layout logic lives here.
 
-The pages: list trials; add a trial (submit or upload the canonical package JSON -- a
-field-by-field design form is a later unit); view a trial with its field layout; import
-observations; read the report; check reproducibility; delete a trial.
+The pages: list trials; add a trial (the trial form, or the canonical package JSON); view
+a trial with its field layout; enter values; import observations from a CSV or an .xlsx
+workbook through a preview and an explicit column mapping (decision 0031); read the
+report; check reproducibility; delete a trial.
 """
 
 from __future__ import annotations
 
+import base64
+import binascii
 import html
 import json
 
@@ -38,6 +41,7 @@ from openfurrow.i18n import MessageError, availableLocales, sourceLocale, transl
 from openfurrow.importers.entry import EntryRefused, readEntry, writeEntry
 from openfurrow.importers.layoutCsv import LayoutFileError, readLayoutCsv
 from openfurrow.importers.weatherCsv import WeatherFileError
+from openfurrow.interop.fieldbook import fieldBookTraitColumn, fieldBookValueColumn, fieldUniqueIDColumn
 from openfurrow.schema import TrialDocument
 from openfurrow.service.trialForm import FormProblem, emptyForm, formFromRequest, packageFromForm
 from openfurrow.schema import AssessmentDataType, Observation, RandomizationMethod, TrialPackage
@@ -169,7 +173,7 @@ def createWebBlueprint(workspace: Workspace, config: OpenFurrowConfig | None = N
   @blueprint.get("/trials/<trialCode>")
   def trial(trialCode: str) -> Response:
     translator = _translator()
-    context = _trialContext(trialCode) | {"result": None, "importError": None, "verifyResult": None}
+    context = _trialContext(trialCode) | {"verifyResult": None}
     return Response(render_template("trial.html", **context, **_localeContext(translator)))
 
   @blueprint.get("/trials/<trialCode>/verify")
@@ -178,7 +182,7 @@ def createWebBlueprint(workspace: Workspace, config: OpenFurrowConfig | None = N
     # -- it changes nothing -- and the result renders back on the trial page.
     translator = _translator()
     check = workspace.verifyRoundTrip(trialCode)
-    context = _trialContext(trialCode) | {"result": None, "importError": None, "verifyResult": check}
+    context = _trialContext(trialCode) | {"verifyResult": check}
     return Response(render_template("trial.html", **context, **_localeContext(translator)))
 
   @blueprint.get("/trials/<trialCode>/delete")
@@ -199,32 +203,49 @@ def createWebBlueprint(workspace: Workspace, config: OpenFurrowConfig | None = N
     workspace.deleteTrial(trialCode)
     return redirect(_localized(url_for("web.index"), translator))
 
-  @blueprint.post("/trials/<trialCode>/observations")
-  def importObservations(trialCode: str) -> Response:
-    translator = _translator()
-    fieldFormat = request.form.get("format", "openfurrow")
-    upload = request.files.get("file")
-    result = None
-    importError = None
-    try:
-      if not upload or not upload.filename:
-        raise ObservationImportError("choose a CSV file to import")
-      data = upload.read()
-      with _temporaryCsv(data) as csvPath:
-        if fieldFormat == "fieldbook":
-          outcome = workspace.importFieldBook(trialCode, csvPath)
-        else:
-          outcome = workspace.importObservations(trialCode, csvPath, settings.importProfile)
-      result = {
-        "imported": len(outcome.observations),
-        "warnings": [warning.message for warning in outcome.warnings],
-      }
-    except ObservationImportError as error:
-      importError = str(error)
+  @blueprint.route("/trials/<trialCode>/import", methods=["GET", "POST"])
+  def importFile(trialCode: str) -> Response:
+    """Upload a file, preview it, map its columns, then import (decision 0031).
 
-    context = _trialContext(trialCode) | {"result": result, "importError": importError, "verifyResult": None}
-    status = 400 if importError else 200
-    return Response(render_template("trial.html", **context, **_localeContext(translator)), status=status)
+    Nothing is saved until the person has seen the table and pressed Import with a
+    mapping they chose; the file travels with the form between the steps, so the server
+    keeps nothing in between.
+    """
+    translator = _translator()
+    package = workspace.loadPackage(trialCode)
+    context = {
+      "package": package, "table": None, "problem": None, "imported": None,
+      "assessments": [
+        {"code": assessment.assessmentCode, "rating": package.ratingFor(assessment.assessmentCode)}
+        for assessment in package.assessments
+      ],
+    }
+    if request.method == "GET":
+      return Response(render_template("importFile.html", **context, **_localeContext(translator)))
+    try:
+      fileName, data = _submittedFile()
+      requestedSheet = request.form.get("sheet") or None
+      table = workspace.readObservationTable(fileName, data, requestedSheet)
+      sameSheet = "shape" in request.form and request.form.get("previewedSheet", "") == (table.sheetName or "")
+      mapping = _formMapping(table) if sameSheet else _suggestedMapping(table, package, settings.importProfile)
+      context |= {
+        "table": table, "fileName": fileName, "fileData": base64.b64encode(data).decode("ascii"),
+        "mapping": mapping,
+      }
+      if request.form.get("action") == "import" and sameSheet:
+        result = workspace.importObservationTable(trialCode, table, _profileFor(mapping, table, settings.importProfile))
+        context["imported"] = {
+          "count": len(result.observations),
+          "warnings": [warning.message for warning in result.warnings],
+          "assessments": workspace.countImported(trialCode, result),
+          "plotCount": package.plotCount + len(workspace.layoutFor(trialCode).checkPlots),
+        }
+    except _MappingProblem as problem:
+      context["problem"] = translator.text(problem.key)
+    except (ObservationImportError, ValidationError) as error:
+      context["problem"] = translator.text("web.import.error", reason=str(error))
+    status = 400 if context["problem"] else 200
+    return Response(render_template("importFile.html", **context, **_localeContext(translator)), status=status)
 
   @blueprint.route("/trials/<trialCode>/entry", methods=["GET", "POST"])
   def entry(trialCode: str) -> Response:
@@ -319,8 +340,7 @@ def createWebBlueprint(workspace: Workspace, config: OpenFurrowConfig | None = N
     except (WeatherFileError, ValidationError) as error:
       weatherError = str(error)
     context = _trialContext(trialCode) | {
-      "result": None, "importError": None, "verifyResult": None,
-      "weatherResult": weatherResult, "weatherError": weatherError,
+      "verifyResult": None, "weatherResult": weatherResult, "weatherError": weatherError,
     }
     status = 400 if weatherError else 200
     return Response(render_template("trial.html", **context, **_localeContext(translator)), status=status)
@@ -382,6 +402,106 @@ def _renderMarkdown(text: str) -> Markup:
 
 
 # ---- view helpers ---------------------------------------------------------
+
+class _MappingProblem(Exception):
+  """A choice missing from the column mapping, named by its catalog key."""
+
+  def __init__(self, key: str) -> None:
+    super().__init__(key)
+    self.key = key
+
+
+_plotColumnNames = {"plotnumber", "plot", "plotno", "plotid", "parcela", "parcelle"}
+_assessmentColumnNames = {"assessmentcode", "assessment", "trait"}
+_valueColumnNames = {"value", "valor", "valeur"}
+
+
+def _normalized(name: str) -> str:
+  return "".join(character for character in name.lower() if character.isalnum())
+
+
+def _submittedFile() -> tuple[str, bytes]:
+  upload = request.files.get("file")
+  if upload and upload.filename:
+    return upload.filename, upload.read()
+  fileName, encoded = request.form.get("fileName", ""), request.form.get("fileData", "")
+  if not fileName or not encoded:
+    raise _MappingProblem("web.importFile.problem.noFile")
+  try:
+    return fileName, base64.b64decode(encoded, validate=True)
+  except binascii.Error as error:
+    raise ObservationImportError("the file sent with the form is damaged; choose it again") from error
+
+
+def _suggestedMapping(table, package, profile) -> dict:
+  """A first mapping by column names, shown for the person to confirm or change."""
+  names = [_normalized(name) for name in table.header]
+
+  def find(candidates):
+    return next((index for index, name in enumerate(names) if name in candidates), None)
+
+  plot = find(_plotColumnNames | {_normalized(profile.long.plotNumber), _normalized(profile.wide.plotNumber),
+                                  _normalized(fieldUniqueIDColumn)})
+  assessment = find(_assessmentColumnNames | {_normalized(profile.long.assessmentCode), _normalized(fieldBookTraitColumn)})
+  value = find(_valueColumnNames | {_normalized(profile.long.value), _normalized(fieldBookValueColumn)})
+  codes = {_normalized(a.assessmentCode): a.assessmentCode for a in package.assessments}
+  return {
+    "shape": "long" if assessment is not None and value is not None else "wide",
+    "plot": plot,
+    "columns": {index: codes.get(name, "") for index, name in enumerate(names) if index != plot},
+    "longPlot": plot,
+    "longAssessment": assessment,
+    "longValue": value,
+    "decimal": profile.parsing.decimalSeparator,
+  }
+
+
+def _formMapping(table) -> dict:
+  def index(field):
+    text = request.form.get(field, "")
+    return int(text) if text.isdigit() and int(text) < len(table.header) else None
+
+  return {
+    "shape": request.form.get("shape", ""),
+    "plot": index("plot"),
+    "columns": {column: request.form.get(f"column-{column}", "") for column in range(len(table.header))},
+    "longPlot": index("longPlot"),
+    "longAssessment": index("longAssessment"),
+    "longValue": index("longValue"),
+    "decimal": request.form.get("decimal", ""),
+  }
+
+
+def _profileFor(mapping, table, base):
+  """The import profile the person's mapping states; every choice must be made."""
+  if mapping["decimal"] not in (".", ","):
+    raise _MappingProblem("web.importFile.problem.decimal")
+  header = table.header
+  parsing = {"decimalSeparator": mapping["decimal"]}
+  if mapping["shape"] == "wide":
+    if mapping["plot"] is None:
+      raise _MappingProblem("web.importFile.problem.plotColumn")
+    columns = {header[index]: code for index, code in mapping["columns"].items() if code}
+    if not columns:
+      raise _MappingProblem("web.importFile.problem.noAssessmentColumn")
+    if len(set(columns.values())) != len(columns):
+      raise _MappingProblem("web.importFile.problem.repeatedAssessment")
+    return base.withOverrides(
+      format="wide", parsing=parsing,
+      wide={"plotNumber": header[mapping["plot"]], "assessmentColumns": columns, "ignoreColumns": []},
+    )
+  if mapping["shape"] == "long":
+    chosen = [mapping["longPlot"], mapping["longAssessment"], mapping["longValue"]]
+    if None in chosen:
+      raise _MappingProblem("web.importFile.problem.longColumns")
+    if len(set(chosen)) != 3:
+      raise _MappingProblem("web.importFile.problem.sameColumn")
+    return base.withOverrides(
+      format="long", parsing=parsing,
+      long={"plotNumber": header[chosen[0]], "assessmentCode": header[chosen[1]], "value": header[chosen[2]]},
+    )
+  raise _MappingProblem("web.importFile.problem.shape")
+
 
 def _submittedPackage() -> str:
   """The package JSON from the textarea, or an uploaded file if one was chosen."""

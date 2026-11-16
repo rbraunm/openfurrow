@@ -27,6 +27,7 @@ service = [
 test = [
   "pytest>=8",
   "statsmodels>=0.14",
+  "openpyxl>=3.1",
   "flask>=3",
   "markdown>=3.5",
   "build>=1",

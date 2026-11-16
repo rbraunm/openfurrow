@@ -250,6 +250,13 @@ textarea {
 .import { margin-block-start: 2.4rem; }
 .report-link { margin-block-start: 1.1rem; }
 .import-form { margin-block-start: 1rem; max-width: 44rem; }
+.import-map fieldset { border: 1px solid var(--line); padding: 0.6rem 0.9rem; margin-block: 1rem; max-width: 48rem; }
+.import-map fieldset label { display: block; margin-block: 0.25rem; }
+.field-row { margin-block: 0.6rem; }
+.table-scroll { overflow-x: auto; max-width: 100%; }
+.import-preview { max-width: none; width: auto; }
+.import-preview td, .import-preview th { white-space: nowrap; }
+.import-columns select { font: inherit; max-width: 14rem; }
 fieldset.format {
   border: 1px solid var(--line); border-radius: var(--radius);
   padding: 0.7rem 1rem; margin: 0 0 1rem;

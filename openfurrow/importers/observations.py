@@ -1,8 +1,9 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Import observations from a CSV into the canonical long-format atom.
+"""Import observations from a CSV or a workbook into the canonical long-format atom.
 
-Both long and wide files are accepted and converted to a single list of
-Observation rows. The import profile declares the file shape and value parsing;
+The file is read into a table first (decision 0031), so a CSV and an .xlsx sheet are
+imported alike. Both long and wide tables are accepted and converted to a single list
+of Observation rows. The import profile declares the file shape and value parsing;
 the trial package and layout supply the validation context -- which plots exist,
 which assessments are defined, and the value domain of each assessment.
 
@@ -16,12 +17,12 @@ than silently dropped.
 
 from __future__ import annotations
 
-import csv
 from pathlib import Path
 
 from pydantic import BaseModel, ConfigDict
 
 from openfurrow.config.profile import ImportFormat, ImportProfile
+from openfurrow.importers.spreadsheet import SheetTable, SpreadsheetError, readTable
 from openfurrow.schema.observation import Observation
 from openfurrow.schema.assessment import AssessmentDataType, Rating
 from openfurrow.schema.trialPackage import TrialPackage
@@ -53,13 +54,57 @@ class ImportResult(BaseModel):
   warnings: list[ImportWarning]
 
 
+class AssessmentCount(BaseModel):
+  """How one assessment came out of an import, against the plots of the trial."""
+
+  model_config = ConfigDict(extra="forbid")
+
+  assessmentCode: str
+  values: int
+  missing: int
+  plotsWithout: list[int]
+
+
+def countByAssessment(result: ImportResult, layout: TrialLayout) -> list[AssessmentCount]:
+  """Each imported assessment's values, its marked-missing values, and the plots the file left out."""
+  plots = sorted({plot.plotNumber for plot in layout.plots} | {check.plotNumber for check in layout.checkPlots})
+  codes = list(dict.fromkeys(observation.assessmentCode for observation in result.observations))
+  counts = []
+  for code in codes:
+    given = [observation for observation in result.observations if observation.assessmentCode == code]
+    present = {observation.plotNumber for observation in given}
+    counts.append(AssessmentCount(
+      assessmentCode=code,
+      values=sum(observation.value is not None for observation in given),
+      missing=sum(observation.value is None for observation in given),
+      plotsWithout=[number for number in plots if number not in present],
+    ))
+  return counts
+
+
 def importObservations(
-  csvPath: str | Path,
+  path: str | Path,
+  package: TrialPackage,
+  layout: TrialLayout,
+  profile: ImportProfile | None = None,
+  sheetName: str | None = None,
+) -> ImportResult:
+  """Read an observation .csv or .xlsx file and return validated observations plus warnings."""
+  path = Path(path)
+  try:
+    table = readTable(path.name, path.read_bytes(), sheetName)
+  except SpreadsheetError as error:
+    raise ObservationImportError(str(error)) from error
+  return importTable(table, package, layout, profile)
+
+
+def importTable(
+  table: SheetTable,
   package: TrialPackage,
   layout: TrialLayout,
   profile: ImportProfile | None = None,
 ) -> ImportResult:
-  """Read an observation CSV and return validated observations plus warnings."""
+  """Validate a table's observations against the trial and return them plus warnings."""
   if layout.trialCode != package.trial.trialCode:
     raise ObservationImportError(
       f"layout trialCode '{layout.trialCode}' does not match package trial '{package.trial.trialCode}'"
@@ -71,7 +116,10 @@ def importObservations(
   }
   validPlots = {plot.plotNumber for plot in layout.plots} | {check.plotNumber for check in layout.checkPlots}
 
-  rows, fieldnames = _readRows(csvPath)
+  rows = [
+    (rowNumber, dict(zip(table.header, cells))) for rowNumber, cells in zip(table.rowNumbers, table.rows)
+  ]
+  fieldnames = table.header
   if profile.format is ImportFormat.long:
     parsed = _parseLong(rows, fieldnames, profile, assessments)
   else:
@@ -104,27 +152,17 @@ def importObservations(
   return ImportResult(observations=observations, warnings=warnings)
 
 
-def _readRows(csvPath: str | Path) -> tuple[list[dict[str, str]], list[str]]:
-  with Path(csvPath).open(newline="", encoding="utf-8") as handle:
-    reader = csv.DictReader(handle)
-    fieldnames = reader.fieldnames
-    if not fieldnames:
-      raise ObservationImportError("CSV has no header row")
-    rows = list(reader)
-  return rows, list(fieldnames)
-
-
 def _requireColumns(fieldnames: list[str], needed: list[str], role: str) -> None:
   missing = [column for column in needed if column not in fieldnames]
   if missing:
-    raise ObservationImportError(f"{role} column(s) not found in CSV header: {missing}")
+    raise ObservationImportError(f"{role} column(s) not found in the header: {missing}")
 
 
 def _parseLong(rows, fieldnames, profile, assessments):
   columns = profile.long
   _requireColumns(fieldnames, [columns.plotNumber, columns.assessmentCode, columns.value], "long-format")
   parsed = []
-  for rowNumber, row in enumerate(rows, start=2):
+  for rowNumber, row in rows:
     plotNumber = _parsePlotNumber(row[columns.plotNumber], rowNumber)
     assessmentCode = (row[columns.assessmentCode] or "").strip()
     if assessmentCode not in assessments:
@@ -140,23 +178,23 @@ def _parseWide(rows, fieldnames, profile, assessments):
   _requireColumns(fieldnames, [columns.plotNumber], "wide-format plot")
   ignored = set(columns.ignoreColumns)
   if columns.assessmentColumns is not None:
-    _requireColumns(fieldnames, columns.assessmentColumns, "wide-format assessment")
+    _requireColumns(fieldnames, list(columns.assessmentColumns), "wide-format assessment")
     assessmentColumns = columns.assessmentColumns
   else:
-    assessmentColumns = [
-      column for column in fieldnames if column != columns.plotNumber and column not in ignored
-    ]
-  unknown = [column for column in assessmentColumns if column not in assessments]
+    assessmentColumns = {
+      column: column for column in fieldnames if column != columns.plotNumber and column not in ignored
+    }
+  unknown = sorted(code for code in assessmentColumns.values() if code not in assessments)
   if unknown:
     raise ObservationImportError(
-      f"wide-format assessment column(s) not defined in the trial package: {unknown}"
+      f"wide-format assessment(s) not defined in the trial package: {unknown}"
     )
 
   parsed = []
-  for rowNumber, row in enumerate(rows, start=2):
+  for rowNumber, row in rows:
     plotNumber = _parsePlotNumber(row[columns.plotNumber], rowNumber)
-    for assessmentColumn in assessmentColumns:
-      parsed.append((rowNumber, plotNumber, assessmentColumn, row[assessmentColumn]))
+    for column, assessmentCode in assessmentColumns.items():
+      parsed.append((rowNumber, plotNumber, assessmentCode, row[column]))
   return parsed
 
 

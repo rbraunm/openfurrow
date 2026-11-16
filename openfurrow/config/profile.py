@@ -48,17 +48,18 @@ class LongColumns(BaseModel):
 class WideColumns(BaseModel):
   """Column roles in a wide-format file.
 
-  The plot identifier is one named column. Assessment columns may be listed
-  explicitly; if omitted, every column that is neither the plot column nor an
-  ignored column is treated as an assessment and validated against the trial's
-  defined assessments at import time.
+  The plot identifier is one named column. Assessment columns may be mapped
+  explicitly, each column name to the assessment code it holds; if omitted, every
+  column that is neither the plot column nor an ignored column is taken as the
+  assessment of the same code and validated against the trial at import time.
   """
 
   model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
 
   plotNumber: str = Field(default="plotNumber", min_length=1)
-  assessmentColumns: list[str] | None = Field(
-    default=None, description="Explicit assessment columns; None means infer from the file."
+  assessmentColumns: dict[str, str] | None = Field(
+    default=None,
+    description="Column name to the assessment code it holds; None means every other column, named by its code.",
   )
   ignoreColumns: list[str] = Field(
     default_factory=list, description="Columns to skip (extra metadata such as entry, row, range)."
@@ -73,8 +74,10 @@ class WideColumns(BaseModel):
     if self.assessmentColumns is not None:
       if not self.assessmentColumns:
         raise ValueError("wide-format assessmentColumns, if given, must be non-empty")
-      if len(set(self.assessmentColumns)) != len(self.assessmentColumns):
-        raise ValueError("wide-format assessmentColumns contains duplicates")
+      codes = list(self.assessmentColumns.values())
+      repeated = sorted({code for code in codes if codes.count(code) > 1})
+      if repeated:
+        raise ValueError(f"wide-format assessmentColumns maps more than one column to {repeated}")
       if self.plotNumber in self.assessmentColumns:
         raise ValueError(f"wide-format plot column '{self.plotNumber}' is also an assessment column")
       overlap = set(self.assessmentColumns) & set(self.ignoreColumns)

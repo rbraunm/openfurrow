@@ -30,8 +30,8 @@ import:
   # Wide format: one row per plot, one column per assessment.
   wide:
     plotNumber: plotNumber
-    # Which columns hold assessments. null means every column except plotNumber and
-    # anything listed in ignoreColumns.
+    # Which columns hold which assessments, as column name: assessment code. null means
+    # every column except plotNumber and anything in ignoreColumns, each named by its code.
     assessmentColumns: null
     ignoreColumns: []
 

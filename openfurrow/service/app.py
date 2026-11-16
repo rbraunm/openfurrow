@@ -32,6 +32,7 @@ from werkzeug.exceptions import RequestEntityTooLarge
 
 from openfurrow.config import ImportProfile, OpenFurrowConfig, defaultConfig
 from openfurrow.i18n import MessageError, availableLocales, sourceLocale
+from openfurrow.interop.fieldbook import fieldBookImportProfile
 from openfurrow.schema import TrialPackage
 from openfurrow.service.web import createWebBlueprint
 from openfurrow.store import TrialExistsError, TrialNotFoundError
@@ -194,8 +195,8 @@ def _registerRoutes(application: Flask, workspace: Workspace, config: OpenFurrow
     supplied = request.args.get("profile")
     if supplied:
       profile = ImportProfile.model_validate(json.loads(supplied))
-    with _temporaryCsv(request.get_data()) as csvPath:
-      result = workspace.importObservations(trialCode, csvPath, profile)
+    table = workspace.readObservationTable("upload.csv", _requestBody())
+    result = workspace.importObservationTable(trialCode, table, profile)
     return _json({
       "trialCode": trialCode,
       "imported": len(result.observations),
@@ -206,8 +207,8 @@ def _registerRoutes(application: Flask, workspace: Workspace, config: OpenFurrow
   @application.post("/api/trials/<trialCode>/observations/fieldbook")
   def importFieldBook(trialCode: str) -> Response:
     """Import a Field Book database (long) export, posted as CSV."""
-    with _temporaryCsv(request.get_data()) as csvPath:
-      result = workspace.importFieldBook(trialCode, csvPath)
+    table = workspace.readObservationTable("upload.csv", _requestBody())
+    result = workspace.importObservationTable(trialCode, table, fieldBookImportProfile())
     return _json({
       "trialCode": trialCode,
       "imported": len(result.observations),
@@ -284,19 +285,8 @@ def _body() -> dict:
     raise StoreError(f"request body is not valid JSON: {error}") from error
 
 
-class _temporaryCsv:
-  """Write an uploaded CSV to a temp file, because the importer reads from a path."""
-
-  def __init__(self, data: bytes) -> None:
-    if not data:
-      raise ObservationImportError("request body is empty; expected CSV observation data")
-    self._data = data
-    self._directory = tempfile.TemporaryDirectory()
-
-  def __enter__(self) -> str:
-    path = Path(self._directory.name) / "upload.csv"
-    path.write_bytes(self._data)
-    return str(path)
-
-  def __exit__(self, *exception) -> None:
-    self._directory.cleanup()
+def _requestBody() -> bytes:
+  data = request.get_data()
+  if not data:
+    raise ObservationImportError("request body is empty; expected CSV observation data")
+  return data

@@ -1442,19 +1442,7 @@
       "status": "humanApproved"
     },
     "web.import.intro": {
-      "text": "Upload collected data as CSV. Values are checked against the layout before anything is saved.",
-      "status": "humanApproved"
-    },
-    "web.import.formatLabel": {
-      "text": "Format",
-      "status": "humanApproved"
-    },
-    "web.import.formatOpenFurrow": {
-      "text": "OpenFurrow CSV (plot, assessment, value)",
-      "status": "humanApproved"
-    },
-    "web.import.formatFieldBook": {
-      "text": "Field Book export (database format)",
+      "text": "Upload the collected data as a CSV file or an Excel workbook (.xlsx). You see the table and say which column holds what before anything is saved.",
       "status": "humanApproved"
     },
     "web.import.fileLabel": {
@@ -1465,12 +1453,164 @@
       "text": "Import",
       "status": "humanApproved"
     },
-    "web.import.result": {
-      "text": "Imported {count} observations.",
-      "status": "humanApproved"
-    },
     "web.import.warningsHeading": {
       "text": "Warnings",
+      "status": "humanApproved"
+    },
+    "web.trial.importData": {
+      "text": "Import a file",
+      "status": "humanApproved"
+    },
+    "web.importFile.fileLabel": {
+      "text": "CSV file or Excel workbook (.xlsx)",
+      "status": "humanApproved"
+    },
+    "web.importFile.preview": {
+      "text": "Preview",
+      "status": "humanApproved"
+    },
+    "web.importFile.previewIntro": {
+      "text": "{file}: {rows} rows; the first ten are shown. Say how the file is laid out and which column holds what. Nothing is saved until you press Import.",
+      "status": "humanApproved"
+    },
+    "web.importFile.sheet": {
+      "text": "Sheet",
+      "status": "humanApproved"
+    },
+    "web.importFile.showSheet": {
+      "text": "Show this sheet",
+      "status": "humanApproved"
+    },
+    "web.importFile.shapeLegend": {
+      "text": "How the file is laid out",
+      "status": "humanApproved"
+    },
+    "web.importFile.shapeWide": {
+      "text": "One row per plot, one column per assessment",
+      "status": "humanApproved"
+    },
+    "web.importFile.shapeLong": {
+      "text": "One row per value, with columns for the plot, the assessment and the value",
+      "status": "humanApproved"
+    },
+    "web.importFile.wideLegend": {
+      "text": "One row per plot",
+      "status": "humanApproved"
+    },
+    "web.importFile.wideIntro": {
+      "text": "Under each column heading, choose the assessment it holds, or leave it ignored.",
+      "status": "humanApproved"
+    },
+    "web.importFile.longLegend": {
+      "text": "One row per value",
+      "status": "humanApproved"
+    },
+    "web.importFile.longIntro": {
+      "text": "The assessment column must hold the trial's assessment codes: {codes}.",
+      "status": "humanApproved"
+    },
+    "web.importFile.plotColumn": {
+      "text": "Column with the plot numbers",
+      "status": "humanApproved"
+    },
+    "web.importFile.assessmentColumn": {
+      "text": "Column with the assessment codes",
+      "status": "humanApproved"
+    },
+    "web.importFile.valueColumn": {
+      "text": "Column with the values",
+      "status": "humanApproved"
+    },
+    "web.importFile.choose": {
+      "text": "Choose a column",
+      "status": "humanApproved"
+    },
+    "web.importFile.ignore": {
+      "text": "Ignore",
+      "status": "humanApproved"
+    },
+    "web.importFile.columnHolds": {
+      "text": "What column {column} holds",
+      "status": "humanApproved"
+    },
+    "web.importFile.decimal": {
+      "text": "Decimal mark in the file",
+      "status": "humanApproved"
+    },
+    "web.importFile.decimalPoint": {
+      "text": "Point (12.5)",
+      "status": "humanApproved"
+    },
+    "web.importFile.decimalComma": {
+      "text": "Comma (12,5)",
+      "status": "humanApproved"
+    },
+    "web.importFile.import": {
+      "text": "Import",
+      "status": "humanApproved"
+    },
+    "web.importFile.another": {
+      "text": "Choose another file",
+      "status": "humanApproved"
+    },
+    "web.importFile.doneHeading": {
+      "text": "Imported",
+      "status": "humanApproved"
+    },
+    "web.importFile.done": {
+      "text": "Imported {count} observations from {file}.",
+      "status": "humanApproved"
+    },
+    "web.importFile.column.assessment": {
+      "text": "Assessment",
+      "status": "humanApproved"
+    },
+    "web.importFile.column.values": {
+      "text": "Values",
+      "status": "humanApproved"
+    },
+    "web.importFile.column.missing": {
+      "text": "Marked missing",
+      "status": "humanApproved"
+    },
+    "web.importFile.column.plotsWithout": {
+      "text": "Plots not in the file",
+      "status": "humanApproved"
+    },
+    "web.importFile.plotCount": {
+      "text": "The trial has {count} plots.",
+      "status": "humanApproved"
+    },
+    "web.importFile.problem.noFile": {
+      "text": "Choose a file to import.",
+      "status": "humanApproved"
+    },
+    "web.importFile.problem.decimal": {
+      "text": "Choose the decimal mark the file uses.",
+      "status": "humanApproved"
+    },
+    "web.importFile.problem.plotColumn": {
+      "text": "Choose the column that holds the plot numbers.",
+      "status": "humanApproved"
+    },
+    "web.importFile.problem.noAssessmentColumn": {
+      "text": "Choose the assessment at least one column holds.",
+      "status": "humanApproved"
+    },
+    "web.importFile.problem.repeatedAssessment": {
+      "text": "Two columns are set to the same assessment; each assessment can come from one column only.",
+      "status": "humanApproved"
+    },
+    "web.importFile.problem.longColumns": {
+      "text": "Choose the columns that hold the plot numbers, the assessment codes and the values.",
+      "status": "humanApproved"
+    },
+    "web.importFile.problem.sameColumn": {
+      "text": "The plot, the assessment and the value must come from three different columns.",
+      "status": "humanApproved"
+    },
+    "web.importFile.problem.shape": {
+      "text": "Choose how the file is laid out.",
       "status": "humanApproved"
     },
     "web.import.error": {
