@@ -8,7 +8,7 @@
 {% if not trials %}
 <div class="empty">
   <p>{{ t.text('web.trials.empty') }}</p>
-  <a class="button" href="{{ url_for('web.newTrial', locale=locale if locale != 'en-US' else none) }}">{{ t.text('web.nav.addTrial') }}</a>
+  <a class="button" href="{{ url_for('web.trialForm', locale=locale if locale != 'en-US' else none) }}">{{ t.text('web.nav.addTrial') }}</a>
 </div>
 {% else %}
 <table class="trials">

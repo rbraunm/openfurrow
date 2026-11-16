@@ -977,6 +977,146 @@
       "text": "Create trial",
       "status": "source"
     },
+    "web.form.heading": {
+      "text": "Set up a trial",
+      "status": "source"
+    },
+    "web.form.intro": {
+      "text": "Fill in the trial, its treatments and its assessments. Trials with product lines, applications, factors or untreated checks are written as a trial file.",
+      "status": "source"
+    },
+    "web.form.fileInstead": {
+      "text": "Use a trial file instead.",
+      "status": "source"
+    },
+    "web.form.trialHeading": {
+      "text": "The trial",
+      "status": "source"
+    },
+    "web.form.trial.trialCode": {
+      "text": "Trial code",
+      "status": "source"
+    },
+    "web.form.trial.title": {
+      "text": "Title",
+      "status": "source"
+    },
+    "web.form.trial.crop": {
+      "text": "Crop",
+      "status": "source"
+    },
+    "web.form.trial.season": {
+      "text": "Season",
+      "status": "source"
+    },
+    "web.form.trial.site": {
+      "text": "Site",
+      "status": "source"
+    },
+    "web.form.trial.objective": {
+      "text": "Objective",
+      "status": "source"
+    },
+    "web.form.trial.investigator": {
+      "text": "Investigator (optional)",
+      "status": "source"
+    },
+    "web.form.trial.organization": {
+      "text": "Organization (optional)",
+      "status": "source"
+    },
+    "web.form.treatmentsHeading": {
+      "text": "Treatments",
+      "status": "source"
+    },
+    "web.form.column.code": {
+      "text": "Code",
+      "status": "source"
+    },
+    "web.form.column.name": {
+      "text": "Name",
+      "status": "source"
+    },
+    "web.form.roleNone": {
+      "text": "(not stated)",
+      "status": "source"
+    },
+    "web.form.moreRows": {
+      "text": "More rows",
+      "status": "source"
+    },
+    "web.form.designHeading": {
+      "text": "Blocks and layout",
+      "status": "source"
+    },
+    "web.form.layoutGenerate": {
+      "text": "Lay the trial out here (randomized complete blocks)",
+      "status": "source"
+    },
+    "web.form.seedHelp": {
+      "text": "Leave empty for a new one; it is recorded with the trial.",
+      "status": "source"
+    },
+    "web.form.layoutUpload": {
+      "text": "Upload the plots as planted",
+      "status": "source"
+    },
+    "web.form.layoutHelp": {
+      "text": "A CSV with the columns plotNumber, block, positionInBlock and treatmentCode, one row per plot.",
+      "status": "source"
+    },
+    "web.form.assessmentsHeading": {
+      "text": "Assessments",
+      "status": "source"
+    },
+    "web.form.column.dataType": {
+      "text": "Values are",
+      "status": "source"
+    },
+    "web.form.column.minValue": {
+      "text": "Lowest",
+      "status": "source"
+    },
+    "web.form.column.maxValue": {
+      "text": "Highest",
+      "status": "source"
+    },
+    "web.form.column.categories": {
+      "text": "Categories",
+      "status": "source"
+    },
+    "web.form.dataType.numeric": {
+      "text": "numbers",
+      "status": "source"
+    },
+    "web.form.dataType.categorical": {
+      "text": "categories",
+      "status": "source"
+    },
+    "web.form.dataType.ordinal": {
+      "text": "ordered categories",
+      "status": "source"
+    },
+    "web.form.assessmentsHelp": {
+      "text": "For numbers, give the unit and the lowest and highest values expected. For categories, list them separated by commas.",
+      "status": "source"
+    },
+    "web.form.problem.number": {
+      "text": "Assessment row {row}: {field} is not a number.",
+      "status": "source"
+    },
+    "web.form.problem.replications": {
+      "text": "The number of blocks is a whole number.",
+      "status": "source"
+    },
+    "web.form.problem.seed": {
+      "text": "The seed is a whole number.",
+      "status": "source"
+    },
+    "web.form.problem.layoutFile": {
+      "text": "Choose the layout file to upload.",
+      "status": "source"
+    },
     "web.add.error": {
       "text": "Could not create the trial: {reason}",
       "status": "source"

@@ -6,7 +6,7 @@ Findings, defects, checks and owner calls that the plans do not carry.
 Status tags: `fix` (a defect to correct), `build` (work to add), `check` (a suspicion to
 measure), `owner` (the owner's call), `done`.
 
-**Counts.** fix 0, build 15, check 0, owner 4, done 37; 56 in all.
+**Counts.** fix 0, build 0, check 0, owner 0, done 0; 57 in all.
 
 ## Owner decisions
 
@@ -178,9 +178,13 @@ measure), `owner` (the owner's call), `done`.
 
 ## First real user (USR)
 
-- **USR-1** `build` **A trial design form.** In the web interface a trial is created by
-  pasting or uploading package JSON (`openfurrow/service/web.py`); a researcher who does
-  not write JSON cannot start.
+- **USR-1** `done` **A trial design form.** "Add trial" opens a form: the trial's details,
+  treatments with their roles, the number of blocks, and assessments with a unit and
+  limits or a list of categories, with buttons for more rows; it works without JavaScript
+  and keeps everything typed when something is wrong. The layout is generated from a seed
+  (drawn and recorded when left empty) or uploaded as planted (USR-7). Product lines,
+  applications, factors, checks and the other parts of the record are still written as
+  a trial file; their forms are USR-14.
 - **USR-2** `build` **Charts.** None exist; `milestones.md` lists means with letters and
   error bars as future work.
 - **USR-3** `build` **Analysis breadth.** One design (single-factor RCBD) and one
@@ -227,7 +231,9 @@ measure), `owner` (the owner's call), `done`.
   Showing all of this on open, finished trials (Owner decisions, "Oracles") is the case to
   make to the owner. The parts of a trial record the specialist named (REC) belong to the
   bar as far as the pilot trial uses them.
-- **USR-7** `build` **Trials laid out elsewhere.** A layout is always generated from the
+- **USR-7** `done` **Trials laid out elsewhere.** Built: the trial form takes a CSV of the
+  plots as planted (plotNumber, block, positionInBlock, treatmentCode, other columns left
+  aside), keeps it exactly, and refuses one that is not complete blocks. Before: A layout is always generated from the
   seed. A trial randomized by another tool, or already in the ground, cannot be entered
   with its own plot numbers and its own plot-to-treatment map; its observations could
   only be re-keyed onto a generated layout that does not match the field. A first real
@@ -254,6 +260,9 @@ measure), `owner` (the owner's call), `done`.
 - **USR-13** `done` **The field map of a split plot or a trial with checks.** The map
   outlines each main plot with its main-plot level, and draws each check plot dashed and
   marked untreated, right after the last plot it serves.
+- **USR-14** `build` **Forms for the rest of the record.** Product lines, applications,
+  targets, planting, soil, weather, factors, checks and percent control are entered in a
+  trial file today; the form covers the trial, treatments, blocks, layout and assessments.
 - **USR-8** `build` **What happened to a plot, and who changed a value.** A lost plot, a misapplied treatment or a
   difference between the plan and what was planted has no record. EPPO PP 1/181 asks for
   deviations to be noted and reported (decision 0015, "Consequences").

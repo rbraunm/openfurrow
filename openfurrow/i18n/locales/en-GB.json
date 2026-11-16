@@ -977,6 +977,146 @@
       "text": "Create trial",
       "status": "humanApproved"
     },
+    "web.form.heading": {
+      "text": "Set up a trial",
+      "status": "humanApproved"
+    },
+    "web.form.intro": {
+      "text": "Fill in the trial, its treatments and its assessments. Trials with product lines, applications, factors or untreated checks are written as a trial file.",
+      "status": "humanApproved"
+    },
+    "web.form.fileInstead": {
+      "text": "Use a trial file instead.",
+      "status": "humanApproved"
+    },
+    "web.form.trialHeading": {
+      "text": "The trial",
+      "status": "humanApproved"
+    },
+    "web.form.trial.trialCode": {
+      "text": "Trial code",
+      "status": "humanApproved"
+    },
+    "web.form.trial.title": {
+      "text": "Title",
+      "status": "humanApproved"
+    },
+    "web.form.trial.crop": {
+      "text": "Crop",
+      "status": "humanApproved"
+    },
+    "web.form.trial.season": {
+      "text": "Season",
+      "status": "humanApproved"
+    },
+    "web.form.trial.site": {
+      "text": "Site",
+      "status": "humanApproved"
+    },
+    "web.form.trial.objective": {
+      "text": "Objective",
+      "status": "humanApproved"
+    },
+    "web.form.trial.investigator": {
+      "text": "Investigator (optional)",
+      "status": "humanApproved"
+    },
+    "web.form.trial.organization": {
+      "text": "Organisation (optional)",
+      "status": "humanApproved"
+    },
+    "web.form.treatmentsHeading": {
+      "text": "Treatments",
+      "status": "humanApproved"
+    },
+    "web.form.column.code": {
+      "text": "Code",
+      "status": "humanApproved"
+    },
+    "web.form.column.name": {
+      "text": "Name",
+      "status": "humanApproved"
+    },
+    "web.form.roleNone": {
+      "text": "(not stated)",
+      "status": "humanApproved"
+    },
+    "web.form.moreRows": {
+      "text": "More rows",
+      "status": "humanApproved"
+    },
+    "web.form.designHeading": {
+      "text": "Blocks and layout",
+      "status": "humanApproved"
+    },
+    "web.form.layoutGenerate": {
+      "text": "Lay the trial out here (randomised complete blocks)",
+      "status": "humanApproved"
+    },
+    "web.form.seedHelp": {
+      "text": "Leave empty for a new one; it is recorded with the trial.",
+      "status": "humanApproved"
+    },
+    "web.form.layoutUpload": {
+      "text": "Upload the plots as planted",
+      "status": "humanApproved"
+    },
+    "web.form.layoutHelp": {
+      "text": "A CSV with the columns plotNumber, block, positionInBlock and treatmentCode, one row per plot.",
+      "status": "humanApproved"
+    },
+    "web.form.assessmentsHeading": {
+      "text": "Assessments",
+      "status": "humanApproved"
+    },
+    "web.form.column.dataType": {
+      "text": "Values are",
+      "status": "humanApproved"
+    },
+    "web.form.column.minValue": {
+      "text": "Lowest",
+      "status": "humanApproved"
+    },
+    "web.form.column.maxValue": {
+      "text": "Highest",
+      "status": "humanApproved"
+    },
+    "web.form.column.categories": {
+      "text": "Categories",
+      "status": "humanApproved"
+    },
+    "web.form.dataType.numeric": {
+      "text": "numbers",
+      "status": "humanApproved"
+    },
+    "web.form.dataType.categorical": {
+      "text": "categories",
+      "status": "humanApproved"
+    },
+    "web.form.dataType.ordinal": {
+      "text": "ordered categories",
+      "status": "humanApproved"
+    },
+    "web.form.assessmentsHelp": {
+      "text": "For numbers, give the unit and the lowest and highest values expected. For categories, list them separated by commas.",
+      "status": "humanApproved"
+    },
+    "web.form.problem.number": {
+      "text": "Assessment row {row}: {field} is not a number.",
+      "status": "humanApproved"
+    },
+    "web.form.problem.replications": {
+      "text": "The number of blocks is a whole number.",
+      "status": "humanApproved"
+    },
+    "web.form.problem.seed": {
+      "text": "The seed is a whole number.",
+      "status": "humanApproved"
+    },
+    "web.form.problem.layoutFile": {
+      "text": "Choose the layout file to upload.",
+      "status": "humanApproved"
+    },
     "web.add.error": {
       "text": "Could not create the trial: {reason}",
       "status": "humanApproved"

@@ -1121,6 +1121,146 @@
       "text": "Funciona sin conexión. Sus datos permanecen en este equipo.",
       "status": "machineDraft"
     },
+    "web.form.assessmentsHeading": {
+      "text": "Evaluaciones",
+      "status": "machineDraft"
+    },
+    "web.form.assessmentsHelp": {
+      "text": "Para números, indique la unidad y los valores mínimo y máximo esperados. Para categorías, enumérelas separadas por comas.",
+      "status": "machineDraft"
+    },
+    "web.form.column.categories": {
+      "text": "Categorías",
+      "status": "machineDraft"
+    },
+    "web.form.column.code": {
+      "text": "Código",
+      "status": "machineDraft"
+    },
+    "web.form.column.dataType": {
+      "text": "Los valores son",
+      "status": "machineDraft"
+    },
+    "web.form.column.maxValue": {
+      "text": "Máximo",
+      "status": "machineDraft"
+    },
+    "web.form.column.minValue": {
+      "text": "Mínimo",
+      "status": "machineDraft"
+    },
+    "web.form.column.name": {
+      "text": "Nombre",
+      "status": "machineDraft"
+    },
+    "web.form.dataType.categorical": {
+      "text": "categorías",
+      "status": "machineDraft"
+    },
+    "web.form.dataType.numeric": {
+      "text": "números",
+      "status": "machineDraft"
+    },
+    "web.form.dataType.ordinal": {
+      "text": "categorías ordenadas",
+      "status": "machineDraft"
+    },
+    "web.form.designHeading": {
+      "text": "Bloques y disposición",
+      "status": "machineDraft"
+    },
+    "web.form.fileInstead": {
+      "text": "Usar un archivo de ensayo.",
+      "status": "machineDraft"
+    },
+    "web.form.heading": {
+      "text": "Preparar un ensayo",
+      "status": "machineDraft"
+    },
+    "web.form.intro": {
+      "text": "Complete el ensayo, sus tratamientos y sus evaluaciones. Los ensayos con productos, aplicaciones, factores o testigos se escriben como archivo de ensayo.",
+      "status": "machineDraft"
+    },
+    "web.form.layoutGenerate": {
+      "text": "Disponer el ensayo aquí (bloques completos al azar)",
+      "status": "machineDraft"
+    },
+    "web.form.layoutHelp": {
+      "text": "Un CSV con las columnas plotNumber, block, positionInBlock y treatmentCode, una fila por parcela.",
+      "status": "machineDraft"
+    },
+    "web.form.layoutUpload": {
+      "text": "Subir las parcelas tal como se sembraron",
+      "status": "machineDraft"
+    },
+    "web.form.moreRows": {
+      "text": "Más filas",
+      "status": "machineDraft"
+    },
+    "web.form.problem.layoutFile": {
+      "text": "Elija el archivo de disposición que va a subir.",
+      "status": "machineDraft"
+    },
+    "web.form.problem.number": {
+      "text": "Fila de evaluación {row}: {field} no es un número.",
+      "status": "machineDraft"
+    },
+    "web.form.problem.replications": {
+      "text": "El número de bloques es un número entero.",
+      "status": "machineDraft"
+    },
+    "web.form.problem.seed": {
+      "text": "La semilla es un número entero.",
+      "status": "machineDraft"
+    },
+    "web.form.roleNone": {
+      "text": "(sin indicar)",
+      "status": "machineDraft"
+    },
+    "web.form.seedHelp": {
+      "text": "Déjela vacía para una nueva; se registra con el ensayo.",
+      "status": "machineDraft"
+    },
+    "web.form.treatmentsHeading": {
+      "text": "Tratamientos",
+      "status": "machineDraft"
+    },
+    "web.form.trial.crop": {
+      "text": "Cultivo",
+      "status": "machineDraft"
+    },
+    "web.form.trial.investigator": {
+      "text": "Investigador (opcional)",
+      "status": "machineDraft"
+    },
+    "web.form.trial.objective": {
+      "text": "Objetivo",
+      "status": "machineDraft"
+    },
+    "web.form.trial.organization": {
+      "text": "Organización (opcional)",
+      "status": "machineDraft"
+    },
+    "web.form.trial.season": {
+      "text": "Campaña",
+      "status": "machineDraft"
+    },
+    "web.form.trial.site": {
+      "text": "Sitio",
+      "status": "machineDraft"
+    },
+    "web.form.trial.title": {
+      "text": "Título",
+      "status": "machineDraft"
+    },
+    "web.form.trial.trialCode": {
+      "text": "Código del ensayo",
+      "status": "machineDraft"
+    },
+    "web.form.trialHeading": {
+      "text": "El ensayo",
+      "status": "machineDraft"
+    },
     "web.import.error": {
       "text": "La importación falló: {reason}",
       "status": "machineDraft"

@@ -1121,6 +1121,146 @@
       "text": "يعمل دون اتصال. تبقى بياناتك على هذا الجهاز.",
       "status": "machineDraft"
     },
+    "web.form.assessmentsHeading": {
+      "text": "التقييمات",
+      "status": "machineDraft"
+    },
+    "web.form.assessmentsHelp": {
+      "text": "للأرقام، اذكر الوحدة وأدنى وأعلى قيمة متوقعة. للفئات، اذكرها مفصولة بفواصل.",
+      "status": "machineDraft"
+    },
+    "web.form.column.categories": {
+      "text": "الفئات",
+      "status": "machineDraft"
+    },
+    "web.form.column.code": {
+      "text": "الرمز",
+      "status": "machineDraft"
+    },
+    "web.form.column.dataType": {
+      "text": "القيم",
+      "status": "machineDraft"
+    },
+    "web.form.column.maxValue": {
+      "text": "الأعلى",
+      "status": "machineDraft"
+    },
+    "web.form.column.minValue": {
+      "text": "الأدنى",
+      "status": "machineDraft"
+    },
+    "web.form.column.name": {
+      "text": "الاسم",
+      "status": "machineDraft"
+    },
+    "web.form.dataType.categorical": {
+      "text": "فئات",
+      "status": "machineDraft"
+    },
+    "web.form.dataType.numeric": {
+      "text": "أرقام",
+      "status": "machineDraft"
+    },
+    "web.form.dataType.ordinal": {
+      "text": "فئات مرتبة",
+      "status": "machineDraft"
+    },
+    "web.form.designHeading": {
+      "text": "القطاعات والتخطيط",
+      "status": "machineDraft"
+    },
+    "web.form.fileInstead": {
+      "text": "استخدم ملف تجربة بدلًا من ذلك.",
+      "status": "machineDraft"
+    },
+    "web.form.heading": {
+      "text": "إعداد تجربة",
+      "status": "machineDraft"
+    },
+    "web.form.intro": {
+      "text": "املأ بيانات التجربة ومعاملاتها وتقييماتها. التجارب التي تتضمن منتجات أو تطبيقات أو عوامل أو شواهد تُكتب كملف تجربة.",
+      "status": "machineDraft"
+    },
+    "web.form.layoutGenerate": {
+      "text": "تخطيط التجربة هنا (قطاعات كاملة عشوائية)",
+      "status": "machineDraft"
+    },
+    "web.form.layoutHelp": {
+      "text": "ملف CSV بالأعمدة plotNumber و block و positionInBlock و treatmentCode، صف لكل قطعة.",
+      "status": "machineDraft"
+    },
+    "web.form.layoutUpload": {
+      "text": "رفع القطع كما زُرعت",
+      "status": "machineDraft"
+    },
+    "web.form.moreRows": {
+      "text": "صفوف إضافية",
+      "status": "machineDraft"
+    },
+    "web.form.problem.layoutFile": {
+      "text": "اختر ملف التخطيط المراد رفعه.",
+      "status": "machineDraft"
+    },
+    "web.form.problem.number": {
+      "text": "صف التقييم {row}: {field} ليس رقمًا.",
+      "status": "machineDraft"
+    },
+    "web.form.problem.replications": {
+      "text": "عدد القطاعات عدد صحيح.",
+      "status": "machineDraft"
+    },
+    "web.form.problem.seed": {
+      "text": "البذرة عدد صحيح.",
+      "status": "machineDraft"
+    },
+    "web.form.roleNone": {
+      "text": "(غير محدد)",
+      "status": "machineDraft"
+    },
+    "web.form.seedHelp": {
+      "text": "اتركها فارغة لتوليد بذرة جديدة؛ تُسجَّل مع التجربة.",
+      "status": "machineDraft"
+    },
+    "web.form.treatmentsHeading": {
+      "text": "المعاملات",
+      "status": "machineDraft"
+    },
+    "web.form.trial.crop": {
+      "text": "المحصول",
+      "status": "machineDraft"
+    },
+    "web.form.trial.investigator": {
+      "text": "الباحث (اختياري)",
+      "status": "machineDraft"
+    },
+    "web.form.trial.objective": {
+      "text": "الهدف",
+      "status": "machineDraft"
+    },
+    "web.form.trial.organization": {
+      "text": "المؤسسة (اختياري)",
+      "status": "machineDraft"
+    },
+    "web.form.trial.season": {
+      "text": "الموسم",
+      "status": "machineDraft"
+    },
+    "web.form.trial.site": {
+      "text": "الموقع",
+      "status": "machineDraft"
+    },
+    "web.form.trial.title": {
+      "text": "العنوان",
+      "status": "machineDraft"
+    },
+    "web.form.trial.trialCode": {
+      "text": "رمز التجربة",
+      "status": "machineDraft"
+    },
+    "web.form.trialHeading": {
+      "text": "التجربة",
+      "status": "machineDraft"
+    },
     "web.import.error": {
       "text": "فشل الاستيراد: {reason}",
       "status": "machineDraft"

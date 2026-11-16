@@ -294,7 +294,10 @@ class Workspace:
 
   def importDocument(self, jsonPath: str) -> str:
     """Import a portable trial document JSON into this store; return its trialCode."""
-    document = _importJson(jsonPath)
+    return self.addDocument(_importJson(jsonPath))
+
+  def addDocument(self, document: TrialDocument) -> str:
+    """Store a validated trial document (its package, plots, checks and values); return its trialCode."""
     trialCode = document.package.trial.trialCode
     with _sessionScope(self._engine) as session:
       _savePackage(session, document.package, document.layout, document.checkPlots)

@@ -1121,6 +1121,146 @@
       "text": "Fonctionne hors ligne. Vos données restent sur cette machine.",
       "status": "machineDraft"
     },
+    "web.form.assessmentsHeading": {
+      "text": "Évaluations",
+      "status": "machineDraft"
+    },
+    "web.form.assessmentsHelp": {
+      "text": "Pour des nombres, indiquez l'unité et les valeurs minimale et maximale attendues. Pour des catégories, listez-les séparées par des virgules.",
+      "status": "machineDraft"
+    },
+    "web.form.column.categories": {
+      "text": "Catégories",
+      "status": "machineDraft"
+    },
+    "web.form.column.code": {
+      "text": "Code",
+      "status": "machineDraft"
+    },
+    "web.form.column.dataType": {
+      "text": "Les valeurs sont",
+      "status": "machineDraft"
+    },
+    "web.form.column.maxValue": {
+      "text": "Maximum",
+      "status": "machineDraft"
+    },
+    "web.form.column.minValue": {
+      "text": "Minimum",
+      "status": "machineDraft"
+    },
+    "web.form.column.name": {
+      "text": "Nom",
+      "status": "machineDraft"
+    },
+    "web.form.dataType.categorical": {
+      "text": "des catégories",
+      "status": "machineDraft"
+    },
+    "web.form.dataType.numeric": {
+      "text": "des nombres",
+      "status": "machineDraft"
+    },
+    "web.form.dataType.ordinal": {
+      "text": "des catégories ordonnées",
+      "status": "machineDraft"
+    },
+    "web.form.designHeading": {
+      "text": "Blocs et disposition",
+      "status": "machineDraft"
+    },
+    "web.form.fileInstead": {
+      "text": "Utiliser un fichier d'essai.",
+      "status": "machineDraft"
+    },
+    "web.form.heading": {
+      "text": "Préparer un essai",
+      "status": "machineDraft"
+    },
+    "web.form.intro": {
+      "text": "Renseignez l'essai, ses traitements et ses évaluations. Les essais avec produits, applications, facteurs ou témoins s'écrivent comme fichier d'essai.",
+      "status": "machineDraft"
+    },
+    "web.form.layoutGenerate": {
+      "text": "Disposer l'essai ici (blocs complets randomisés)",
+      "status": "machineDraft"
+    },
+    "web.form.layoutHelp": {
+      "text": "Un CSV avec les colonnes plotNumber, block, positionInBlock et treatmentCode, une ligne par parcelle.",
+      "status": "machineDraft"
+    },
+    "web.form.layoutUpload": {
+      "text": "Téléverser les parcelles telles que semées",
+      "status": "machineDraft"
+    },
+    "web.form.moreRows": {
+      "text": "Plus de lignes",
+      "status": "machineDraft"
+    },
+    "web.form.problem.layoutFile": {
+      "text": "Choisissez le fichier de disposition à téléverser.",
+      "status": "machineDraft"
+    },
+    "web.form.problem.number": {
+      "text": "Ligne d'évaluation {row}: {field} n'est pas un nombre.",
+      "status": "machineDraft"
+    },
+    "web.form.problem.replications": {
+      "text": "Le nombre de blocs est un nombre entier.",
+      "status": "machineDraft"
+    },
+    "web.form.problem.seed": {
+      "text": "La graine est un nombre entier.",
+      "status": "machineDraft"
+    },
+    "web.form.roleNone": {
+      "text": "(non précisé)",
+      "status": "machineDraft"
+    },
+    "web.form.seedHelp": {
+      "text": "Laissez vide pour en tirer une; elle est enregistrée avec l'essai.",
+      "status": "machineDraft"
+    },
+    "web.form.treatmentsHeading": {
+      "text": "Traitements",
+      "status": "machineDraft"
+    },
+    "web.form.trial.crop": {
+      "text": "Culture",
+      "status": "machineDraft"
+    },
+    "web.form.trial.investigator": {
+      "text": "Investigateur (facultatif)",
+      "status": "machineDraft"
+    },
+    "web.form.trial.objective": {
+      "text": "Objectif",
+      "status": "machineDraft"
+    },
+    "web.form.trial.organization": {
+      "text": "Organisme (facultatif)",
+      "status": "machineDraft"
+    },
+    "web.form.trial.season": {
+      "text": "Campagne",
+      "status": "machineDraft"
+    },
+    "web.form.trial.site": {
+      "text": "Site",
+      "status": "machineDraft"
+    },
+    "web.form.trial.title": {
+      "text": "Titre",
+      "status": "machineDraft"
+    },
+    "web.form.trial.trialCode": {
+      "text": "Code de l'essai",
+      "status": "machineDraft"
+    },
+    "web.form.trialHeading": {
+      "text": "L'essai",
+      "status": "machineDraft"
+    },
     "web.import.error": {
       "text": "Échec de l'import: {reason}",
       "status": "machineDraft"

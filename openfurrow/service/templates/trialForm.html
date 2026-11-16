@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% block title %}{{ t.text('web.form.heading') }} - {{ t.text('web.app.name') }}{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>{{ t.text('web.form.heading') }}</h1>
+</div>
+<p class="intro">{{ t.text('web.form.intro') }} <a href="{{ url_for('web.newTrial', locale=locale if locale != 'en-US' else none) }}">{{ t.text('web.form.fileInstead') }}</a></p>
+
+{% if error %}
+<div class="error" role="alert">{{ t.text('web.add.error', reason=error) }}</div>
+{% endif %}
+
+<form class="trial-form" method="post" enctype="multipart/form-data"
+      action="{{ url_for('web.trialForm', locale=locale if locale != 'en-US' else none) }}">
+  <button class="visually-hidden" type="submit" name="create" value="yes" tabindex="-1" aria-hidden="true"></button>
+  <fieldset>
+    <legend>{{ t.text('web.form.trialHeading') }}</legend>
+    <div class="form-grid">
+      {% for field in ('trialCode', 'title', 'crop', 'season', 'site', 'objective', 'investigator', 'organization') %}
+      <label>
+        <span class="field-label">{{ t.text('web.form.trial.' ~ field) }}</span>
+        <input type="text" dir="auto" name="{{ field }}" value="{{ typed.trial[field] }}">
+      </label>
+      {% endfor %}
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>{{ t.text('web.form.treatmentsHeading') }}</legend>
+    <input type="hidden" name="treatmentsRows" value="{{ typed.treatments | length }}">
+    <table class="form-table">
+      <thead><tr>
+        <th scope="col">{{ t.text('web.form.column.code') }}</th>
+        <th scope="col">{{ t.text('web.form.column.name') }}</th>
+        <th scope="col">{{ t.text('report.treatments.column.role') }}</th>
+      </tr></thead>
+      <tbody>
+        {% for row in typed.treatments %}
+        <tr>
+          <td><input type="text" dir="auto" name="treatments-{{ loop.index0 }}-code" value="{{ row.code }}" aria-label="{{ t.text('web.form.column.code') }}"></td>
+          <td><input type="text" dir="auto" name="treatments-{{ loop.index0 }}-name" value="{{ row.name }}" aria-label="{{ t.text('web.form.column.name') }}"></td>
+          <td>
+            <select name="treatments-{{ loop.index0 }}-role" aria-label="{{ t.text('report.treatments.column.role') }}">
+              <option value="" {% if not row.role %}selected{% endif %}>{{ t.text('web.form.roleNone') }}</option>
+              {% for role in ('test', 'reference', 'untreatedControl', 'otherControl') %}
+              <option value="{{ role }}" {% if row.role == role %}selected{% endif %}>{{ t.text('report.treatments.role.' ~ role) }}</option>
+              {% endfor %}
+            </select>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <button class="button button-quiet" type="submit" name="more" value="treatments">{{ t.text('web.form.moreRows') }}</button>
+  </fieldset>
+
+  <fieldset>
+    <legend>{{ t.text('web.form.designHeading') }}</legend>
+    <label>
+      <span class="field-label">{{ t.text('report.design.blocks') }}</span>
+      <input type="text" class="number" inputmode="numeric" name="replications" value="{{ typed.replications }}">
+    </label>
+    <div class="layout-source">
+      <label class="choice"><input type="radio" name="layoutSource" value="generate" {% if typed.layoutSource != 'upload' %}checked{% endif %}> {{ t.text('web.form.layoutGenerate') }}</label>
+      <label class="indent">
+        <span class="field-label">{{ t.text('report.design.seed') }}</span>
+        <input type="text" class="number" inputmode="numeric" name="seed" value="{{ typed.seed }}" aria-describedby="seed-help">
+        <span id="seed-help" class="help">{{ t.text('web.form.seedHelp') }}</span>
+      </label>
+      <label class="choice"><input type="radio" name="layoutSource" value="upload" {% if typed.layoutSource == 'upload' %}checked{% endif %}> {{ t.text('web.form.layoutUpload') }}</label>
+      <label class="indent">
+        <input type="file" name="layoutFile" accept=".csv,text/csv" aria-describedby="layout-help">
+        <span id="layout-help" class="help">{{ t.text('web.form.layoutHelp') }}</span>
+      </label>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>{{ t.text('web.form.assessmentsHeading') }}</legend>
+    <input type="hidden" name="assessmentsRows" value="{{ typed.assessments | length }}">
+    <table class="form-table">
+      <thead><tr>
+        <th scope="col">{{ t.text('web.form.column.code') }}</th>
+        <th scope="col">{{ t.text('web.form.column.name') }}</th>
+        <th scope="col">{{ t.text('web.form.column.dataType') }}</th>
+        <th scope="col">{{ t.text('report.ratings.column.unit') }}</th>
+        <th scope="col">{{ t.text('web.form.column.minValue') }}</th>
+        <th scope="col">{{ t.text('web.form.column.maxValue') }}</th>
+        <th scope="col">{{ t.text('web.form.column.categories') }}</th>
+      </tr></thead>
+      <tbody>
+        {% for row in typed.assessments %}
+        {% set i = loop.index0 %}
+        <tr>
+          <td><input type="text" dir="auto" name="assessments-{{ i }}-code" value="{{ row.code }}" aria-label="{{ t.text('web.form.column.code') }}"></td>
+          <td><input type="text" dir="auto" name="assessments-{{ i }}-name" value="{{ row.name }}" aria-label="{{ t.text('web.form.column.name') }}"></td>
+          <td>
+            <select name="assessments-{{ i }}-dataType" aria-label="{{ t.text('web.form.column.dataType') }}">
+              {% for kind in ('numeric', 'categorical', 'ordinal') %}
+              <option value="{{ kind }}" {% if row.dataType == kind %}selected{% endif %}>{{ t.text('web.form.dataType.' ~ kind) }}</option>
+              {% endfor %}
+            </select>
+          </td>
+          <td><input type="text" dir="auto" class="short" name="assessments-{{ i }}-unit" value="{{ row.unit }}" aria-label="{{ t.text('report.ratings.column.unit') }}"></td>
+          <td><input type="text" inputmode="decimal" class="short" name="assessments-{{ i }}-minValue" value="{{ row.minValue }}" aria-label="{{ t.text('web.form.column.minValue') }}"></td>
+          <td><input type="text" inputmode="decimal" class="short" name="assessments-{{ i }}-maxValue" value="{{ row.maxValue }}" aria-label="{{ t.text('web.form.column.maxValue') }}"></td>
+          <td><input type="text" dir="auto" name="assessments-{{ i }}-categories" value="{{ row.categories }}" aria-label="{{ t.text('web.form.column.categories') }}"></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <p class="help">{{ t.text('web.form.assessmentsHelp') }}</p>
+    <button class="button button-quiet" type="submit" name="more" value="assessments">{{ t.text('web.form.moreRows') }}</button>
+  </fieldset>
+
+  <div class="form-actions"><button class="button" type="submit" name="create" value="yes">{{ t.text('web.add.submit') }}</button></div>
+</form>
+{% endblock %}

@@ -36,6 +36,9 @@ from markupsafe import Markup
 from openfurrow.config import OpenFurrowConfig, defaultConfig
 from openfurrow.i18n import MessageError, availableLocales, sourceLocale, translatorFor
 from openfurrow.importers.entry import EntryRefused, readEntry, writeEntry
+from openfurrow.importers.layoutCsv import LayoutFileError, readLayoutCsv
+from openfurrow.schema import TrialDocument
+from openfurrow.service.trialForm import FormProblem, emptyForm, formFromRequest, packageFromForm
 from openfurrow.schema import AssessmentDataType, Observation, RandomizationMethod, TrialPackage
 from openfurrow.schema.document import isOutOfRange
 from openfurrow.version import schemaVersion
@@ -124,6 +127,40 @@ def createWebBlueprint(workspace: Workspace, config: OpenFurrowConfig | None = N
         ),
         status=400,
       )
+    return redirect(_localized(url_for("web.trial", trialCode=package.trial.trialCode), translator))
+
+  @blueprint.route("/trials/form", methods=["GET", "POST"])
+  def trialForm() -> Response:
+    """Set up a trial by filling in a form; the layout is generated or uploaded as planted."""
+    translator = _translator()
+    if request.method == "GET":
+      return Response(render_template(
+        "trialForm.html", typed=emptyForm(), error=None, **_localeContext(translator),
+      ))
+    typed = formFromRequest(request.form)
+    if request.form.get("create") != "yes":
+      return Response(render_template("trialForm.html", typed=typed, error=None, **_localeContext(translator)))
+    try:
+      data = packageFromForm(typed, translator.decimalSeparator)
+      package = TrialPackage.model_validate(data)
+      if typed["layoutSource"] == "upload":
+        upload = request.files.get("layoutFile")
+        if not upload or not upload.filename:
+          raise FormProblem("web.form.problem.layoutFile")
+        with _temporaryCsv(upload.read()) as csvPath:
+          plots = readLayoutCsv(csvPath)
+        workspace.addDocument(TrialDocument(package=package, layout=plots, observations=[]))
+      else:
+        workspace.addPackage(package)
+    except FormProblem as problem:
+      message = translator.text(problem.reasonKey, **problem.placeholders)
+      return Response(render_template(
+        "trialForm.html", typed=typed, error=message, **_localeContext(translator),
+      ), status=400)
+    except (ValidationError, StoreError, LayoutFileError) as error:
+      return Response(render_template(
+        "trialForm.html", typed=typed, error=str(error), **_localeContext(translator),
+      ), status=400)
     return redirect(_localized(url_for("web.trial", trialCode=package.trial.trialCode), translator))
 
   @blueprint.get("/trials/<trialCode>")
