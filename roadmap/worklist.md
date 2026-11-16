@@ -219,36 +219,67 @@ measure), `owner` (the owner's call), `done`.
 
 A research specialist who runs such trials looked at screenshots of a trial page, a
 report and the Arabic view (2026-11-15). The verdict: the basic idea is there, but a
-trial has to hold much more than its design and its numbers. Each point named is an item
-below, with what the tool holds today against it. The list is close to what EPPO PP 1/181
-asks a trial report to contain (its Appendix 1).
+trial has to hold much more than its design and its numbers. The points named are, almost
+one for one, the sections of the trial report in EPPO PP 1/181's Appendix 1, so the plan
+is to build the record to that standard's shape (`research/trialRecord.md`). Each item
+below says what the tool holds today and what the plan adds.
 
-- **REC-1** `build` **Planting details.** Seeding rate, spacing, emergence and the like.
-  Today a trial has a crop, a season and a site as free text, and nothing else about the
-  crop.
-- **REC-2** `build` **Pest information.** The pests a trial targets, their stage and
-  pressure. Nothing today.
-- **REC-3** `build` **Treatment information.** Today a treatment is a code, a name, one
-  product, one rate with its unit, and a free-text timing. No formulation, concentration
-  or active ingredient, and no treatment made of several products or several
-  applications.
-- **REC-4** `build` **Application information.** When, how and under what conditions each
-  application was made. Nothing today; the brief lists application events as early scope.
-- **REC-5** `build` **Soil information.** Nothing today.
-- **REC-6** `build` **Weather information.** Nothing today.
-- **REC-7** `build` **Special randomizations.** Today one design, the RCBD, with every
-  block shuffled independently. Decision 0015 makes any layout representable as data, so
-  an arrangement made by hand or by another tool can be held once REP-1 is built;
-  generating each special arrangement is work of its own. Which kinds are meant is a
-  question for the specialist.
-- **REC-8** `build` **Assessment definitions.** Today an assessment is a code, a name, a
-  data type, a unit, a free-text timing, a numeric range or a list of allowed values, a
-  measurement kind and a transform. No rating date, no crop or pest stage, no part rated,
-  no sample size or rating scale, and one value per plot (no subsamples).
-- **REC-9** `build` **Validation rules for data entry.** Today a value is checked on
-  import against the assessment's range or allowed values, and a bad one rejects the
-  file. The tool has no data entry of its own (USR-4), so no rule is applied as a value
-  is typed, and no softer rule (a warning for an unlikely value) exists.
+Each part is built as data first -- the trial document, the store and the report -- and
+then gets its form. Order: REC-7 rests on REP-1, which is under way. REC-3, REC-4 and
+REC-8 change the shape of a trial most and come next. REC-1, REC-2, REC-5 and REC-6 are
+sections added beside them. REC-9 needs data entry in the tool (USR-4).
+
+- **REC-1** `build` **Planting details.** Today: a crop, a season and a site as free text.
+  Plan, after section 1.2 of the standard: crop and cultivar (with an EPPO code where
+  known), sowing or planting date, seeding rate with its unit, plant density, row and
+  in-row spacing, emergence date, the preceding crop, and tillage, fertilizer and
+  irrigation as notes.
+- **REC-2** `build` **Pest information.** Today: nothing. Plan, after section 1.1: the
+  trial's targets, each with a name, a scientific name or EPPO code and a kind (weed,
+  disease, insect, other). A target's stage and level are recorded where they occur: at
+  each application (REC-4) and at each assessment (REC-8).
+- **REC-3** `build` **Treatment information.** Today: a code, a name, one product, one
+  rate with its unit and a free-text timing. Plan, after sections 2.1 and 2.2: a treatment
+  has a role (test product, reference product, untreated check) and one or more lines. A
+  line is a product (its formulated name, active substances, formulation concentration
+  and type) at a rate with its unit, tied by code to the applications it goes on at.
+- **REC-4** `build` **Application information.** Today: nothing. Plan, after section 2.2:
+  applications as events, each with a code, a date and time, the method, equipment,
+  nozzle, pressure and spray volume, the crop's growth stage (BBCH), the target's stage,
+  and the conditions at the time (air temperature, humidity, wind, cloud, soil moisture).
+  A difference from the planned dose is recorded as a deviation (USR-8).
+- **REC-5** `build` **Soil information.** Today: nothing. Plan, after section 3.1.2: soil
+  type or texture, pH, organic matter, seed-bed quality and the fertilizer regime; soil
+  moisture at application sits with the application (REC-4). Sand, silt and clay
+  fractions and soil layers can wait.
+- **REC-6** `build` **Weather information.** Today: nothing. Plan, after section 3.1.1:
+  the conditions on the day of each application (with REC-4), a dated log of rain,
+  irrigation and temperature for the trial, and notes on extremes. Entered by hand or
+  from a file; automatic feeds can wait.
+- **REC-7** `build` **Special randomizations.** Today: one design, the RCBD, with every
+  block shuffled independently. Plan: REP-1 (decision 0015) makes any layout a record,
+  so an arrangement made by hand or in another tool is held with its own plot numbers.
+  Then, after section 1.3: the arrangement of the untreated control (included,
+  imbricated, excluded), plot sizes and the zones between plots, and further designs in
+  the order the specialist's trials need them (completely randomized, Latin square,
+  split-plot, strip-plot). Which special arrangements are meant is a question for the
+  specialist.
+- **REC-8** `build` **Assessment definitions.** Today: a code, a name, a data type, a
+  unit, a free-text timing, a range or allowed values, a measurement kind and a
+  transform; one value per plot. Plan, after section 3.2: a definition (what is rated,
+  the rating type, unit and scale, the part rated, the method, limits or categories, the
+  transform) kept apart from its occasions (the date, the crop and pest stage, the days
+  after a named application, who assessed). A sample size, and subsamples within a plot
+  kept as entered, with the plot's value derived from them.
+- **REC-9** `build` **Validation rules for data entry.** Today: a value is checked on
+  import against the range or allowed values, and one bad value rejects the file; the
+  tool has no entry of its own (USR-4). Plan: entry in the tool, with the definition's
+  rules applied as a value is typed, in two strengths. What cannot be a value (a wrong
+  type, a category that does not exist) is refused. What is unlikely (outside the limits)
+  is flagged and kept only with a confirmation that the record keeps. A completeness
+  check comes before analysis. Whether a value outside its limits may be kept at all is
+  the owner's call: today it is refused, and the incumbent tool flags it and lets the
+  user confirm.
 
 ## Small finds (SML)
 

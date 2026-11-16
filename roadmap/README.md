@@ -30,8 +30,9 @@ decisions, and the milestone trail. Nothing in `roadmap/` is load-bearing at run
   test-data registry (`research/test-data.md`) of sourced, provenanced datasets and
   what each validates; the Field Book interop format spec
   (`research/fieldbook-formats.md`) pinning the import/trait/export layouts unit E1 targets;
-  and how the field treats a randomized layout (`research/layoutPractice.md`), the
-  evidence behind decision 0015.
+  how the field treats a randomized layout (`research/layoutPractice.md`), the evidence
+  behind decision 0015; and what a trial record holds in established practice
+  (`research/trialRecord.md`), behind the worklist's trial-record items.
 - `vision.md` -- the long-term north star: a funded, curated public archive for
   reproducible studies, a separate institution from the tool. Aspirational, not on the
   build path.
