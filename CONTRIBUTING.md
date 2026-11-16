@@ -70,6 +70,24 @@ python -m pytest
 python scripts/productSmoke.py
 ```
 
+### The testbed: PostgreSQL and the other fixtures
+
+The store runs on SQLite and on PostgreSQL, and the suite runs on either: `--store
+postgresql` puts every test's store in a fresh database on the server named by
+`OPENFURROW_TEST_POSTGRES` (a `postgresql+pg8000://` URL of a role that may create
+databases), and fails at once if it is not set. The fixtures are defined once, in
+`testbed/compose.yaml`, with every password from the environment:
+
+- **The workflow** starts them for one run and throws them away (the `postgresql` job).
+- **For development**, any Debian or Ubuntu host with root keeps them running:
+  `sudo sh testbed/setupHost.sh <directory holding compose.yaml>` installs Docker if needed,
+  makes the password once (in `testbed.env` beside the file, root only) and starts every
+  service; run it again to reprovision, with `--fresh` to throw the data away too.
+
+```bash
+OPENFURROW_TEST_POSTGRES=postgresql+pg8000://openfurrow:<password>@<host>:5432/openfurrow python -m pytest --store postgresql
+```
+
 ## Oracles: every reported number is validated
 
 OpenFurrow never presents an unvalidated statistic as a fact. Each analysis result is
