@@ -303,6 +303,12 @@ def testRecordedTrialRendersInTheReadersLocale():
   assert "| Date | 02/05/2025 | - |" in recordedReport(locale="en-GB")
 
 
+def testQuantitiesAreIsolatedInRightToLeftReportsOnly():
+  """A plain-text viewer of an Arabic report shows "250 kPa", not "kPa 250"."""
+  assert "| \u2068250 kPa\u2069 |" in recordedReport(locale="ar")
+  assert "\u2068" not in recordedReport(locale="en-US") and "| 250 kPa |" in recordedReport(locale="en-US")
+
+
 def testRecordedTrialRendersInEveryShippedLocale():
   for locale in ("en-US", "en-GB", "es", "fr", "ar"):
     report = recordedReport(locale=locale)

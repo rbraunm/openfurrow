@@ -552,8 +552,13 @@ def _cell(text: str) -> str:
 
 
 def _quantityText(quantity: Quantity, translator: Translator) -> str:
+  """A value and its unit. In a right-to-left report the pair is isolated (Unicode FSI ... PDI),
+  so any viewer keeps "250 kPa" in that order instead of reading it as "kPa 250"."""
   value = translator.number(quantity.value, decimals=_authoredDecimals(quantity.value))
-  return f"{value} {quantity.unit}"
+  text = f"{value} {quantity.unit}"
+  if translator.direction == "rtl":
+    return f"\u2068{text}\u2069"
+  return text
 
 
 def _assessmentSection(

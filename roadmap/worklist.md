@@ -6,7 +6,7 @@ Findings, defects, checks and owner calls that the plans do not carry.
 Status tags: `fix` (a defect to correct), `build` (work to add), `check` (a suspicion to
 measure), `owner` (the owner's call), `done`.
 
-**Counts.** fix 0, build 10, check 0, owner 4, done 43; 57 in all.
+**Counts.** fix 0, build 9, check 0, owner 4, done 44; 57 in all.
 
 ## Owner decisions
 
@@ -303,10 +303,12 @@ sections added beside them. REC-9 needs data entry in the tool (USR-4).
   stage, air temperature, relative humidity, wind speed, cloud cover, soil moisture and
   notes; the report tabulates them. Impossible values are refused on entry. A difference
   from the planned dose stays with USR-8; entry by form stays with USR-1.
-- **REC-10** `build` **The Markdown report on right-to-left readers.** In the web view each
-  table cell now takes its direction from its own text, so "250 kPa" reads correctly on
-  the Arabic page. The downloaded Markdown file has no such rule, and a right-to-left
-  viewer may show a quantity as "kPa 250". Not yet measured in a viewer.
+- **REC-10** `done` **The Markdown report on right-to-left readers.** Measured by showing
+  the Arabic report's lines as plain right-to-left text in Chromium: quantities read
+  "kPa 250" and "L/ha 0.5". In a right-to-left report every quantity is now wrapped in
+  Unicode isolates (FSI, PDI), and the same lines read "250 kPa" and "0.5 L/ha". Other
+  locales are unchanged. The order of mixed Latin cells across a whole table row still
+  depends on the viewer.
 - **REC-5** `done` **Soil information.** Built as decision 0019 says: soil type, texture,
   pH with the method it was measured by, organic matter, seed-bed quality, the fertilizer
   regime and notes. Soil moisture at application sits with the application. Sand, silt
