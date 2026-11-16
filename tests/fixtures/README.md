@@ -50,3 +50,28 @@ attached_photo, attached_video, attached_audio, device_name` -- per
 - Known answer: 15 observations -- YIELD value equal to the plot number for the 12
   plots (101-104, 201-204, 301-304), and SEV low, moderate, high for plots 101,
   102, 103. Plot numbers are block*100 + position, per the RCBD layout.
+
+## clewerWheat.csv
+
+A randomized complete block design comparing three new wheat varieties (V2, V3, V4) with
+a standard (V1) in 3 blocks, grain yield in t/ha, with the row and column of every plot
+(`row, col, block, gen, yield`). The second published-table anchor, and the one trial in
+the suite entered with the layout it was grown in instead of a generated one.
+
+- Source: Clewer & Scarisbrick (2001), Practical Statistics and Experimental Design for
+  Plant and Crop Science, Example 10.1, Table 10.1; via agridat 1.27 (MIT),
+  `data/clewer.wheat.txt`.
+- Published ANOVA: block df 2 SS 9.78 MS 4.89 F 12.22; variety df 3 SS 6.63 MS 2.21
+  F 5.52; error df 6 SS 2.40 MS 0.40; variety means 6.50, 7.60, 6.60, 8.30.
+
+## gomezSeedRate.csv
+
+A randomized complete block design of six rice seeding rates (25 to 150 kg seed/ha) in 4
+blocks, grain yield in kg/ha (`rate, rep, yield`). A published table with its CV, and a
+treatment effect that is not significant.
+
+- Source: Gomez & Gomez (1984), Statistical Procedures for Agricultural Research, Tables
+  2.5 and 2.6; obtained via the Rdatasets agridat CSV mirror, dataset
+  `agridat/gomez.seedrate`. agridat notes the data are used with permission of K. A. Gomez.
+- Published ANOVA: treatment SS 1,198,331; error df 15 SS 1,658,376 MS 110,558; F 2.17;
+  CV 6.7%.

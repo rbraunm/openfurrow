@@ -97,6 +97,7 @@ a clean single-factor RCBD (varieties x 3 blocks).
 - **Condition:** complete within a site-year; moderate treatment count
 - **Source:** Immer (1934), via agridat (`minnesota.barley.yield`).
 - **MVP scope:** yes -- mean-separation stress with several treatments.
+- **Status:** NOT YET IN USE. No fixture or test draws on it.
 
 ### B3. beall.webworms -- insecticide trial (factorial, counts)
 
@@ -138,11 +139,13 @@ yields given as totals of 3 reps.
 
 ## C. Derived fixture (negative test)
 
-### missing-data variants of stirret.borers
+### missing-data variants
 
-A family of copies of B1, each with cells removed in a specific pattern, exercising the MVP
+Copies of a complete trial with cells removed in a specific pattern, exercising the MVP
 missing-data policy (decision 0003): the analyzer must **reject and fail loud**, naming the
-missing cell(s), rather than silently analyzing an incomplete table. The full pattern matrix
+missing cell(s), rather than silently analyzing an incomplete table. In use today: three
+patterns removed from the Yates oats data in `tests/testAnovaRcbd.py` (one cell, one
+value recorded as missing, a whole treatment). The full pattern matrix
 -- a single cell, several scattered cells, a whole treatment absent from one block, a
 non-estimable pattern, and the complete-table control -- lives in decision 0003; the
 fixtures derive from B1 (stirret.borers) by removing cells in each pattern. Documented as
@@ -154,11 +157,12 @@ derived -- the deletions are the test condition, not real data.
 
 ---
 
-## D. Candidates from the 2026-11 survey (not yet in use)
+## D. From the 2026-11 survey
 
 Finished trials that are openly available with both the plot-level data and a published
-analysis of the same data. They were found through assisted web research and are recorded
-as reported: each is confirmed on pull, as B1 was, before a test relies on it.
+analysis of the same data. They were found through assisted web research. D1 and D2 have
+been pulled, confirmed and put to use; the rest are recorded as reported, and each is
+confirmed on pull, as B1 was, before a test relies on it.
 
 ### D1. clewer.wheat -- wheat varieties (RCBD)
 
@@ -168,6 +172,14 @@ variety, block and grand means.
 - **Source:** Clewer & Scarisbrick (2001), *Practical Statistics and Experimental Design
   for Plant and Crop Science*, Example 10.1, Table 10.1; via agridat.
 - **Role:** a second published-table anchor for the single-factor RCBD.
+- **Status:** SOURCED and IN USE. Fixture `tests/fixtures/clewerWheat.csv` (agridat 1.27,
+  MIT), validated by `tests/testPublishedOracles.py`, which reproduces the printed table
+  to its precision and matches statsmodels at full precision. The fixture keeps the row
+  and column of every plot, so the trial is entered with the layout it was grown in
+  (decision 0015) rather than re-randomized.
+- **Confirmed on pull:** 4 varieties x 3 blocks, complete. The variety effect is
+  significant (F = 5.52, p = 0.037), and the LSD leaves one variety in both groups, so the
+  case exercises overlapping letters.
 
 ### D2. gomez.seedrate -- rice seeding rates (RCBD)
 
@@ -178,6 +190,13 @@ the treatment means, the ANOVA and the CV.
   Tables 2.5 and 2.6; via agridat.
 - **Role:** a published CV, and a treatment effect that is not significant, so the
   protected LSD must perform no separation.
+- **Status:** SOURCED and IN USE. Fixture `tests/fixtures/gomezSeedRate.csv` (via the
+  Rdatasets agridat CSV mirror; agridat notes the data are used with permission of K. A.
+  Gomez), validated by `tests/testPublishedOracles.py`.
+- **Confirmed on pull:** 6 rates x 4 blocks, complete. The ANOVA computed from the data
+  gives a treatment sum of squares of 1,198,331, an error sum of squares of 1,658,376, an
+  error mean square of 110,558, F = 2.17 and a CV of 6.7%, the values reported from the
+  book's tables.
 
 ### D3. sweetpotato -- virus conditions (completely randomized)
 
@@ -234,7 +253,9 @@ confirmed as a pair of plot-level data and a matching published analysis.
 |-------------------------------|---------------------|-----------------|----------------------|--------|
 | Yates oats (anchor)           | single-factor RCBD  | numeric         | complete, small      | yes    |
 | stirret.borers                | single-factor RCBD  | count (2 dates) | complete             | yes    |
-| minnesota.barley.yield subset | single-factor RCBD  | numeric         | complete, more trts  | yes    |
+| minnesota.barley.yield subset | single-factor RCBD  | numeric         | complete, more trts  | not yet in use |
+| clewer.wheat                  | single-factor RCBD  | numeric         | complete, own layout | yes    |
+| gomez.seedrate                | single-factor RCBD  | numeric         | complete, not signif.| yes    |
 | missing-data variants         | RCBD + gap          | count           | incomplete (induced) | yes    |
 | beall.webworms                | factorial + subsamp | count           | complete, large      | future |
 | durban.splitplot              | split-plot          | numeric         | complete, large      | future |
@@ -246,8 +267,10 @@ dataset with a treatment+block structure can be adopted later if a clean one is 
 
 ## What we build against first
 
-For the analysis MVP, the active fixtures are the **Yates oats anchor** (published table),
-**stirret.borers** (realistic single-factor RCBD, ARM domain, multi-assessment),
-**minnesota.barley.yield subset** (mean-separation stress), and the **missing-data
-variants** (reject path). The factorial, split-plot, and MET datasets are recorded now so
+The fixtures in use are the **Yates oats anchor** (published table), **stirret.borers**
+(realistic single-factor RCBD, ARM domain, multi-assessment), **clewer.wheat** (published
+table, a layout from the field, overlapping letters), **gomez.seedrate** (published table
+with its CV, no separation under protection), and the **missing-data variants** (reject
+path). The **minnesota.barley.yield subset** (mean-separation stress) is registered and
+not yet used. The factorial, split-plot, and MET datasets are recorded now so
 they are ready when those study types are added.
