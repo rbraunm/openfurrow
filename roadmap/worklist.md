@@ -6,7 +6,7 @@ Findings, defects, checks and owner calls that the plans do not carry.
 Status tags: `fix` (a defect to correct), `build` (work to add), `check` (a suspicion to
 measure), `owner` (the owner's call), `done`.
 
-**Counts.** fix 15, build 9, check 0, owner 3, done 5; 32 in all.
+**Counts.** fix 6, build 9, check 0, owner 3, done 15; 33 in all.
 
 ## Owner decisions
 
@@ -56,16 +56,16 @@ measure), `owner` (the owner's call), `done`.
   `wrapt>=1.17.0rc1` on Python 3.13 and newer, and a pre-release in a specifier makes pip
   accept pre-releases, so the install took wrapt 2.6.0.dev1 over the stable 2.5.2. Pin the
   test environment.
-- **REP-3** `fix` **Exported JSON takes the platform's line endings.** `exportJson`
-  (`openfurrow/exchange.py`) opens the file in text mode without a newline setting.
-  Measured on Windows: all 152 lines of the worked example's export end in CRLF. The
-  content hash is computed in memory and is unaffected, but the file is not byte-identical
-  across platforms, while the function's own docstring calls it deterministic and decision
-  0001 speaks of hashing the file. Write LF on every platform.
-- **REP-4** `fix` **The report names the schema version as the software version.** The
-  reproducibility block prints "OpenFurrow 0.1.0" from `schemaVersion`
-  (`openfurrow/reports/report.py`), while the installed distribution is 0.1.0.dev0. Two
-  builds of the software with one schema cannot be told apart in a report's provenance.
+- **REP-3** `done` **Exported JSON took the platform's line endings.** On Windows all 152
+  lines of the worked example's export ended in CRLF, so the file was not byte-identical
+  across platforms although the content hash was. `exportJson` and the report's
+  `--output` now write UTF-8 with LF everywhere, and tests check both
+  (`tests/testExchange.py`, `tests/testCli.py`).
+- **REP-4** `done` **The report named the schema version as the software version.** It
+  printed "OpenFurrow 0.1.0" from `schemaVersion` while the installed distribution was
+  0.1.0.dev0. The software version now lives in `openfurrow/version.py`; `pyproject.toml`
+  takes the distribution's version from it and the report prints it. The product smoke
+  checks that the report in every locale names the version of the installed wheel.
 
 ## Platforms (PLT)
 
@@ -81,18 +81,20 @@ measure), `owner` (the owner's call), `done`.
 - **PLT-2** `build` **Setup on Windows.** `scripts/bootstrap.sh` is Ubuntu-only (apt and
   the deadsnakes PPA), and `CLAUDE.md` and `CONTRIBUTING.md` tell every session to run it
   first. Windows needs its own path: a PowerShell 5.1 script, or the commands documented.
-- **PLT-3** `fix` **Line endings.** The repository has no `.gitattributes`. A Windows
-  checkout with Git's default settings gets CRLF in every file, which breaks
-  `scripts/bootstrap.sh` under bash and puts CRLF data files into a wheel built there. Two
-  fixtures are committed with CRLF (`examples/yatesOats/observations.csv`,
-  `tests/fixtures/stirretBorers.csv`); the other 122 files are LF.
-- **PLT-4** `fix` **A non-English report printed to redirected output on Windows.**
-  `openfurrow report` prints the report (`openfurrow/cli/main.py`); when output is
-  redirected, Python on Windows encodes it with the ANSI code page. Measured with code
-  page 1252 and no `PYTHONIOENCODING`: `--locale ar` ends in an unhandled
-  `UnicodeEncodeError` with an empty file, and `--locale fr` writes the report in cp1252,
-  not UTF-8. `--output` writes UTF-8 and works for both; the product smoke uses it, so the
-  fix brings its own test.
+- **PLT-3** `done` **Line endings.** The repository had no `.gitattributes`: a Windows
+  checkout with Git's default settings got CRLF in every file, and two fixtures were
+  committed with CRLF. Measured cost: a wheel built from such a checkout carried CRLF data
+  files (613 carriage returns in the en-US catalog alone), so it differed from one built
+  on Linux. Git for Windows' own bash tolerated the CRLF in `scripts/bootstrap.sh`; a
+  Linux bash given the same file would not. `.gitattributes` now makes text LF in the
+  repository and in every checkout, PowerShell scripts excepted, and the two fixtures are
+  renormalized.
+- **PLT-4** `done` **A non-English report printed to redirected output on Windows.**
+  Measured with code page 1252 and no `PYTHONIOENCODING`: `--locale ar` ended in an
+  unhandled `UnicodeEncodeError` with an empty file, and `--locale fr` came out in cp1252.
+  The command now writes UTF-8 to its output streams on every platform, and a test runs
+  it as a process of its own for both locales (`tests/testCli.py`). Redirected output
+  keeps the platform's line endings; `--output` is the byte-stable path.
 - **PLT-5** `done` **The database file stays open.** Measured on Windows: while a
   `Workspace` is alive its database file can be copied but not renamed or deleted
   (sharing violation); both work once the object is dropped. Ownership by copying the
@@ -208,29 +210,33 @@ measure), `owner` (the owner's call), `done`.
 
 ## Small finds (SML)
 
-- **SML-1** `fix` **Two tests assert any exception.** `testServeMissingDatabaseFailsLoud`
-  (`tests/testServe.py`) and one test in `tests/testFieldBookImport.py` use
-  `pytest.raises(Exception)`, which passes on any failure.
-- **SML-2** `fix` **A return annotation.** `buildRcbdMatrix`
-  (`openfurrow/analysis/anova.py`) is annotated as returning three values and returns
-  four.
-- **SML-3** `fix` **Stale comments in code.** `openfurrow/i18n/formatting.py` says no
-  right-to-left locale ships yet; `openfurrow/workspace.py` speaks of "the future Flask
-  service"; `openfurrow/service/web.py` describes D1 scope only;
-  `openfurrow/config/profile.py` says the import profile is the only section.
-- **SML-4** `fix` **A test depends on the working directory.**
-  `testTemplatesAndStaticArePackaged` (`tests/testWeb.py`) runs `python -m build` without
-  naming the project directory, so it passes only when pytest starts in the repository
-  root; it also needs network access. And it builds the wheel in the source tree, where a
-  `build/` directory left by an earlier build supplies files the project no longer
-  packages. Measured on a copy with the templates removed from the packaging: the test
-  passes while the old `build/` is there and fails once it is deleted.
+- **SML-1** `done` **Two tests asserted any exception.** `testServeMissingDatabaseFailsLoud`
+  (`tests/testServe.py`) and `testIngestRejectsPlotOutsideLayout`
+  (`tests/testFieldBookImport.py`) used `pytest.raises(Exception)`. Both now name the
+  exception and its message.
+- **SML-2** `done` **A return annotation.** `buildRcbdMatrix`
+  (`openfurrow/analysis/anova.py`) is annotated with the four values it returns.
+- **SML-3** `done` **Stale comments in code.** Corrected in
+  `openfurrow/i18n/formatting.py`, `openfurrow/workspace.py`, `openfurrow/service/web.py`
+  and `openfurrow/config/profile.py`.
+- **SML-4** `done` **A test depended on the working directory.**
+  `testTemplatesAndStaticArePackaged` (`tests/testWeb.py`) built a wheel in the source
+  tree: it passed only when pytest started in the repository root, it needed the network,
+  and a `build/` directory left by an earlier build supplied files the project no longer
+  packaged. Measured on a copy with the templates removed from the packaging: the test
+  passed while the old `build/` was there and failed once it was deleted. Removed; the
+  product smoke proves the same thing from a wheel built from the source distribution.
 - **SML-5** `owner` **File names.** The owner's cross-project naming rule (camel case,
   files included) is not followed by `scripts/seed-draft-locales.py`,
   `tests/fixtures/fieldbook_database_export.csv` and the hyphenated documents under
   `roadmap/`. Rename, or leave as they are.
 - **SML-6** `done` **A pre-release dependency.** A normal install on Python 3.14 takes a
   pre-release of wrapt; the cause and the remedy are in REP-2.
-- **SML-7** `fix` **An unknown schema version is accepted.** `TrialPackage.schemaVersion`
-  is any non-empty string: a package declaring 99.0 loads without complaint, although the
-  code implements 0.1.0 and the field exists for migration.
+- **SML-7** `done` **An unknown schema version was accepted.** A package declaring 99.0
+  loaded without complaint. A package must now declare the schema this build reads; any
+  other value is rejected with both versions named. The web form's example takes its
+  version from the same constant.
+- **SML-8** `done` **A test rewrote a shipped catalog in place.**
+  `testDiagnosticTextFollowsTheLocale` (`tests/testLocalization.py`) overwrote `fr.json`
+  in the source tree and put it back afterwards, so an interrupted run would have left the
+  shipped French catalog replaced. It now reads from a copy of the catalogs.
