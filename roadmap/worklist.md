@@ -6,7 +6,7 @@ Findings, defects, checks and owner calls that the plans do not carry.
 Status tags: `fix` (a defect to correct), `build` (work to add), `check` (a suspicion to
 measure), `owner` (the owner's call), `done`.
 
-**Counts.** fix 15, build 8, check 0, owner 3, done 5; 31 in all.
+**Counts.** fix 15, build 9, check 0, owner 3, done 5; 32 in all.
 
 ## Owner decisions
 
@@ -17,11 +17,20 @@ measure), `owner` (the owner's call), `done`.
   workflow written for this project tests the full product on Linux and on Windows; it is
   where a change is validated before it is released publicly, and it is a required check
   for pull requests into `main`.
-- **Order of work (2026-11-15):** file every flagged item here first; then the environment,
-  the baseline run and the workflow; then reassess the order of everything else.
+- **Order of work (2026-11-15):** the fixes first; then `main` by pull request; then what a
+  first user needs; the written server phase last.
+- **Pull request into `main` (2026-11-15):** once the fixes pass the workflow, the pull
+  request is opened and merged without asking again. No tag for now.
+- **Layout (2026-11-15):** left to what the field does at large, to be researched rather
+  than guessed. Result: the layout is recorded data (decision 0015,
+  `research/layoutPractice.md`).
 - **First real trial (2026-11-15):** the domain contact is available to run a real trial,
   but only once the owner is convinced the tool is ready. That case has not been made
-  (USR-6).
+  (USR-6). The proposed bar was to be put to a second opinion; the amended bar is under
+  USR-6.
+- **Oracles (2026-11-15):** finished trials that are openly available, from different
+  sources and fields, are the yardstick; a private trial is not needed to start.
+  Candidates are in `research/test-data.md`.
 
 ## Reproducibility (REP)
 
@@ -35,11 +44,10 @@ measure), `owner` (the owner's call), `done`.
   shuffle changes, an existing trial's plots map to other treatments and the analysis is
   wrong with no error: the content hash and `verify` still pass. The module's docstring
   says the stream is guaranteed across versions. Two tests pin a known layout
-  (`tests/testRcbdLayout.py`), so a developer would see a change; a user would not. Open
-  choice: an own shuffle drawn from the bit generator's raw output, a layout fingerprint
-  stored with the trial and checked at every regeneration, or both; and whether the
-  exported document carries the map. This touches settled shape 2 of
-  `implementation-plan.md` (layout derived, never stored).
+  (`tests/testRcbdLayout.py`), so a developer would see a change; a user would not.
+  Decided in decision 0015: the plot map becomes recorded data (stored, exported, hashed),
+  the seed and the method's name become provenance, new layouts come from a shuffle the
+  project specifies itself on SHA-256, and the store carries a version. To build.
 - **REP-2** `fix` **Library versions are not pinned.** Dependencies carry lower bounds
   only, so every install takes the newest releases. A validation run is then not
   repeatable. The baseline of PLT-1 ran against statsmodels 0.15.0, pandas 3.1.1,
@@ -150,20 +158,53 @@ measure), `owner` (the owner's call), `done`.
   error bars as future work.
 - **USR-3** `build` **Analysis breadth.** One design (single-factor RCBD) and one
   comparison method (Fisher's LSD, protected or not). Which designs and tests come first
-  depends on what the first user's trials need.
+  depends on what the first user's trials need. The second opinion's ranking for a first
+  efficacy trial: the right design and experimental unit; an explicit policy for the
+  untreated check (in the analysis or only in the report, never dropped silently); each
+  assessment date analysed on its own; the transformation the reference used, offsets
+  included; Tukey for all pairs or Dunnett against a check before Duncan and SNK; percent
+  control (Abbott, Henderson-Tilton) when the endpoint calls for it; missing plots when
+  the trial has them. EPPO PP 1/152 names the completely randomized design beside the
+  RCBD as the two principal designs; the tool has only the second.
 - **USR-4** `build` **Data entry.** Observations arrive by CSV or a Field Book export. No
   Excel import (the brief lists it second after CSV) and no entry by hand.
 - **USR-5** `build` **A printable report.** The report is Markdown, rendered to HTML in
   the browser; the brief names HTML and PDF output.
 - **USR-6** `owner` **The readiness case.** Before the domain contact runs a real trial,
   the owner has to be convinced the tool is ready (Owner decisions, "First real trial").
-  What that case must show is not yet defined.
+  The bar, as amended by the second opinion, which found the first proposal right for
+  unsupervised use and asked for an agreed scope and a traceable analysis on top:
+  - *Scope agreed first.* One finished trial; its assessments, transformation, comparison
+    test, significance level and check handling named before any number is compared. What
+    the tool does not support is refused with a clear message, never approximated.
+  - *Set up without JSON.* Treatments entered, and the existing plot, block and treatment
+    allocation brought in exactly as planted. A full design form can wait.
+  - *Their data from their files.* The export they actually have, with a preview, an
+    explicit column mapping, and every observation reconciled (counts, duplicates, units,
+    dates).
+  - *The numbers match.* Same observations and degrees of freedom; treatment means, the
+    ANOVA table, CV, and the LSD or HSD; the same pairwise decisions rather than the same
+    letter names. Against a printed report, agreement to its printed precision, and called
+    that; against full-precision output, a relative tolerance of one in a million.
+  - *A report they can print.* Printing from the browser is enough if tables, notes and
+    page breaks survive.
+  - *It installs on their Windows PC* from a documented procedure, without a developer.
+  - *Safe to use.* Save and reopen; the original data kept as received; the analysis
+    settings recorded with the result.
+  - *A bounded pilot.* A supervised session, and their established analysis stays the
+    analysis of record.
+  Showing all of this on open, finished trials (Owner decisions, "Oracles") is the case to
+  make to the owner.
 - **USR-7** `build` **Trials laid out elsewhere.** A layout is always generated from the
   seed. A trial randomized by another tool, or already in the ground, cannot be entered
   with its own plot numbers and its own plot-to-treatment map; its observations could
   only be re-keyed onto a generated layout that does not match the field. A first real
-  trial will most likely be one of these. Bound up with the choice in REP-1: a layout
-  stored as data can also be imported.
+  trial will most likely be one of these. Decision 0015 makes the layout recorded data, so
+  such a trial can be held; REP-1 brings the path through a trial document, and the path
+  through the interface remains to build.
+- **USR-8** `build` **What happened to a plot.** A lost plot, a misapplied treatment or a
+  difference between the plan and what was planted has no record. EPPO PP 1/181 asks for
+  deviations to be noted and reported (decision 0015, "Consequences").
 
 ## Small finds (SML)
 

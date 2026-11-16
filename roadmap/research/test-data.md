@@ -154,6 +154,80 @@ derived -- the deletions are the test condition, not real data.
 
 ---
 
+## D. Candidates from the 2026-11 survey (not yet in use)
+
+Finished trials that are openly available with both the plot-level data and a published
+analysis of the same data. They were found through assisted web research and are recorded
+as reported: each is confirmed on pull, as B1 was, before a test relies on it.
+
+### D1. clewer.wheat -- wheat varieties (RCBD)
+
+**4 varieties x 3 blocks**, grain yield in t/ha. The source prints the ANOVA and the
+variety, block and grand means.
+
+- **Source:** Clewer & Scarisbrick (2001), *Practical Statistics and Experimental Design
+  for Plant and Crop Science*, Example 10.1, Table 10.1; via agridat.
+- **Role:** a second published-table anchor for the single-factor RCBD.
+
+### D2. gomez.seedrate -- rice seeding rates (RCBD)
+
+**6 seeding rates x 4 blocks**, grain yield in kg/ha. The book prints the observations,
+the treatment means, the ANOVA and the CV.
+
+- **Source:** Gomez & Gomez (1984), *Statistical Procedures for Agricultural Research*,
+  Tables 2.5 and 2.6; via agridat.
+- **Role:** a published CV, and a treatment effect that is not significant, so the
+  protected LSD must perform no separation.
+
+### D3. sweetpotato -- virus conditions (completely randomized)
+
+**4 virus conditions x 3 plots**, no blocks, harvested weight. The agricolae tutorial
+prints the means, the LSD, the letters, the error mean square and the CV, and the Tukey
+grouping beside them.
+
+- **Source:** International Potato Center data, in the R package agricolae and its
+  tutorial.
+- **Role:** the closest open match to an AOV Means Table with letters. Needs the
+  completely randomized design.
+- **License flag:** agricolae is GPL. The values are transcribed from the cited source
+  with their citation; package files are not copied.
+
+### D4. gomez.nonnormal1 -- insecticide efficacy counts (RCBD, transformed)
+
+**9 treatments including a control x 4 replicates**, counts of living larvae, analysed as
+log10(count + 1).
+
+- **Source:** Gomez & Gomez (1984), Table 7.16; via agridat.
+- **Role:** an efficacy trial with counts and a transform with an offset, the slice
+  decision 0006 deferred.
+
+### D5. Designs beyond the RCBD
+
+Recorded so they are ready when each design is added, all via agridat unless noted:
+gomez.stripplot (strip-plot; Gomez & Gomez Table 3.15, with the CVs), gomez.splitsplit
+(split-split-plot, the same experiment as agriTutorial's rice), goulden.latin (a Latin
+square of fungicide timings on wheat), cochran.wireworms (a Latin square of fumigants,
+counts analysed as the square root of count + 1), cochran.factorial (a confounded 2^4
+factorial), cochran.lattice (a lattice square, boll weevil damage), burgueno.alpha (an
+alpha-lattice variety trial with a published ASReml analysis), gomez.nitrogen (eight
+treatments over three assessments), and the worked examples of the R package agriTutorial
+(beet, greenrice, sorghum, turnip).
+
+### D6. An ARM-format reference without a license
+
+One public combined trial report prints ARM AOV Means Tables together with the plot-level
+tables behind them (a commercial greenhouse lettuce comparison, ARM 2021.7). It carries no
+reuse license, so it is not a fixture. It is useful for reading how the incumbent rounds
+and lays out its table.
+
+### What the survey did not find
+
+No openly licensed collection of ARM-style reports with their plot-level data. Several
+recent deposits that accompany efficacy and agronomy papers were opened; none is yet
+confirmed as a pair of plot-level data and a matching published analysis.
+
+---
+
 ## Coverage matrix
 
 | Fixture                       | Study type          | Response        | Condition            | MVP    |
