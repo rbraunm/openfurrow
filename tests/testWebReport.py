@@ -19,6 +19,7 @@ import pytest
 
 from openfurrow import TrialPackage, Workspace, schemaVersion
 from openfurrow.service import createApp
+from storeHelpers import standardStudy, standardStudyAt
 
 _packageDict = {
   "schemaVersion": schemaVersion,
@@ -43,7 +44,7 @@ _values = {
 def databasePath(tmp_path, newStore):
   path = newStore("trials")
   workspace = Workspace.create(path)
-  workspace.addPackage(TrialPackage.model_validate(_packageDict))
+  workspace.addPackage(TrialPackage.model_validate(_packageDict), standardStudy(workspace))
   return path
 
 
@@ -190,7 +191,7 @@ def testReportEscapesHtmlInTrialFields(client, workspace, tmp_path):
       {"assessmentCode": "Y", "ratingCode": "Y"}
     ],
   }
-  client.post("/trials/new", data={"package": __import__("json").dumps(malicious)})
+  client.post("/trials/new", data={"package": __import__("json").dumps(malicious), "place": standardStudy(workspace)})
   body = client.get("/trials/XSS/report").get_data(as_text=True)
   # No live injected tag survives; the payload is present only as escaped text.
   assert "<script>alert" not in body

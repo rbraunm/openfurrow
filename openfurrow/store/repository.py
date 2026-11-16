@@ -26,6 +26,7 @@ from openfurrow.store.database import (
   FactorRow,
   RatingRow,
   ObservationRow,
+  SettingValueRow,
   PlotRow,
   PlantingRow,
   PlotDimensionsRow,
@@ -106,14 +107,17 @@ def sessionScope(engine: Engine) -> Iterator[Session]:
 
 def savePackage(
   session: Session, package: TrialPackage, layout: list[PlotAssignment], checkPlots: list[CheckPlot],
+  placePath: str | None,
 ) -> None:
-  """Persist a trial package with its layout and check plots. Raises if the trial code is already present."""
+  """Persist a trial package with its layout and check plots, in its place. Raises if the trial code is already present."""
   trialCode = package.trial.trialCode
   if session.get(TrialRow, trialCode) is not None:
     raise TrialExistsError(f"trial '{trialCode}' already exists; delete it first to replace it")
+  from openfurrow.store.hierarchy import trialPlaceID
 
   trial = TrialRow(
     trialCode=trialCode,
+    placeID=trialPlaceID(session, placePath),
     title=package.trial.title,
     crop=package.trial.crop,
     season=package.trial.season,
@@ -663,6 +667,7 @@ def deleteTrial(session: Session, trialCode: str) -> None:
   trial = session.get(TrialRow, trialCode)
   if trial is None:
     raise TrialNotFoundError(f"trial '{trialCode}' not found")
+  session.execute(SettingValueRow.__table__.delete().where(SettingValueRow.scope == f"trial:{trialCode}"))
   session.delete(trial)
   session.flush()
 

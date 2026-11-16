@@ -43,17 +43,16 @@ from openfurrow.analysis import (
   FactorSeparation,
   LevelGroup,
   LevelMean,
+  MeanComparison,
   MeanSeparation,
   SplitPlotResult,
   TreatmentGroup,
   TreatmentMean,
 )
 from openfurrow.config import (
-  AnalysisSettings,
   ImportFormat,
   ImportProfile,
   LongColumns,
-  MeanComparison,
   OpenFurrowConfig,
   ValueParsing,
   WideColumns,
@@ -184,7 +183,6 @@ __all__ = [
   "TreatmentGroup",
   "TreatmentMean",
   # Configuration that parameterizes import and analysis.
-  "AnalysisSettings",
   "ImportFormat",
   "ImportProfile",
   "LongColumns",

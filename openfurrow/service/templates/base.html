@@ -19,6 +19,7 @@
       </a>
       <nav class="masthead-nav" aria-label="{{ t.text('web.nav.trials') }}">
         <a href="{{ url_for('web.index', locale=locale if locale != 'en-US' else none) }}">{{ t.text('web.nav.trials') }}</a>
+        <a href="{{ url_for('web.places', locale=locale if locale != 'en-US' else none) }}">{{ t.text('web.nav.places') }}</a>
         <a class="nav-action" href="{{ url_for('web.trialForm', locale=locale if locale != 'en-US' else none) }}">{{ t.text('web.nav.addTrial') }}</a>
         {% if locales | length > 1 %}
         <form class="locale-switch" method="get" action="">

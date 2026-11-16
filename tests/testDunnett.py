@@ -17,6 +17,7 @@ from openfurrow.analysis.dunnett import dunnettCdf, dunnettQuantile
 from openfurrow.design import generateLayout
 from openfurrow.reports import buildReport
 from openfurrow.schema.observation import Observation
+from storeHelpers import standardStudy, standardStudyAt
 
 
 @pytest.mark.parametrize("degreesOfFreedom", [3, 5, 12, 24, 60])
@@ -101,7 +102,7 @@ def testReportShowsEachTreatmentAgainstTheCheck(tmp_path, newStore):
   assert "RCBD ANOVA; Dunnett's test (alpha = 0.05)" in report
   workspace = Workspace.create(newStore("t"))
   package, _, observations = checkTrial()
-  workspace.addPackage(package)
+  workspace.addPackage(package, standardStudy(workspace))
   csvPath = tmp_path / "d.csv"
   csvPath.write_text("plotNumber,assessmentCode,value\n" + "".join(f"{o.plotNumber},D,{o.value}\n" for o in observations),
                      encoding="utf-8")

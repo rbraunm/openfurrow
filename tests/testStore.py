@@ -42,11 +42,15 @@ from openfurrow.store.database import (
   TreatmentLineRow,
   TreatmentRow,
 )
+from storeHelpers import standardPath, standardStudy
+from openfurrow import Workspace
 
 
 @pytest.fixture
 def engine(tmp_path, newStore):
-  return createDatabase(newStore("trials"))
+  engine = createDatabase(newStore("trials"))
+  standardStudy(Workspace(engine))
+  return engine
 
 
 def samplePackage(trialCode="TRIAL-1"):
@@ -95,7 +99,7 @@ def sampleObservations(package):
 def testSaveLoadPackageRoundTrip(engine):
   package = samplePackage()
   with sessionScope(engine) as session:
-    savePackage(session, package, generateRcbdLayout(package).plots, [])
+    savePackage(session, package, generateRcbdLayout(package).plots, [], standardPath)
   with sessionScope(engine) as session:
     assert loadPackage(session, "TRIAL-1") == package
 
@@ -104,7 +108,7 @@ def testSaveLoadPreservesInputHash(engine):
   package = samplePackage()
   layout, observations = sampleObservations(package)
   with sessionScope(engine) as session:
-    savePackage(session, package, layout.plots, [])
+    savePackage(session, package, layout.plots, [], standardPath)
     saveObservations(session, "TRIAL-1", observations)
   with sessionScope(engine) as session:
     loadedPackage = loadPackage(session, "TRIAL-1")
@@ -118,7 +122,7 @@ def testSaveLoadLayoutRoundTrip(engine):
   package = samplePackage()
   layout = generateRcbdLayout(package)
   with sessionScope(engine) as session:
-    savePackage(session, package, layout.plots, [])
+    savePackage(session, package, layout.plots, [], standardPath)
   with sessionScope(engine) as session:
     assert loadLayout(session, "TRIAL-1") == layout.plots
 
@@ -133,7 +137,7 @@ def testObservationValueTypesRoundTrip(engine):
   package = samplePackage()
   _, observations = sampleObservations(package)
   with sessionScope(engine) as session:
-    savePackage(session, package, generateRcbdLayout(package).plots, [])
+    savePackage(session, package, generateRcbdLayout(package).plots, [], standardPath)
     saveObservations(session, "TRIAL-1", observations)
   with sessionScope(engine) as session:
     loaded = {(o.plotNumber, o.assessmentCode): o.value for o in loadObservations(session, "TRIAL-1")}
@@ -157,7 +161,7 @@ def testFloatValuesRoundTripExactly(engine):
     for index, value in enumerate(awkward)
   ]
   with sessionScope(engine) as session:
-    savePackage(session, package, generateRcbdLayout(package).plots, [])
+    savePackage(session, package, generateRcbdLayout(package).plots, [], standardPath)
     saveObservations(session, "TRIAL-1", observations)
   with sessionScope(engine) as session:
     loaded = {o.plotNumber: o.value for o in loadObservations(session, "TRIAL-1")}
@@ -170,10 +174,10 @@ def testFloatValuesRoundTripExactly(engine):
 def testSavePackageDuplicateRejected(engine):
   package = samplePackage()
   with sessionScope(engine) as session:
-    savePackage(session, package, generateRcbdLayout(package).plots, [])
+    savePackage(session, package, generateRcbdLayout(package).plots, [], standardPath)
   with pytest.raises(StoreError, match="already exists"):
     with sessionScope(engine) as session:
-      savePackage(session, package, generateRcbdLayout(package).plots, [])
+      savePackage(session, package, generateRcbdLayout(package).plots, [], standardPath)
 
 
 def testSaveObservationsMissingTrialRejected(engine):
@@ -188,7 +192,7 @@ def testSaveObservationsDuplicateRejected(engine):
   layout = generateRcbdLayout(package)
   observation = Observation(plotNumber=layout.plots[0].plotNumber, assessmentCode="YIELD", value=1.0)
   with sessionScope(engine) as session:
-    savePackage(session, package, generateRcbdLayout(package).plots, [])
+    savePackage(session, package, generateRcbdLayout(package).plots, [], standardPath)
     saveObservations(session, "TRIAL-1", [observation])
   with pytest.raises(StoreError, match="already exists"):
     with sessionScope(engine) as session:
@@ -209,7 +213,7 @@ def testListTrials(engine):
   with sessionScope(engine) as session:
     for trialCode in ("TRIAL-B", "TRIAL-A"):
       package = samplePackage(trialCode)
-      savePackage(session, package, generateRcbdLayout(package).plots, [])
+      savePackage(session, package, generateRcbdLayout(package).plots, [], standardPath)
   with sessionScope(engine) as session:
     assert listTrials(session) == [("TRIAL-A", "Sample trial"), ("TRIAL-B", "Sample trial")]
 
@@ -218,7 +222,7 @@ def testDeleteTrialCascades(engine):
   package = samplePackage()
   _, observations = sampleObservations(package)
   with sessionScope(engine) as session:
-    savePackage(session, package, generateRcbdLayout(package).plots, [])
+    savePackage(session, package, generateRcbdLayout(package).plots, [], standardPath)
     saveObservations(session, "TRIAL-1", observations)
   with sessionScope(engine) as session:
     deleteTrial(session, "TRIAL-1")
@@ -255,7 +259,7 @@ def testForeignKeyEnforcedForOrphanObservation(engine):
 def testTreatmentLinesAndApplicationsAreRowsOfTheirOwn(engine):
   package = samplePackage()
   with sessionScope(engine) as session:
-    savePackage(session, package, generateRcbdLayout(package).plots, [])
+    savePackage(session, package, generateRcbdLayout(package).plots, [], standardPath)
   with sessionScope(engine) as session:
     lines = session.execute(
       select(TreatmentLineRow).order_by(TreatmentLineRow.treatmentCode, TreatmentLineRow.ordinal)
@@ -280,7 +284,7 @@ def testRateRoundTripsExactly(engine):
   data["treatments"][1]["lines"][0]["rate"]["value"] = awkward
   package = TrialPackage.model_validate(data)
   with sessionScope(engine) as session:
-    savePackage(session, package, generateRcbdLayout(package).plots, [])
+    savePackage(session, package, generateRcbdLayout(package).plots, [], standardPath)
   with sessionScope(engine) as session:
     assert loadPackage(session, "TRIAL-1").treatments[1].lines[0].rate.value == awkward
 
@@ -288,7 +292,7 @@ def testRateRoundTripsExactly(engine):
 def testProductLinesOfATreatmentTheTrialLacksAreRefused(engine):
   package = samplePackage()
   with sessionScope(engine) as session:
-    savePackage(session, package, generateRcbdLayout(package).plots, [])
+    savePackage(session, package, generateRcbdLayout(package).plots, [], standardPath)
     session.add(TreatmentLineRow(
       trialCode="TRIAL-1", treatmentCode="GHOST", ordinal=0, product="Prod Z", kind=None,
       formulationType=None, activeSubstances="[]", rateValue=1.0, rateUnit="L/ha",
@@ -303,7 +307,7 @@ def testHalfAQuantityInTheStoreIsRefused(engine):
   # A value without its unit is a damaged row; it is not read as a bare number.
   package = samplePackage()
   with sessionScope(engine) as session:
-    savePackage(session, package, generateRcbdLayout(package).plots, [])
+    savePackage(session, package, generateRcbdLayout(package).plots, [], standardPath)
   with sessionScope(engine) as session:
     row = session.execute(select(ApplicationRow)).scalar_one()
     row.pressureValue = 250.0
@@ -337,7 +341,7 @@ def testAssessmentTransformAndKindSurviveRoundTrip(engine):
     ],
   })
   with sessionScope(engine) as session:
-    savePackage(session, package, generateRcbdLayout(package).plots, [])
+    savePackage(session, package, generateRcbdLayout(package).plots, [], standardPath)
   with sessionScope(engine) as session:
     loaded = loadPackage(session, "TR-1")
   assessment = loaded.ratings[0]
@@ -351,8 +355,9 @@ def testAssessmentTransformAndKindSurviveRoundTrip(engine):
 def testReopeningAStoreOfThisVersionSucceeds(tmp_path, newStore):
   path = newStore("trials")
   package = samplePackage()
+  standardStudy(Workspace(createDatabase(path)))
   with sessionScope(createDatabase(path)) as session:
-    savePackage(session, package, generateRcbdLayout(package).plots, [])
+    savePackage(session, package, generateRcbdLayout(package).plots, [], standardPath)
   with sessionScope(createDatabase(path)) as session:
     assert listTrials(session) == [("TRIAL-1", "Sample trial")]
 

@@ -64,6 +64,7 @@ from openfurrow.schema.treatment import ActiveSubstance, TreatmentLine, Treatmen
 from openfurrow.schema.assessment import AssessmentDataType, Rating, SubsampleRule, Transform, UntreatedCheck
 from openfurrow.schema.trialPackage import CheckArrangement, DesignType, RandomizationMethod, TrialPackage
 from openfurrow.reports.charts import ChartBar, MeansChart
+from openfurrow.settings import jsonValue
 from openfurrow.version import softwareVersion
 
 # While a report is built for a page that draws charts, each table of means leaves a
@@ -104,6 +105,7 @@ def buildReportWithCharts(
   significanceLevel: float = 0.05,
   meanComparison: MeanComparison = MeanComparison.protectedLSD,
   locale: str = sourceLocale,
+  settingsUsed: list | None = None,
 ) -> ReportWithCharts:
   """The report with a chart under each table of means; `marker` must not occur in the trial."""
   if not marker.isalnum():
@@ -111,7 +113,7 @@ def buildReportWithCharts(
   charts: list[MeansChart] = []
   token = _chartSink.set((marker, charts))
   try:
-    markdown = buildReport(package, layout, observations, significanceLevel, meanComparison, locale)
+    markdown = buildReport(package, layout, observations, significanceLevel, meanComparison, locale, settingsUsed)
   finally:
     _chartSink.reset(token)
   return ReportWithCharts(markdown, marker, charts)
@@ -150,8 +152,13 @@ def buildReport(
   significanceLevel: float = 0.05,
   meanComparison: MeanComparison = MeanComparison.protectedLSD,
   locale: str = sourceLocale,
+  settingsUsed: list | None = None,
 ) -> str:
-  """Build the full Markdown trial report, rendered in `locale`."""
+  """Build the full Markdown trial report, rendered in `locale`.
+
+  `settingsUsed` are the effective settings the analysis ran under (decision 0035), named
+  with where each was set; a report built without a store has none to name.
+  """
   if layout.trialCode != package.trial.trialCode:
     raise AnalysisError(
       f"layout trialCode '{layout.trialCode}' does not match package trial '{package.trial.trialCode}'"
@@ -174,7 +181,7 @@ def buildReport(
       assessment, package, layout, observations, significanceLevel, meanComparison, translator
     )
   lines += _reproducibilitySection(
-    package, layout, observations, significanceLevel, meanComparison, translator
+    package, layout, observations, significanceLevel, meanComparison, translator, settingsUsed or [],
   )
   return "\n".join(lines).rstrip() + "\n"
 
@@ -1053,7 +1060,7 @@ def _diagnosticLine(outcome, translator: Translator) -> str:
 
 
 def _reproducibilitySection(
-  package, layout, observations, significanceLevel, meanComparison, translator: Translator
+  package, layout, observations, significanceLevel, meanComparison, translator: Translator, settingsUsed,
 ) -> list[str]:
   test = translator.text(methodKeyFor(meanComparison))
   methodKey = {
@@ -1088,6 +1095,13 @@ def _reproducibilitySection(
   ]
   if transformed:
     lines.append(_field(translator, "report.reproducibility.transforms", ", ".join(transformed)))
+  if settingsUsed:
+    # Keys and values are identifiers, shown as recorded in every locale; where each was set is display.
+    lines.append(_field(translator, "report.reproducibility.settings", "; ".join(
+      f"{setting.key} = {jsonValue(setting.key, setting.value)} "
+      f"({_settingSource(setting.source, translator)})"
+      for setting in settingsUsed
+    )))
   # The input hash is canonical, not display: it is the same in every locale.
   lines.append(
     _field(
@@ -1216,6 +1230,13 @@ def _subsampleLines(assessment, package, observations, translator: Translator) -
     )
     lines += [translator.text("report.subsamples.short", plots=plots), ""]
   return lines
+
+
+def _settingSource(source: str, translator: Translator) -> str:
+  kind, _, name = source.partition(":")
+  if kind == "place":
+    return translator.text("report.settings.source.place", name=name)
+  return translator.text(f"report.settings.source.{kind}")
 
 
 def _excludedCheckLines(assessment, package, layout, observations, translator: Translator) -> list[str]:

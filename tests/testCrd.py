@@ -19,6 +19,7 @@ from openfurrow.design import generateLayout
 from openfurrow.reports import buildReport
 from openfurrow.schema.observation import Observation
 from openfurrow.service import createApp
+from storeHelpers import standardPath, standardStudy, standardStudyAt
 
 fixtures = Path(__file__).parent / "fixtures"
 treatments = ["DolMix1", "DolMix2", "DDT", "Azodrin", "DimecronBoom", "DimecronKnap", "Control"]
@@ -107,7 +108,7 @@ def testLayoutWithATreatmentOnTooFewPlotsIsRefused(tmp_path, newStore):
   path.write_text(json.dumps({"package": package.model_dump(mode="json"), "layout": plots, "observations": []}),
                   encoding="utf-8")
   with pytest.raises(ExchangeError, match="are not on exactly 4 plots"):
-    Workspace.create(newStore("t")).importDocument(str(path))
+    Workspace.create(newStore("t")).importDocument(str(path), standardStudyAt(newStore("t")))
 
 
 @pytest.mark.parametrize("design, message", [
@@ -134,16 +135,17 @@ def testReportAndPages(tmp_path, newStore):
   databasePath = newStore("trials")
   workspace = Workspace.create(databasePath)
   package, _, observations = gomezInputs()
-  workspace.addPackage(package)
+  workspace.addPackage(package, standardStudy(workspace))
   body = createApp(databasePath).test_client().get("/trials/GOMEZ-2.1").get_data(as_text=True)
   assert "All plots" in body and "Block 1" not in body
 
 
 def testFormSetsUpACrd(tmp_path, newStore):
   databasePath = newStore("trials")
-  Workspace.create(databasePath)
+  standardStudy(Workspace.create(databasePath))
   client = createApp(databasePath).test_client()
   response = client.post("/trials/form", data={
+    "place": standardPath,
     "trialCode": "CRD-1", "title": "Pots", "crop": "Wheat", "season": "2026", "site": "Glasshouse 2",
     "objective": "Compare", "treatmentsRows": "2", "assessmentsRows": "1", "replications": "5",
     "designType": "crd", "layoutSource": "generate", "seed": "4", "create": "yes",

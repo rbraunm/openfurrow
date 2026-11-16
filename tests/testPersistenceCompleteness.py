@@ -21,6 +21,7 @@ from pydantic import BaseModel
 
 from openfurrow import TrialDocument, TrialPackage, Workspace, contentHash, schemaVersion
 from openfurrow.design import generateLayout
+from storeHelpers import standardStudy, standardStudyAt
 
 # Every optional field populated with a value that differs from its default, and both a
 # numeric assessment (which carries transform/measurementKind/range) and an ordinal one
@@ -180,13 +181,13 @@ def testStoreRoundTripIsExact(tmp_path, newStore):
   """Every field survives the SQLite store, not just the ones with non-default samples."""
   workspace = Workspace.create(newStore("trials"))
   package = _package()
-  workspace.addPackage(package)
+  workspace.addPackage(package, standardStudy(workspace))
   assert workspace.loadPackage("MAX-1") == package
 
 
 def testSplitPlotStoreRoundTripIsExact(tmp_path, newStore):
   workspace = Workspace.create(newStore("trials"))
-  workspace.addPackage(_splitPlot())
+  workspace.addPackage(_splitPlot(), standardStudy(workspace))
   assert workspace.loadPackage("SPLIT-1") == _splitPlot()
   plots = workspace.layoutFor("SPLIT-1").plots
   assert sorted({plot.mainPlot for plot in plots}) == [1, 2]
@@ -194,11 +195,11 @@ def testSplitPlotStoreRoundTripIsExact(tmp_path, newStore):
 
 def testSplitPlotExchangeRoundTripIsExact(tmp_path, newStore):
   source = Workspace.create(newStore("a"))
-  source.addPackage(_splitPlot())
+  source.addPackage(_splitPlot(), standardStudy(source))
   jsonPath = str(tmp_path / "doc.json")
   source.exportDocument("SPLIT-1", jsonPath)
   destination = Workspace.create(newStore("b"))
-  destination.importDocument(jsonPath)
+  destination.importDocument(jsonPath, standardStudy(destination))
   assert destination.loadPackage("SPLIT-1") == _splitPlot()
   assert destination.contentHashFor("SPLIT-1") == source.contentHashFor("SPLIT-1")
 
@@ -206,19 +207,19 @@ def testSplitPlotExchangeRoundTripIsExact(tmp_path, newStore):
 def testJsonExchangeRoundTripIsExact(tmp_path, newStore):
   """Every field survives JSON export and re-import into a fresh store."""
   source = Workspace.create(newStore("a"))
-  source.addPackage(_package())
+  source.addPackage(_package(), standardStudy(source))
   jsonPath = str(tmp_path / "doc.json")
   source.exportDocument("MAX-1", jsonPath)
 
   destination = Workspace.create(newStore("b"))
-  destination.importDocument(jsonPath)
+  destination.importDocument(jsonPath, standardStudy(destination))
   assert destination.loadPackage("MAX-1") == _package()
 
 
 def testExportWritesQuantitiesAndDatesLocaleNeutral(tmp_path, newStore):
   """A date and a time leave as ISO 8601 and a quantity as a dot-decimal value beside its unit."""
   workspace = Workspace.create(newStore("a"))
-  workspace.addPackage(_package())
+  workspace.addPackage(_package(), standardStudy(workspace))
   jsonPath = tmp_path / "doc.json"
   workspace.exportDocument("MAX-1", str(jsonPath))
   exported = json.loads(jsonPath.read_text(encoding="utf-8"))["package"]
@@ -266,7 +267,7 @@ def testImportedLayoutSurvivesStoreAndExchange(tmp_path, newStore):
   sourcePath.write_text(json.dumps({"package": data, "layout": plots, "observations": []}), encoding="utf-8")
 
   first = Workspace.create(newStore("a"))
-  assert first.importDocument(str(sourcePath)) == "MAX-1"
+  assert first.importDocument(str(sourcePath), standardStudy(first)) == "MAX-1"
   stored = first.layoutFor("MAX-1").plots
   assert [plot.model_dump(exclude_none=True) for plot in stored] == plots
   assert first.loadPackage("MAX-1").design.randomizationSeed is None
@@ -274,7 +275,7 @@ def testImportedLayoutSurvivesStoreAndExchange(tmp_path, newStore):
   exportedPath = str(tmp_path / "exported.json")
   first.exportDocument("MAX-1", exportedPath)
   second = Workspace.create(newStore("b"))
-  second.importDocument(exportedPath)
+  second.importDocument(exportedPath, standardStudy(second))
   assert second.contentHashFor("MAX-1") == first.contentHashFor("MAX-1")
   assert [plot.model_dump(exclude_none=True) for plot in second.layoutFor("MAX-1").plots] == plots
 

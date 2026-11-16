@@ -33,6 +33,7 @@ from openfurrow.workspace import (
   StoreError,
   Workspace,
 )
+from storeHelpers import standardStudy, standardStudyAt
 
 _packageDict = {
   "schemaVersion": schemaVersion,
@@ -77,7 +78,7 @@ def trial(tmp_path, newStore):
 def _populated(trial):
   """A workspace with the trial added and its observations imported."""
   workspace = Workspace.create(trial["db"])
-  workspace.addPackage(trial["package"])
+  workspace.addPackage(trial["package"], standardStudy(workspace))
   workspace.importObservations("WS-1", trial["csv"], defaultConfig().importProfile)
   return workspace
 
@@ -96,7 +97,7 @@ def testOpenMissingDatabaseRaises(trial):
 
 
 def testOpenExistingReusesData(trial):
-  Workspace.create(trial["db"]).addPackage(trial["package"])
+  Workspace.create(trial["db"]).addPackage(trial["package"], standardStudyAt(trial["db"]))
   reopened = Workspace.open(trial["db"])
   assert reopened.listTrials() == [("WS-1", "Facade trial")]
 
@@ -105,7 +106,7 @@ def testOpenExistingReusesData(trial):
 
 def testAddThenListAndLoad(trial):
   workspace = Workspace.create(trial["db"])
-  workspace.addPackage(trial["package"])
+  workspace.addPackage(trial["package"], standardStudy(workspace))
   assert workspace.listTrials() == [("WS-1", "Facade trial")]
   assert workspace.loadPackage("WS-1") == trial["package"]
 
@@ -128,7 +129,7 @@ def testDeleteRemovesTrial(trial):
 
 def testLayoutMatchesDirectRegeneration(trial):
   workspace = Workspace.create(trial["db"])
-  workspace.addPackage(trial["package"])
+  workspace.addPackage(trial["package"], standardStudy(workspace))
   assert workspace.layoutFor("WS-1") == generateRcbdLayout(trial["package"])
   assert len(workspace.layoutFor("WS-1").plots) == trial["package"].plotCount
 
@@ -137,7 +138,7 @@ def testLayoutMatchesDirectRegeneration(trial):
 
 def testImportSavesEveryObservation(trial):
   workspace = Workspace.create(trial["db"])
-  workspace.addPackage(trial["package"])
+  workspace.addPackage(trial["package"], standardStudy(workspace))
   result = workspace.importObservations("WS-1", trial["csv"], defaultConfig().importProfile)
   assert len(result.observations) == trial["package"].plotCount
   assert len(workspace.loadObservations("WS-1")) == trial["package"].plotCount
@@ -145,7 +146,7 @@ def testImportSavesEveryObservation(trial):
 
 def testAnalyzeBeforeImportRaises(trial):
   workspace = Workspace.create(trial["db"])
-  workspace.addPackage(trial["package"])
+  workspace.addPackage(trial["package"], standardStudy(workspace))
   with pytest.raises(AnalysisError):
     workspace.analyze("WS-1", "YIELD")
 
@@ -185,8 +186,12 @@ def testReportMatchesPrimitive(trial):
   package = workspace.loadPackage("WS-1")
   layout = workspace.layoutFor("WS-1")
   observations = workspace.loadObservations("WS-1")
-  expected = buildReport(package, layout, observations, significanceLevel=0.05, meanComparison=MeanComparison.protectedLSD)
+  expected = buildReport(
+    package, layout, observations, significanceLevel=0.05, meanComparison=MeanComparison.protectedLSD,
+    settingsUsed=workspace.effectiveSettings("trial:WS-1"),
+  )
   assert workspace.buildReport("WS-1") == expected
+  assert "analysis.significanceLevel = 0.05 (default)" in expected
 
 
 # ---- exchange, hashing, verification --------------------------------------
@@ -227,7 +232,7 @@ def testAddingAPackageWithAnImportedLayoutIsRefused(trial):
   data = copy.deepcopy(_packageDict)
   data["design"] = {"designType": "rcbd", "replications": 3, "randomizationMethod": "imported"}
   with pytest.raises(StoreError, match="declares an imported layout; supply it as a trial document"):
-    workspace.addPackage(TrialPackage.model_validate(data))
+    workspace.addPackage(TrialPackage.model_validate(data), standardStudy(workspace))
 
 
 def testExportImportRoundTripPreservesHash(trial):
@@ -236,7 +241,7 @@ def testExportImportRoundTripPreservesHash(trial):
   source.exportDocument("WS-1", jsonPath)
 
   destination = Workspace.create(trial["db2"])
-  trialCode = destination.importDocument(jsonPath)
+  trialCode = destination.importDocument(jsonPath, standardStudy(destination))
   assert trialCode == "WS-1"
   assert destination.contentHashFor("WS-1") == source.contentHashFor("WS-1")
 

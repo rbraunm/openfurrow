@@ -20,6 +20,7 @@ from openfurrow.design import generateLayout
 from openfurrow.reports import buildReport
 from openfurrow.schema import TrialLayout, TrialPackage
 from openfurrow.schema.observation import Observation
+from storeHelpers import standardStudy, standardStudyAt
 
 fixturesDirectory = Path(__file__).parent / "fixtures"
 nitrogenLevels = [f"N{index}" for index in range(6)]
@@ -235,7 +236,7 @@ def testSplitPlotTrialServesItsPages(tmp_path, newStore):
   databasePath = newStore("trials")
   workspace = Workspace.create(databasePath)
   package, layout, observations = gomezInputs()
-  workspace.addPackage(package)
+  workspace.addPackage(package, standardStudy(workspace))
   csvPath = tmp_path / "yields.csv"
   csvPath.write_text(
     "plotNumber,assessmentCode,value\n" + "".join(f"{o.plotNumber},Y,{o.value}\n" for o in observations),

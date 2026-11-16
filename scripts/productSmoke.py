@@ -34,6 +34,14 @@ def require(condition, message):
     raise RuntimeError(message)
 
 
+studyPath = "rothamsted/oats/varieties"
+
+
+def addPlaces(openfurrow, database, workDirectory):
+  """The example's place in the default hierarchy: organization, project, study."""
+  for path, name in (("rothamsted", "Rothamsted"), ("rothamsted/oats", "Oats"), (studyPath, "Varieties and nitrogen")):
+    run([openfurrow, "place", "add", database, path, name], workDirectory)
+
 def run(arguments, workDirectory):
   command = [str(argument) for argument in arguments]
   completed = subprocess.run(
@@ -118,7 +126,8 @@ def main():
     step(f"running the worked example ({trialCode}) through the installed command")
     database = workDirectory / "trials.db"
     run([openfurrow, "init", database], workDirectory)
-    run([openfurrow, "add", database, exampleDirectory / "trial.json"], workDirectory)
+    addPlaces(openfurrow, database, workDirectory)
+    run([openfurrow, "add", database, exampleDirectory / "trial.json", "--place", studyPath], workDirectory)
     run([openfurrow, "import", database, trialCode, exampleDirectory / "observations.csv"], workDirectory)
     wheelVersion = wheels[0].name.split("-")[1]
     for locale in locales:
@@ -133,7 +142,9 @@ def main():
     documentPath = workDirectory / "trial.json"
     copyDatabase = workDirectory / "copy.db"
     run([openfurrow, "export", database, trialCode, "--json", documentPath, "--csv", workDirectory / "observations.csv"], workDirectory)
-    run([openfurrow, "import-json", copyDatabase, documentPath], workDirectory)
+    run([openfurrow, "init", copyDatabase], workDirectory)
+    addPlaces(openfurrow, copyDatabase, workDirectory)
+    run([openfurrow, "import-json", copyDatabase, documentPath, "--place", studyPath], workDirectory)
     originalHash = contentHashFrom(run([openfurrow, "info", database, trialCode], workDirectory))
     copyHash = contentHashFrom(run([openfurrow, "info", copyDatabase, trialCode], workDirectory))
     require(originalHash == copyHash, f"the re-imported trial hashes to {copyHash}, the original to {originalHash}")

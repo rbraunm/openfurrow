@@ -89,6 +89,18 @@
       "text": "Normalidad de los residuos de subparcela (Shapiro-Wilk)",
       "status": "machineDraft"
     },
+    "hierarchy.level.organization": {
+      "text": "Organización",
+      "status": "machineDraft"
+    },
+    "hierarchy.level.project": {
+      "text": "Proyecto",
+      "status": "machineDraft"
+    },
+    "hierarchy.level.study": {
+      "text": "Estudio",
+      "status": "machineDraft"
+    },
     "report.anova.coefficientOfVariation": {
       "text": "Coeficiente de variación",
       "status": "machineDraft"
@@ -833,6 +845,10 @@
       "text": "Semilla de aleatorización",
       "status": "machineDraft"
     },
+    "report.reproducibility.settings": {
+      "text": "Configuración",
+      "status": "machineDraft"
+    },
     "report.reproducibility.splitPlotMethodValue": {
       "text": "ANOVA de parcelas divididas; {test} con el error propio de cada factor (alfa = {alpha})",
       "status": "machineDraft"
@@ -867,6 +883,22 @@
     },
     "report.scale.withOffset": {
       "text": "{scale} de (x + {offset})",
+      "status": "machineDraft"
+    },
+    "report.settings.source.default": {
+      "text": "predeterminado",
+      "status": "machineDraft"
+    },
+    "report.settings.source.place": {
+      "text": "fijado para {name}",
+      "status": "machineDraft"
+    },
+    "report.settings.source.server": {
+      "text": "fijado para el servidor",
+      "status": "machineDraft"
+    },
+    "report.settings.source.trial": {
+      "text": "fijado para este ensayo",
       "status": "machineDraft"
     },
     "report.site.address": {
@@ -1697,8 +1729,80 @@
       "text": "Agregar ensayo",
       "status": "machineDraft"
     },
+    "web.nav.places": {
+      "text": "Lugares",
+      "status": "machineDraft"
+    },
     "web.nav.trials": {
       "text": "Ensayos",
+      "status": "machineDraft"
+    },
+    "web.place.label": {
+      "text": "{level} al que pertenece el ensayo",
+      "status": "machineDraft"
+    },
+    "web.place.none": {
+      "text": "Aún no hay ningún {level} donde poner un ensayo. Añada uno primero:",
+      "status": "machineDraft"
+    },
+    "web.places.add.code": {
+      "text": "Código (letras, dígitos, '.', '_' y '-')",
+      "status": "machineDraft"
+    },
+    "web.places.add.heading": {
+      "text": "Añadir un lugar",
+      "status": "machineDraft"
+    },
+    "web.places.add.name": {
+      "text": "Nombre",
+      "status": "machineDraft"
+    },
+    "web.places.add.parent": {
+      "text": "Dentro de",
+      "status": "machineDraft"
+    },
+    "web.places.add.submit": {
+      "text": "Añadir",
+      "status": "machineDraft"
+    },
+    "web.places.add.top": {
+      "text": "(ninguno: un nuevo {level})",
+      "status": "machineDraft"
+    },
+    "web.places.column.level": {
+      "text": "Nivel",
+      "status": "machineDraft"
+    },
+    "web.places.column.name": {
+      "text": "Nombre",
+      "status": "machineDraft"
+    },
+    "web.places.column.path": {
+      "text": "Ruta",
+      "status": "machineDraft"
+    },
+    "web.places.column.trials": {
+      "text": "Ensayos",
+      "status": "machineDraft"
+    },
+    "web.places.empty": {
+      "text": "Aún no hay lugares.",
+      "status": "machineDraft"
+    },
+    "web.places.heading": {
+      "text": "Lugares",
+      "status": "machineDraft"
+    },
+    "web.places.intro": {
+      "text": "Los ensayos viven en lugares: {levels} y luego el ensayo. Los roles y la configuración se asignan por lugar.",
+      "status": "machineDraft"
+    },
+    "web.places.noLevels": {
+      "text": "Este almacén no tiene niveles de jerarquía: los ensayos están por sí solos.",
+      "status": "machineDraft"
+    },
+    "web.places.problem": {
+      "text": "No se añadió el lugar: {reason}",
       "status": "machineDraft"
     },
     "web.report.back": {
@@ -1803,6 +1907,10 @@
     },
     "web.trials.column.crop": {
       "text": "Cultivo",
+      "status": "machineDraft"
+    },
+    "web.trials.column.place": {
+      "text": "Lugar",
       "status": "machineDraft"
     },
     "web.trials.column.plots": {

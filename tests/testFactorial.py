@@ -20,6 +20,7 @@ from openfurrow.analysis import AnalysisError, analyzeFactorialRcbd, analyzeRcbd
 from openfurrow.design import generateLayout
 from openfurrow.reports import buildReport
 from openfurrow.schema.observation import Observation
+from storeHelpers import standardStudy, standardStudyAt
 
 fixtures = Path(__file__).parent / "fixtures"
 varieties = ["V1", "V2", "V3"]
@@ -145,7 +146,7 @@ def testReportSplitsTheTreatmentLine():
 def testWorkspaceSeparatesAFactorOfAFactorialTrial(tmp_path, newStore):
   workspace = Workspace.create(newStore("trials"))
   package, _, observations = gomezInputs()
-  workspace.addPackage(package)
+  workspace.addPackage(package, standardStudy(workspace))
   path = tmp_path / "y.csv"
   path.write_text("plotNumber,assessmentCode,value\n" + "".join(f"{o.plotNumber},Y,{o.value}\n" for o in observations),
                   encoding="utf-8")

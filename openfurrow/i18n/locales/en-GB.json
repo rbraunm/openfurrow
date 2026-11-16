@@ -1045,6 +1045,26 @@
       "text": "Transforms",
       "status": "humanApproved"
     },
+    "report.reproducibility.settings": {
+      "text": "Settings",
+      "status": "humanApproved"
+    },
+    "report.settings.source.default": {
+      "text": "default",
+      "status": "humanApproved"
+    },
+    "report.settings.source.server": {
+      "text": "set for the server",
+      "status": "humanApproved"
+    },
+    "report.settings.source.place": {
+      "text": "set for {name}",
+      "status": "humanApproved"
+    },
+    "report.settings.source.trial": {
+      "text": "set for this trial",
+      "status": "humanApproved"
+    },
     "report.reproducibility.inputHash": {
       "text": "Input hash (SHA-256)",
       "status": "humanApproved"
@@ -1479,6 +1499,94 @@
     },
     "web.import.warningsHeading": {
       "text": "Warnings",
+      "status": "humanApproved"
+    },
+    "hierarchy.level.organization": {
+      "text": "Organization",
+      "status": "humanApproved"
+    },
+    "hierarchy.level.project": {
+      "text": "Project",
+      "status": "humanApproved"
+    },
+    "hierarchy.level.study": {
+      "text": "Study",
+      "status": "humanApproved"
+    },
+    "web.nav.places": {
+      "text": "Places",
+      "status": "humanApproved"
+    },
+    "web.trials.column.place": {
+      "text": "Place",
+      "status": "humanApproved"
+    },
+    "web.place.label": {
+      "text": "{level} the trial belongs to",
+      "status": "humanApproved"
+    },
+    "web.place.none": {
+      "text": "There is no {level} to put a trial in yet. Add one first:",
+      "status": "humanApproved"
+    },
+    "web.places.heading": {
+      "text": "Places",
+      "status": "humanApproved"
+    },
+    "web.places.intro": {
+      "text": "Trials live in places: {levels}, then the trial. Roles and settings are given by place.",
+      "status": "humanApproved"
+    },
+    "web.places.noLevels": {
+      "text": "This store has no hierarchy levels: trials stand on their own.",
+      "status": "humanApproved"
+    },
+    "web.places.empty": {
+      "text": "No places yet.",
+      "status": "humanApproved"
+    },
+    "web.places.column.path": {
+      "text": "Path",
+      "status": "humanApproved"
+    },
+    "web.places.column.level": {
+      "text": "Level",
+      "status": "humanApproved"
+    },
+    "web.places.column.name": {
+      "text": "Name",
+      "status": "humanApproved"
+    },
+    "web.places.column.trials": {
+      "text": "Trials",
+      "status": "humanApproved"
+    },
+    "web.places.add.heading": {
+      "text": "Add a place",
+      "status": "humanApproved"
+    },
+    "web.places.add.parent": {
+      "text": "Inside",
+      "status": "humanApproved"
+    },
+    "web.places.add.top": {
+      "text": "(none: a new {level})",
+      "status": "humanApproved"
+    },
+    "web.places.add.code": {
+      "text": "Code (letters, digits, '.', '_' and '-')",
+      "status": "humanApproved"
+    },
+    "web.places.add.name": {
+      "text": "Name",
+      "status": "humanApproved"
+    },
+    "web.places.add.submit": {
+      "text": "Add",
+      "status": "humanApproved"
+    },
+    "web.places.problem": {
+      "text": "The place was not added: {reason}",
       "status": "humanApproved"
     },
     "web.trial.importData": {

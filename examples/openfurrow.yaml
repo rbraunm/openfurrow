@@ -51,16 +51,6 @@ import:
       - "na"
       - "N/A"
 
-# The analysis conventions, matching what an ARM user expects from the AOV Means Table.
-analysis:
-  significanceLevel: 0.05
-
-  # protectedLSD runs Fisher's LSD only when the treatment F test is significant;
-  # lsd always separates means; tukeyHSD compares all pairs by Tukey's honestly significant
-  # difference. Other tests (Duncan's, SNK, Dunnett's) are
-  # future scope -- see roadmap/milestones.md.
-  meanComparison: protectedLSD
-
 # The HTTP service and web UI (openfurrow serve). Only read by `serve`.
 service:
   # Loopback by default: the tool must not become a network service by accident.

@@ -18,7 +18,6 @@ from enum import Enum
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
-from openfurrow.analysis.meanSeparation import MeanComparison
 
 
 class ImportFormat(str, Enum):
@@ -148,19 +147,6 @@ class ImportProfile(BaseModel):
     return ImportProfile.model_validate(data)
 
 
-class AnalysisSettings(BaseModel):
-  """Per-study analysis settings (decision 0009).
-
-  The significance level and the mean-comparison test are configurable per study;
-  the defaults match ARM's conventional choices (alpha 0.05, protected LSD).
-  """
-
-  model_config = ConfigDict(extra="forbid")
-
-  significanceLevel: float = Field(default=0.05, gt=0.0, lt=1.0)
-  meanComparison: MeanComparison = MeanComparison.protectedLSD
-
-
 class TLSSettings(BaseModel):
   """HTTPS for the service (optional; off by default).
 
@@ -235,5 +221,4 @@ class OpenFurrowConfig(BaseModel):
   model_config = ConfigDict(extra="forbid", populate_by_name=True)
 
   importProfile: ImportProfile = Field(default_factory=ImportProfile, alias="import")
-  analysis: AnalysisSettings = Field(default_factory=AnalysisSettings)
   service: ServiceSettings = Field(default_factory=ServiceSettings)

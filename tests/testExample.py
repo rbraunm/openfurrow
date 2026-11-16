@@ -10,6 +10,7 @@ or the analysis.
 from pathlib import Path
 
 from openfurrow.cli.main import main
+from storeHelpers import standardStudyAt
 
 exampleDirectory = Path(__file__).parent.parent / "examples" / "yatesOats"
 trialPath = str(exampleDirectory / "trial.json")
@@ -19,7 +20,7 @@ knownInputHash = "b4a18746dc3b586e8e811503b88b30ac37859f0fe1fe91760154aaf7b30f0f
 
 def loadExample(database):
   assert main(["init", database]) == 0
-  assert main(["add", database, trialPath]) == 0
+  assert main(["add", database, trialPath, "--place", standardStudyAt(database)]) == 0
   assert main(["import", database, "yatesOats1935", observationsPath]) == 0
 
 

@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}{{ t.text('web.places.heading') }} - {{ t.text('web.app.name') }}{% endblock %}
+{% block content %}
+{% set localeArgument = locale if locale != 'en-US' else none %}
+<div class="page-head">
+  <h1>{{ t.text('web.places.heading') }}</h1>
+</div>
+<p class="intro">{{ t.text('web.places.intro', levels=levelNames | join(' / ')) }}</p>
+
+{% if problem %}
+<div class="error" role="alert">{{ problem }}</div>
+{% endif %}
+
+{% if not levelNames %}
+<p class="notice">{{ t.text('web.places.noLevels') }}</p>
+{% else %}
+{% if places %}
+<table class="trials places">
+  <thead>
+    <tr>
+      <th scope="col">{{ t.text('web.places.column.path') }}</th>
+      <th scope="col">{{ t.text('web.places.column.level') }}</th>
+      <th scope="col">{{ t.text('web.places.column.name') }}</th>
+      <th scope="col" class="num">{{ t.text('web.places.column.trials') }}</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for place in places %}
+    <tr>
+      <td class="code" style="padding-inline-start: {{ 0.7 + 1.2 * (place.path.count('/')) }}rem">{{ place.path }}</td>
+      <td>{{ levelName[place.levelCode] }}</td>
+      <td dir="auto">{{ place.name }}</td>
+      <td class="num code">{{ t.integer(trialCounts[place.path]) }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p class="notice">{{ t.text('web.places.empty') }}</p>
+{% endif %}
+
+<section aria-label="{{ t.text('web.places.add.heading') }}">
+  <h2>{{ t.text('web.places.add.heading') }}</h2>
+  <form class="import-form" method="post" action="{{ url_for('web.places', locale=localeArgument) }}">
+    <div class="field-row">
+      <label class="field-label" for="parent">{{ t.text('web.places.add.parent') }}</label>
+      <select id="parent" name="parent">
+        <option value="">{{ t.text('web.places.add.top', level=levelNames[0]) }}</option>
+        {% for place in parents %}<option value="{{ place.path }}">{{ place.name }} ({{ place.path }})</option>{% endfor %}
+      </select>
+    </div>
+    <div class="field-row">
+      <label class="field-label" for="code">{{ t.text('web.places.add.code') }}</label>
+      <input type="text" id="code" name="code" dir="ltr" value="{{ typed.code }}">
+    </div>
+    <div class="field-row">
+      <label class="field-label" for="name">{{ t.text('web.places.add.name') }}</label>
+      <input type="text" id="name" name="name" dir="auto" value="{{ typed.name }}">
+    </div>
+    <div class="form-actions"><button class="button" type="submit">{{ t.text('web.places.add.submit') }}</button></div>
+  </form>
+</section>
+{% endif %}
+{% endblock %}

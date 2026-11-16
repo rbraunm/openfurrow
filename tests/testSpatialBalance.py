@@ -18,6 +18,7 @@ from openfurrow.design.spatialBalance import balanceCost, spatiallyBalancedOrder
 from openfurrow.design.stream import Sha256Stream, shuffled
 from openfurrow.reports import buildReport
 from openfurrow.schema import TrialPackage
+from storeHelpers import standardStudy, standardStudyAt
 
 
 def balancedPackageDict(treatmentCount=5, replications=4, seed=3):
@@ -99,7 +100,7 @@ def testDocumentWhoseLayoutIsNotTheBalancedOneRejected(tmp_path, newStore):
   path.write_text(json.dumps({"package": package.model_dump(mode="json"), "layout": plots, "observations": []}),
                   encoding="utf-8")
   with pytest.raises(ExchangeError, match="not a valid trial document"):
-    Workspace.create(newStore("trials")).importDocument(str(path))
+    Workspace.create(newStore("trials")).importDocument(str(path), standardStudyAt(newStore("trials")))
 
 
 def testReportNamesTheArrangement():

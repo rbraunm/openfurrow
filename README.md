@@ -25,7 +25,10 @@ dependency versions the project is validated with, add `--constraint constraints
 
 ```bash
 openfurrow init trials.db                        # create the store
-openfurrow add trials.db trial.json              # add a validated trial package
+openfurrow place add trials.db station "Research station"           # organization
+openfurrow place add trials.db station/fungicides "Fungicides"      # project
+openfurrow place add trials.db station/fungicides/wheat "Wheat"     # study
+openfurrow add trials.db trial.json --place station/fungicides/wheat  # add a validated trial package
 openfurrow randomize trials.db MY-TRIAL          # the field plan: plot -> block, treatment
 openfurrow import trials.db MY-TRIAL data.csv    # import observations from CSV
 openfurrow report trials.db MY-TRIAL             # the AOV Means Table

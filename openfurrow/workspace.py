@@ -90,6 +90,23 @@ from openfurrow.schema import (
   contentHash as _contentHash,
 )
 from openfurrow.schema.document import checkObservationValues as _checkObservationValues
+from openfurrow.schema.hierarchy import HierarchyLevel, Place
+from openfurrow.settings import EffectiveSetting
+from openfurrow.store.hierarchy import (
+  addPlace as _addPlace,
+  deletePlace as _deletePlace,
+  listPlaces as _listPlaces,
+  loadLevels as _loadLevels,
+  moveTrial as _moveTrial,
+  replaceLevels as _replaceLevels,
+  trialPlace as _trialPlace,
+  trialsIn as _trialsIn,
+)
+from openfurrow.store.settingValues import (
+  clearValue as _clearValue,
+  effectiveSettings as _effectiveSettings,
+  setValue as _setValue,
+)
 from openfurrow.store import (
   StoreError,
   createDatabase as _createDatabase,
@@ -164,12 +181,13 @@ class Workspace:
 
   # ---- trial management ---------------------------------------------------
 
-  def addPackage(self, package: TrialPackage) -> None:
-    """Persist a validated trial package and the layout generated from its seed.
+  def addPackage(self, package: TrialPackage, place: str | None) -> None:
+    """Persist a validated trial package and the layout generated from its seed, in `place`.
 
     This is where a trial is randomized: once, here, and the layout is recorded. A
     package whose layout was made elsewhere carries no plots, so it cannot be added
-    this way; such a trial comes in as a trial document (`importDocument`).
+    this way; such a trial comes in as a trial document (`importDocument`). The place is
+    a path of the hierarchy's last level, or None when the store has no levels.
     """
     if package.design.randomizationMethod is RandomizationMethod.imported:
       raise StoreError(
@@ -178,7 +196,7 @@ class Workspace:
       )
     layout = _generateLayout(package)
     with _sessionScope(self._engine) as session:
-      _savePackage(session, package, layout.plots, layout.checkPlots)
+      _savePackage(session, package, layout.plots, layout.checkPlots, place)
 
   def listTrials(self) -> list[tuple[str, str]]:
     """Every trial in the store as (trialCode, title) pairs."""
@@ -199,6 +217,67 @@ class Workspace:
     """Delete a trial and all its observations."""
     with _sessionScope(self._engine) as session:
       _deleteTrial(session, trialCode)
+
+  # ---- hierarchy (decision 0034) ------------------------------------------
+
+  def hierarchyLevels(self) -> list[HierarchyLevel]:
+    """The hierarchy's levels, top first; the trial is always below the last."""
+    with _sessionScope(self._engine) as session:
+      return _loadLevels(session)
+
+  def setHierarchyLevels(self, levels: list[HierarchyLevel]) -> None:
+    """Replace the levels; only while the store holds no places and no trials."""
+    with _sessionScope(self._engine) as session:
+      _replaceLevels(session, levels)
+
+  def addPlace(self, parent: str | None, code: str, name: str) -> Place:
+    """A new place inside `parent` (None for the first level)."""
+    with _sessionScope(self._engine) as session:
+      return _addPlace(session, parent, code, name)
+
+  def places(self) -> list[Place]:
+    with _sessionScope(self._engine) as session:
+      return _listPlaces(session)
+
+  def deletePlace(self, path: str) -> None:
+    """Delete a place that holds no places and no trials."""
+    with _sessionScope(self._engine) as session:
+      _deletePlace(session, path)
+
+  def placeOf(self, trialCode: str) -> str | None:
+    with _sessionScope(self._engine) as session:
+      return _trialPlace(session, trialCode)
+
+  def moveTrial(self, trialCode: str, place: str | None) -> None:
+    """Put a trial in another place; the trial and its content hash are unchanged."""
+    with _sessionScope(self._engine) as session:
+      _moveTrial(session, trialCode, place)
+
+  def trialsIn(self, place: str) -> list[tuple[str, str]]:
+    """The trials anywhere inside a place, as (trialCode, title)."""
+    with _sessionScope(self._engine) as session:
+      return _trialsIn(session, place)
+
+  # ---- settings (decision 0035) -------------------------------------------
+
+  def setSetting(self, scope: str, key: str, value) -> None:
+    """Set a setting at 'server', 'place:<path>' or 'trial:<code>'."""
+    with _sessionScope(self._engine) as session:
+      _setValue(session, scope, key, value)
+
+  def clearSetting(self, scope: str, key: str) -> None:
+    with _sessionScope(self._engine) as session:
+      _clearValue(session, scope, key)
+
+  def effectiveSettings(self, scope: str) -> list[EffectiveSetting]:
+    """Every setting's value at a scope, and where it was set."""
+    with _sessionScope(self._engine) as session:
+      return _effectiveSettings(session, scope)
+
+  def _analysisSettings(self, trialCode: str) -> tuple[float, MeanComparison, list[EffectiveSetting]]:
+    effective = self.effectiveSettings(f"trial:{trialCode}")
+    values = {setting.key: setting.value for setting in effective}
+    return values["analysis.significanceLevel"], values["analysis.meanComparison"], effective
 
   # ---- layout -------------------------------------------------------------
 
@@ -271,15 +350,9 @@ class Workspace:
       return _analyzeCrd(assessmentCode, package, layout, observations)
     return _analyzeRcbd(assessmentCode, package, layout, observations)
 
-  def separateFactorMeans(
-    self,
-    trialCode: str,
-    assessmentCode: str,
-    factor: str,
-    significanceLevel: float = 0.05,
-    meanComparison: MeanComparison = MeanComparison.protectedLSD,
-  ) -> FactorSeparation:
-    """Separate the level means of one factor of a split plot or a two-factor RCBD by Fisher's (Protected) LSD."""
+  def separateFactorMeans(self, trialCode: str, assessmentCode: str, factor: str) -> FactorSeparation:
+    """Separate the level means of one factor of a split plot or a two-factor RCBD, by the trial's settings."""
+    significanceLevel, meanComparison, _ = self._analysisSettings(trialCode)
     result = self.analyze(trialCode, assessmentCode)
     if isinstance(result, SplitPlotResult):
       return _separateFactorMeans(result, factor, significanceLevel=significanceLevel, meanComparison=meanComparison)
@@ -289,8 +362,9 @@ class Workspace:
     factorial = _analyzeFactorialRcbd(assessmentCode, package, layout, observations)
     return _separateFactorialMeans(factorial, factor, significanceLevel=significanceLevel, meanComparison=meanComparison)
 
-  def compareWithControl(self, trialCode: str, assessmentCode: str, significanceLevel: float = 0.05) -> DunnettResult:
+  def compareWithControl(self, trialCode: str, assessmentCode: str) -> DunnettResult:
     """Dunnett's two-sided test of every treatment against the untreated check (decision 0029)."""
+    significanceLevel, _, _ = self._analysisSettings(trialCode)
     result = self.analyze(trialCode, assessmentCode)
     if isinstance(result, (SplitPlotResult, FactorialResult)):
       raise AnalysisError(f"trial '{trialCode}' compares factor levels, not treatments against a check")
@@ -301,14 +375,9 @@ class Workspace:
     package, layout, observations = self._loadContext(trialCode)
     return _analyzeFactorialRcbd(assessmentCode, package, layout, observations)
 
-  def separateMeans(
-    self,
-    trialCode: str,
-    assessmentCode: str,
-    significanceLevel: float = 0.05,
-    meanComparison: MeanComparison = MeanComparison.protectedLSD,
-  ) -> MeanSeparation:
-    """Separate treatment means by Fisher's (Protected) LSD for one assessment."""
+  def separateMeans(self, trialCode: str, assessmentCode: str) -> MeanSeparation:
+    """Separate treatment means for one assessment, by the trial's settings."""
+    significanceLevel, meanComparison, _ = self._analysisSettings(trialCode)
     result = self.analyze(trialCode, assessmentCode)
     if isinstance(result, SplitPlotResult):
       raise AnalysisError(
@@ -316,49 +385,34 @@ class Workspace:
       )
     return _separateMeans(result, significanceLevel=significanceLevel, meanComparison=meanComparison)
 
-  def assessAssumptions(
-    self,
-    trialCode: str,
-    assessmentCode: str,
-    significanceLevel: float = 0.05,
-  ) -> Assumptions:
+  def assessAssumptions(self, trialCode: str, assessmentCode: str) -> Assumptions:
     """Compute the report-only ANOVA assumption diagnostics for one assessment."""
+    significanceLevel, _, _ = self._analysisSettings(trialCode)
     package, layout, observations = self._loadContext(trialCode)
     return _assessAssumptions(assessmentCode, package, layout, observations, significanceLevel)
 
   # ---- reporting ----------------------------------------------------------
 
-  def buildReport(
-    self,
-    trialCode: str,
-    significanceLevel: float = 0.05,
-    meanComparison: MeanComparison = MeanComparison.protectedLSD,
-    locale: str = sourceLocale,
-  ) -> str:
-    """Build the full Markdown trial report (the AOV Means Table and provenance).
+  def buildReport(self, trialCode: str, locale: str = sourceLocale) -> str:
+    """Build the full Markdown trial report (the AOV Means Table and provenance), by the trial's settings.
 
     `locale` is a display choice only: it selects the message catalog and number
     formatting. It does not touch the stored data, the exchange, or the content hash.
     """
+    significanceLevel, meanComparison, effective = self._analysisSettings(trialCode)
     package, layout, observations = self._loadContext(trialCode)
     return _buildReport(
       package, layout, observations,
-      significanceLevel=significanceLevel, meanComparison=meanComparison, locale=locale,
+      significanceLevel=significanceLevel, meanComparison=meanComparison, locale=locale, settingsUsed=effective,
     )
 
-  def buildReportWithCharts(
-    self,
-    trialCode: str,
-    marker: str,
-    significanceLevel: float = 0.05,
-    meanComparison: MeanComparison = MeanComparison.protectedLSD,
-    locale: str = sourceLocale,
-  ) -> ReportWithCharts:
+  def buildReportWithCharts(self, trialCode: str, marker: str, locale: str = sourceLocale) -> ReportWithCharts:
     """The report with a marker line where each chart of means goes, and the charts (decision 0032)."""
+    significanceLevel, meanComparison, effective = self._analysisSettings(trialCode)
     package, layout, observations = self._loadContext(trialCode)
     return _buildReportWithCharts(
       package, layout, observations, marker,
-      significanceLevel=significanceLevel, meanComparison=meanComparison, locale=locale,
+      significanceLevel=significanceLevel, meanComparison=meanComparison, locale=locale, settingsUsed=effective,
     )
 
   # ---- exchange, hashing, verification ------------------------------------
@@ -375,15 +429,15 @@ class Workspace:
     """Write the trial's observations as long-format CSV, annotated with block and treatment."""
     _exportObservationsCsv(self._documentFor(trialCode), csvPath)
 
-  def importDocument(self, jsonPath: str) -> str:
-    """Import a portable trial document JSON into this store; return its trialCode."""
-    return self.addDocument(_importJson(jsonPath))
+  def importDocument(self, jsonPath: str, place: str | None) -> str:
+    """Import a portable trial document JSON into this store, in `place`; return its trialCode."""
+    return self.addDocument(_importJson(jsonPath), place)
 
-  def addDocument(self, document: TrialDocument) -> str:
-    """Store a validated trial document (its package, plots, checks and values); return its trialCode."""
+  def addDocument(self, document: TrialDocument, place: str | None) -> str:
+    """Store a validated trial document (its package, plots, checks and values) in `place`; return its trialCode."""
     trialCode = document.package.trial.trialCode
     with _sessionScope(self._engine) as session:
-      _savePackage(session, document.package, document.layout, document.checkPlots)
+      _savePackage(session, document.package, document.layout, document.checkPlots, place)
       _saveObservations(session, trialCode, document.observations)
     return trialCode
 

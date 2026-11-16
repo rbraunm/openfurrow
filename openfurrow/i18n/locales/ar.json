@@ -89,6 +89,18 @@
       "text": "اعتدالية بواقي القطع الفرعية (Shapiro-Wilk)",
       "status": "machineDraft"
     },
+    "hierarchy.level.organization": {
+      "text": "المؤسسة",
+      "status": "machineDraft"
+    },
+    "hierarchy.level.project": {
+      "text": "المشروع",
+      "status": "machineDraft"
+    },
+    "hierarchy.level.study": {
+      "text": "الدراسة",
+      "status": "machineDraft"
+    },
     "report.anova.coefficientOfVariation": {
       "text": "معامل الاختلاف",
       "status": "machineDraft"
@@ -833,6 +845,10 @@
       "text": "بذرة العشوائية",
       "status": "machineDraft"
     },
+    "report.reproducibility.settings": {
+      "text": "الإعدادات",
+      "status": "machineDraft"
+    },
     "report.reproducibility.splitPlotMethodValue": {
       "text": "تحليل تباين القطع المنشقة؛ {test} على خطأ كل عامل (ألفا = {alpha})",
       "status": "machineDraft"
@@ -867,6 +883,22 @@
     },
     "report.scale.withOffset": {
       "text": "{scale} لـ (x + {offset})",
+      "status": "machineDraft"
+    },
+    "report.settings.source.default": {
+      "text": "افتراضي",
+      "status": "machineDraft"
+    },
+    "report.settings.source.place": {
+      "text": "مضبوط لـ {name}",
+      "status": "machineDraft"
+    },
+    "report.settings.source.server": {
+      "text": "مضبوط للخادم",
+      "status": "machineDraft"
+    },
+    "report.settings.source.trial": {
+      "text": "مضبوط لهذه التجربة",
       "status": "machineDraft"
     },
     "report.site.address": {
@@ -1697,8 +1729,80 @@
       "text": "إضافة تجربة",
       "status": "machineDraft"
     },
+    "web.nav.places": {
+      "text": "الأماكن",
+      "status": "machineDraft"
+    },
     "web.nav.trials": {
       "text": "التجارب",
+      "status": "machineDraft"
+    },
+    "web.place.label": {
+      "text": "{level} التي تنتمي إليها التجربة",
+      "status": "machineDraft"
+    },
+    "web.place.none": {
+      "text": "لا يوجد بعد أي {level} لوضع تجربة فيه. أضف واحدًا أولًا:",
+      "status": "machineDraft"
+    },
+    "web.places.add.code": {
+      "text": "الرمز (حروف وأرقام و'.' و'_' و'-')",
+      "status": "machineDraft"
+    },
+    "web.places.add.heading": {
+      "text": "إضافة مكان",
+      "status": "machineDraft"
+    },
+    "web.places.add.name": {
+      "text": "الاسم",
+      "status": "machineDraft"
+    },
+    "web.places.add.parent": {
+      "text": "داخل",
+      "status": "machineDraft"
+    },
+    "web.places.add.submit": {
+      "text": "إضافة",
+      "status": "machineDraft"
+    },
+    "web.places.add.top": {
+      "text": "(لا شيء: {level} جديد)",
+      "status": "machineDraft"
+    },
+    "web.places.column.level": {
+      "text": "المستوى",
+      "status": "machineDraft"
+    },
+    "web.places.column.name": {
+      "text": "الاسم",
+      "status": "machineDraft"
+    },
+    "web.places.column.path": {
+      "text": "المسار",
+      "status": "machineDraft"
+    },
+    "web.places.column.trials": {
+      "text": "التجارب",
+      "status": "machineDraft"
+    },
+    "web.places.empty": {
+      "text": "لا توجد أماكن بعد.",
+      "status": "machineDraft"
+    },
+    "web.places.heading": {
+      "text": "الأماكن",
+      "status": "machineDraft"
+    },
+    "web.places.intro": {
+      "text": "تعيش التجارب في أماكن: {levels}، ثم التجربة. تُمنح الأدوار والإعدادات حسب المكان.",
+      "status": "machineDraft"
+    },
+    "web.places.noLevels": {
+      "text": "لا يحتوي هذا المخزن على مستويات هرمية: التجارب قائمة بذاتها.",
+      "status": "machineDraft"
+    },
+    "web.places.problem": {
+      "text": "لم يُضف المكان: {reason}",
       "status": "machineDraft"
     },
     "web.report.back": {
@@ -1803,6 +1907,10 @@
     },
     "web.trials.column.crop": {
       "text": "المحصول",
+      "status": "machineDraft"
+    },
+    "web.trials.column.place": {
+      "text": "المكان",
       "status": "machineDraft"
     },
     "web.trials.column.plots": {

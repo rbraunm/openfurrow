@@ -24,6 +24,7 @@ from openfurrow.interop.fieldbook import (
 )
 from openfurrow.schema import TrialPackage
 from openfurrow.workspace import Workspace
+from storeHelpers import standardStudy, standardStudyAt
 
 _packageDict = {
   "schemaVersion": schemaVersion,
@@ -127,7 +128,7 @@ def testTraitFileIsFullyQuoted(package, tmp_path):
 
 def testFacadeExportWritesBothFiles(package, tmp_path, newStore):
   workspace = Workspace.create(newStore("trials"))
-  workspace.addPackage(package)
+  workspace.addPackage(package, standardStudy(workspace))
   fieldPath = tmp_path / "f.csv"
   traitPath = tmp_path / "t.trt"
   workspace.exportFieldBook("FB-1", str(fieldPath), str(traitPath))

@@ -13,6 +13,8 @@
 <form class="trial-form" method="post" enctype="multipart/form-data"
       action="{{ url_for('web.trialForm', locale=locale if locale != 'en-US' else none) }}">
   <button class="visually-hidden" type="submit" name="create" value="yes" tabindex="-1" aria-hidden="true"></button>
+  {% include "placePicker.html" %}
+
   <fieldset>
     <legend>{{ t.text('web.form.trialHeading') }}</legend>
     <div class="form-grid">

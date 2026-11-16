@@ -89,6 +89,18 @@
       "text": "Normalité des résidus des sous-parcelles (Shapiro-Wilk)",
       "status": "machineDraft"
     },
+    "hierarchy.level.organization": {
+      "text": "Organisation",
+      "status": "machineDraft"
+    },
+    "hierarchy.level.project": {
+      "text": "Projet",
+      "status": "machineDraft"
+    },
+    "hierarchy.level.study": {
+      "text": "Étude",
+      "status": "machineDraft"
+    },
     "report.anova.coefficientOfVariation": {
       "text": "Coefficient de variation",
       "status": "machineDraft"
@@ -833,6 +845,10 @@
       "text": "Graine de randomisation",
       "status": "machineDraft"
     },
+    "report.reproducibility.settings": {
+      "text": "Paramètres",
+      "status": "machineDraft"
+    },
     "report.reproducibility.splitPlotMethodValue": {
       "text": "ANOVA en parcelles divisées; {test} sur l'erreur propre à chaque facteur (alpha = {alpha})",
       "status": "machineDraft"
@@ -867,6 +883,22 @@
     },
     "report.scale.withOffset": {
       "text": "{scale} de (x + {offset})",
+      "status": "machineDraft"
+    },
+    "report.settings.source.default": {
+      "text": "par défaut",
+      "status": "machineDraft"
+    },
+    "report.settings.source.place": {
+      "text": "fixé pour {name}",
+      "status": "machineDraft"
+    },
+    "report.settings.source.server": {
+      "text": "fixé pour le serveur",
+      "status": "machineDraft"
+    },
+    "report.settings.source.trial": {
+      "text": "fixé pour cet essai",
       "status": "machineDraft"
     },
     "report.site.address": {
@@ -1697,8 +1729,80 @@
       "text": "Ajouter un essai",
       "status": "machineDraft"
     },
+    "web.nav.places": {
+      "text": "Emplacements",
+      "status": "machineDraft"
+    },
     "web.nav.trials": {
       "text": "Essais",
+      "status": "machineDraft"
+    },
+    "web.place.label": {
+      "text": "{level} dont relève l'essai",
+      "status": "machineDraft"
+    },
+    "web.place.none": {
+      "text": "Il n'y a encore aucun {level} où placer un essai. Ajoutez-en un d'abord :",
+      "status": "machineDraft"
+    },
+    "web.places.add.code": {
+      "text": "Code (lettres, chiffres, '.', '_' et '-')",
+      "status": "machineDraft"
+    },
+    "web.places.add.heading": {
+      "text": "Ajouter un emplacement",
+      "status": "machineDraft"
+    },
+    "web.places.add.name": {
+      "text": "Nom",
+      "status": "machineDraft"
+    },
+    "web.places.add.parent": {
+      "text": "Dans",
+      "status": "machineDraft"
+    },
+    "web.places.add.submit": {
+      "text": "Ajouter",
+      "status": "machineDraft"
+    },
+    "web.places.add.top": {
+      "text": "(aucun : un nouveau {level})",
+      "status": "machineDraft"
+    },
+    "web.places.column.level": {
+      "text": "Niveau",
+      "status": "machineDraft"
+    },
+    "web.places.column.name": {
+      "text": "Nom",
+      "status": "machineDraft"
+    },
+    "web.places.column.path": {
+      "text": "Chemin",
+      "status": "machineDraft"
+    },
+    "web.places.column.trials": {
+      "text": "Essais",
+      "status": "machineDraft"
+    },
+    "web.places.empty": {
+      "text": "Aucun emplacement pour l'instant.",
+      "status": "machineDraft"
+    },
+    "web.places.heading": {
+      "text": "Emplacements",
+      "status": "machineDraft"
+    },
+    "web.places.intro": {
+      "text": "Les essais vivent dans des emplacements : {levels}, puis l'essai. Les rôles et les paramètres se donnent par emplacement.",
+      "status": "machineDraft"
+    },
+    "web.places.noLevels": {
+      "text": "Ce stock n'a aucun niveau de hiérarchie : les essais sont autonomes.",
+      "status": "machineDraft"
+    },
+    "web.places.problem": {
+      "text": "L'emplacement n'a pas été ajouté : {reason}",
       "status": "machineDraft"
     },
     "web.report.back": {
@@ -1803,6 +1907,10 @@
     },
     "web.trials.column.crop": {
       "text": "Culture",
+      "status": "machineDraft"
+    },
+    "web.trials.column.place": {
+      "text": "Emplacement",
       "status": "machineDraft"
     },
     "web.trials.column.plots": {

@@ -29,6 +29,8 @@ from openfurrow.store import (
   saveObservations,
   sessionScope,
 )
+from storeHelpers import standardPath, standardStudy
+from openfurrow import Workspace
 
 
 def samplePackage(trialCode="TRIAL-1"):
@@ -125,8 +127,9 @@ def testDatabaseAndJsonAgreeOnHash(tmp_path, newStore):
   # The ownership guarantee: the store and a JSON export describe the same trial.
   document = sampleDocument()
   engine = createDatabase(newStore("trials"))
+  standardStudy(Workspace(engine))
   with sessionScope(engine) as session:
-    savePackage(session, document.package, document.layout, document.checkPlots)
+    savePackage(session, document.package, document.layout, document.checkPlots, standardPath)
     saveObservations(session, "TRIAL-1", document.observations)
   with sessionScope(engine) as session:
     fromStore = TrialDocument(

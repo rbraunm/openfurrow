@@ -1,6 +1,7 @@
 # 0004 - Protocol, product, and label registry with a trial hierarchy
 
-**Status:** Proposed (deferred; post-MVP, long-term). Direction adopted, not locked.
+**Status:** Proposed (deferred; post-MVP, long-term). Direction adopted, not locked. The hierarchy
+is built, modular, as decision 0034; the product, label and protocol registry stays proposed.
 
 ## Context
 

@@ -10,6 +10,7 @@ from openfurrow import Quantity, TrialPackage, Workspace
 from openfurrow.cli.main import main
 from openfurrow.importers.weatherCsv import WeatherFileError, readWeatherCsv
 from openfurrow.service import createApp
+from storeHelpers import standardStudy, standardStudyAt
 
 goodFile = (
   "date,rainfall [mm],minimumTemperature [C],maximumTemperature [C],notes\n"
@@ -59,7 +60,7 @@ def trial(tmp_path, newStore, validPackageDict):
   databasePath = newStore("trials")
   workspace = Workspace.create(databasePath)
   validPackageDict["weather"] = [{"date": "2026-04-01", "rainfall": {"value": 1, "unit": "mm"}}]
-  workspace.addPackage(TrialPackage.model_validate(validPackageDict))
+  workspace.addPackage(TrialPackage.model_validate(validPackageDict), standardStudy(workspace))
   return databasePath, workspace
 
 
@@ -73,7 +74,7 @@ def testImportReplacesTheLogAndTheHashFollows(tmp_path, newStore, trial):
   exported = tmp_path / "doc.json"
   workspace.exportDocument("ESV-2025-01", str(exported))
   other = Workspace.create(newStore("other"))
-  other.importDocument(str(exported))
+  other.importDocument(str(exported), standardStudy(other))
   assert other.contentHashFor("ESV-2025-01") == workspace.contentHashFor("ESV-2025-01")
 
 

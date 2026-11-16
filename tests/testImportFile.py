@@ -14,6 +14,7 @@ from openfurrow.schema.observation import Observation
 from openfurrow.service import createApp
 
 from testWebReport import _packageDict
+from storeHelpers import standardStudy, standardStudyAt
 
 openpyxl = pytest.importorskip("openpyxl")
 
@@ -22,7 +23,7 @@ openpyxl = pytest.importorskip("openpyxl")
 def setup(tmp_path, newStore):
   path = newStore("trials")
   workspace = Workspace.create(path)
-  workspace.addPackage(TrialPackage.model_validate(_packageDict))
+  workspace.addPackage(TrialPackage.model_validate(_packageDict), standardStudy(workspace))
   return workspace, createApp(path).test_client()
 
 

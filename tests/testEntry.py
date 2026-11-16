@@ -17,6 +17,7 @@ from openfurrow.design import generateLayout
 from openfurrow.importers.entry import EntryRefused, readEntry, writeEntry
 from openfurrow.schema import Rating
 from openfurrow.service import createApp
+from storeHelpers import standardStudy, standardStudyAt
 
 severity = Rating(ratingCode="SEV", name="Severity", dataType="numeric", unit="%", minValue=0, maxValue=100)
 lodging = Rating(ratingCode="LODGE", name="Lodging", dataType="ordinal", allowedValues=["none", "slight", "severe"])
@@ -39,7 +40,7 @@ def packageDict():
 def served(tmp_path, newStore):
   databasePath = newStore("trials")
   workspace = Workspace.create(databasePath)
-  workspace.addPackage(TrialPackage.model_validate(packageDict()))
+  workspace.addPackage(TrialPackage.model_validate(packageDict()), standardStudy(workspace))
   return workspace, createApp(databasePath).test_client()
 
 
@@ -135,7 +136,7 @@ def testConfirmationTravelsThroughStoreExportAndHash(tmp_path, newStore, served)
   assert {"plotNumber": plots[0], "assessmentCode": "SEV", "value": 120.0, "outOfRangeConfirmed": True, "subsample": None} in json.loads(
     exported.read_text(encoding="utf-8"))["observations"]
   other = Workspace.create(newStore("other"))
-  other.importDocument(str(exported))
+  other.importDocument(str(exported), standardStudy(other))
   assert other.contentHashFor("ENT-1") == workspace.contentHashFor("ENT-1")
 
 
@@ -240,8 +241,8 @@ def testFieldMapOutlinesMainPlotsAndDrawsChecks(tmp_path, newStore):
   from testChecks import packageDict as checksPackageDict
   databasePath = newStore("map")
   workspace = Workspace.create(databasePath)
-  workspace.addPackage(TrialPackage.model_validate(gomezPackageDict()))
-  workspace.addPackage(TrialPackage.model_validate(checksPackageDict("paired")))
+  workspace.addPackage(TrialPackage.model_validate(gomezPackageDict()), standardStudy(workspace))
+  workspace.addPackage(TrialPackage.model_validate(checksPackageDict("paired")), standardStudy(workspace))
   client = createApp(databasePath).test_client()
   split = client.get("/trials/GOMEZ-3.7").get_data(as_text=True)
   assert split.count('class="main-plot"') == 18

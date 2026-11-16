@@ -17,6 +17,7 @@ from openfurrow.reports import buildReport
 from openfurrow.reports.charts import ChartBar, MeansChart, axisRange, meansChartSvg, niceStep
 from openfurrow.reports.report import buildReportWithCharts
 from openfurrow.schema.assessment import Transform
+from storeHelpers import standardStudy, standardStudyAt
 
 _svg = "{http://www.w3.org/2000/svg}"
 
@@ -122,7 +123,7 @@ def testTheReportPageDrawsTheCharts(tmp_path, newStore):
   package, _, observations = checkTrial()
   path = newStore("t")
   workspace = Workspace.create(path)
-  workspace.addPackage(package)
+  workspace.addPackage(package, standardStudy(workspace))
   workspace.recordValues("DUN-1", "D", observations)
   body = createApp(path).test_client().get("/trials/DUN-1/report").get_data(as_text=True)
   assert body.count('<figure class="chart">') == 1

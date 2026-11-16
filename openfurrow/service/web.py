@@ -87,6 +87,21 @@ def createWebBlueprint(workspace: Workspace, config: OpenFurrowConfig | None = N
       "locales": availableLocales(),
     }
 
+  def _levelName(level, translator) -> str:
+    return level.name if level.name is not None else translator.text(f"hierarchy.level.{level.levelCode}")
+
+  def _placeChoices(translator) -> dict:
+    """The places a trial may go in: those of the last level."""
+    levels = workspace.hierarchyLevels()
+    if not levels:
+      return {"levels": [], "lastLevel": None, "places": []}
+    last = levels[-1]
+    return {
+      "levels": levels,
+      "lastLevel": _levelName(last, translator),
+      "places": [place for place in workspace.places() if place.levelCode == last.levelCode],
+    }
+
   def _trialContext(trialCode: str) -> dict:
     # Assembled once and reused by the trial page and the import handler that
     # re-renders it, so the two cannot drift.
@@ -106,7 +121,8 @@ def createWebBlueprint(workspace: Workspace, config: OpenFurrowConfig | None = N
   def index() -> Response:
     translator = _translator()
     trials = [
-      {"trialCode": trialCode, "title": title, "package": workspace.loadPackage(trialCode)}
+      {"trialCode": trialCode, "title": title, "package": workspace.loadPackage(trialCode),
+       "place": workspace.placeOf(trialCode)}
       for trialCode, title in workspace.listTrials()
     ]
     return Response(render_template("trials.html", trials=trials, **_localeContext(translator)))
@@ -116,7 +132,7 @@ def createWebBlueprint(workspace: Workspace, config: OpenFurrowConfig | None = N
     translator = _translator()
     return Response(render_template(
       "add.html", example=_examplePackageJson(), error=None, submitted="",
-      **_localeContext(translator),
+      placeChoices=_placeChoices(translator), selectedPlace=None, **_localeContext(translator),
     ))
 
   @blueprint.post("/trials/new")
@@ -125,13 +141,14 @@ def createWebBlueprint(workspace: Workspace, config: OpenFurrowConfig | None = N
     raw = _submittedPackage()
     try:
       package = TrialPackage.model_validate(json.loads(raw))
-      workspace.addPackage(package)
+      workspace.addPackage(package, request.form.get("place") or None)
     except (json.JSONDecodeError, ValidationError, StoreError) as error:
       # Re-render the form with the message and the text the user submitted, so nothing
       # they typed is lost. The form fails loud rather than discarding bad input.
       return Response(
         render_template(
           "add.html", example=_examplePackageJson(), error=str(error), submitted=raw,
+          placeChoices=_placeChoices(translator), selectedPlace=request.form.get("place"),
           **_localeContext(translator),
         ),
         status=400,
@@ -142,13 +159,17 @@ def createWebBlueprint(workspace: Workspace, config: OpenFurrowConfig | None = N
   def trialForm() -> Response:
     """Set up a trial by filling in a form; the layout is generated or uploaded as planted."""
     translator = _translator()
+    choices = {"placeChoices": _placeChoices(translator), "selectedPlace": request.form.get("place")}
     if request.method == "GET":
       return Response(render_template(
-        "trialForm.html", typed=emptyForm(), error=None, **_localeContext(translator),
+        "trialForm.html", typed=emptyForm(), error=None, **choices, **_localeContext(translator),
       ))
     typed = formFromRequest(request.form)
+    place = request.form.get("place") or None
     if request.form.get("create") != "yes":
-      return Response(render_template("trialForm.html", typed=typed, error=None, **_localeContext(translator)))
+      return Response(render_template(
+        "trialForm.html", typed=typed, error=None, **choices, **_localeContext(translator),
+      ))
     try:
       data = packageFromForm(typed, translator.decimalSeparator)
       package = TrialPackage.model_validate(data)
@@ -158,19 +179,46 @@ def createWebBlueprint(workspace: Workspace, config: OpenFurrowConfig | None = N
           raise FormProblem("web.form.problem.layoutFile")
         with _temporaryCsv(upload.read()) as csvPath:
           plots = readLayoutCsv(csvPath)
-        workspace.addDocument(TrialDocument(package=package, layout=plots, observations=[]))
+        workspace.addDocument(TrialDocument(package=package, layout=plots, observations=[]), place)
       else:
-        workspace.addPackage(package)
+        workspace.addPackage(package, place)
     except FormProblem as problem:
       message = translator.text(problem.reasonKey, **problem.placeholders)
       return Response(render_template(
-        "trialForm.html", typed=typed, error=message, **_localeContext(translator),
+        "trialForm.html", typed=typed, error=message, **choices, **_localeContext(translator),
       ), status=400)
     except (ValidationError, StoreError, LayoutFileError) as error:
       return Response(render_template(
-        "trialForm.html", typed=typed, error=str(error), **_localeContext(translator),
+        "trialForm.html", typed=typed, error=str(error), **choices, **_localeContext(translator),
       ), status=400)
     return redirect(_localized(url_for("web.trial", trialCode=package.trial.trialCode), translator))
+
+  @blueprint.route("/places", methods=["GET", "POST"])
+  def places() -> Response:
+    """The hierarchy's places, and a form to add one (decision 0034)."""
+    translator = _translator()
+    problem = None
+    typed = {"code": "", "name": ""}
+    if request.method == "POST":
+      typed = {"code": request.form.get("code", "").strip(), "name": request.form.get("name", "").strip()}
+      try:
+        workspace.addPlace(request.form.get("parent") or None, typed["code"], typed["name"])
+        return redirect(_localized(url_for("web.places"), translator))
+      except (StoreError, ValueError) as error:
+        problem = translator.text("web.places.problem", reason=str(error))
+    levels = workspace.hierarchyLevels()
+    every = workspace.places()
+    context = {
+      "levelNames": [_levelName(level, translator) for level in levels],
+      "levelName": {level.levelCode: _levelName(level, translator) for level in levels},
+      "places": every,
+      "parents": [place for place in every if levels and place.levelCode != levels[-1].levelCode],
+      "trialCounts": {place.path: len(workspace.trialsIn(place.path)) for place in every},
+      "problem": problem,
+      "typed": typed,
+    }
+    status = 400 if problem else 200
+    return Response(render_template("places.html", **context, **_localeContext(translator)), status=status)
 
   @blueprint.get("/trials/<trialCode>")
   def trial(trialCode: str) -> Response:
@@ -363,13 +411,7 @@ def createWebBlueprint(workspace: Workspace, config: OpenFurrowConfig | None = N
   @blueprint.get("/trials/<trialCode>/report")
   def report(trialCode: str) -> Response:
     translator = _translator()
-    built = workspace.buildReportWithCharts(
-      trialCode,
-      secrets.token_hex(12),
-      significanceLevel=settings.analysis.significanceLevel,
-      meanComparison=settings.analysis.meanComparison,
-      locale=translator.locale,
-    )
+    built = workspace.buildReportWithCharts(trialCode, secrets.token_hex(12), locale=translator.locale)
     reportHtml = str(_renderMarkdown(built.markdown))
     for index, chart in enumerate(built.charts):
       paragraph = f"<p>{built.markerFor(index)}</p>"

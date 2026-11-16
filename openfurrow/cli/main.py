@@ -10,10 +10,10 @@ design document a user hands it to add.
 
 Every command fails loud -- a missing trial, a bad package, an import error, or a
 duplicate prints a clear message and exits non-zero rather than partially
-succeeding. Persistence is a single SQLite file whose path the user gives
-explicitly, so it is always visible and movable. Analysis settings come from the
-project config (decision 0009): --config points at a config file, otherwise the
-defaults apply.
+succeeding. The store is a SQLite file or a PostgreSQL URL the user gives explicitly.
+Trials live in places of the store's hierarchy (decision 0034), and the analysis follows
+the store's settings (decision 0035); the config file (--config) holds the import
+profile and the service's binding.
 """
 
 from __future__ import annotations
@@ -26,6 +26,8 @@ from pathlib import Path
 
 from openfurrow.config import defaultConfig, loadConfig
 from openfurrow.schema import AssessmentDataType, TrialPackage
+from openfurrow.schema.hierarchy import HierarchyLevel
+from openfurrow.settings import SettingError
 from openfurrow.importers.weatherCsv import WeatherFileError
 from openfurrow.workspace import (
   AnalysisError,
@@ -52,7 +54,7 @@ def main(argv: list[str] | None = None) -> int:
     return handler(args)
   except (
     StoreError, ExchangeError, ObservationImportError, AnalysisError, MessageError,
-    ValidationError, OSError, json.JSONDecodeError, WeatherFileError,
+    ValidationError, OSError, json.JSONDecodeError, WeatherFileError, SettingError,
   ) as error:
     print(f"error: {error}", file=sys.stderr)
     return 1
@@ -84,7 +86,53 @@ def _buildParser() -> argparse.ArgumentParser:
   )
   addParser.add_argument("database")
   addParser.add_argument("package", help="path to a trial package JSON file")
+  addParser.add_argument("--place", help="the place the trial goes in, a path such as station/fungicides/wheat2025")
   addParser.set_defaults(handler=_commandAdd)
+
+  levelsParser = sub.add_parser("levels", help="show the hierarchy's levels, or set them while the store is empty")
+  levelsParser.add_argument("database")
+  levelsParser.add_argument("--set", nargs="*", metavar="CODE[=NAME]",
+                            help="the levels, top first; a level not built in needs a name")
+  levelsParser.set_defaults(handler=_commandLevels)
+
+  placeParser = sub.add_parser("place", help="add, list or delete places of the hierarchy")
+  placeSub = placeParser.add_subparsers(dest="placeCommand", required=True)
+  placeAdd = placeSub.add_parser("add", help="add a place; its path's last code is the new place")
+  placeAdd.add_argument("database")
+  placeAdd.add_argument("path")
+  placeAdd.add_argument("name")
+  placeAdd.set_defaults(handler=_commandPlaceAdd)
+  placeList = placeSub.add_parser("list", help="list the places")
+  placeList.add_argument("database")
+  placeList.set_defaults(handler=_commandPlaceList)
+  placeDelete = placeSub.add_parser("delete", help="delete an empty place")
+  placeDelete.add_argument("database")
+  placeDelete.add_argument("path")
+  placeDelete.set_defaults(handler=_commandPlaceDelete)
+
+  moveParser = sub.add_parser("move", help="put a trial in another place")
+  moveParser.add_argument("database")
+  moveParser.add_argument("trialCode")
+  moveParser.add_argument("place")
+  moveParser.set_defaults(handler=_commandMove)
+
+  settingParser = sub.add_parser("setting", help="show, set or clear settings at a scope")
+  settingSub = settingParser.add_subparsers(dest="settingCommand", required=True)
+  settingShow = settingSub.add_parser("show", help="every setting's value at a scope, and where it was set")
+  settingShow.add_argument("database")
+  settingShow.add_argument("scope", help="'server', 'place:<path>' or 'trial:<code>'")
+  settingShow.set_defaults(handler=_commandSettingShow)
+  settingSet = settingSub.add_parser("set", help="set a setting at a scope")
+  settingSet.add_argument("database")
+  settingSet.add_argument("scope")
+  settingSet.add_argument("key")
+  settingSet.add_argument("value", help="read as JSON when it parses, otherwise as text")
+  settingSet.set_defaults(handler=_commandSettingSet)
+  settingClear = settingSub.add_parser("clear", help="remove a setting's value at a scope")
+  settingClear.add_argument("database")
+  settingClear.add_argument("scope")
+  settingClear.add_argument("key")
+  settingClear.set_defaults(handler=_commandSettingClear)
 
   listParser = sub.add_parser("list", help="list trials in the database")
   listParser.add_argument("database")
@@ -111,7 +159,6 @@ def _buildParser() -> argparse.ArgumentParser:
   reportParser.add_argument("database")
   reportParser.add_argument("trialCode")
   reportParser.add_argument("--output", help="write the report to this file instead of stdout")
-  reportParser.add_argument("--config", help="path to a project config file (see examples/openfurrow.yaml)")
   reportParser.add_argument(
     "--locale", default=sourceLocale,
     help=f"locale for the report's display text and numbers (default: {sourceLocale})",
@@ -135,6 +182,7 @@ def _buildParser() -> argparse.ArgumentParser:
   importJsonParser = sub.add_parser("import-json", help="import a trial document from JSON into the database")
   importJsonParser.add_argument("database")
   importJsonParser.add_argument("jsonFile", help="path to a trial document JSON file")
+  importJsonParser.add_argument("--place", help="the place the trial goes in")
   importJsonParser.set_defaults(handler=_commandImportJson)
 
   verifyParser = sub.add_parser("verify", help="check a trial round-trips to the same content hash")
@@ -180,12 +228,80 @@ def _commandInit(args) -> int:
 def _commandAdd(args) -> int:
   package = _readPackage(args.package)
   workspace = Workspace.create(args.database)
-  workspace.addPackage(package)
+  workspace.addPackage(package, args.place)
   print(
     f"Added trial '{package.trial.trialCode}' "
     f"({len(package.treatments)} treatments, {len(package.ratings)} ratings, "
     f"{len(package.assessments)} assessments, {package.plotCount} plots)"
   )
+  return 0
+
+
+def _commandLevels(args) -> int:
+  workspace = Workspace.open(args.database)
+  if args.set is not None:
+    levels = []
+    for entry in args.set:
+      code, _, name = entry.partition("=")
+      levels.append(HierarchyLevel(levelCode=code, name=name or None))
+    workspace.setHierarchyLevels(levels)
+  for level in workspace.hierarchyLevels():
+    print(level.levelCode if level.name is None else f"{level.levelCode}\t{level.name}")
+  print("trial")
+  return 0
+
+
+def _commandPlaceAdd(args) -> int:
+  parent, _, code = args.path.rpartition("/")
+  place = Workspace.open(args.database).addPlace(parent or None, code, args.name)
+  print(f"Added {place.levelCode} '{place.path}'")
+  return 0
+
+
+def _commandPlaceList(args) -> int:
+  places = Workspace.open(args.database).places()
+  if not places:
+    print("(no places)")
+  for place in places:
+    print(f"{place.path}\t{place.levelCode}\t{place.name}")
+  return 0
+
+
+def _commandPlaceDelete(args) -> int:
+  Workspace.open(args.database).deletePlace(args.path)
+  print(f"Deleted place '{args.path}'")
+  return 0
+
+
+def _commandMove(args) -> int:
+  Workspace.open(args.database).moveTrial(args.trialCode, args.place)
+  print(f"Moved trial '{args.trialCode}' to '{args.place}'")
+  return 0
+
+
+def _settingValue(text: str):
+  try:
+    return json.loads(text)
+  except json.JSONDecodeError:
+    return text
+
+
+def _commandSettingShow(args) -> int:
+  from openfurrow.settings import jsonValue
+  for setting in Workspace.open(args.database).effectiveSettings(args.scope):
+    print(f"{setting.key}\t{json.dumps(jsonValue(setting.key, setting.value))}\t{setting.source}")
+  return 0
+
+
+def _commandSettingSet(args) -> int:
+  Workspace.open(args.database).setSetting(args.scope, args.key, _settingValue(args.value))
+  print(f"Set {args.key} at {args.scope}")
+  return 0
+
+
+def _commandSettingClear(args) -> int:
+  Workspace.open(args.database).clearSetting(args.scope, args.key)
+  print(f"Cleared {args.key} at {args.scope}")
   return 0
 
 
@@ -338,13 +454,7 @@ def _commandImport(args) -> int:
 
 def _commandReport(args) -> int:
   workspace = Workspace.open(args.database)
-  config = _configFor(args)
-  report = workspace.buildReport(
-    args.trialCode,
-    significanceLevel=config.analysis.significanceLevel,
-    meanComparison=config.analysis.meanComparison,
-    locale=args.locale,
-  )
+  report = workspace.buildReport(args.trialCode, locale=args.locale)
   if args.output:
     Path(args.output).write_text(report, encoding="utf-8", newline="\n")
     print(f"Wrote report to {args.output}")
@@ -375,7 +485,7 @@ def _commandImportWeather(args) -> int:
 
 def _commandImportJson(args) -> int:
   workspace = Workspace.create(args.database)
-  trialCode = workspace.importDocument(args.jsonFile)
+  trialCode = workspace.importDocument(args.jsonFile, args.place)
   count = len(workspace.loadObservations(trialCode))
   print(f"Imported trial '{trialCode}' with {count} observations")
   return 0

@@ -32,6 +32,7 @@ from openfurrow import (
   defaultConfig,
   schemaVersion,
 )
+from storeHelpers import standardStudy, standardStudyAt
 
 _packageDict = {
   "schemaVersion": schemaVersion,
@@ -56,7 +57,7 @@ def testFullLoopThroughPublicSurfaceOnly(tmp_path, newStore):
   """Author, import, analyze, report, export, and verify -- public imports only."""
   workspace = Workspace.create(newStore("trials"))
   package = TrialPackage.model_validate(_packageDict)
-  workspace.addPackage(package)
+  workspace.addPackage(package, standardStudy(workspace))
   assert workspace.listTrials() == [("PUB-1", "Public API trial")]
 
   # The layout is derived through the facade; no direct call to the randomizer.

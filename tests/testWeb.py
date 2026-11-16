@@ -18,6 +18,8 @@ import pytest
 
 from openfurrow import TrialPackage, Workspace, schemaVersion
 from openfurrow.service import createApp
+from storeHelpers import standardStudy, standardStudyAt
+from storeHelpers import standardPath, standardStudy
 
 _packageDict = {
   "schemaVersion": schemaVersion,
@@ -37,7 +39,7 @@ _packageDict = {
 @pytest.fixture
 def databasePath(tmp_path, newStore):
   path = newStore("trials")
-  Workspace.create(path)
+  standardStudy(Workspace.create(path))
   return path
 
 
@@ -49,7 +51,7 @@ def client(databasePath):
 @pytest.fixture
 def populated(databasePath):
   workspace = Workspace.open(databasePath)
-  workspace.addPackage(TrialPackage.model_validate(_packageDict))
+  workspace.addPackage(TrialPackage.model_validate(_packageDict), standardStudy(workspace))
   return workspace
 
 
@@ -82,7 +84,7 @@ def testTheFormsOwnExampleCreatesATrial(client):
   """The example a new user starts from has to be a valid trial itself, treatment lines included."""
   body = _text(client.get("/trials/new"))
   example = html.unescape(re.search(r"<textarea[^>]*>(.*?)</textarea>", body, re.DOTALL).group(1))
-  assert client.post("/trials/new", data={"package": example}).status_code == 302
+  assert client.post("/trials/new", data={"package": example, "place": standardPath}).status_code == 302
   report = _text(client.get("/trials/ESV-2025-01/report"))
   for cell in ("<td>Reference</td>", "<td>Fungicide B</td>", "<td>0.75 L/ha of product</td>",
                "<th>Application</th>", "<td>Broadcast spray</td>"):
@@ -114,7 +116,7 @@ def testTrialLaidOutElsewhereShowsItsOwnPlotsAndNoSeed(client, databasePath, tmp
   documentPath.write_text(
     json.dumps({"package": package, "layout": layout, "observations": observations}), encoding="utf-8",
   )
-  Workspace.open(databasePath).importDocument(str(documentPath))
+  Workspace.open(databasePath).importDocument(str(documentPath), standardStudyAt(databasePath))
 
   body = _text(client.get("/trials/FIELD-7"))
   assert re.findall(r'<span class="plot-number code">(\d+)</span>', body) == ["71", "72", "73", "74"]
@@ -135,7 +137,7 @@ def testTrialLaidOutElsewhereShowsItsOwnPlotsAndNoSeed(client, databasePath, tmp
 # ---- add a trial ----------------------------------------------------------
 
 def testAddTrialFromJsonRedirectsToDetail(client):
-  response = client.post("/trials/new", data={"package": json.dumps(_packageDict)})
+  response = client.post("/trials/new", data={"package": json.dumps(_packageDict), "place": standardPath})
   assert response.status_code == 302
   assert response.headers["Location"].endswith("/trials/WEB-1")
   # It really landed in the store.
@@ -144,7 +146,7 @@ def testAddTrialFromJsonRedirectsToDetail(client):
 
 def testAddTrialFromFileUpload(client):
   from io import BytesIO
-  data = {"file": (BytesIO(json.dumps(_packageDict).encode()), "trial.json")}
+  data = {"file": (BytesIO(json.dumps(_packageDict).encode()), "trial.json"), "place": standardPath}
   response = client.post("/trials/new", data=data, content_type="multipart/form-data")
   assert response.status_code == 302
   assert response.headers["Location"].endswith("/trials/WEB-1")

@@ -8,7 +8,6 @@ from openfurrow.config import (
   ImportFormat,
   ImportProfile,
   LongColumns,
-  MeanComparison,
   OpenFurrowConfig,
   ValueParsing,
   WideColumns,
@@ -187,27 +186,13 @@ def testNoOverridesPreservesValues():
   assert unchanged.model_dump() == original.model_dump()
 
 
-# ---- analysis settings (decision 0009) ----------------------------------
+# ---- analysis settings live in the store (decision 0035) ----------------
 
-def testDefaultAnalysisSettings():
-  config = OpenFurrowConfig()
-  assert config.analysis.significanceLevel == 0.05
-  assert config.analysis.meanComparison is MeanComparison.protectedLSD
-
-
-def testAnalysisSettingsFromYaml(tmp_path):
+def testAnAnalysisSectionInTheConfigIsRefused(tmp_path):
   path = tmp_path / "openfurrow.yaml"
-  path.write_text("analysis:\n  significanceLevel: 0.01\n  meanComparison: lsd\n", encoding="utf-8")
-  config = loadConfig(path)
-  assert config.analysis.significanceLevel == 0.01
-  assert config.analysis.meanComparison is MeanComparison.lsd
-
-
-def testAnalysisSignificanceLevelOutOfRangeRejected():
-  with pytest.raises(ValidationError):
-    OpenFurrowConfig.model_validate({"analysis": {"significanceLevel": 1.0}})
-  with pytest.raises(ValidationError):
-    OpenFurrowConfig.model_validate({"analysis": {"significanceLevel": 0.0}})
+  path.write_text("analysis:\n  significanceLevel: 0.01\n", encoding="utf-8")
+  with pytest.raises(Exception, match="analysis"):
+    loadConfig(path)
 
 
 def testUnknownMeanComparisonRejected():

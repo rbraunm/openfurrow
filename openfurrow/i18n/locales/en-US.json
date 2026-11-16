@@ -1045,6 +1045,26 @@
       "text": "Transforms",
       "status": "source"
     },
+    "report.reproducibility.settings": {
+      "text": "Settings",
+      "status": "source"
+    },
+    "report.settings.source.default": {
+      "text": "default",
+      "status": "source"
+    },
+    "report.settings.source.server": {
+      "text": "set for the server",
+      "status": "source"
+    },
+    "report.settings.source.place": {
+      "text": "set for {name}",
+      "status": "source"
+    },
+    "report.settings.source.trial": {
+      "text": "set for this trial",
+      "status": "source"
+    },
     "report.reproducibility.inputHash": {
       "text": "Input hash (SHA-256)",
       "status": "source"
@@ -1479,6 +1499,94 @@
     },
     "web.import.warningsHeading": {
       "text": "Warnings",
+      "status": "source"
+    },
+    "hierarchy.level.organization": {
+      "text": "Organization",
+      "status": "source"
+    },
+    "hierarchy.level.project": {
+      "text": "Project",
+      "status": "source"
+    },
+    "hierarchy.level.study": {
+      "text": "Study",
+      "status": "source"
+    },
+    "web.nav.places": {
+      "text": "Places",
+      "status": "source"
+    },
+    "web.trials.column.place": {
+      "text": "Place",
+      "status": "source"
+    },
+    "web.place.label": {
+      "text": "{level} the trial belongs to",
+      "status": "source"
+    },
+    "web.place.none": {
+      "text": "There is no {level} to put a trial in yet. Add one first:",
+      "status": "source"
+    },
+    "web.places.heading": {
+      "text": "Places",
+      "status": "source"
+    },
+    "web.places.intro": {
+      "text": "Trials live in places: {levels}, then the trial. Roles and settings are given by place.",
+      "status": "source"
+    },
+    "web.places.noLevels": {
+      "text": "This store has no hierarchy levels: trials stand on their own.",
+      "status": "source"
+    },
+    "web.places.empty": {
+      "text": "No places yet.",
+      "status": "source"
+    },
+    "web.places.column.path": {
+      "text": "Path",
+      "status": "source"
+    },
+    "web.places.column.level": {
+      "text": "Level",
+      "status": "source"
+    },
+    "web.places.column.name": {
+      "text": "Name",
+      "status": "source"
+    },
+    "web.places.column.trials": {
+      "text": "Trials",
+      "status": "source"
+    },
+    "web.places.add.heading": {
+      "text": "Add a place",
+      "status": "source"
+    },
+    "web.places.add.parent": {
+      "text": "Inside",
+      "status": "source"
+    },
+    "web.places.add.top": {
+      "text": "(none: a new {level})",
+      "status": "source"
+    },
+    "web.places.add.code": {
+      "text": "Code (letters, digits, '.', '_' and '-')",
+      "status": "source"
+    },
+    "web.places.add.name": {
+      "text": "Name",
+      "status": "source"
+    },
+    "web.places.add.submit": {
+      "text": "Add",
+      "status": "source"
+    },
+    "web.places.problem": {
+      "text": "The place was not added: {reason}",
       "status": "source"
     },
     "web.trial.importData": {

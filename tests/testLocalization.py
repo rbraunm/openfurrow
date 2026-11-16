@@ -53,6 +53,7 @@ from openfurrow.i18n import (
   sourceLocale,
   translatorFor,
 )
+from storeHelpers import standardStudy, standardStudyAt
 
 _localeDirectory = Path("openfurrow/i18n/locales")
 
@@ -79,7 +80,7 @@ _values = {
 def workspace(tmp_path, newStore):
   ws = Workspace.create(newStore("trials"))
   package = TrialPackage.model_validate(_packageDict)
-  ws.addPackage(package)
+  ws.addPackage(package, standardStudy(ws))
   layout = ws.layoutFor("L10N-1")
   csvPath = tmp_path / "obs.csv"
   with csvPath.open("w", newline="", encoding="utf-8") as handle:
@@ -359,8 +360,8 @@ def testMeanSeparationCarriesAKeyNotAMethodName(workspace):
   for meanComparison, expected in ((MeanComparison.protectedLSD, "report.method.fisherProtectedLSD"),
                                    (MeanComparison.lsd, "report.method.fisherLSD"),
                                    (MeanComparison.tukeyHSD, "report.method.tukeyHSD")):
-    separation = workspace.separateMeans(
-      "L10N-1", "YIELD", significanceLevel=0.05, meanComparison=meanComparison)
+    workspace.setSetting("trial:L10N-1", "analysis.meanComparison", meanComparison.value)
+    separation = workspace.separateMeans("L10N-1", "YIELD")
     assert separation.methodKey == expected
     assert " " not in separation.methodKey
 

@@ -25,6 +25,7 @@ import pytest
 from openfurrow import TrialPackage, Workspace, defaultConfig, schemaVersion
 from openfurrow.config import OpenFurrowConfig, TLSSettings
 from openfurrow.service import ServiceError, createApp, serviceUrl, tlsContext
+from storeHelpers import standardPath, standardStudy, standardStudyAt
 
 _packageDict = {
   "schemaVersion": schemaVersion,
@@ -48,7 +49,7 @@ _values = {
 @pytest.fixture
 def databasePath(tmp_path, newStore):
   path = newStore("trials")
-  Workspace.create(path)
+  standardStudy(Workspace.create(path))
   return path
 
 
@@ -75,7 +76,7 @@ def _observationCsv(workspace, tmp_path) -> bytes:
 
 
 def _populate(client, workspace, tmp_path):
-  client.post("/api/trials", data=json.dumps(_packageDict))
+  client.post(f"/api/trials?place={standardPath}", data=json.dumps(_packageDict))
   client.post("/api/trials/API-1/observations", data=_observationCsv(workspace, tmp_path))
 
 
@@ -89,7 +90,7 @@ def testHealth(client):
 
 def testFullLoopOverHttp(client, workspace, tmp_path):
   # Add a trial.
-  created = client.post("/api/trials", data=json.dumps(_packageDict))
+  created = client.post(f"/api/trials?place={standardPath}", data=json.dumps(_packageDict))
   assert created.status_code == 201
   assert created.get_json()["trialCode"] == "API-1"
 
@@ -143,13 +144,13 @@ def testDocumentRoundTripOverHttp(client, workspace, tmp_path, newStore):
   freshPath = newStore("fresh")
   Workspace.create(freshPath)
   freshClient = createApp(freshPath).test_client()
-  imported = freshClient.post("/api/documents", data=exported.get_data())
+  imported = freshClient.post(f"/api/documents?place={standardStudyAt(freshPath)}", data=exported.get_data())
   assert imported.status_code == 201
   assert imported.get_json()["contentHash"] == sourceHash
 
 
 def testDocumentThatIsNotJsonIsABadRequest(client):
-  response = client.post("/api/documents", data=b"plotNumber,assessmentCode,value\n101,YIELD,1\n")
+  response = client.post(f"/api/documents?place={standardPath}", data=b"plotNumber,assessmentCode,value\n101,YIELD,1\n")
   assert response.status_code == 400
   assert "not valid JSON" in response.get_json()["error"]
 
@@ -161,7 +162,7 @@ def testDocumentWithAChangedLayoutIsABadRequest(client, workspace, tmp_path, new
   first["treatmentCode"], second["treatmentCode"] = second["treatmentCode"], first["treatmentCode"]
   freshPath = newStore("fresh")
   Workspace.create(freshPath)
-  response = createApp(freshPath).test_client().post("/api/documents", data=json.dumps(document))
+  response = createApp(freshPath).test_client().post(f"/api/documents?place={standardStudyAt(freshPath)}", data=json.dumps(document))
   assert response.status_code == 400
   assert "is not the one method 'sha256FisherYates1' produces from seed 7" in response.get_json()["error"]
 
@@ -183,28 +184,28 @@ def testUnknownTrialIs404(client):
 
 
 def testDuplicateTrialIs409(client):
-  assert client.post("/api/trials", data=json.dumps(_packageDict)).status_code == 201
-  conflict = client.post("/api/trials", data=json.dumps(_packageDict))
+  assert client.post(f"/api/trials?place={standardPath}", data=json.dumps(_packageDict)).status_code == 201
+  conflict = client.post(f"/api/trials?place={standardPath}", data=json.dumps(_packageDict))
   assert conflict.status_code == 409
   assert "already exists" in conflict.get_json()["error"]
 
 
 def testInvalidPackageIs400(client):
   broken = dict(_packageDict, treatments=[])
-  response = client.post("/api/trials", data=json.dumps(broken))
+  response = client.post(f"/api/trials?place={standardPath}", data=json.dumps(broken))
   assert response.status_code == 400
 
 
 def testMalformedJsonIs400(client):
-  assert client.post("/api/trials", data=b"{not json").status_code == 400
+  assert client.post(f"/api/trials?place={standardPath}", data=b"{not json").status_code == 400
 
 
 def testEmptyBodyIs400(client):
-  assert client.post("/api/trials", data=b"").status_code == 400
+  assert client.post(f"/api/trials?place={standardPath}", data=b"").status_code == 400
 
 
 def testAnalyzeWithoutObservationsIs400(client):
-  client.post("/api/trials", data=json.dumps(_packageDict))
+  client.post(f"/api/trials?place={standardPath}", data=json.dumps(_packageDict))
   assert client.get("/api/trials/API-1/analysis/YIELD").status_code == 400
 
 
@@ -214,14 +215,14 @@ def testUnknownLocaleIs400(client, workspace, tmp_path):
 
 
 def testEmptyCsvIs400(client):
-  client.post("/api/trials", data=json.dumps(_packageDict))
+  client.post(f"/api/trials?place={standardPath}", data=json.dumps(_packageDict))
   assert client.post("/api/trials/API-1/observations", data=b"").status_code == 400
 
 
 # ---- Field Book interop over HTTP -----------------------------------------
 
 def testFieldBookImportOverHttp(client, workspace, tmp_path):
-  client.post("/api/trials", data=json.dumps(_packageDict))
+  client.post(f"/api/trials?place={standardPath}", data=json.dumps(_packageDict))
   layout = workspace.layoutFor("API-1")
   path = tmp_path / "fb.csv"
   with path.open("w", newline="", encoding="utf-8") as handle:
@@ -281,7 +282,7 @@ def testOversizeRequestIsRejectedWith413(databasePath):
   from openfurrow.config import OpenFurrowConfig
   config = OpenFurrowConfig.model_validate({"service": {"maxUploadBytes": 1024}})
   client = createApp(databasePath, config).test_client()
-  response = client.post("/api/trials", data=b"x" * 2048)
+  response = client.post(f"/api/trials?place={standardPath}", data=b"x" * 2048)
   assert response.status_code == 413
   assert response.get_json()["error"]
 

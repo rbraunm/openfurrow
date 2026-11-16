@@ -22,6 +22,7 @@ from openfurrow import schemaVersion
 from openfurrow.cli.main import main
 from openfurrow.design import generateRcbdLayout
 from openfurrow.schema import TrialPackage
+from storeHelpers import standardStudyAt
 
 repositoryRoot = Path(__file__).parent.parent
 
@@ -67,7 +68,7 @@ def project(tmp_path, newStore):
 
 def setUpTrialWithData(project):
   assert main(["init", project["db"]]) == 0
-  assert main(["add", project["db"], project["package"]]) == 0
+  assert main(["add", project["db"], project["package"], "--place", standardStudyAt(project["db"])]) == 0
   assert main(["import", project["db"], "DEMO", project["obs"]]) == 0
 
 
@@ -81,7 +82,7 @@ def hashFromInfo(text):
 
 def testInitAddList(project, capsys):
   assert main(["init", project["db"]]) == 0
-  assert main(["add", project["db"], project["package"]]) == 0
+  assert main(["add", project["db"], project["package"], "--place", standardStudyAt(project["db"])]) == 0
   capsys.readouterr()
   assert main(["list", project["db"]]) == 0
   out = capsys.readouterr().out
@@ -96,7 +97,7 @@ def testImportReportsCount(project, capsys):
 
 def testRandomizeIsDeterministic(project, capsys):
   assert main(["init", project["db"]]) == 0
-  assert main(["add", project["db"], project["package"]]) == 0
+  assert main(["add", project["db"], project["package"], "--place", standardStudyAt(project["db"])]) == 0
   capsys.readouterr()
   assert main(["randomize", project["db"], "DEMO"]) == 0
   first = capsys.readouterr().out
@@ -153,14 +154,14 @@ def testRedirectedReportIsUTF8InEveryLocale(project):
     assert printed.rstrip("\n") == outputPath.read_text(encoding="utf-8").rstrip("\n")
 
 
-def testReportUsesConfigSignificance(project, capsys):
+def testReportUsesTheTrialsSignificanceSetting(project, capsys):
   setUpTrialWithData(project)
-  configPath = Path(project["dir"]) / "openfurrow.yaml"
-  configPath.write_text("analysis:\n  significanceLevel: 0.01\n", encoding="utf-8")
+  assert main(["setting", "set", project["db"], "trial:DEMO", "analysis.significanceLevel", "0.01"]) == 0
   capsys.readouterr()
-  assert main(["report", project["db"], "DEMO", "--config", str(configPath)]) == 0
+  assert main(["report", project["db"], "DEMO"]) == 0
   report = capsys.readouterr().out
   assert "alpha = 0.01" in report
+  assert "analysis.significanceLevel = 0.01 (set for this trial)" in report
 
 
 # ---- export / import-json / verify (round trip) ---------------------------
@@ -174,7 +175,7 @@ def testExportImportJsonVerifyRoundTrip(project, capsys):
   assert main(["export", project["db"], "DEMO", "--json", str(documentPath), "--csv", str(csvPath)]) == 0
   assert documentPath.exists() and csvPath.exists()
 
-  assert main(["import-json", project["db2"], str(documentPath)]) == 0
+  assert main(["import-json", project["db2"], str(documentPath), "--place", standardStudyAt(project["db2"])]) == 0
 
   assert main(["verify", project["db"], "DEMO"]) == 0
   assert "PASS" in capsys.readouterr().out
@@ -209,9 +210,9 @@ def testMissingTrialErrors(project, capsys):
 
 def testAddDuplicateErrors(project, capsys):
   assert main(["init", project["db"]]) == 0
-  assert main(["add", project["db"], project["package"]]) == 0
+  assert main(["add", project["db"], project["package"], "--place", standardStudyAt(project["db"])]) == 0
   capsys.readouterr()
-  assert main(["add", project["db"], project["package"]]) == 1
+  assert main(["add", project["db"], project["package"], "--place", standardStudyAt(project["db"])]) == 1
   assert "already exists" in capsys.readouterr().err
 
 
@@ -229,7 +230,7 @@ def testInvalidPackageRejected(project, capsys):
   brokenPath.write_text(json.dumps(broken), encoding="utf-8")
   assert main(["init", project["db"]]) == 0
   capsys.readouterr()
-  assert main(["add", project["db"], str(brokenPath)]) == 1
+  assert main(["add", project["db"], str(brokenPath), "--place", standardStudyAt(project["db"])]) == 1
   assert "error:" in capsys.readouterr().err
 
 
@@ -256,7 +257,7 @@ def testInfoSurfacesTransformAndMeasurementKind(tmp_path, newStore, capsys):
   packagePath.write_text(json.dumps(packageDict), encoding="utf-8")
   db = newStore("info")
   assert main(["init", db]) == 0
-  assert main(["add", db, str(packagePath)]) == 0
+  assert main(["add", db, str(packagePath), "--place", standardStudyAt(db)]) == 0
   capsys.readouterr()
   assert main(["info", db, "INFO-1"]) == 0
   out = capsys.readouterr().out
@@ -270,7 +271,7 @@ def testInfoSurfacesTransformAndMeasurementKind(tmp_path, newStore, capsys):
 def testInfoShowsDefaultTransformForPlainNumeric(project, capsys):
   """Even at defaults, transform and kind are shown, so the current setting is visible."""
   assert main(["init", project["db"]]) == 0
-  assert main(["add", project["db"], project["package"]]) == 0
+  assert main(["add", project["db"], project["package"], "--place", standardStudyAt(project["db"])]) == 0
   capsys.readouterr()
   assert main(["info", project["db"], "DEMO"]) == 0
   out = capsys.readouterr().out
@@ -284,7 +285,7 @@ def testInfoListsTreatmentsAndApplications(tmp_path, newStore, capsys, validPack
   packagePath.write_text(json.dumps(validPackageDict), encoding="utf-8")
   database = newStore("trials")
   assert main(["init", database]) == 0
-  assert main(["add", database, str(packagePath)]) == 0
+  assert main(["add", database, str(packagePath), "--place", standardStudyAt(database)]) == 0
   capsys.readouterr()
   assert main(["info", database, "ESV-2025-01"]) == 0
   out = capsys.readouterr().out
@@ -302,7 +303,7 @@ def testInfoListsTreatmentsAndApplications(tmp_path, newStore, capsys, validPack
 
 def testInfoOfATrialWithoutApplicationsListsNone(project, capsys):
   assert main(["init", project["db"]]) == 0
-  assert main(["add", project["db"], project["package"]]) == 0
+  assert main(["add", project["db"], project["package"], "--place", standardStudyAt(project["db"])]) == 0
   capsys.readouterr()
   assert main(["info", project["db"], "DEMO"]) == 0
   out = capsys.readouterr().out
@@ -329,7 +330,7 @@ def testTrialLaidOutElsewhereComesInAsADocument(project, capsys):
   """An unrandomized layout with its own plot numbers is kept and shown as given."""
   documentPath = Path(project["dir"]) / "field7.json"
   documentPath.write_text(json.dumps(importedTrialDocument()), encoding="utf-8")
-  assert main(["import-json", project["db"], str(documentPath)]) == 0
+  assert main(["import-json", project["db"], str(documentPath), "--place", standardStudyAt(project["db"])]) == 0
   capsys.readouterr()
   assert main(["randomize", project["db"], "FIELD-7"]) == 0
   out = capsys.readouterr().out
@@ -345,7 +346,7 @@ def testAddRefusesAPackageWithAnImportedLayout(project, capsys):
   packagePath.write_text(json.dumps(importedTrialDocument()["package"]), encoding="utf-8")
   assert main(["init", project["db"]]) == 0
   capsys.readouterr()
-  assert main(["add", project["db"], str(packagePath)]) == 1
+  assert main(["add", project["db"], str(packagePath), "--place", standardStudyAt(project["db"])]) == 1
   assert "declares an imported layout" in capsys.readouterr().err
 
 
@@ -358,5 +359,5 @@ def testImportJsonRefusesALayoutChangedAfterGeneration(project, capsys):
   first["treatmentCode"], second["treatmentCode"] = second["treatmentCode"], first["treatmentCode"]
   documentPath.write_text(json.dumps(document), encoding="utf-8")
   capsys.readouterr()
-  assert main(["import-json", project["db2"], str(documentPath)]) == 1
+  assert main(["import-json", project["db2"], str(documentPath), "--place", standardStudyAt(project["db2"])]) == 1
   assert "is not the one method 'sha256FisherYates1' produces from seed 1" in capsys.readouterr().err

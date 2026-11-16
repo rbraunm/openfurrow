@@ -10,12 +10,13 @@ import pytest
 from openfurrow import RandomizationMethod, TreatmentRole, Workspace
 from openfurrow.importers.layoutCsv import LayoutFileError, readLayoutCsv
 from openfurrow.service import createApp
+from storeHelpers import standardPath, standardStudy
 
 
 @pytest.fixture
 def setup(tmp_path, newStore):
   databasePath = newStore("trials")
-  Workspace.create(databasePath)
+  standardStudy(Workspace.create(databasePath))
   return Workspace.open(databasePath), createApp(databasePath).test_client()
 
 
@@ -24,7 +25,7 @@ def filled(**overrides):
     "trialCode": "FORM-1", "title": "Barley fungicides", "crop": "Barley", "season": "2026",
     "site": "North Field", "objective": "Compare programs", "investigator": "", "organization": "",
     "treatmentsRows": "6", "assessmentsRows": "3", "replications": "3",
-    "layoutSource": "generate", "seed": "12", "create": "yes",
+    "layoutSource": "generate", "seed": "12", "create": "yes", "place": standardPath,
     "treatments-0-code": "UTC", "treatments-0-name": "Untreated", "treatments-0-role": "untreatedControl",
     "treatments-1-code": "A", "treatments-1-name": "Program A", "treatments-1-role": "test",
     "treatments-2-code": "B", "treatments-2-name": "Program B", "treatments-2-role": "",

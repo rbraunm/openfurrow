@@ -17,6 +17,8 @@
   <textarea id="package" name="package" rows="20" spellcheck="false"
             aria-describedby="file-help">{{ submitted or example }}</textarea>
 
+  {% include "placePicker.html" %}
+
   <div class="file-row">
     <label id="file-help" class="field-label" for="file">{{ t.text('web.add.fileLabel') }}</label>
     <input type="file" id="file" name="file" accept=".json,application/json">

@@ -1,0 +1,14 @@
+{% if placeChoices.levels %}
+<div class="field-row place-picker">
+  <label class="field-label" for="place">{{ t.text('web.place.label', level=placeChoices.lastLevel) }}</label>
+  {% if placeChoices.places %}
+  <select id="place" name="place">
+    {% for place in placeChoices.places %}
+    <option value="{{ place.path }}" {% if place.path == selectedPlace %}selected{% endif %}>{{ place.name }} ({{ place.path }})</option>
+    {% endfor %}
+  </select>
+  {% else %}
+  <p class="notice">{{ t.text('web.place.none', level=placeChoices.lastLevel) }} <a href="{{ url_for('web.places', locale=locale if locale != 'en-US' else none) }}">{{ t.text('web.nav.places') }}</a></p>
+  {% endif %}
+</div>
+{% endif %}

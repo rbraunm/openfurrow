@@ -133,16 +133,6 @@ def _registerErrorHandlers(application: Flask) -> None:
 
 def _registerRoutes(application: Flask, workspace: Workspace, config: OpenFurrowConfig) -> None:
 
-  def _alpha() -> float:
-    value = request.args.get("significanceLevel")
-    if value is None:
-      return config.analysis.significanceLevel
-    try:
-      return float(value)
-    except ValueError:
-      raise AnalysisError(f"significanceLevel '{value}' is not a number")
-
-
   @application.get("/health")
   def health() -> Response:
     return _json({"status": "ok", "locales": availableLocales()})
@@ -160,7 +150,7 @@ def _registerRoutes(application: Flask, workspace: Workspace, config: OpenFurrow
   @application.post("/api/trials")
   def addTrial() -> Response:
     package = TrialPackage.model_validate(_body())
-    workspace.addPackage(package)
+    workspace.addPackage(package, request.args.get("place"))
     trialCode = package.trial.trialCode
     return _json({"trialCode": trialCode, "contentHash": workspace.contentHashFor(trialCode)}, 201)
 
@@ -223,25 +213,16 @@ def _registerRoutes(application: Flask, workspace: Workspace, config: OpenFurrow
 
   @application.get("/api/trials/<trialCode>/means/<assessmentCode>")
   def separateMeans(trialCode: str, assessmentCode: str) -> Response:
-    return _json(workspace.separateMeans(
-      trialCode, assessmentCode, significanceLevel=_alpha(), meanComparison=config.analysis.meanComparison,
-    ))
+    return _json(workspace.separateMeans(trialCode, assessmentCode))
 
   @application.get("/api/trials/<trialCode>/assumptions/<assessmentCode>")
   def assessAssumptions(trialCode: str, assessmentCode: str) -> Response:
-    return _json(workspace.assessAssumptions(
-      trialCode, assessmentCode, significanceLevel=_alpha(),
-    ))
+    return _json(workspace.assessAssumptions(trialCode, assessmentCode))
 
   @application.get("/api/trials/<trialCode>/report")
   def report(trialCode: str) -> Response:
     """The Markdown report. `locale` selects display text only; it never touches data."""
-    markdown = workspace.buildReport(
-      trialCode,
-      significanceLevel=_alpha(),
-      meanComparison=config.analysis.meanComparison,
-      locale=request.args.get("locale", sourceLocale),
-    )
+    markdown = workspace.buildReport(trialCode, locale=request.args.get("locale", sourceLocale))
     return Response(markdown, status=200, mimetype="text/markdown; charset=utf-8")
 
   # -- exchange and fixity --
@@ -268,7 +249,7 @@ def _registerRoutes(application: Flask, workspace: Workspace, config: OpenFurrow
     with tempfile.TemporaryDirectory() as directory:
       path = Path(directory) / "trial.json"
       path.write_bytes(request.get_data())
-      trialCode = workspace.importDocument(str(path))
+      trialCode = workspace.importDocument(str(path), request.args.get("place"))
     return _json({"trialCode": trialCode, "contentHash": workspace.contentHashFor(trialCode)}, 201)
 
 

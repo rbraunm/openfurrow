@@ -23,6 +23,7 @@ from openfurrow.design import generateLayout
 from openfurrow.reports import buildReport
 from openfurrow.schema import TrialDocument
 from openfurrow.schema.observation import Observation
+from storeHelpers import standardStudy, standardStudyAt
 
 
 def packageDict(rule="mean", count=3):
@@ -132,7 +133,7 @@ def testSubsamplesNeedANumericRatingAndTwoOrMore():
 def testSubsamplesSurviveStoreExportAndCsv(tmp_path, newStore):
   package, layout, observations = trial()
   workspace = Workspace.create(newStore("t"))
-  workspace.addPackage(package)
+  workspace.addPackage(package, standardStudy(workspace))
   workspace.recordValues("SUB-1", "SEV", observations)
   stored = workspace.loadObservations("SUB-1")
   assert sorted(stored, key=lambda o: (o.plotNumber, o.subsample)) == sorted(observations, key=lambda o: (o.plotNumber, o.subsample))
@@ -147,7 +148,7 @@ def testSubsamplesSurviveStoreExportAndCsv(tmp_path, newStore):
 def testWideFileGivesOneColumnPerSubsample(tmp_path, newStore):
   package, layout, observations = trial()
   workspace = Workspace.create(newStore("t"))
-  workspace.addPackage(package)
+  workspace.addPackage(package, standardStudy(workspace))
   values = {(o.plotNumber, o.subsample): o.value for o in observations}
   lines = ["Plot,Leaf 1,Leaf 2,Leaf 3"] + [
     f"{plot.plotNumber},{values[(plot.plotNumber, 1)]},{values[(plot.plotNumber, 2)]},{values[(plot.plotNumber, 3)]}"
@@ -167,7 +168,7 @@ def testWideFileGivesOneColumnPerSubsample(tmp_path, newStore):
 def testLongFileNamesTheSubsample(tmp_path, newStore):
   package, layout, observations = trial()
   workspace = Workspace.create(newStore("t"))
-  workspace.addPackage(package)
+  workspace.addPackage(package, standardStudy(workspace))
   path = tmp_path / "long.csv"
   path.write_text("plot,code,leaf,value\n" + "".join(
     f"{o.plotNumber},SEV,{o.subsample},{o.value}\n" for o in observations), encoding="utf-8")
@@ -184,7 +185,7 @@ def testWideColumnsForAnAssessmentWithoutSubsamplesAreRefused(tmp_path, newStore
   del data["assessments"][0]["subsamples"]
   package = TrialPackage.model_validate(data)
   workspace = Workspace.create(newStore("t"))
-  workspace.addPackage(package)
+  workspace.addPackage(package, standardStudy(workspace))
   path = tmp_path / "w.csv"
   path.write_text("Plot,S1,S2\n101,1,2\n", encoding="utf-8")
   from openfurrow import ImportProfile
@@ -196,7 +197,7 @@ def testWideColumnsForAnAssessmentWithoutSubsamplesAreRefused(tmp_path, newStore
 def testEntryPageTakesARowOfSubsamplesPerPlot(tmp_path, newStore):
   package, layout, _ = trial()
   workspace = Workspace.create(newStore("t"))
-  workspace.addPackage(package)
+  workspace.addPackage(package, standardStudy(workspace))
   from openfurrow.service import createApp
   client = createApp(newStore("t")).test_client()
   plot = layout.plots[0].plotNumber

@@ -38,7 +38,7 @@ from sqlalchemy import ForeignKey, Text, event, inspect, select
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, relationship
 
-storeVersion = 14
+storeVersion = 15
 
 
 class StoreError(RuntimeError):
@@ -57,12 +57,45 @@ class StoreVersionRow(Base):
   version: Mapped[int] = mapped_column(primary_key=True)
 
 
+class HierarchyLevelRow(Base):
+  """One level of the hierarchy (decision 0034); a built-in level has no name of its own."""
+
+  __tablename__ = "hierarchyLevel"
+
+  levelCode: Mapped[str] = mapped_column(primary_key=True)
+  ordinal: Mapped[int] = mapped_column(unique=True)
+  name: Mapped[str | None]
+
+
+class PlaceRow(Base):
+  """A place at one level, inside a place of the level above (none for the first level)."""
+
+  __tablename__ = "place"
+
+  placeID: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+  levelCode: Mapped[str] = mapped_column(ForeignKey("hierarchyLevel.levelCode"))
+  parentID: Mapped[int | None] = mapped_column(ForeignKey("place.placeID"))
+  code: Mapped[str]
+  name: Mapped[str]
+
+
+class SettingValueRow(Base):
+  """A setting's value at one scope: 'server', 'place:<placeID>' or 'trial:<trialCode>' (decision 0035)."""
+
+  __tablename__ = "settingValue"
+
+  scope: Mapped[str] = mapped_column(primary_key=True)
+  key: Mapped[str] = mapped_column(primary_key=True)
+  valueJSON: Mapped[str]
+
+
 class TrialRow(Base):
   """A trial: its metadata and design, folded into one row (the relation is 1:1)."""
 
   __tablename__ = "trial"
 
   trialCode: Mapped[str] = mapped_column(primary_key=True)
+  placeID: Mapped[int | None] = mapped_column(ForeignKey("place.placeID"))
   title: Mapped[str]
   crop: Mapped[str]
   season: Mapped[str]
@@ -521,8 +554,12 @@ def createDatabase(location: str, create: bool = True) -> Engine:
     if not create:
       raise StoreError(f"database '{displayLocation(location)}' holds no OpenFurrow store; create it first")
     Base.metadata.create_all(engine)
+    from openfurrow.schema.hierarchy import defaultLevelCodes
     with Session(engine) as session:
       session.add(StoreVersionRow(version=storeVersion))
+      session.add_all(
+        HierarchyLevelRow(levelCode=code, ordinal=ordinal, name=None) for ordinal, code in enumerate(defaultLevelCodes)
+      )
       session.commit()
     return engine
 

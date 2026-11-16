@@ -17,6 +17,7 @@ import pytest
 from openfurrow import schemaVersion
 from openfurrow.schema import TrialPackage
 from openfurrow.workspace import ObservationImportError, Workspace
+from storeHelpers import standardStudy, standardStudyAt
 
 _fixtureDir = Path(__file__).parent / "fixtures"
 
@@ -40,7 +41,7 @@ _packageDict = {
 @pytest.fixture
 def workspace(tmp_path, newStore):
   ws = Workspace.create(newStore("trials"))
-  ws.addPackage(TrialPackage.model_validate(_packageDict))
+  ws.addPackage(TrialPackage.model_validate(_packageDict), standardStudy(ws))
   return ws
 
 
@@ -110,6 +111,6 @@ def testRoundTripThroughFieldBookPreservesHash(workspace, tmp_path, newStore):
   _writeFieldBookExport(workspace.loadObservations("FB-IN"), exportCsv)
 
   fresh = Workspace.create(newStore("fresh"))
-  fresh.addPackage(TrialPackage.model_validate(_packageDict))
+  fresh.addPackage(TrialPackage.model_validate(_packageDict), standardStudy(fresh))
   fresh.importFieldBook("FB-IN", str(exportCsv))
   assert fresh.contentHashFor("FB-IN") == sourceHash

@@ -6,7 +6,7 @@ Findings, defects, checks and owner calls that the plans do not carry.
 Status tags: `fix` (a defect to correct), `build` (work to add), `check` (a suspicion to
 measure), `owner` (the owner's call), `done`.
 
-**Counts.** fix 0, build 9, check 0, owner 4, done 51; 64 in all.
+**Counts.** fix 0, build 8, check 0, owner 4, done 52; 64 in all.
 
 ## Owner decisions
 
@@ -199,8 +199,11 @@ measure), `owner` (the owner's call), `done`.
   2026-11-16 (`governance-plan.md`), accepted by the owner the same day: build the
   foundation -- hierarchy, settings, sign-in, roles, audit, retention -- before the
   remaining record forms.
-- **GOV-1** `build` **Hierarchy and settings** (`governance-plan.md` F1, F2), on SQLite and
-  PostgreSQL.
+- **GOV-1** `done` **Hierarchy and settings.** The store runs on SQLite and PostgreSQL alike,
+  tested on both (the workflow's one-time testbed and the lab's). Built as decisions 0034
+  (levels as data, places by path, every trial placed) and 0035 (settings by scope, the
+  analysis and report following the trial's). Not yet: reshaping a populated hierarchy,
+  settings in the web interface (with roles).
 - **GOV-2** `build` **Identity core, roles and audit** (F3 to F5): open mode, local
   accounts, sessions, tokens, preferences; every route behind the permission boundary.
 - **GOV-3** `build` **The sign-in library**: OpenID Connect, SAML 2.0, LDAP, SCIM 2.0,

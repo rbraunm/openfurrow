@@ -24,6 +24,7 @@ from openfurrow.interop.fieldbook import writeFieldImport
 from openfurrow.reports import buildReport
 from openfurrow.schema import TrialLayout, TrialPackage
 from openfurrow.schema.observation import Observation
+from storeHelpers import standardStudy, standardStudyAt
 
 # Pest counts after application on the treated plots and on their checks, by treatment and
 # block; before application for Henderson-Tilton. Chosen so no two treatments look alike.
@@ -196,12 +197,12 @@ def testOneStripMayServeSeveralPlots(tmp_path, newStore):
   path = tmp_path / "doc.json"
   path.write_text(json.dumps(documentWith(importedPackage("imbricated"), importedPlots(), checks)), encoding="utf-8")
   first = Workspace.create(newStore("a"))
-  first.importDocument(str(path))
+  first.importDocument(str(path), standardStudy(first))
   assert [check.model_dump() for check in first.layoutFor("CHK-1").checkPlots] == checks
   exported = str(tmp_path / "out.json")
   first.exportDocument("CHK-1", exported)
   second = Workspace.create(newStore("b"))
-  second.importDocument(exported)
+  second.importDocument(exported, standardStudy(second))
   assert second.contentHashFor("CHK-1") == first.contentHashFor("CHK-1")
 
 
@@ -222,7 +223,7 @@ def testCheckPlotsThatDoNotFitAreRefused(tmp_path, newStore, arrangement, checks
   path = tmp_path / "doc.json"
   path.write_text(json.dumps(documentWith(importedPackage(arrangement), importedPlots(), checks)), encoding="utf-8")
   with pytest.raises(ExchangeError, match=message):
-    Workspace.create(newStore("a")).importDocument(str(path))
+    Workspace.create(newStore("a")).importDocument(str(path), standardStudyAt(newStore("a")))
 
 
 def testPercentControlNeedsChecks():

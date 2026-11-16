@@ -14,6 +14,7 @@ import pytest
 
 from openfurrow import TrialPackage, Workspace, schemaVersion
 from openfurrow.service import createApp
+from storeHelpers import standardStudy, standardStudyAt
 
 _packageDict = {
   "schemaVersion": schemaVersion,
@@ -33,7 +34,7 @@ _packageDict = {
 @pytest.fixture
 def databasePath(tmp_path, newStore):
   path = newStore("trials")
-  Workspace.create(path).addPackage(TrialPackage.model_validate(_packageDict))
+  Workspace.create(path).addPackage(TrialPackage.model_validate(_packageDict), standardStudyAt(path))
   return path
 
 
