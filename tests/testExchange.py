@@ -81,6 +81,14 @@ def testJsonExportIsDeterministic(tmp_path):
   assert first.read_bytes() == second.read_bytes()
 
 
+def testJsonExportHasLfLineEndingsOnEveryPlatform(tmp_path):
+  path = tmp_path / "trial.json"
+  exportJson(sampleDocument(), str(path))
+  exported = path.read_bytes()
+  assert b"\r" not in exported
+  assert exported.endswith(b"}\n")
+
+
 def testDatabaseAndJsonAgreeOnHash(tmp_path):
   # The ownership guarantee: the store and a JSON export describe the same trial.
   document = sampleDocument()

@@ -23,8 +23,11 @@ class ExchangeError(ValueError):
 
 
 def exportJson(document: TrialDocument, path: str) -> None:
-  """Write a trial document to a deterministic, human-readable JSON file."""
-  with open(path, "w", encoding="utf-8") as handle:
+  """Write a trial document to a deterministic, human-readable JSON file.
+
+  The bytes are the same on every platform: UTF-8 with LF line endings.
+  """
+  with open(path, "w", encoding="utf-8", newline="\n") as handle:
     json.dump(document.canonicalDict(), handle, sort_keys=True, indent=2)
     handle.write("\n")
 

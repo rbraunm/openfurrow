@@ -19,6 +19,7 @@ defaults apply.
 from __future__ import annotations
 
 import argparse
+import io
 import json
 import sys
 from pathlib import Path
@@ -39,6 +40,7 @@ from pydantic import ValidationError
 
 def main(argv: list[str] | None = None) -> int:
   """Parse arguments and run the requested command; return a process exit code."""
+  _useUTF8Streams()
   parser = _buildParser()
   args = parser.parse_args(argv)
   handler = getattr(args, "handler", None)
@@ -53,6 +55,15 @@ def main(argv: list[str] | None = None) -> int:
   ) as error:
     print(f"error: {error}", file=sys.stderr)
     return 1
+
+
+def _useUTF8Streams() -> None:
+  # A report carries text in any shipped locale. Left to the platform, redirected
+  # output on Windows is encoded with the ANSI code page: Arabic cannot be encoded at
+  # all, and French comes out in an encoding the report does not declare.
+  for stream in (sys.stdout, sys.stderr):
+    if isinstance(stream, io.TextIOWrapper):
+      stream.reconfigure(encoding="utf-8")
 
 
 # ---- argument parser ------------------------------------------------------
@@ -253,7 +264,7 @@ def _commandReport(args) -> int:
     locale=args.locale,
   )
   if args.output:
-    Path(args.output).write_text(report, encoding="utf-8")
+    Path(args.output).write_text(report, encoding="utf-8", newline="\n")
     print(f"Wrote report to {args.output}")
   else:
     print(report)

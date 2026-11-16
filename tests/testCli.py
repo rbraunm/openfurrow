@@ -10,7 +10,10 @@ return non-zero.
 
 import csv
 import json
+import os
 import re
+import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -18,6 +21,8 @@ import pytest
 from openfurrow.cli.main import main
 from openfurrow.design import generateRcbdLayout
 from openfurrow.schema import TrialPackage
+
+repositoryRoot = Path(__file__).parent.parent
 
 demoPackage = {
   "schemaVersion": "0.1.0",
@@ -115,6 +120,30 @@ def testReportWritesToFile(project, capsys):
   assert main(["report", project["db"], "DEMO", "--output", str(outputPath)]) == 0
   assert outputPath.exists()
   assert "### Analysis of variance" in outputPath.read_text(encoding="utf-8")
+  assert b"\r" not in outputPath.read_bytes()
+
+
+def testRedirectedReportIsUTF8InEveryLocale(project):
+  """Printed to a pipe, a report is UTF-8 whatever the platform's code page.
+
+  Runs the command as a process of its own, without the variables that would force an
+  encoding, because the encoding of a redirected stream is decided at process start.
+  """
+  setUpTrialWithData(project)
+  environment = {
+    name: value for name, value in os.environ.items()
+    if name not in ("PYTHONIOENCODING", "PYTHONUTF8")
+  }
+  for locale in ("ar", "fr"):
+    outputPath = Path(project["dir"]) / f"report-{locale}.md"
+    assert main(["report", project["db"], "DEMO", "--locale", locale, "--output", str(outputPath)]) == 0
+    completed = subprocess.run(
+      [sys.executable, "-m", "openfurrow.cli.main", "report", project["db"], "DEMO", "--locale", locale],
+      capture_output=True, env=environment, cwd=repositoryRoot,
+    )
+    assert completed.returncode == 0, completed.stderr.decode("utf-8", errors="replace")
+    printed = completed.stdout.decode("utf-8").replace("\r\n", "\n")
+    assert printed.rstrip("\n") == outputPath.read_text(encoding="utf-8").rstrip("\n")
 
 
 def testReportUsesConfigSignificance(project, capsys):
