@@ -1197,6 +1197,10 @@
       "text": "جدول تحليل التباين والمتوسطات وسجل قابلية إعادة الإنتاج لكل تقييم رقمي.",
       "status": "machineDraft"
     },
+    "web.report.print": {
+      "text": "طباعة",
+      "status": "machineDraft"
+    },
     "web.trial.back": {
       "text": "العودة إلى التجارب",
       "status": "machineDraft"

@@ -229,3 +229,8 @@ def testBackArrowFollowsThePageDirection(served):
   _, client = served
   assert "&larr; Back to trial" in client.get("/trials/ENT-1/entry").get_data(as_text=True)
   assert "&rarr; " in client.get("/trials/ENT-1/entry?locale=ar").get_data(as_text=True)
+
+def testReportPageOffersPrinting(served):
+  _, client = served
+  assert 'onclick="window.print()">Print</button>' in client.get("/trials/ENT-1/report").get_data(as_text=True)
+  assert 'onclick="window.print()">Imprimir</button>' in client.get("/trials/ENT-1/report?locale=es").get_data(as_text=True)

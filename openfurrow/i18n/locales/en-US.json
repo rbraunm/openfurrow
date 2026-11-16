@@ -1169,6 +1169,10 @@
       "text": "Download Markdown",
       "status": "source"
     },
+    "web.report.print": {
+      "text": "Print",
+      "status": "source"
+    },
     "web.report.back": {
       "text": "Back to trial",
       "status": "source"

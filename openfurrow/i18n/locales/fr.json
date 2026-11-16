@@ -1197,6 +1197,10 @@
       "text": "Le tableau AOV des moyennes et le dossier de reproductibilité pour chaque évaluation numérique.",
       "status": "machineDraft"
     },
+    "web.report.print": {
+      "text": "Imprimer",
+      "status": "machineDraft"
+    },
     "web.trial.back": {
       "text": "Retour aux essais",
       "status": "machineDraft"

@@ -274,12 +274,11 @@ fieldset.format label { display: block; padding: 0.15rem 0; font-size: 0.95rem; 
   font-family: var(--mono); font-size: 0.85rem; font-feature-settings: "tnum" 1;
 }
 .report th, .report td {
-  border: 1px solid var(--line); padding: 0.35rem 0.6rem; text-align: end;
+  border: 1px solid var(--line); padding: 0.35rem 0.6rem; text-align: start;
 }
 /* A cell takes its direction from its own text, so a quantity such as '250 kPa' keeps
    its order on a right-to-left page instead of reading 'kPa 250'. */
 .report th, .report td { unicode-bidi: plaintext; }
-.report th:first-child, .report td:first-child { text-align: start; }
 .report thead th { background: color-mix(in srgb, var(--accent) 7%, transparent); color: var(--ink); }
 .report code { font-family: var(--mono); font-size: 0.9em; }
 
@@ -309,3 +308,17 @@ fieldset.format label { display: block; padding: 0.15rem 0; font-size: 0.95rem; 
 .entry-confirm { display: inline-flex; gap: 0.35rem; align-items: center; }
 .warning { padding: 0.7rem 1rem; border: 1px solid #E69F00; border-radius: var(--radius); margin-block: 1rem; }
 
+/* Printing ----------------------------------------------------------------- */
+
+@media print {
+  body { background: #fff; color: #000; font-size: 10.5pt; }
+  .masthead, .footer, .skip-link, .back, .download, .print-button, .intro { display: none; }
+  .content { padding: 0; max-width: none; }
+  .report { max-width: none; margin: 0; }
+  .report h1, .report h2, .report h3, .report h4 { break-after: avoid; }
+  .report table, .report li, .report p { break-inside: avoid; }
+  .report h2 { break-before: auto; }
+  .report th, .report td { border-color: #888; padding: 0.15rem 0.4rem; }
+  .report thead { display: table-header-group; }
+  a { color: inherit; text-decoration: none; }
+}

@@ -1197,6 +1197,10 @@
       "text": "La tabla AOV de medias y el registro de reproducibilidad de cada evaluación numérica.",
       "status": "machineDraft"
     },
+    "web.report.print": {
+      "text": "Imprimir",
+      "status": "machineDraft"
+    },
     "web.trial.back": {
       "text": "Volver a los ensayos",
       "status": "machineDraft"

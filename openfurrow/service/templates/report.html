@@ -6,6 +6,7 @@
 <div class="page-head">
   <h1>{{ t.text('web.report.heading') }}</h1>
   <a class="download" href="/api/trials/{{ trialCode }}/report{% if locale != 'en-US' %}?locale={{ locale }}{% endif %}">{{ t.text('web.report.download') }}</a>
+  <button class="button button-quiet print-button" type="button" onclick="window.print()">{{ t.text('web.report.print') }}</button>
 </div>
 <p class="intro">{{ t.text('web.report.intro') }}</p>
 

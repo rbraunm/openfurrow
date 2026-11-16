@@ -6,7 +6,7 @@ Findings, defects, checks and owner calls that the plans do not carry.
 Status tags: `fix` (a defect to correct), `build` (work to add), `check` (a suspicion to
 measure), `owner` (the owner's call), `done`.
 
-**Counts.** fix 0, build 17, check 0, owner 4, done 35; 56 in all.
+**Counts.** fix 0, build 16, check 0, owner 4, done 36; 56 in all.
 
 ## Owner decisions
 
@@ -195,8 +195,12 @@ measure), `owner` (the owner's call), `done`.
   RCBD as the two principal designs; the tool has only the second.
 - **USR-4** `build` **Data entry.** Values can be typed in the tool (REC-9) or arrive by
   CSV or a Field Book export. No Excel import yet (the brief lists it second after CSV).
-- **USR-5** `build` **A printable report.** The report is Markdown, rendered to HTML in
-  the browser; the brief names HTML and PDF output.
+- **USR-5** `done` **A printable report.** The report page has a Print button and a print
+  stylesheet: the site header, links and footer are left off, headings stay with what
+  follows them and tables are not split where they fit on a page. Measured by printing the
+  split-plot and paired-check reports to PDF in Chromium, in English and Arabic: four
+  pages each, no site chrome, no page starting inside a table. A PDF comes from the
+  browser's own "save as PDF"; the tool writes none itself.
 - **USR-6** `owner` **The readiness case.** Before the domain contact runs a real trial,
   the owner has to be convinced the tool is ready (Owner decisions, "First real trial").
   The bar, as amended by the second opinion, which found the first proposal right for

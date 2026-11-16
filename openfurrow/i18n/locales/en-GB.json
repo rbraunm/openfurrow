@@ -1169,6 +1169,10 @@
       "text": "Download Markdown",
       "status": "humanApproved"
     },
+    "web.report.print": {
+      "text": "Print",
+      "status": "humanApproved"
+    },
     "web.report.back": {
       "text": "Back to trial",
       "status": "humanApproved"
