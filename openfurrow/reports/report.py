@@ -241,6 +241,10 @@ def _designSection(package: TrialPackage, translator: Translator) -> list[str]:
     lines.append(
       _field(translator, "report.design.seed", translator.integer(design.randomizationSeed))
     )
+  if design.firstBlockInTreatmentOrder:
+    lines.append(
+      _field(translator, "report.design.firstBlock", translator.text("report.design.firstBlockInOrder"))
+    )
   lines.append("")
   return lines
 

@@ -80,6 +80,10 @@ class DesignSpecification(BaseModel):
   randomizationSeed: int | None = Field(
     default=None, ge=0, description="The seed of a generated layout; absent for an imported one.",
   )
+  firstBlockInTreatmentOrder: bool = Field(
+    default=False,
+    description="A generated layout leaves block 1 in treatment order, e.g. for field walks.",
+  )
 
   @model_validator(mode="after")
   def seedGoesWithAGeneratedLayout(self) -> DesignSpecification:
@@ -90,6 +94,8 @@ class DesignSpecification(BaseModel):
       )
     if not generated and self.randomizationSeed is not None:
       raise ValueError("an imported layout has no randomizationSeed")
+    if not generated and self.firstBlockInTreatmentOrder:
+      raise ValueError("an imported layout is recorded as supplied; firstBlockInTreatmentOrder applies to generated ones")
     return self
 
 

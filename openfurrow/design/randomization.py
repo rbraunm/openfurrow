@@ -20,6 +20,9 @@ Method `sha256FisherYates1`:
    swapped with the entry at a position drawn below that position's number.
 5. Blocks are shuffled in order, block 1 first, each continuing the stream where the
    previous one stopped.
+6. When the design leaves the first block in treatment order, block 1 keeps package
+   order and draws nothing from the stream; shuffling starts with block 2 at the start
+   of the stream. A design without that option is laid out by steps 1 to 5 alone.
 
 A changed procedure gets a new method name. This one stays as it is, so a layout
 recorded under it can always be regenerated and checked.
@@ -89,9 +92,10 @@ def generateRcbdLayout(package: TrialPackage) -> TrialLayout:
   plots: list[PlotAssignment] = []
   for block in range(1, design.replications + 1):
     order = list(range(treatmentCount))
-    for position in range(treatmentCount - 1, 0, -1):
-      chosen = stream.below(position + 1)
-      order[position], order[chosen] = order[chosen], order[position]
+    if not (block == 1 and design.firstBlockInTreatmentOrder):
+      for position in range(treatmentCount - 1, 0, -1):
+        chosen = stream.below(position + 1)
+        order[position], order[chosen] = order[chosen], order[position]
     for positionInBlock, treatmentIndex in enumerate(order, start=1):
       plots.append(
         PlotAssignment(

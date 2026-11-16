@@ -240,7 +240,10 @@ def _layoutOrigin(design) -> str:
   """How the recorded layout came to be: the method and its seed, or 'imported'."""
   if design.randomizationSeed is None:
     return design.randomizationMethod.value
-  return f"{design.randomizationMethod.value}, seed {design.randomizationSeed}"
+  origin = f"{design.randomizationMethod.value}, seed {design.randomizationSeed}"
+  if design.firstBlockInTreatmentOrder:
+    origin += ", block 1 in treatment order"
+  return origin
 
 
 def _treatmentLine(treatment) -> str:

@@ -13,6 +13,7 @@ import hashlib
 from collections import Counter
 
 import pytest
+from pydantic import ValidationError
 
 from openfurrow.design import generateRcbdLayout
 from openfurrow.design.randomization import _Sha256Stream
@@ -90,6 +91,27 @@ def testBoundedDrawsAreSpreadEvenly():
 
 
 # ---- reproducibility / known answers ------------------------------------
+
+def testFirstBlockInTreatmentOrderDrawsNothing(validPackageDict):
+  """Block 1 keeps package order; the next blocks get what blocks 1, 2, 3 would have got."""
+  shuffled = generateRcbdLayout(TrialPackage.model_validate(validPackageDict))
+  validPackageDict["design"]["firstBlockInTreatmentOrder"] = True
+  ordered = generateRcbdLayout(TrialPackage.model_validate(validPackageDict))
+
+  def blockOrder(layout, block):
+    plots = sorted((plot for plot in layout.plots if plot.block == block), key=lambda plot: plot.positionInBlock)
+    return [plot.treatmentCode for plot in plots]
+
+  assert blockOrder(ordered, 1) == ["T1", "T2", "T3"]
+  assert [blockOrder(ordered, block) for block in (2, 3, 4)] == [blockOrder(shuffled, block) for block in (1, 2, 3)]
+
+
+def testImportedLayoutCannotClaimAnOrderedFirstBlock(validPackageDict):
+  validPackageDict["design"] = {"designType": "rcbd", "replications": 4, "randomizationMethod": "imported",
+                                "firstBlockInTreatmentOrder": True}
+  with pytest.raises(ValidationError, match="firstBlockInTreatmentOrder applies to generated ones"):
+    TrialPackage.model_validate(validPackageDict)
+
 
 def testSeed42LayoutMatchesKnownAnswer(validPackageDict):
   layout = generateRcbdLayout(packageWithSeed(validPackageDict, 42))

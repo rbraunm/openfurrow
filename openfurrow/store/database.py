@@ -36,7 +36,7 @@ from sqlalchemy import ForeignKey, Text, event, inspect, select
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, relationship
 
-storeVersion = 6
+storeVersion = 7
 
 
 class StoreError(RuntimeError):
@@ -73,6 +73,7 @@ class TrialRow(Base):
   replications: Mapped[int]
   randomizationMethod: Mapped[str]
   randomizationSeed: Mapped[int | None]
+  firstBlockInTreatmentOrder: Mapped[bool]
 
   planting: Mapped[PlantingRow | None] = relationship(
     back_populates="trial", cascade="all, delete-orphan"

@@ -73,6 +73,14 @@
       "text": "supplied with the trial, not randomised here",
       "status": "humanApproved"
     },
+    "report.design.firstBlock": {
+      "text": "Block 1",
+      "status": "humanApproved"
+    },
+    "report.design.firstBlockInOrder": {
+      "text": "in treatment order, not randomised",
+      "status": "humanApproved"
+    },
     "report.heading.treatments": {
       "text": "Treatments",
       "status": "humanApproved"

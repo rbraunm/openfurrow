@@ -301,6 +301,14 @@
       "text": "Dispositif",
       "status": "machineDraft"
     },
+    "report.design.firstBlock": {
+      "text": "Bloc 1",
+      "status": "machineDraft"
+    },
+    "report.design.firstBlockInOrder": {
+      "text": "dans l'ordre des traitements, non randomisé",
+      "status": "machineDraft"
+    },
     "report.design.layout": {
       "text": "Plan",
       "status": "machineDraft"

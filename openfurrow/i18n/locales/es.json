@@ -301,6 +301,14 @@
       "text": "Diseño",
       "status": "machineDraft"
     },
+    "report.design.firstBlock": {
+      "text": "Bloque 1",
+      "status": "machineDraft"
+    },
+    "report.design.firstBlockInOrder": {
+      "text": "en el orden de los tratamientos, sin aleatorizar",
+      "status": "machineDraft"
+    },
     "report.design.layout": {
       "text": "Disposición",
       "status": "machineDraft"

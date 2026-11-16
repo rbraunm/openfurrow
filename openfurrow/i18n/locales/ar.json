@@ -301,6 +301,14 @@
       "text": "التصميم",
       "status": "machineDraft"
     },
+    "report.design.firstBlock": {
+      "text": "القطاع 1",
+      "status": "machineDraft"
+    },
+    "report.design.firstBlockInOrder": {
+      "text": "بترتيب المعاملات، دون توزيع عشوائي",
+      "status": "machineDraft"
+    },
     "report.design.layout": {
       "text": "التخطيط",
       "status": "machineDraft"

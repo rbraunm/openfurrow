@@ -73,6 +73,14 @@
       "text": "supplied with the trial, not randomized here",
       "status": "source"
     },
+    "report.design.firstBlock": {
+      "text": "Block 1",
+      "status": "source"
+    },
+    "report.design.firstBlockInOrder": {
+      "text": "in treatment order, not randomized",
+      "status": "source"
+    },
     "report.heading.treatments": {
       "text": "Treatments",
       "status": "source"

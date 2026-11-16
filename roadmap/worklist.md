@@ -302,8 +302,10 @@ sections added beside them. REC-9 needs data entry in the tool (USR-4).
   the order the specialist's trials need them (completely randomized, Latin square,
   split-plot, strip-plot). The specialist names the arrangements in use: the first
   replicate left in treatment order, split plots, paired plots and the spatially balanced
-  RCBD. The first is a generated layout with block 1 unshuffled; the others are designs of
-  their own, and an analysis to match each comes with it (USR-3). Any of them laid out
+  RCBD. The first is built: a generated design may set `firstBlockInTreatmentOrder`, and
+  block 1 then keeps package order while the other blocks are shuffled (randomization step
+  6); the report says so. The others are designs of their own, and an analysis to match
+  each comes with it (USR-3). Any of them laid out
   elsewhere can already be held as an imported layout.
 - **REC-8** `done` **Assessment definitions.** Built as decision 0017 says: a rating holds
   what is rated and every rule its values obey (rating type, part rated, method, data

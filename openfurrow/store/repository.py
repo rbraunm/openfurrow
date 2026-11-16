@@ -111,6 +111,7 @@ def savePackage(session: Session, package: TrialPackage, layout: list[PlotAssign
     replications=package.design.replications,
     randomizationMethod=package.design.randomizationMethod.value,
     randomizationSeed=package.design.randomizationSeed,
+    firstBlockInTreatmentOrder=package.design.firstBlockInTreatmentOrder,
   )
   for ordinal, treatment in enumerate(package.treatments):
     trial.treatments.append(TreatmentRow(
@@ -410,6 +411,7 @@ def loadPackage(session: Session, trialCode: str) -> TrialPackage:
       replications=trial.replications,
       randomizationMethod=RandomizationMethod(trial.randomizationMethod),
       randomizationSeed=trial.randomizationSeed,
+      firstBlockInTreatmentOrder=trial.firstBlockInTreatmentOrder,
     ),
     treatments=treatments,
     applications=applications,

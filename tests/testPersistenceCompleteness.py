@@ -84,7 +84,8 @@ _maximalPackage = {
      "notes": "Dew on the crop"},
     {"applicationCode": "A", "timing": "BBCH 31"},
   ],
-  "design": {"designType": "rcbd", "replications": 3, "randomizationMethod": "sha256FisherYates1", "randomizationSeed": 99},
+  "design": {"designType": "rcbd", "replications": 3, "randomizationMethod": "sha256FisherYates1", "randomizationSeed": 99,
+             "firstBlockInTreatmentOrder": True},
   "ratings": [
     {"ratingCode": "CT", "name": "Insect count", "ratingType": "pest count", "partRated": "whole plant",
      "method": "Beat sheet, 10 plants", "targetCode": "APHID", "dataType": "numeric", "unit": "per m2", "minValue": 0,
@@ -215,6 +216,12 @@ def testImportedLayoutSurvivesStoreAndExchange(tmp_path):
   second.importDocument(exportedPath)
   assert second.contentHashFor("MAX-1") == first.contentHashFor("MAX-1")
   assert [plot.model_dump() for plot in second.layoutFor("MAX-1").plots] == plots
+
+
+def testFirstBlockInTreatmentOrderEntersContentHash():
+  def shuffleEveryBlock(data):
+    data["design"]["firstBlockInTreatmentOrder"] = False
+  assert _hashWith(lambda data: None) != _hashWith(shuffleEveryBlock)
 
 
 def testTransformEntersContentHash():
