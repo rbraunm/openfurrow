@@ -31,6 +31,13 @@ measure), `owner` (the owner's call), `done`.
 - **Oracles (2026-11-15):** finished trials that are openly available, from different
   sources and fields, are the yardstick; a private trial is not needed to start.
   Candidates are in `research/test-data.md`.
+- **Values outside their limits (2026-11-15):** a typed value outside its allowed range is
+  flagged and kept once the user confirms it, and the record keeps the confirmation. It is
+  not refused (REC-9).
+- **Building the trial record (2026-11-15):** go, starting with treatments, applications
+  and assessments, without waiting for the specialist unless the answers would change the
+  shape. The questions on special randomizations and on an example of a trial's setup have
+  been sent to the specialist.
 
 ## Reproducibility (REP)
 
@@ -127,7 +134,7 @@ measure), `owner` (the owner's call), `done`.
   observed.
 - **VAL-3** `done` **`main` had none of the code.** It held `README.md`, `LICENSE` and
   `brief.md`, and its README said the project was in its definition phase. Pull request 2
-  brought it up to the working tool on 2026-11-16, after the fixes of this worklist and
+  brought it up to the working tool on 2026-11-15, after the fixes of this worklist and
   after `validated` passed on both of its runs (392 tests on each of four combinations).
   `main` and `claude` are level. No tag was made; that remains the owner's call.
 - **VAL-4** `build` **A run against the newest libraries.** With the versions pinned
@@ -281,9 +288,8 @@ sections added beside them. REC-9 needs data entry in the tool (USR-4).
   rules applied as a value is typed, in two strengths. What cannot be a value (a wrong
   type, a category that does not exist) is refused. What is unlikely (outside the limits)
   is flagged and kept only with a confirmation that the record keeps. A completeness
-  check comes before analysis. Whether a value outside its limits may be kept at all is
-  the owner's call: today it is refused, and the incumbent tool flags it and lets the
-  user confirm.
+  check comes before analysis. That a value outside its limits is kept once confirmed is
+  the owner's decision (Owner decisions); today the import still refuses it.
 
 ## Small finds (SML)
 
