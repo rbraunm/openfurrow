@@ -254,3 +254,38 @@ def testSplitPlotTrialServesItsPages(tmp_path):
   means = client.get("/api/trials/GOMEZ-3.7/means/Y")
   assert means.status_code == 400
   assert "its means are separated for each factor" in means.get_data(as_text=True)
+
+
+def testComparisonsInsideTheInteractionMatchGomezSection5():
+  """Gomez and Gomez section 5.1.1.4: two varieties at one nitrogen rate differ by sqrt(2 Eb / r)."""
+  scipyStats = pytest.importorskip("scipy.stats")
+  from openfurrow.analysis import splitPlotInteractionComparisons
+  result = analyzeSplitPlot("Y", *gomezInputs())
+  five, one = splitPlotInteractionComparisons(result, 0.05), splitPlotInteractionComparisons(result, 0.01)
+  assert round(five.secondWithinFirst.standardError, 1) == 482.8
+  # The book multiplies by its tabulated t (2.029 and 2.722 for 36 df) and prints 980 and 1,314;
+  # the exact t values are 2.0281 and 2.7195.
+  assert five.secondWithinFirst.criticalT == pytest.approx(scipyStats.t.ppf(0.975, 36), rel=1e-6)
+  assert round(2.029 * five.secondWithinFirst.standardError) == 980
+  assert round(2.722 * one.secondWithinFirst.standardError) == 1314
+  # Two nitrogen rates within one variety: Table 5.5, type 4, with the weighted t of Table 5.6.
+  errorA, errorB = result.mainPlotErrorMeanSquare, result.subPlotErrorMeanSquare
+  assert five.firstWithinSecond.standardError == pytest.approx(math.sqrt(2 * (3 * errorB + errorA) / 12), rel=1e-12)
+  weighted = (3 * errorB * scipyStats.t.ppf(0.975, 36) + errorA * scipyStats.t.ppf(0.975, 10)) / (3 * errorB + errorA)
+  assert five.firstWithinSecond.criticalT == pytest.approx(weighted, rel=1e-6)
+  assert five.interactionSignificant
+
+
+def testWeightedTMatchesGomezWorkedExample():
+  """Gomez and Gomez section 5.1.1.5 weights 2.086 and 2.228 by 2 x 411,646 and 1,492,262."""
+  from openfurrow.analysis import weightedCriticalT
+  assert round(weightedCriticalT([(2 * 411646, 2.086), (1492262, 2.228)]), 3) == 2.178
+  assert round(weightedCriticalT([(2 * 411646, 2.845), (1492262, 3.169)]), 3) == 3.054
+
+
+def testCombinationTableIsLetteredWithinRows():
+  report = buildReport(*gomezInputs())
+  # Peta and IR8 at 0 kg N differ by 228 kg/ha, under the LSD: the book calls them not different.
+  assert "| N0 | 4252.667 a | 4306.000 a | 3183.333 b | 4481.333 a |" in report
+  assert "Letters in a row compare the Variety levels at that Nitrogen level." in report
+  assert "- LSD (alpha = 0.05) between two Variety levels at the same Nitrogen level: 979.074" in report

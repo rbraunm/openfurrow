@@ -849,10 +849,6 @@
       "text": "Las comprobaciones de supuestos aún no se calculan para diseños de parcelas divididas.",
       "status": "machineDraft"
     },
-    "report.splitPlot.cellMeansNote": {
-      "text": "Las comparaciones dentro de la interacción (un factor en un solo nivel del otro) requieren errores estándar propios y no se calculan aquí.",
-      "status": "machineDraft"
-    },
     "report.splitPlot.column.level": {
       "text": "Nivel",
       "status": "machineDraft"
@@ -1027,6 +1023,22 @@
     },
     "report.treatments.role.untreatedControl": {
       "text": "Testigo sin tratar",
+      "status": "machineDraft"
+    },
+    "report.twoFactor.firstWithinSecond": {
+      "text": "DMS (alfa = {alpha}) entre dos niveles de {first} en el mismo nivel de {second}",
+      "status": "machineDraft"
+    },
+    "report.twoFactor.lettersNote": {
+      "text": "Las letras de una fila comparan los niveles de {second} en ese nivel de {first}.",
+      "status": "machineDraft"
+    },
+    "report.twoFactor.noLettersNote": {
+      "text": "Sin letras: la interacción {first} × {second} no es significativa, así que los niveles se comparan con las medias de cada factor.",
+      "status": "machineDraft"
+    },
+    "report.twoFactor.secondWithinFirst": {
+      "text": "DMS (alfa = {alpha}) entre dos niveles de {second} en el mismo nivel de {first}",
       "status": "machineDraft"
     },
     "report.value.absent": {

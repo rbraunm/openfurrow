@@ -221,8 +221,20 @@
       "text": "Treatment means ({main} × {sub})",
       "status": "humanApproved"
     },
-    "report.splitPlot.cellMeansNote": {
-      "text": "Comparisons within the interaction (one factor at a single level of the other) need standard errors of their own and are not computed here.",
+    "report.twoFactor.lettersNote": {
+      "text": "Letters in a row compare the {second} levels at that {first} level.",
+      "status": "humanApproved"
+    },
+    "report.twoFactor.noLettersNote": {
+      "text": "No letters: the {first} × {second} interaction is not significant, so the levels are compared through each factor's means above.",
+      "status": "humanApproved"
+    },
+    "report.twoFactor.secondWithinFirst": {
+      "text": "LSD (alpha = {alpha}) between two {second} levels at the same {first} level",
+      "status": "humanApproved"
+    },
+    "report.twoFactor.firstWithinSecond": {
+      "text": "LSD (alpha = {alpha}) between two {first} levels at the same {second} level",
       "status": "humanApproved"
     },
     "report.factorial.heading": {

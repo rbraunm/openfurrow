@@ -15,8 +15,10 @@ after Gomez and Gomez (1984), section 3.4.2:
 
 Each factor's means are separated by Fisher's LSD on its own error: for A,
 t(alpha/2, Error(a) df) * sqrt(2 MS Error(a) / rb); for B, the same on Error(b) with
-ra. Comparisons inside the interaction (B within one level of A, A within one level of
-B) need standard errors of their own and are not computed here.
+ra. Inside the interaction (Gomez and Gomez, Tables 5.5 and 5.6) two B means at the same
+level of A differ by sqrt(2 Eb / r), tested on Error(b); two A means at the same level of B
+differ by sqrt(2 [(b - 1) Eb + Ea] / rb), tested on the t values of the two errors weighted
+by (b - 1) Eb and Ea.
 """
 
 from __future__ import annotations
@@ -284,4 +286,58 @@ def separateLevels(
       LevelGroup(levelCode=mean.levelCode, mean=mean.mean, group=letters[index])
       for index, mean in enumerate(ordered)
     ],
+  )
+
+
+class LeastSignificantDifference(BaseModel):
+  """One LSD: the standard error of a difference, the t it is tested on, and their product."""
+
+  model_config = ConfigDict(extra="forbid")
+
+  standardError: float
+  criticalT: float
+  leastSignificantDifference: float
+
+
+class InteractionComparisons(BaseModel):
+  """The LSDs for comparing combination means inside a two-factor interaction."""
+
+  model_config = ConfigDict(extra="forbid")
+
+  significanceLevel: float
+  interactionSignificant: bool
+  secondWithinFirst: LeastSignificantDifference
+  firstWithinSecond: LeastSignificantDifference
+
+
+def weightedCriticalT(parts: list[tuple[float, float]]) -> float:
+  """Gomez and Gomez Table 5.6: t values weighted by the error terms they belong to, as (weight, t)."""
+  return sum(weight * t for weight, t in parts) / sum(weight for weight, _ in parts)
+
+
+def _lsd(standardError: float, criticalT: float) -> LeastSignificantDifference:
+  return LeastSignificantDifference(
+    standardError=standardError, criticalT=criticalT, leastSignificantDifference=criticalT * standardError,
+  )
+
+
+def splitPlotInteractionComparisons(result: SplitPlotResult, significanceLevel: float = 0.05) -> InteractionComparisons:
+  """The LSDs for two subplot means at one main-plot level, and two main-plot means at one subplot level."""
+  if not 0.0 < significanceLevel < 1.0:
+    raise AnalysisError(f"significance level must be in (0, 1), got {significanceLevel}")
+  blocks = result.blockCount
+  subLevels = len(result.subPlotMeans)
+  errorA, errorB = result.mainPlotErrorMeanSquare, result.subPlotErrorMeanSquare
+  tA = tCriticalValue(significanceLevel / 2.0, result.mainPlotErrorDegreesOfFreedom)
+  tB = tCriticalValue(significanceLevel / 2.0, result.subPlotErrorDegreesOfFreedom)
+  weightB = (subLevels - 1) * errorB
+  interaction = next(row for row in result.table if row.source == "interaction")
+  return InteractionComparisons(
+    significanceLevel=significanceLevel,
+    interactionSignificant=interaction.pValue is not None and interaction.pValue <= significanceLevel,
+    secondWithinFirst=_lsd(math.sqrt(2.0 * errorB / blocks), tB),
+    firstWithinSecond=_lsd(
+      math.sqrt(2.0 * (weightB + errorA) / (blocks * subLevels)),
+      weightedCriticalT([(weightB, tB), (errorA, tA)]),
+    ),
   )

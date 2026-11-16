@@ -6,7 +6,7 @@ Findings, defects, checks and owner calls that the plans do not carry.
 Status tags: `fix` (a defect to correct), `build` (work to add), `check` (a suspicion to
 measure), `owner` (the owner's call), `done`.
 
-**Counts.** fix 0, build 8, check 0, owner 4, done 45; 57 in all.
+**Counts.** fix 0, build 7, check 0, owner 4, done 46; 57 in all.
 
 ## Owner decisions
 
@@ -255,9 +255,14 @@ measure), `owner` (the owner's call), `done`.
   their combinations the treatments, the factorial table (A, B, A x B on the one error) and
   each factor's means separated, checked against Gomez and Gomez section 3.3 and
   statsmodels. Three or more factors are still refused.
-- **USR-11** `build` **Comparisons inside a split plot's interaction.** One factor at a
-  single level of the other needs its own standard error (Gomez and Gomez, chapter 5);
-  the report says they are not computed.
+- **USR-11** `done` **Comparisons inside a two-factor interaction.** The table of combination
+  means carries letters comparing the second factor's levels within each row, on the LSD for
+  that comparison, and states both LSDs. For a split plot two subplot means at one main-plot
+  level differ by sqrt(2 Eb / r) and two main-plot means at one subplot level by
+  sqrt(2 [(b - 1) Eb + Ea] / rb) on the weighted t (Gomez and Gomez Tables 5.5 and 5.6);
+  a factorial RCBD uses its one error for both. Under the protected rule the letters appear
+  only when the interaction is significant. Checked against the book's 482.8 kg/ha and LSD
+  of 980 (its tabulated t, 2.029, is 2.0281 exactly) and its weighted-t example (2.178).
 - **USR-12** `build` **Assumption checks for a split plot.** The RCBD checks do not carry
   over to two error strata; the report says they are not computed.
 - **USR-13** `done` **The field map of a split plot or a trial with checks.** The map

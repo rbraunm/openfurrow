@@ -849,10 +849,6 @@
       "text": "Les vérifications des hypothèses ne sont pas encore calculées pour les dispositifs en parcelles divisées.",
       "status": "machineDraft"
     },
-    "report.splitPlot.cellMeansNote": {
-      "text": "Les comparaisons à l'intérieur de l'interaction (un facteur à un seul niveau de l'autre) demandent leurs propres erreurs types et ne sont pas calculées ici.",
-      "status": "machineDraft"
-    },
     "report.splitPlot.column.level": {
       "text": "Niveau",
       "status": "machineDraft"
@@ -1027,6 +1023,22 @@
     },
     "report.treatments.role.untreatedControl": {
       "text": "Témoin non traité",
+      "status": "machineDraft"
+    },
+    "report.twoFactor.firstWithinSecond": {
+      "text": "PPDS (alpha = {alpha}) entre deux niveaux de {first} au même niveau de {second}",
+      "status": "machineDraft"
+    },
+    "report.twoFactor.lettersNote": {
+      "text": "Les lettres d'une ligne comparent les niveaux de {second} à ce niveau de {first}.",
+      "status": "machineDraft"
+    },
+    "report.twoFactor.noLettersNote": {
+      "text": "Pas de lettres: l'interaction {first} × {second} n'est pas significative; les niveaux se comparent par les moyennes de chaque facteur.",
+      "status": "machineDraft"
+    },
+    "report.twoFactor.secondWithinFirst": {
+      "text": "PPDS (alpha = {alpha}) entre deux niveaux de {second} au même niveau de {first}",
       "status": "machineDraft"
     },
     "report.value.absent": {

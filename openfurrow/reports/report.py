@@ -34,6 +34,9 @@ from openfurrow.analysis import (
   AnalysisError,
   analyzeEfficacy,
   analyzeFactorialRcbd,
+  factorialInteractionComparisons,
+  letterGroups,
+  splitPlotInteractionComparisons,
   separateFactorialMeans,
   analyzeHalves,
   analyzeRcbd,
@@ -835,11 +838,9 @@ def _splitPlotSubsections(
     lambda factorCode: next(
       row for row in result.table if row.source == ("mainPlot" if factorCode == result.mainPlotFactor else "subPlot")
     ),
-    unit, alpha, translator,
+    splitPlotInteractionComparisons(result, significanceLevel), protected, unit, alpha, translator,
   )
   lines += [
-    translator.text("report.splitPlot.cellMeansNote"),
-    "",
     f"### {translator.text('report.heading.assumptions')}",
     "",
     translator.text("report.splitPlot.assumptionsNotComputed"),
@@ -848,8 +849,15 @@ def _splitPlotSubsections(
   return lines
 
 
-def _twoFactorMeans(result, package, firstFactor, secondFactor, separate, rowFor, unit, alpha, translator) -> list[str]:
-  """Each factor's level means with their letters, then the table of the combination means."""
+def _twoFactorMeans(
+  result, package, firstFactor, secondFactor, separate, rowFor, comparisons, protected, unit, alpha, translator,
+) -> list[str]:
+  """Each factor's level means with their letters, then the combination means with theirs.
+
+  The letters in a row compare the second factor's levels at that level of the first, on the
+  LSD for that comparison; under the protected rule they are given only when the
+  interaction is significant.
+  """
   factors = {factor.factorCode: factor for factor in package.factors}
   meanHeaderKey = (
     "report.means.column.mean" if result.transform is Transform.none else "report.means.column.meanOriginalScale"
@@ -893,16 +901,35 @@ def _twoFactorMeans(result, package, firstFactor, secondFactor, separate, rowFor
   treatmentFor = {
     (t.factorLevels[firstFactor], t.factorLevels[secondFactor]): t.treatmentCode for t in package.treatments
   }
+  lettered = comparisons.interactionSignificant or not protected
+  withinRow = comparisons.secondWithinFirst.leastSignificantDifference
   for firstLevel in factors[firstFactor].levels:
+    rowMeans = [cellMeans[treatmentFor[(firstLevel.levelCode, level.levelCode)]] for level in secondLevels]
+    ordered = sorted(range(len(rowMeans)), key=lambda index: rowMeans[index], reverse=True)
+    letters = [""] * len(rowMeans)
+    if lettered:
+      for rank, letter in zip(ordered, letterGroups([rowMeans[index] for index in ordered], withinRow)):
+        letters[rank] = f" {letter}"
     cells = (
-      translator.number(
-        backTransformMean(result.transform, cellMeans[treatmentFor[(firstLevel.levelCode, level.levelCode)]]),
-        decimals=3,
-      )
-      for level in secondLevels
+      translator.number(backTransformMean(result.transform, mean), decimals=3) + letters[index]
+      for index, mean in enumerate(rowMeans)
     )
     lines.append(f"| {_cell(firstLevel.name)} | " + " | ".join(cells) + " |")
-  lines.append("")
+  firstName, secondName = factors[firstFactor].name, factors[secondFactor].name
+  lines += [
+    "",
+    translator.text(
+      "report.twoFactor.lettersNote" if lettered else "report.twoFactor.noLettersNote",
+      first=firstName, second=secondName,
+    ),
+    "",
+    _field(translator, "report.twoFactor.secondWithinFirst", translator.number(withinRow, decimals=3),
+           alpha=alpha, first=firstName, second=secondName),
+    _field(translator, "report.twoFactor.firstWithinSecond",
+           translator.number(comparisons.firstWithinSecond.leastSignificantDifference, decimals=3),
+           alpha=alpha, first=firstName, second=secondName),
+    "",
+  ]
   return lines
 
 
@@ -934,7 +961,7 @@ def _factorialSubsections(
     lambda factorCode: next(
       row for row in result.table if row.source == ("firstFactor" if factorCode == result.firstFactor else "secondFactor")
     ),
-    unit, alpha, translator,
+    factorialInteractionComparisons(result, significanceLevel), protected, unit, alpha, translator,
   )
   return lines
 

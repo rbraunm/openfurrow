@@ -32,8 +32,11 @@ analysis.
 - **The analysis has two error strata**: Replication, A tested against Error(a), Error(a),
   B and A x B tested against Error(b), Error(b), Total, with a coefficient of variation for
   each error. Each factor's means are separated by Fisher's (protected) LSD on its own
-  error. Comparisons inside the interaction need standard errors of their own and are not
-  computed (USR-11); neither are assumption checks (USR-12). The report says so.
+  error. Inside the interaction, two subplot means at one main-plot level are compared on
+  sqrt(2 Eb / r) and two main-plot means at one subplot level on
+  sqrt(2 [(b - 1) Eb + Ea] / rb) with the weighted t of Gomez and Gomez Table 5.6, and the
+  combination table is lettered within rows when the interaction is significant (USR-11).
+  Assumption checks are not computed (USR-12); the report says so.
 - **Validated** against Gomez and Gomez Table 3.10 to its printed precision, and against
   statsmodels at full precision.
 

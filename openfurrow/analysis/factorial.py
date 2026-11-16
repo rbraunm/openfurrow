@@ -25,7 +25,14 @@ from pydantic import BaseModel, ConfigDict
 
 from openfurrow.analysis.anova import AnalysisError, AnovaSource, TreatmentMean, buildRcbdMatrix
 from openfurrow.analysis.distributions import fDistributionSurvival
-from openfurrow.analysis.splitPlot import FactorSeparation, LevelMean, separateLevels
+from openfurrow.analysis.distributions import tCriticalValue
+from openfurrow.analysis.splitPlot import (
+  FactorSeparation,
+  InteractionComparisons,
+  LevelMean,
+  LeastSignificantDifference,
+  separateLevels,
+)
 from openfurrow.schema.assessment import Transform
 from openfurrow.schema.layout import TrialLayout
 from openfurrow.schema.observation import Observation
@@ -151,4 +158,22 @@ def separateFactorialMeans(
   row = next(row for row in result.table if row.source == source)
   return separateLevels(
     factor, means, result.errorMeanSquare, result.errorDegreesOfFreedom, row.pValue, significanceLevel, protected,
+  )
+
+
+def factorialInteractionComparisons(result: FactorialResult, significanceLevel: float = 0.05) -> InteractionComparisons:
+  """Two combination means of a two-factor RCBD differ by sqrt(2 E / r), whichever factor is held."""
+  if not 0.0 < significanceLevel < 1.0:
+    raise AnalysisError(f"significance level must be in (0, 1), got {significanceLevel}")
+  criticalT = tCriticalValue(significanceLevel / 2.0, result.errorDegreesOfFreedom)
+  standardError = math.sqrt(2.0 * result.errorMeanSquare / result.blockCount)
+  lsd = LeastSignificantDifference(
+    standardError=standardError, criticalT=criticalT, leastSignificantDifference=criticalT * standardError,
+  )
+  interaction = next(row for row in result.table if row.source == "interaction")
+  return InteractionComparisons(
+    significanceLevel=significanceLevel,
+    interactionSignificant=interaction.pValue is not None and interaction.pValue <= significanceLevel,
+    secondWithinFirst=lsd,
+    firstWithinSecond=lsd,
   )

@@ -18,7 +18,12 @@ from openfurrow.analysis.checks import (
   compareWithChecks,
   plotEfficacies,
 )
-from openfurrow.analysis.factorial import FactorialResult, analyzeFactorialRcbd, separateFactorialMeans
+from openfurrow.analysis.factorial import (
+  FactorialResult,
+  analyzeFactorialRcbd,
+  factorialInteractionComparisons,
+  separateFactorialMeans,
+)
 from openfurrow.analysis.diagnostics import (
   Assumptions,
   DiagnosticOutcome,
@@ -28,13 +33,18 @@ from openfurrow.analysis.splitPlot import (
   FactorSeparation,
   LevelGroup,
   LevelMean,
+  InteractionComparisons,
+  LeastSignificantDifference,
   SplitPlotResult,
   analyzeSplitPlot,
+  splitPlotInteractionComparisons,
+  weightedCriticalT,
   separateFactorMeans,
 )
 from openfurrow.analysis.meanSeparation import (
   MeanSeparation,
   TreatmentGroup,
+  letterGroups,
   methodKeyFor,
   separateMeans,
 )
@@ -47,6 +57,8 @@ __all__ = [
   "CheckPair",
   "DiagnosticOutcome",
   "FactorialResult",
+  "InteractionComparisons",
+  "LeastSignificantDifference",
   "FactorSeparation",
   "LevelGroup",
   "LevelMean",
@@ -58,15 +70,19 @@ __all__ = [
   "TreatmentMean",
   "analyzeEfficacy",
   "analyzeFactorialRcbd",
+  "factorialInteractionComparisons",
   "analyzeHalves",
   "analyzeRcbd",
   "analyzeSplitPlot",
   "assessAssumptions",
   "checkPairs",
   "compareWithChecks",
+  "letterGroups",
   "methodKeyFor",
   "plotEfficacies",
   "separateFactorMeans",
   "separateFactorialMeans",
   "separateMeans",
+  "splitPlotInteractionComparisons",
+  "weightedCriticalT",
 ]

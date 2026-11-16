@@ -849,10 +849,6 @@
       "text": "لا تُحسب فحوص الافتراضات لتصاميم القطع المنشقة بعد.",
       "status": "machineDraft"
     },
-    "report.splitPlot.cellMeansNote": {
-      "text": "المقارنات داخل التفاعل (عامل عند مستوى واحد من الآخر) تتطلب أخطاء معيارية خاصة بها ولا تُحسب هنا.",
-      "status": "machineDraft"
-    },
     "report.splitPlot.column.level": {
       "text": "المستوى",
       "status": "machineDraft"
@@ -1027,6 +1023,22 @@
     },
     "report.treatments.role.untreatedControl": {
       "text": "شاهد بدون معاملة",
+      "status": "machineDraft"
+    },
+    "report.twoFactor.firstWithinSecond": {
+      "text": "أقل فرق معنوي (ألفا = {alpha}) بين مستويين من {first} عند المستوى نفسه من {second}",
+      "status": "machineDraft"
+    },
+    "report.twoFactor.lettersNote": {
+      "text": "تقارن الحروف في كل صف مستويات {second} عند ذلك المستوى من {first}.",
+      "status": "machineDraft"
+    },
+    "report.twoFactor.noLettersNote": {
+      "text": "لا حروف: التفاعل {first} × {second} غير معنوي، لذا تُقارن المستويات عبر متوسطات كل عامل أعلاه.",
+      "status": "machineDraft"
+    },
+    "report.twoFactor.secondWithinFirst": {
+      "text": "أقل فرق معنوي (ألفا = {alpha}) بين مستويين من {second} عند المستوى نفسه من {first}",
       "status": "machineDraft"
     },
     "report.value.absent": {
