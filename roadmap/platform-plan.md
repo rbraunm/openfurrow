@@ -60,8 +60,11 @@ Threaded through every lane, not owned by any one:
 The engine exists and is validated: the trial-package schema, RCBD ANOVA, Fisher's
 Protected LSD, assumption diagnostics (ADR 0006 Slice 1), variance-stabilizing transforms
 (Slice 2), the SQLite store, JSON/CSV exchange, the CLI, and content hashing, all under
-ADRs 0001-0008. Everything above the library and CLI -- the service, the web UI, sync and
-the server, field collection, and the apps -- is still to be built.
+ADRs 0001-0008. Phase 1 is built on it: the core facade, the Flask service and its HTTP
+API, the analyst web UI, the Field Book file round-trip, and five locales, two of them
+reviewed. Service install, sync and the server, the BrAPI subset and the apps are still to
+be built. `milestones.md` is the ledger; `worklist.md` holds what a first user still
+needs.
 
 ## Lanes
 

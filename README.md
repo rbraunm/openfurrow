@@ -10,7 +10,7 @@ The full reproducible loop runs end to end for a randomized complete block desig
 
 ## Install
 
-Requires Python 3.13. From a clone of this repository:
+Requires Python 3.13 or newer. From a clone of this repository:
 
 ```bash
 pip install .            # the core library and the openfurrow command
@@ -53,7 +53,7 @@ The same loop with a face: browse trials, add one from a package, see the random
 field layout as a plot map, import observations (OpenFurrow CSV or a Field Book export),
 read the AOV Means Table in the browser, and run the reproducibility check. Everything is
 served locally with no external assets, so it works offline, and the report renders in
-either shipped locale. The same process exposes a JSON API under `/api` for scripting.
+any shipped locale. The same process exposes a JSON API under `/api` for scripting.
 
 It binds to loopback by default and **has no authentication yet**, so it is a local
 single-user tool: do not put it on a network. HTTPS is available as configuration

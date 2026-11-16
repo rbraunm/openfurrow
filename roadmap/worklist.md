@@ -6,7 +6,7 @@ Findings, defects, checks and owner calls that the plans do not carry.
 Status tags: `fix` (a defect to correct), `build` (work to add), `check` (a suspicion to
 measure), `owner` (the owner's call), `done`.
 
-**Counts.** fix 4, build 19, check 0, owner 3, done 18; 44 in all.
+**Counts.** fix 0, build 18, check 0, owner 3, done 23; 44 in all.
 
 ## Owner decisions
 
@@ -79,9 +79,11 @@ measure), `owner` (the owner's call), `done`.
   in Chromium: a trial added through the form, observations uploaded, both reports read,
   the reproducibility check passed, and the Arabic view rendered right to left with its
   draft notice; no console errors, no failed requests, no request to another host.
-- **PLT-2** `build` **Setup on Windows.** `scripts/bootstrap.sh` is Ubuntu-only (apt and
-  the deadsnakes PPA), and `CLAUDE.md` and `CONTRIBUTING.md` tell every session to run it
-  first. Windows needs its own path: a PowerShell 5.1 script, or the commands documented.
+- **PLT-2** `done` **Setup on Windows.** `scripts/bootstrap.sh` is Ubuntu-only (apt and
+  the deadsnakes PPA), and `CLAUDE.md` and `CONTRIBUTING.md` told every session to run it
+  first. Windows now has its own documented path: three commands in `CONTRIBUTING.md`
+  ("Setup"), the ones that produced the Windows baseline (PLT-1). A script wrapping them
+  has not been needed.
 - **PLT-3** `done` **Line endings.** The repository had no `.gitattributes`: a Windows
   checkout with Git's default settings got CRLF in every file, and two fixtures were
   committed with CRLF. Measured cost: a wheel built from such a checkout carried CRLF data
@@ -100,11 +102,9 @@ measure), `owner` (the owner's call), `done`.
   `Workspace` is alive its database file can be copied but not renamed or deleted
   (sharing violation); both work once the object is dropped. Ownership by copying the
   file holds. A `Workspace` has no explicit way to release the file; nothing needed one.
-- **PLT-6** `fix` **The stated Python target.** `pyproject.toml` requires 3.13 or newer;
-  `CLAUDE.md`, `CONTRIBUTING.md`, the README and the bootstrap script say the project
-  targets 3.13. Development moves to 3.14 and the workflow tests both. Say "3.13 or newer"
-  consistently.
-
+- **PLT-6** `done` **The stated Python target.** `pyproject.toml` requires 3.13 or newer,
+  while `CLAUDE.md`, `CONTRIBUTING.md`, the README and the plan said the project targets
+  3.13. They now say 3.13 or newer; development runs on 3.14 and the workflow tests both.
 ## Validation and release (VAL)
 
 - **VAL-1** `done` **The validation workflow.** `.github/workflows/validate.yml` runs on
@@ -135,22 +135,25 @@ measure), `owner` (the owner's call), `done`.
 
 ## Plan and documents (DOC)
 
-- **DOC-1** `fix` **Documents that describe an older state.** `roadmap/platform-plan.md`
-  ("Current state") says the service, the web interface and field collection are still to
-  be built. `roadmap/README.md` ("Current state") stops at the CLI, and its description of
-  `decisions/` names five records of fourteen. `README.md` says the report renders "in
-  either shipped locale"; five ship.
-- **DOC-2** `fix` **The test-data registry lists more than the suite uses.**
-  `roadmap/research/test-data.md` names the Minnesota barley subset as an active fixture;
-  no fixture or test uses it. It describes the missing-data cases as copies of
-  stirret.borers; the reject tests (`tests/testAnovaRcbd.py`) remove cells from the Yates
-  data. `CONTRIBUTING.md` requires the registry to match what the suite validates against.
-  Add the fixture and tests, or correct the registry.
-- **DOC-3** `fix` **The implementation plan's unit list.** It says adopting a CLDR-backed
-  formatting library "is now due as its own unit", and lists no such unit. D3 is unchecked
-  although catalogs, direction handling and three draft locales shipped. A3 and C1 are
-  standing stances written as checkboxes that can never be ticked. No unit covers a trial
-  design form or charts (USR-1, USR-2).
+- **DOC-1** `done` **Documents that described an older state.** `roadmap/platform-plan.md`
+  said the service, the web interface and field collection were still to be built;
+  `roadmap/README.md` stopped at the CLI and named five decision records of fifteen;
+  `README.md` said the report renders "in either shipped locale" when five ship. All three
+  now describe what exists.
+- **DOC-2** `done` **The test-data registry listed more than the suite used.**
+  `roadmap/research/test-data.md` named the Minnesota barley subset as an active fixture
+  although nothing uses it, and described the missing-data cases as copies of
+  stirret.borers although the reject tests remove cells from the Yates data. The registry
+  now says both as they are. Two more published trials were added and are in use
+  (`tests/testPublishedOracles.py`): Clewer and Scarisbrick's wheat varieties, entered
+  with the layout it was grown in, and Gomez and Gomez's rice seeding rates. Each is
+  checked against its printed table and against statsmodels.
+- **DOC-3** `done` **The implementation plan's unit list.** It said adopting a CLDR-backed
+  formatting library "is now due as its own unit" and listed none; D3 was unchecked
+  without saying what had shipped; A3 and C1 were standing stances written as checkboxes;
+  no unit covered a trial design form or charts. It now has unit L1 for the formatting
+  library, says what of D3 shipped and what remains, drops the two checkboxes, and points
+  to this worklist for the first-user work until its units are cut.
 - **DOC-4** `owner` **What follows Phase 1.** The written next phase (own server, sync,
   logins, cloud templates, BrAPI) rests on decision 0005 (still Proposed), an open sync
   mechanism (0011) and an audience that decision 0008 itself gates on a partner's

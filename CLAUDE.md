@@ -98,12 +98,13 @@ test. Tests verify behavior; they never drive design. Known-answer fixtures pin 
 against published tables; statsmodels is the independent cross-check.
 
 ## Environment: bootstrap first, every session
-The project targets **Python 3.13** (`pyproject`: `requires-python = ">=3.13"`). A fresh
-sandbox ships 3.12, which refuses `pip install -e .` outright. Do not work around that by
-hand-installing packages against 3.12 -- that silently runs the suite on an interpreter the
-project does not target, with a guessed dependency set.
+The project needs **Python 3.13 or newer** (`pyproject`: `requires-python = ">=3.13"`); the
+validation workflow tests 3.13 and 3.14 on Linux and Windows. A fresh Ubuntu sandbox ships
+3.12, which refuses `pip install -e .` outright. Do not work around that by hand-installing
+packages against 3.12 -- that silently runs the suite on an interpreter the project does
+not support, with a guessed dependency set.
 
-**Run this before doing anything else:**
+**On Ubuntu, run this before doing anything else:**
 
 ```bash
 bash scripts/bootstrap.sh
@@ -111,10 +112,13 @@ source .venv/bin/activate
 ```
 
 It installs Python 3.13 (deadsnakes), creates `.venv`, installs the project editable with
-its test extras (the real dependency set from `pyproject`, never a guessed one), and
-verifies by running the suite. It is idempotent -- safe to re-run, and a no-op once the
-environment is in place. After activation, `python`, `pytest`, and the `openfurrow` console
-script are the 3.13 venv's.
+its test extras at the pinned versions (the real dependency set from `pyproject` and
+`constraints.txt`, never a guessed one), and verifies by running the suite. It is
+idempotent -- safe to re-run, and a no-op once the environment is in place. After
+activation, `python`, `pytest`, and the `openfurrow` console script are the venv's.
+
+**On Windows**, with Python 3.13 or newer installed, the same environment is three
+commands from the repository root; `CONTRIBUTING.md` ("Setup") lists them.
 
 If a new runtime or tool dependency becomes necessary, add it to `pyproject` and, if it
 needs system packages, to `scripts/bootstrap.sh` -- so the next session gets it

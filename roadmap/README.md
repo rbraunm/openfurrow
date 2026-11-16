@@ -17,10 +17,9 @@ decisions, and the milestone trail. Nothing in `roadmap/` is load-bearing at run
   bar, so a session picks the next unit and executes without relitigating direction. Firmer
   than `platform-plan.md`, revisable per build.
 - `decisions/` -- short decision records (ADRs). `decisions/README.md` defines the process
-  and holds the records: the SQLite-canonical store, native-analysis-with-oracles, and the
-  missing-data policy (accepted), plus the registry/hierarchy and privacy/IAM layer
-  (proposed, long-term) -- with a note of the choices recorded elsewhere (scope, the import
-  model, the analysis conventions) that were not real forks and so are not ADRs.
+  and holds the ledger of all of them, accepted and proposed, with a note of the choices
+  recorded elsewhere (scope, the import model, the analysis conventions) that were not
+  real forks and so are not ADRs.
 - `research/` -- findings gathered by exercising the field and the tools, not by
   assumption: how ARM, BrAPI, and Field Book actually work; the market structure and the
   bridge opportunity (`research/landscape.md`); the reproducibility and data-availability
@@ -55,7 +54,10 @@ observation importer, the analysis layer (the AOV Means Table -- ANOVA, treatmen
 Protected LSD, CV, validated against the Yates oats published table and statsmodels),
 reporting, the SQLite canonical store, portable JSON/CSV exchange, and the CLI loop
 (`init -> add -> randomize -> import -> report -> export -> import-json -> verify`), with a
-worked example under `examples/`. See `milestones.md` for the full checklist.
+worked example under `examples/`. On top of it stand the HTTP service, the local web
+interface, the Field Book file round-trip and five locales, and every change is validated
+on Linux and Windows before it reaches `main`. See `milestones.md` for the full
+checklist and `worklist.md` for what is open.
 
 Direction beyond the MVP is set by `research/landscape.md`: field practice splits the trial
 workflow across a registry tool (protocols, product IDs, labels, cross-year tracking) and a

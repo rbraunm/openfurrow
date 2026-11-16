@@ -36,8 +36,8 @@ in `milestones.md`, a finding in `research/`), not turned into busywork ADRs.
 These were settled, but not by rejecting a real alternative, so they live where they belong
 rather than as ADRs:
 
-- **Python 3.13 target** -- no contested alternative; it is the operator's target.
-  `pyproject.toml` and `CLAUDE.md`.
+- **Python 3.13 or newer** -- no contested alternative; 3.13 is the floor, and the
+  validation workflow tests 3.13 and 3.14. `pyproject.toml` and `CLAUDE.md`.
 - **Reproducible by default** -- the project's premise, not a decision among options.
   `CLAUDE.md` core principles.
 - **RCBD-first scope** -- a roadmap sequencing call, not an architecture decision.

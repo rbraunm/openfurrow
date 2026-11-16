@@ -15,9 +15,10 @@ history.
 
 ## How a session uses this
 
-1. **Bootstrap the environment first:** `bash scripts/bootstrap.sh && source .venv/bin/activate`.
-   The project targets Python 3.13; a fresh sandbox ships 3.12 and cannot install it. See
-   `CLAUDE.md`.
+1. **Set up the environment first:** on Ubuntu `bash scripts/bootstrap.sh && source
+   .venv/bin/activate`; on Windows the three commands in `CONTRIBUTING.md`. The project
+   needs Python 3.13 or newer; a fresh Ubuntu sandbox ships 3.12 and cannot install it.
+   See `CLAUDE.md`.
 2. Read `CLAUDE.md`, then this file. The ADRs and `platform-plan.md` are the layers above;
    this is where they turn into work.
 3. Pick the next unit whose **Depends** are all done (see "Build spine" for the intended
@@ -162,6 +163,11 @@ when the Done-when bar is met.
     remains the seam. Known draft conventions pending review: ar uses Western digits with dot
     decimal; French punctuation spacing is anglicized.
 
+- [ ] **L1 -- CLDR-backed formatting** -- replace the interim locale table in
+  `openfurrow/i18n/formatting.py` with a CLDR-backed implementation behind `LocaleFormat`
+  (ADR 0007 names Babel or ICU), then delete the table. Due since the draft locales grew
+  the table. Depends: L0.
+
 ### Lane A -- Core and packaging
 
 - [x] **A1 -- Core facade** (done)
@@ -206,8 +212,9 @@ when the Done-when bar is met.
     Install smoke passes on 3.13: the wheel builds, installs into a clean venv, and imports
     from site-packages outside the source tree with the console script working.
 
-- [ ] **A3 -- Keep deployment shapes open** -- a standing stance (ADR 0010), not a build.
-  Honor it: do not hardwire a single packaging/deployment assumption into A1/A2/B1.
+- **A3 -- Keep deployment shapes open** -- a standing stance (ADR 0010), not a build, so
+  it carries no checkbox. Honor it: do not hardwire a single packaging/deployment
+  assumption into A1/A2/B1.
 
 ### Lane E -- Field interop
 
@@ -312,8 +319,9 @@ when the Done-when bar is met.
   `?locale=`, with a link to download the raw Markdown from the API. The report view is
   display-only -- opening it in any locale leaves the content hash unchanged (asserted). The
   "View report" link appears only once observations exist. Depends: D1.
-- [ ] **D3 -- Localization + RTL delivery** (Phase 2) -- message catalogs wired, CLDR
-  formatting, bidirectional layout, reviewed locale packs. Depends: D2, L0, ADR 0007.
+- [ ] **D3 -- Localization + RTL delivery** (Phase 2) -- the catalogs are wired, the layout
+  direction follows the locale, and es, fr and ar ship as drafts. What remains: CLDR
+  formatting (L1) and reviewed locale packs. Depends: D2, L0, L1, ADR 0007.
 - [x] **D4 -- Browse + manage trials** (done) -- the index browses trials; the trial page gains
   a manage section with an in-browser reproducibility check (`verifyRoundTrip`, read-only GET,
   shows pass/fail and the hash without changing the trial) and delete. Deletion is safe: the GET
@@ -322,8 +330,8 @@ when the Done-when bar is met.
 
 ### Lane C -- Storage, sync, self-hostable server
 
-- [ ] **C1 -- Local-first floor** -- already true (SQLite + file, offline, owned). Honor it;
-  do not regress it in any later unit.
+- **C1 -- Local-first floor** -- already true (SQLite + file, offline, owned), a standing
+  stance with no checkbox. Honor it; do not regress it in any later unit.
 - [ ] **C2 -- Sync model** (Phase 2) -- how trials/observations move device/analyst <-> server;
   content hash as the free fixity check. *Open fork:* the sync mechanism (ADR 0011).
 - [ ] **C3 -- Self-hostable server** (Phase 2) -- Flask in server mode, multi-user, with the
@@ -364,6 +372,13 @@ when the Done-when bar is met.
     JSON exchange exactly, and transform, measurementKind, treatment rate, and numeric bounds
     must each change the content hash. A field not exercised there is a field that can be
     silently lost, so adding a schema field means extending that test.
+
+### What a first user needs (not yet cut into units)
+
+The owner's order of work puts this before Phase 2. Its items stay in `worklist.md` until
+they are cut into units here: the trial record shaped on EPPO PP 1/181 (REC-1 to REC-9),
+a trial design form, charts, data entry with validation, a printable report, and the
+readiness bar for a first real trial (USR-1 to USR-8).
 
 ### Analysis breadth (independent side-track, Phase 0 continuing)
 
