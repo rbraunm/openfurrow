@@ -33,7 +33,8 @@ def analyzeCrd(
     raise AnalysisError(error.args[0]) from error
   if rating.dataType is not AssessmentDataType.numeric:
     raise AnalysisError(f"assessment '{assessmentCode}' is {rating.dataType.value}; the ANOVA requires a numeric assessment")
-  treatmentOf = {plot.plotNumber: plot.treatmentCode for plot in layout.plots}
+  analysed = set(package.analysedTreatmentCodes(assessmentCode))
+  treatmentOf = {plot.plotNumber: plot.treatmentCode for plot in layout.plots if plot.treatmentCode in analysed}
   values = {
     o.plotNumber: float(o.value) for o in observations
     if o.assessmentCode == assessmentCode and o.value is not None and o.plotNumber in treatmentOf
@@ -41,7 +42,7 @@ def analyzeCrd(
   missing = sorted(number for number in treatmentOf if number not in values)
   if missing:
     raise AnalysisError(f"assessment '{assessmentCode}' has missing values; the ANOVA requires every plot. Missing: {missing}")
-  treatmentCodes = [treatment.treatmentCode for treatment in package.treatments]
+  treatmentCodes = package.analysedTreatmentCodes(assessmentCode)
   plotsOf = {code: sorted(number for number, treatment in treatmentOf.items() if treatment == code) for code in treatmentCodes}
   matrix = numpy.array([[values[number] for number in plotsOf[code]] for code in treatmentCodes], dtype=float).T
   try:

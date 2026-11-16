@@ -57,7 +57,7 @@ The report ends with a reproducibility block. The **input hash** is
 environment-independent:
 
 ```
-- Input hash (SHA-256): 9817f7a688409e5acd2b25ac3bd22dafe1ebf1b8873a12bda6c01595cbde402f
+- Input hash (SHA-256): e2f38c7bd0721a392c711de401054e6eb4403436566121469fd662f072b6c67c
 ```
 
 `verify` re-exports and re-imports the trial and confirms this same hash, and

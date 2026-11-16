@@ -44,6 +44,7 @@ from openfurrow.schema.assessment import (
   Assessment,
   Efficacy,
   EfficacyMethod,
+  UntreatedCheck,
   MeasurementKind,
   Rating,
   Transform,
@@ -310,6 +311,7 @@ def savePackage(
       notes=assessment.notes,
       efficacyMethod=None if assessment.efficacy is None else assessment.efficacy.method.value,
       efficacyBaselineAssessmentCode=None if assessment.efficacy is None else assessment.efficacy.baselineAssessmentCode,
+      untreatedCheck=assessment.untreatedCheck.value,
     ))
   for check in checkPlots:
     trial.checkPlots.append(CheckPlotRow(
@@ -375,6 +377,7 @@ def loadPackage(session: Session, trialCode: str) -> TrialPackage:
       efficacy=None if row.efficacyMethod is None else Efficacy(
         method=EfficacyMethod(row.efficacyMethod), baselineAssessmentCode=row.efficacyBaselineAssessmentCode,
       ),
+      untreatedCheck=UntreatedCheck(row.untreatedCheck),
     )
     for row in sorted(trial.assessments, key=lambda row: row.ordinal)
   ]

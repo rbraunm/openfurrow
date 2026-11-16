@@ -116,7 +116,7 @@ def buildBlockTreatmentMatrix(
       f"layout trialCode '{layout.trialCode}' does not match package trial '{package.trial.trialCode}'"
     )
 
-  treatmentCodes = [treatment.treatmentCode for treatment in package.treatments]
+  treatmentCodes = package.analysedTreatmentCodes(assessmentCode)
   blocks = list(range(1, layout.replications + 1))
   treatmentCount = len(treatmentCodes)
   blockCount = len(blocks)

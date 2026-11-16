@@ -106,7 +106,7 @@ _maximalPackage = {
      "assessedBy": "Field team", "sampleSize": {"value": 10, "unit": "plants"}, "notes": "Windy",
      "efficacy": {"method": "hendersonTilton", "baselineAssessmentCode": "CT0"}},
     {"assessmentCode": "SEV", "ratingCode": "SEV"},
-    {"assessmentCode": "CT0", "ratingCode": "CT", "timing": "Before B"}
+    {"assessmentCode": "CT0", "ratingCode": "CT", "timing": "Before B", "untreatedCheck": "excluded"}
   ],
 }
 

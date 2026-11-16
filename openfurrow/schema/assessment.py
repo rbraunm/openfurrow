@@ -56,6 +56,13 @@ class Transform(str, Enum):
   logit = "logit"
 
 
+class UntreatedCheck(str, Enum):
+  """Whether an assessment's analysis takes in the untreated check (decision 0030)."""
+
+  included = "included"  # the check is one of the treatments analysed
+  excluded = "excluded"  # left out of the analysis, its mean reported beside it
+
+
 class EfficacyMethod(str, Enum):
   """How percent control is worked out, plot by plot, against the plot's own check."""
 
@@ -163,6 +170,10 @@ class Assessment(BaseModel):
   sampleSize: Quantity | None = Field(default=None, description="E.g. 10 plants, 1 m2.")
   notes: str | None = Field(default=None, min_length=1)
   efficacy: Efficacy | None = Field(default=None, description="Percent control against the untreated checks.")
+  untreatedCheck: UntreatedCheck = Field(
+    default=UntreatedCheck.included,
+    description="Whether the analysis takes in the untreated control treatment or leaves it beside the table.",
+  )
 
   @field_validator("sampleSize")
   @classmethod

@@ -202,9 +202,10 @@ measure), `owner` (the owner's call), `done`.
   Built so far: the transformation with its offset and log10 (decision 0026), percent
   control (decision 0022), and the split-plot and factorial RCBD designs (decisions 0020,
   0025), the completely randomized design (decision 0027) and Tukey's HSD for all pairs
-  (decision 0028) and Dunnett against the untreated check (decision 0029). Still to come:
-  an explicit policy for the untreated check in the analysis (in it, beside it, or out of
-  it), Dunnett with unequal replication, and missing plots.
+  (decision 0028), Dunnett against the untreated check (decision 0029) and an explicit
+  policy for the check in each assessment's analysis (decision 0030). Still to come:
+  Dunnett with unequal replication, and missing plots (the analysis refuses an incomplete
+  table, decision 0003).
 - **USR-4** `build` **Data entry.** Values can be typed in the tool (REC-9) or arrive by
   CSV or a Field Book export. No Excel import yet (the brief lists it second after CSV).
 - **USR-5** `done` **A printable report.** The report page has a Print button and a print

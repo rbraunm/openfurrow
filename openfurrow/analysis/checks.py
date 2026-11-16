@@ -145,8 +145,9 @@ def analyzeEfficacy(
   assessmentCode: str, package: TrialPackage, layout: TrialLayout, observations: list[Observation],
 ) -> AnovaResult:
   """The RCBD ANOVA of percent control, plot by plot."""
-  efficacies = plotEfficacies(assessmentCode, package, layout, observations)
-  treatmentCodes = [treatment.treatmentCode for treatment in package.treatments]
+  treatmentCodes = package.analysedTreatmentCodes(assessmentCode)
+  efficacies = [result for result in plotEfficacies(assessmentCode, package, layout, observations)
+                if result.treatmentCode in treatmentCodes]
   matrix = numpy.empty((layout.replications, len(treatmentCodes)), dtype=float)
   for result in efficacies:
     matrix[result.block - 1, treatmentCodes.index(result.treatmentCode)] = result.efficacy

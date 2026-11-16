@@ -18,12 +18,12 @@ from enum import Enum
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from openfurrow.schema.application import Application
-from openfurrow.schema.assessment import AssessmentDataType, Assessment, Rating
+from openfurrow.schema.assessment import AssessmentDataType, Assessment, Rating, UntreatedCheck
 from openfurrow.schema.factor import Factor
 from openfurrow.schema.site import PlotDimensions, SiteDetails
 from openfurrow.schema.target import Target
 from openfurrow.schema.trialConditions import Planting, Soil, WeatherRecord
-from openfurrow.schema.treatment import Treatment
+from openfurrow.schema.treatment import Treatment, TreatmentRole
 from openfurrow.version import schemaVersion as currentSchemaVersion
 
 
@@ -309,6 +309,18 @@ class TrialPackage(BaseModel):
         )
       if assessment.efficacy is not None:
         self._checkEfficacy(assessment)
+      if assessment.untreatedCheck is UntreatedCheck.excluded:
+        controls = [t.treatmentCode for t in self.treatments if t.role is TreatmentRole.untreatedControl]
+        if len(controls) != 1:
+          raise ValueError(
+            f"assessment '{assessment.assessmentCode}': leaving the untreated check out needs exactly one "
+            f"treatment whose role is untreatedControl, got {controls}"
+          )
+        if self.factors:
+          raise ValueError(
+            f"assessment '{assessment.assessmentCode}': a two-factor trial keeps every combination in its "
+            f"analysis; the untreated check cannot be left out"
+          )
       timedFrom = assessment.timedFromApplicationCode
       if timedFrom is not None and timedFrom not in applicationCodes:
         raise ValueError(
@@ -333,6 +345,14 @@ class TrialPackage(BaseModel):
       raise ValueError(f"assessment '{code}': baseline assessment '{baseline}' is not declared in the package")
     if ratings[occasions[baseline].ratingCode].dataType is not AssessmentDataType.numeric:
       raise ValueError(f"assessment '{code}': baseline assessment '{baseline}' is not numeric")
+
+  def analysedTreatmentCodes(self, assessmentCode: str) -> list[str]:
+    """The treatments an assessment's analysis takes in, in package order (decision 0030)."""
+    excluded = self.assessmentFor(assessmentCode).untreatedCheck is UntreatedCheck.excluded
+    return [
+      t.treatmentCode for t in self.treatments
+      if not (excluded and t.role is TreatmentRole.untreatedControl)
+    ]
 
   def assessmentFor(self, assessmentCode: str) -> Assessment:
     """The assessment with this code; raises if the package has none."""

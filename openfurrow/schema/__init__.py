@@ -10,6 +10,7 @@ from openfurrow.schema.assessment import (
   MeasurementKind,
   Rating,
   Transform,
+  UntreatedCheck,
 )
 from openfurrow.schema.document import (
   TrialDocument,
@@ -74,6 +75,7 @@ __all__ = [
   "Target",
   "TargetKind",
   "Transform",
+  "UntreatedCheck",
   "Treatment",
   "TreatmentLine",
   "TreatmentRole",

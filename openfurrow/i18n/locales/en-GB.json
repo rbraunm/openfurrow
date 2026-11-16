@@ -829,6 +829,10 @@
       "text": "Not analysed: {reason}",
       "status": "humanApproved"
     },
+    "report.check.excluded": {
+      "text": "The untreated check ({check}) is left out of this analysis; its mean as recorded is {mean}.",
+      "status": "humanApproved"
+    },
     "report.heading.anova": {
       "text": "Analysis of variance",
       "status": "humanApproved"

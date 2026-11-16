@@ -58,8 +58,8 @@ from openfurrow.schema.document import TrialDocument, contentHash
 from openfurrow.schema.layout import TrialLayout
 from openfurrow.schema.observation import Observation
 from openfurrow.schema.quantity import Quantity
-from openfurrow.schema.treatment import ActiveSubstance, TreatmentLine
-from openfurrow.schema.assessment import AssessmentDataType, Rating, Transform
+from openfurrow.schema.treatment import ActiveSubstance, TreatmentLine, TreatmentRole
+from openfurrow.schema.assessment import AssessmentDataType, Rating, Transform, UntreatedCheck
 from openfurrow.schema.trialPackage import CheckArrangement, DesignType, RandomizationMethod, TrialPackage
 from openfurrow.version import softwareVersion
 
@@ -598,6 +598,7 @@ def _assessmentSection(
 
   lines.append(f"### {translator.text('report.heading.anova')}")
   lines.append("")
+  lines += _excludedCheckLines(assessment, package, layout, observations, translator)
   if result.transform is not Transform.none:
     lines.append(
       translator.text("report.anova.transformedScale", scale=_scaleName(result.transform, result.transformOffset, translator))
@@ -1061,7 +1062,10 @@ def _treatmentMeansLines(
     return translator.number(backTransformMean(result.transform, mean, result.transformOffset), decimals=decimals)
 
   if meanComparison is MeanComparison.dunnett:
-    comparison = compareWithControl(result, package, significanceLevel)
+    try:
+      comparison = compareWithControl(result, package, significanceLevel)
+    except AnalysisError as error:
+      return lines + [translator.text("report.assessment.notAnalyzed", reason=str(error)), ""]
     significance = translator.text(
       "report.means.significant" if treatmentRow.pValue is not None and treatmentRow.pValue <= significanceLevel
       else "report.means.notSignificant"
@@ -1119,6 +1123,21 @@ def _treatmentMeansLines(
     lines.append(f"- {translator.text('report.means.notSeparated')}")
   lines.append("")
   return lines
+
+
+def _excludedCheckLines(assessment, package, layout, observations, translator: Translator) -> list[str]:
+  """A note that the untreated check is left out of the analysis, with its mean as recorded."""
+  if assessment.untreatedCheck is UntreatedCheck.included:
+    return []
+  check = next(t.treatmentCode for t in package.treatments if t.role is TreatmentRole.untreatedControl)
+  plots = {plot.plotNumber for plot in layout.plots if plot.treatmentCode == check}
+  values = [o.value for o in observations
+            if o.assessmentCode == assessment.assessmentCode and o.plotNumber in plots and o.value is not None]
+  mean = (
+    translator.number(sum(values) / len(values), decimals=3) if len(values) == len(plots)
+    else translator.text("report.value.absent")
+  )
+  return [translator.text("report.check.excluded", check=check, mean=mean), ""]
 
 
 def _factorMethod(meanComparison: MeanComparison) -> MeanComparison:

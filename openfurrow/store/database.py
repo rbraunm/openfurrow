@@ -36,7 +36,7 @@ from sqlalchemy import ForeignKey, Text, event, inspect, select
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, relationship
 
-storeVersion = 12
+storeVersion = 13
 
 
 class StoreError(RuntimeError):
@@ -420,6 +420,7 @@ class AssessmentRow(Base):
   notes: Mapped[str | None]
   efficacyMethod: Mapped[str | None]
   efficacyBaselineAssessmentCode: Mapped[str | None]
+  untreatedCheck: Mapped[str]
 
   trial: Mapped[TrialRow] = relationship(back_populates="assessments")
 

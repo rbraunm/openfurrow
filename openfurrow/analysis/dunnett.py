@@ -98,6 +98,11 @@ def compareWithControl(
     raise AnalysisError(f"significance level must be in (0, 1), got {significanceLevel}")
   checkCode = theCheck(package)
   means = {mean.treatmentCode: mean.mean for mean in anovaResult.treatmentMeans}
+  if checkCode not in means:
+    raise AnalysisError(
+      f"the untreated check '{checkCode}' is left out of this assessment's analysis, so Dunnett's test has "
+      f"nothing to compare with"
+    )
   critical = dunnettQuantile(1.0 - significanceLevel, len(means) - 1, anovaResult.errorDegreesOfFreedom)
   difference = critical * math.sqrt(2.0 * anovaResult.errorMeanSquare / anovaResult.blockCount)
   return DunnettResult(

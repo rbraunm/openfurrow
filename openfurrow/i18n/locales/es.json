@@ -293,6 +293,10 @@
       "text": "Los residuos provienen del modelo aditivo de bloques y tratamientos y están restringidos (suman cero dentro de cada bloque y cada tratamiento), por lo que la prueba de normalidad es aproximada.",
       "status": "machineDraft"
     },
+    "report.check.excluded": {
+      "text": "El testigo sin tratar ({check}) queda fuera de este análisis; su media registrada es {mean}.",
+      "status": "machineDraft"
+    },
     "report.checks.arrangement.adjacent": {
       "text": "Cada parcela se divide y una mitad queda sin tratar; el análisis anterior usa las mitades tratadas.",
       "status": "machineDraft"

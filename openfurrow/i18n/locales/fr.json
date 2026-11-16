@@ -293,6 +293,10 @@
       "text": "Les résidus proviennent du modèle additif blocs et traitements et sont contraints (leur somme est nulle dans chaque bloc et chaque traitement); le test de normalité est donc approximatif.",
       "status": "machineDraft"
     },
+    "report.check.excluded": {
+      "text": "Le témoin non traité ({check}) est exclu de cette analyse; sa moyenne relevée est {mean}.",
+      "status": "machineDraft"
+    },
     "report.checks.arrangement.adjacent": {
       "text": "Chaque parcelle est divisée et une moitié reste non traitée; l'analyse ci-dessus porte sur les moitiés traitées.",
       "status": "machineDraft"

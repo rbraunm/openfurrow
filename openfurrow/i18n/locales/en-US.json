@@ -829,6 +829,10 @@
       "text": "Not analyzed: {reason}",
       "status": "source"
     },
+    "report.check.excluded": {
+      "text": "The untreated check ({check}) is left out of this analysis; its mean as recorded is {mean}.",
+      "status": "source"
+    },
     "report.heading.anova": {
       "text": "Analysis of variance",
       "status": "source"
