@@ -6,7 +6,7 @@ Findings, defects, checks and owner calls that the plans do not carry.
 Status tags: `fix` (a defect to correct), `build` (work to add), `check` (a suspicion to
 measure), `owner` (the owner's call), `done`.
 
-**Counts.** fix 0, build 18, check 0, owner 4, done 33; 55 in all.
+**Counts.** fix 0, build 17, check 0, owner 4, done 35; 56 in all.
 
 ## Owner decisions
 
@@ -193,8 +193,8 @@ measure), `owner` (the owner's call), `done`.
   control (Abbott, Henderson-Tilton) when the endpoint calls for it; missing plots when
   the trial has them. EPPO PP 1/152 names the completely randomized design beside the
   RCBD as the two principal designs; the tool has only the second.
-- **USR-4** `build` **Data entry.** Observations arrive by CSV or a Field Book export. No
-  Excel import (the brief lists it second after CSV) and no entry by hand.
+- **USR-4** `build` **Data entry.** Values can be typed in the tool (REC-9) or arrive by
+  CSV or a Field Book export. No Excel import yet (the brief lists it second after CSV).
 - **USR-5** `build` **A printable report.** The report is Markdown, rendered to HTML in
   the browser; the brief names HTML and PDF output.
 - **USR-6** `owner` **The readiness case.** Before the domain contact runs a real trial,
@@ -250,7 +250,7 @@ measure), `owner` (the owner's call), `done`.
 - **USR-13** `build` **The field map of a split plot or a trial with checks.** The trial
   page shows the plots of each block in order but does not outline the main plots or
   draw the check plots.
-- **USR-8** `build` **What happened to a plot.** A lost plot, a misapplied treatment or a
+- **USR-8** `build` **What happened to a plot, and who changed a value.** A lost plot, a misapplied treatment or a
   difference between the plan and what was planted has no record. EPPO PP 1/181 asks for
   deviations to be noted and reported (decision 0015, "Consequences").
 
@@ -328,14 +328,12 @@ sections added beside them. REC-9 needs data entry in the tool (USR-4).
 - **REC-11** `build` **Subsamples within a plot.** Several values taken in one plot on one
   occasion (ten leaves, four quadrats) kept as entered, with the plot's value derived from
   them by a stated rule (mean, sum). Today one value per plot and assessment.
-- **REC-9** `build` **Validation rules for data entry.** Today: a value is checked on
-  import against the range or allowed values, and one bad value rejects the file; the
-  tool has no entry of its own (USR-4). Plan: entry in the tool, with the definition's
-  rules applied as a value is typed, in two strengths. What cannot be a value (a wrong
-  type, a category that does not exist) is refused. What is unlikely (outside the limits)
-  is flagged and kept only with a confirmation that the record keeps. A completeness
-  check comes before analysis. That a value outside its limits is kept once confirmed is
-  the owner's decision (Owner decisions); today the import still refuses it.
+- **REC-9** `done` **Validation rules for data entry.** Built as decision 0023 says: an entry
+  page per assessment, values checked in two strengths. What cannot be a value is refused
+  and nothing saved; a value outside its limits is saved only once ticked, and the
+  confirmation is kept with the value, exported and hashed, as the owner decided. The
+  same rule checks every trial document. A completeness count shows on the page; the
+  analysis still refuses an incomplete table (decision 0003).
 
 ## Small finds (SML)
 
@@ -373,3 +371,6 @@ sections added beside them. REC-9 needs data entry in the tool (USR-4).
   `POST /api/documents` let a JSON parse error escape, and no handler mapped it. Importing
   a document now raises one error type for a file that is not JSON or not a valid trial
   document, which the command line reports and the API answers with 400.
+- **SML-10** `done` **Back arrows in right-to-left pages.** The "back" links wrote a left
+  arrow into the text, so on the Arabic pages the arrow pointed away from where it leads.
+  The arrow now follows the page direction.

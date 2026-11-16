@@ -27,6 +27,7 @@ from openfurrow.i18n.catalog import (
 )
 from openfurrow.i18n.formatting import (
   formatDate,
+  formatFor,
   formatInteger,
   formatNumber,
   formatTime,
@@ -43,6 +44,11 @@ class Translator:
   @property
   def locale(self) -> str:
     return self._catalog.locale
+
+  @property
+  def decimalSeparator(self) -> str:
+    """The decimal mark this locale writes numbers with."""
+    return formatFor(self._catalog.locale).decimalSeparator
 
   @property
   def direction(self) -> str:

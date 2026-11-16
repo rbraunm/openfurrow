@@ -35,7 +35,9 @@ from markupsafe import Markup
 
 from openfurrow.config import OpenFurrowConfig, defaultConfig
 from openfurrow.i18n import MessageError, availableLocales, sourceLocale, translatorFor
-from openfurrow.schema import RandomizationMethod, TrialPackage
+from openfurrow.importers.entry import EntryRefused, readEntry, writeEntry
+from openfurrow.schema import AssessmentDataType, Observation, RandomizationMethod, TrialPackage
+from openfurrow.schema.document import isOutOfRange
 from openfurrow.version import schemaVersion
 from openfurrow.workspace import ObservationImportError, StoreError, Workspace
 from pydantic import ValidationError
@@ -184,6 +186,85 @@ def createWebBlueprint(workspace: Workspace, config: OpenFurrowConfig | None = N
     status = 400 if importError else 200
     return Response(render_template("trial.html", **context, **_localeContext(translator)), status=status)
 
+  @blueprint.route("/trials/<trialCode>/entry", methods=["GET", "POST"])
+  def entry(trialCode: str) -> Response:
+    """Type one assessment's values plot by plot (decision 0023)."""
+    translator = _translator()
+    package = workspace.loadPackage(trialCode)
+    layout = workspace.layoutFor(trialCode)
+    context = {
+      "package": package,
+      "assessments": [
+        {"code": a.assessmentCode, "name": package.ratingFor(a.assessmentCode).name} for a in package.assessments
+      ],
+      "assessment": None,
+    }
+    assessmentCode = request.args.get("assessment")
+    if assessmentCode is None:
+      return Response(render_template("entry.html", **context, **_localeContext(translator)))
+    if assessmentCode not in {a.assessmentCode for a in package.assessments}:
+      return Response(f"no assessment '{assessmentCode}' in trial '{trialCode}'", status=404)
+    rating = package.ratingFor(assessmentCode)
+    separator = translator.decimalSeparator
+    stored = {
+      o.plotNumber: o for o in workspace.loadObservations(trialCode) if o.assessmentCode == assessmentCode
+    }
+    rows = [
+      {"plotNumber": p.plotNumber, "block": p.block, "treatmentCode": p.treatmentCode, "checkOf": None}
+      for p in layout.plots
+    ] + [
+      {"plotNumber": c.plotNumber, "block": c.block, "treatmentCode": None,
+       "checkOf": ", ".join(str(number) for number in c.pairedPlots)}
+      for c in layout.checkPlots
+    ]
+    rows.sort(key=lambda row: row["plotNumber"])
+    for row in rows:
+      observation = stored.get(row["plotNumber"])
+      row["text"] = writeEntry(observation.value if observation else None, separator)
+      row["confirmed"] = bool(observation and observation.outOfRangeConfirmed)
+      row["problem"], row["flagged"] = None, False
+
+    saved = request.args.get("saved") == "1"
+    refused = flagged = False
+    if request.method == "POST":
+      entered = []
+      for row in rows:
+        number = row["plotNumber"]
+        row["text"] = request.form.get(f"value-{number}", "")
+        ticked = request.form.get(f"confirm-{number}") == "yes"
+        try:
+          value = readEntry(row["text"], rating, separator)
+        except EntryRefused as refusal:
+          row["problem"] = translator.text(refusal.reasonKey, **refusal.placeholders)
+          refused = True
+          continue
+        outside = isinstance(value, float) and isOutOfRange(rating, value)
+        row["confirmed"] = outside and ticked
+        if outside and not ticked:
+          row["flagged"] = flagged = True
+        if value is not None:
+          entered.append(Observation(
+            plotNumber=number, assessmentCode=assessmentCode, value=value, outOfRangeConfirmed=outside,
+          ))
+      if not refused and not flagged:
+        workspace.recordValues(trialCode, assessmentCode, entered)
+        return redirect(_localized(
+          url_for("web.entry", trialCode=trialCode, assessment=assessmentCode, saved="1"), translator,
+        ))
+    context |= {
+      "assessment": package.assessmentFor(assessmentCode),
+      "rating": rating,
+      "numeric": rating.dataType is AssessmentDataType.numeric,
+      "limits": _limitsText(rating, translator),
+      "rows": rows,
+      "entered": sum(1 for row in rows if row["text"].strip()),
+      "saved": saved and request.method == "GET",
+      "refused": refused,
+      "flagged": flagged,
+    }
+    status = 400 if refused else 200
+    return Response(render_template("entry.html", **context, **_localeContext(translator)), status=status)
+
   @blueprint.get("/trials/<trialCode>/report")
   def report(trialCode: str) -> Response:
     translator = _translator()
@@ -200,6 +281,24 @@ def createWebBlueprint(workspace: Workspace, config: OpenFurrowConfig | None = N
     return Response(render_template("report.html", **context, **_localeContext(translator)))
 
   return blueprint
+
+
+def _limitsText(rating, translator) -> str | None:
+  """A numeric rating's limits in the reader's words; None when it has none."""
+  if rating.dataType is not AssessmentDataType.numeric:
+    return None
+  low, high = rating.minValue, rating.maxValue
+
+  def number(value: float) -> str:
+    return writeEntry(value, translator.decimalSeparator)
+
+  if low is not None and high is not None:
+    return translator.text("report.ratings.range", low=number(low), high=number(high))
+  if low is not None:
+    return translator.text("report.ratings.atLeast", low=number(low))
+  if high is not None:
+    return translator.text("report.ratings.atMost", high=number(high))
+  return None
 
 
 def _renderMarkdown(text: str) -> Markup:

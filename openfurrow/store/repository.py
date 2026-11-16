@@ -513,6 +513,7 @@ def saveObservations(session: Session, trialCode: str, observations: list[Observ
       assessmentCode=observation.assessmentCode,
       numericValue=numericValue,
       textValue=textValue,
+      outOfRangeConfirmed=observation.outOfRangeConfirmed,
     ))
   session.flush()
 
@@ -531,9 +532,28 @@ def loadObservations(session: Session, trialCode: str) -> list[Observation]:
       plotNumber=row.plotNumber,
       assessmentCode=row.assessmentCode,
       value=_joinValue(row.numericValue, row.textValue),
+      outOfRangeConfirmed=row.outOfRangeConfirmed,
     )
     for row in rows
   ]
+
+
+def replaceAssessmentObservations(
+  session: Session, trialCode: str, assessmentCode: str, observations: list[Observation],
+) -> None:
+  """Replace every stored value of one assessment with `observations`, all of that assessment."""
+  if any(observation.assessmentCode != assessmentCode for observation in observations):
+    raise StoreError(f"observations for other assessments were given to replace '{assessmentCode}'")
+  if session.get(TrialRow, trialCode) is None:
+    raise TrialNotFoundError(f"trial '{trialCode}' not found")
+  for row in session.execute(
+    select(ObservationRow).where(
+      ObservationRow.trialCode == trialCode, ObservationRow.assessmentCode == assessmentCode,
+    )
+  ).scalars().all():
+    session.delete(row)
+  session.flush()
+  saveObservations(session, trialCode, observations)
 
 
 def listTrials(session: Session) -> list[tuple[str, str]]:

@@ -23,3 +23,7 @@ class Observation(BaseModel):
   plotNumber: int = Field(gt=0, description="Plot this value was collected on.")
   assessmentCode: str = Field(min_length=1, description="Assessment this value belongs to.")
   value: float | str | None = Field(description="Typed value; None means explicitly missing.")
+  outOfRangeConfirmed: bool = Field(
+    default=False,
+    description="A person confirmed this value although it is outside its rating's limits (decision 0023).",
+  )

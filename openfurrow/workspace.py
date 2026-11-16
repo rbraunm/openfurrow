@@ -75,12 +75,14 @@ from openfurrow.schema import (
   TrialPackage,
   contentHash as _contentHash,
 )
+from openfurrow.schema.document import checkObservationValues as _checkObservationValues
 from openfurrow.store import (
   StoreError,
   createDatabase as _createDatabase,
   deleteTrial as _deleteTrial,
   listTrials as _listTrials,
   loadCheckPlots as _loadCheckPlots,
+  replaceAssessmentObservations as _replaceAssessmentObservations,
   loadLayout as _loadLayout,
   loadObservations as _loadObservations,
   loadPackage as _loadPackage,
@@ -321,6 +323,27 @@ class Workspace:
     package, layout, _ = self._loadContext(trialCode)
     _writeFieldImport(package, layout, fieldPath)
     _writeTraitFile(package, traitPath)
+
+  def recordValues(self, trialCode: str, assessmentCode: str, observations: list[Observation]) -> None:
+    """Replace one assessment's values with those entered, after checking every one (decision 0023).
+
+    Every observation belongs to the assessment and to a plot or check plot of the trial,
+    and fits its rating; a value outside the limits must be confirmed. Nothing is saved
+    unless all of them pass.
+    """
+    with _sessionScope(self._engine) as session:
+      package = _loadPackage(session, trialCode)
+      layout = self._layoutIn(session, package)
+      package.assessmentFor(assessmentCode)
+      plotNumbers = {plot.plotNumber for plot in layout.plots} | {check.plotNumber for check in layout.checkPlots}
+      stray = sorted({observation.plotNumber for observation in observations} - plotNumbers)
+      if stray:
+        raise ObservationImportError(f"plots {stray} are not in trial '{trialCode}'")
+      try:
+        _checkObservationValues(package, observations)
+      except ValueError as error:
+        raise ObservationImportError(str(error)) from error
+      _replaceAssessmentObservations(session, trialCode, assessmentCode, observations)
 
   def importFieldBook(self, trialCode: str, databaseCsvPath: str) -> ImportResult:
     """Ingest a Field Book database (long) export into the trial's observations.

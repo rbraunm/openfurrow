@@ -36,7 +36,7 @@ from sqlalchemy import ForeignKey, Text, event, inspect, select
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, relationship
 
-storeVersion = 9
+storeVersion = 10
 
 
 class StoreError(RuntimeError):
@@ -415,6 +415,7 @@ class ObservationRow(Base):
   assessmentCode: Mapped[str] = mapped_column(primary_key=True)
   numericValue: Mapped[float | None]
   textValue: Mapped[str | None]
+  outOfRangeConfirmed: Mapped[bool]
 
   trial: Mapped[TrialRow] = relationship(back_populates="observations")
 

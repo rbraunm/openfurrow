@@ -1029,6 +1029,94 @@
       "text": "Treatments",
       "status": "humanApproved"
     },
+    "web.trial.enterData": {
+      "text": "Enter data",
+      "status": "humanApproved"
+    },
+    "web.trial.enterIntro": {
+      "text": "Type values plot by plot. Each one is checked as it is saved.",
+      "status": "humanApproved"
+    },
+    "web.entry.heading": {
+      "text": "Enter data",
+      "status": "humanApproved"
+    },
+    "web.entry.back": {
+      "text": "Back to trial",
+      "status": "humanApproved"
+    },
+    "web.entry.chooseAssessment": {
+      "text": "Choose the assessment to enter.",
+      "status": "humanApproved"
+    },
+    "web.entry.intro": {
+      "text": "One value per plot. Leave a box empty for no value. Nothing is saved until every value is accepted.",
+      "status": "humanApproved"
+    },
+    "web.entry.limits": {
+      "text": "Expected values: {limits}.",
+      "status": "humanApproved"
+    },
+    "web.entry.column.plot": {
+      "text": "Plot",
+      "status": "humanApproved"
+    },
+    "web.entry.column.block": {
+      "text": "Block",
+      "status": "humanApproved"
+    },
+    "web.entry.column.treatment": {
+      "text": "Treatment",
+      "status": "humanApproved"
+    },
+    "web.entry.column.value": {
+      "text": "Value",
+      "status": "humanApproved"
+    },
+    "web.entry.column.note": {
+      "text": "Note",
+      "status": "humanApproved"
+    },
+    "web.entry.checkOf": {
+      "text": "untreated check of {plots}",
+      "status": "humanApproved"
+    },
+    "web.entry.completeness": {
+      "text": "{entered} of {total} plots have a value.",
+      "status": "humanApproved"
+    },
+    "web.entry.save": {
+      "text": "Save",
+      "status": "humanApproved"
+    },
+    "web.entry.saved": {
+      "text": "Saved.",
+      "status": "humanApproved"
+    },
+    "web.entry.refusedHeading": {
+      "text": "Nothing was saved: the marked values cannot be accepted.",
+      "status": "humanApproved"
+    },
+    "web.entry.confirmHeading": {
+      "text": "Nothing was saved yet: the marked values are outside the expected values. Tick each one you want to keep, then save again.",
+      "status": "humanApproved"
+    },
+    "web.entry.outOfRange": {
+      "text": "Outside the expected values; keep it",
+      "status": "humanApproved"
+    },
+    "web.entry.refused.notNumber": {
+      "text": "Not a number.",
+      "status": "humanApproved"
+    },
+    "web.entry.refused.twoDecimalMarks": {
+      "text": "Written with both a point and a comma.",
+      "status": "humanApproved"
+    },
+    "web.entry.refused.notCategory": {
+      "text": "Not one of: {values}.",
+      "status": "humanApproved"
+    },
     "web.import.heading": {
       "text": "Import observations",
       "status": "humanApproved"

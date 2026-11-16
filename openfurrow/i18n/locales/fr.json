@@ -1037,6 +1037,86 @@
       "text": "Ceci supprime définitivement l'essai et toutes ses observations. Irréversible.",
       "status": "machineDraft"
     },
+    "web.entry.back": {
+      "text": "Retour à l'essai",
+      "status": "machineDraft"
+    },
+    "web.entry.checkOf": {
+      "text": "témoin non traité de {plots}",
+      "status": "machineDraft"
+    },
+    "web.entry.chooseAssessment": {
+      "text": "Choisissez l'évaluation à saisir.",
+      "status": "machineDraft"
+    },
+    "web.entry.column.block": {
+      "text": "Bloc",
+      "status": "machineDraft"
+    },
+    "web.entry.column.note": {
+      "text": "Remarque",
+      "status": "machineDraft"
+    },
+    "web.entry.column.plot": {
+      "text": "Parcelle",
+      "status": "machineDraft"
+    },
+    "web.entry.column.treatment": {
+      "text": "Traitement",
+      "status": "machineDraft"
+    },
+    "web.entry.column.value": {
+      "text": "Valeur",
+      "status": "machineDraft"
+    },
+    "web.entry.completeness": {
+      "text": "{entered} parcelles sur {total} ont une valeur.",
+      "status": "machineDraft"
+    },
+    "web.entry.confirmHeading": {
+      "text": "Rien n'a encore été enregistré: les valeurs signalées sortent des valeurs attendues. Cochez chacune de celles à conserver, puis enregistrez à nouveau.",
+      "status": "machineDraft"
+    },
+    "web.entry.heading": {
+      "text": "Saisir des données",
+      "status": "machineDraft"
+    },
+    "web.entry.intro": {
+      "text": "Une valeur par parcelle. Laissez une case vide s'il n'y a pas de valeur. Rien n'est enregistré tant que toutes les valeurs ne sont pas acceptées.",
+      "status": "machineDraft"
+    },
+    "web.entry.limits": {
+      "text": "Valeurs attendues: {limits}.",
+      "status": "machineDraft"
+    },
+    "web.entry.outOfRange": {
+      "text": "Hors des valeurs attendues; la conserver",
+      "status": "machineDraft"
+    },
+    "web.entry.refused.notCategory": {
+      "text": "N'est pas l'un de: {values}.",
+      "status": "machineDraft"
+    },
+    "web.entry.refused.notNumber": {
+      "text": "Ce n'est pas un nombre.",
+      "status": "machineDraft"
+    },
+    "web.entry.refused.twoDecimalMarks": {
+      "text": "Écrit avec un point et une virgule à la fois.",
+      "status": "machineDraft"
+    },
+    "web.entry.refusedHeading": {
+      "text": "Rien n'a été enregistré: les valeurs signalées ne peuvent pas être acceptées.",
+      "status": "machineDraft"
+    },
+    "web.entry.save": {
+      "text": "Enregistrer",
+      "status": "machineDraft"
+    },
+    "web.entry.saved": {
+      "text": "Enregistré.",
+      "status": "machineDraft"
+    },
     "web.footer.offline": {
       "text": "Fonctionne hors ligne. Vos données restent sur cette machine.",
       "status": "machineDraft"
@@ -1127,6 +1207,14 @@
     },
     "web.trial.contentHash": {
       "text": "Empreinte du contenu",
+      "status": "machineDraft"
+    },
+    "web.trial.enterData": {
+      "text": "Saisir des données",
+      "status": "machineDraft"
+    },
+    "web.trial.enterIntro": {
+      "text": "Saisissez les valeurs parcelle par parcelle. Chacune est vérifiée à l'enregistrement.",
       "status": "machineDraft"
     },
     "web.trial.layoutHeading": {

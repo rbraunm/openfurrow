@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block title %}{{ package.trial.trialCode }} - {{ t.text('web.app.name') }}{% endblock %}
 {% block content %}
-<p class="back"><a href="{{ url_for('web.index', locale=locale if locale != 'en-US' else none) }}">&larr; {{ t.text('web.trial.back') }}</a></p>
+<p class="back"><a href="{{ url_for('web.index', locale=locale if locale != 'en-US' else none) }}">{{ ('&rarr;' if direction == 'rtl' else '&larr;') | safe }} {{ t.text('web.trial.back') }}</a></p>
 
 <div class="page-head">
   <h1>{{ package.trial.title }}</h1>
@@ -27,6 +27,12 @@
   {% if observationCount > 0 %}
   <p class="report-link"><a class="button" href="{{ url_for('web.report', trialCode=package.trial.trialCode, locale=locale if locale != 'en-US' else none) }}">{{ t.text('web.trial.viewReport') }}</a></p>
   {% endif %}
+</section>
+
+<section class="entry-link" aria-label="{{ t.text('web.entry.heading') }}">
+  <h2>{{ t.text('web.entry.heading') }}</h2>
+  <p class="intro">{{ t.text('web.trial.enterIntro') }}</p>
+  <p><a class="button" href="{{ url_for('web.entry', trialCode=package.trial.trialCode, locale=locale if locale != 'en-US' else none) }}">{{ t.text('web.trial.enterData') }}</a></p>
 </section>
 
 <section class="import" aria-label="{{ t.text('web.import.heading') }}">

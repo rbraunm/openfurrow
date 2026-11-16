@@ -19,11 +19,14 @@ therefore the same hash, regardless of order or how it was assembled.
 
 from __future__ import annotations
 
+import math
+
 import hashlib
 import json
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
+from openfurrow.schema.assessment import AssessmentDataType, Rating
 from openfurrow.schema.layout import CheckPlot, PlotAssignment, TrialLayout
 from openfurrow.schema.observation import Observation
 from openfurrow.schema.trialPackage import RandomizationMethod, TrialPackage
@@ -58,6 +61,7 @@ class TrialDocument(BaseModel):
           f"declared with randomizationMethod '{RandomizationMethod.imported.value}'"
         )
 
+    checkObservationValues(self.package, self.observations)
     plotNumbers = {plot.plotNumber for plot in self.layout} | {check.plotNumber for check in self.checkPlots}
     stray = sorted({observation.plotNumber for observation in self.observations} - plotNumbers)
     if stray:
@@ -81,6 +85,42 @@ class TrialDocument(BaseModel):
         key=lambda row: (row["plotNumber"], row["assessmentCode"]),
       ),
     }
+
+
+def isOutOfRange(rating: Rating, value: float) -> bool:
+  """True when a numeric value lies outside the rating's limits."""
+  return (rating.minValue is not None and value < rating.minValue) or (
+    rating.maxValue is not None and value > rating.maxValue
+  )
+
+
+def checkObservationValues(package: TrialPackage, observations: list[Observation]) -> None:
+  """Raise unless every value fits its assessment's rating (decision 0023).
+
+  A numeric value is a finite number and a category is one of the rating's values. A
+  number outside the rating's limits is kept only when a person confirmed it, and a
+  confirmation on anything else is refused, so the flag always means what it says.
+  """
+  for observation in observations:
+    where = f"plot {observation.plotNumber}, assessment '{observation.assessmentCode}'"
+    try:
+      rating = package.ratingFor(observation.assessmentCode)
+    except KeyError as error:
+      raise ValueError(f"{where}: {error.args[0]}") from error
+    value = observation.value
+    outside = False
+    if value is None:
+      pass
+    elif rating.dataType is AssessmentDataType.numeric:
+      if isinstance(value, str) or not math.isfinite(value):
+        raise ValueError(f"{where}: {value!r} is not a finite number")
+      outside = isOutOfRange(rating, value)
+    elif not isinstance(value, str) or value not in rating.allowedValues:
+      raise ValueError(f"{where}: {value!r} is not one of {rating.allowedValues}")
+    if outside and not observation.outOfRangeConfirmed:
+      raise ValueError(f"{where}: {value} is outside the rating's limits and was not confirmed")
+    if observation.outOfRangeConfirmed and not outside:
+      raise ValueError(f"{where}: a confirmation is recorded for a value that is not outside the limits")
 
 
 def _byPlotNumber(plots: list[PlotAssignment] | list[CheckPlot]) -> dict[int, PlotAssignment | CheckPlot]:

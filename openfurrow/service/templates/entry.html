@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}{{ t.text('web.entry.heading') }} - {{ package.trial.trialCode }} - {{ t.text('web.app.name') }}{% endblock %}
+{% block content %}
+<p class="back"><a href="{{ url_for('web.trial', trialCode=package.trial.trialCode, locale=locale if locale != 'en-US' else none) }}">{{ ('&rarr;' if direction == 'rtl' else '&larr;') | safe }} {{ t.text('web.entry.back') }}</a></p>
+
+<div class="page-head">
+  <h1>{{ t.text('web.entry.heading') }}</h1>
+  <p class="code trial-code">{{ package.trial.trialCode }}</p>
+</div>
+
+<nav class="entry-assessments" aria-label="{{ t.text('web.entry.chooseAssessment') }}">
+  <p class="intro">{{ t.text('web.entry.chooseAssessment') }}</p>
+  <ul>
+    {% for choice in assessments %}
+    <li><a {% if assessment and choice.code == assessment.assessmentCode %}aria-current="page" {% endif %}href="{{ url_for('web.entry', trialCode=package.trial.trialCode, assessment=choice.code, locale=locale if locale != 'en-US' else none) }}"><span class="code">{{ choice.code }}</span> {{ choice.name }}</a></li>
+    {% endfor %}
+  </ul>
+</nav>
+
+{% if assessment %}
+<section class="entry" aria-label="{{ rating.name }}">
+  <h2>{{ rating.name }} <span class="code">{{ assessment.assessmentCode }}</span></h2>
+  <p class="intro">{{ t.text('web.entry.intro') }}{% if limits %} {{ t.text('web.entry.limits', limits=limits) }}{% endif %}</p>
+
+  {% if saved %}
+  <div class="notice" role="status">{{ t.text('web.entry.saved') }} {{ t.text('web.entry.completeness', entered=t.integer(entered), total=t.integer(rows | length)) }}</div>
+  {% elif refused %}
+  <div class="error" role="alert">{{ t.text('web.entry.refusedHeading') }}</div>
+  {% elif flagged %}
+  <div class="warning" role="alert">{{ t.text('web.entry.confirmHeading') }}</div>
+  {% else %}
+  <p class="completeness">{{ t.text('web.entry.completeness', entered=t.integer(entered), total=t.integer(rows | length)) }}</p>
+  {% endif %}
+
+  <form method="post" action="{{ url_for('web.entry', trialCode=package.trial.trialCode, assessment=assessment.assessmentCode, locale=locale if locale != 'en-US' else none) }}">
+    <table class="entry-table">
+      <thead>
+        <tr>
+          <th scope="col">{{ t.text('web.entry.column.plot') }}</th>
+          <th scope="col">{{ t.text('web.entry.column.block') }}</th>
+          <th scope="col">{{ t.text('web.entry.column.treatment') }}</th>
+          <th scope="col">{{ t.text('web.entry.column.value') }}</th>
+          <th scope="col">{{ t.text('web.entry.column.note') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in rows %}
+        <tr class="{{ 'refused' if row.problem else ('flagged' if row.flagged else '') }}">
+          <td class="code">{{ row.plotNumber }}</td>
+          <td class="code">{{ t.integer(row.block) }}</td>
+          <td>{% if row.checkOf %}{{ t.text('web.entry.checkOf', plots=row.checkOf) }}{% else %}<span class="code">{{ row.treatmentCode }}</span>{% endif %}</td>
+          <td><input type="text" inputmode="{{ 'decimal' if numeric else 'text' }}" dir="auto" name="value-{{ row.plotNumber }}" value="{{ row.text }}" aria-label="{{ t.text('web.entry.column.plot') }} {{ row.plotNumber }}"></td>
+          <td>
+            {% if row.problem %}<span class="entry-problem">{{ row.problem }}</span>{% endif %}
+            {% if row.flagged or row.confirmed %}
+            <label class="entry-confirm"><input type="checkbox" name="confirm-{{ row.plotNumber }}" value="yes" {% if row.confirmed %}checked{% endif %}> {{ t.text('web.entry.outOfRange') }}</label>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <div class="form-actions"><button class="button" type="submit">{{ t.text('web.entry.save') }}</button></div>
+  </form>
+</section>
+{% endif %}
+{% endblock %}

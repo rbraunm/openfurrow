@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block title %}{{ t.text('web.delete.confirmHeading', code=trialCode) }}{% endblock %}
 {% block content %}
-<p class="back"><a href="{{ url_for('web.trial', trialCode=trialCode, locale=locale if locale != 'en-US' else none) }}">&larr; {{ t.text('web.trial.back') }}</a></p>
+<p class="back"><a href="{{ url_for('web.trial', trialCode=trialCode, locale=locale if locale != 'en-US' else none) }}">{{ ('&rarr;' if direction == 'rtl' else '&larr;') | safe }} {{ t.text('web.trial.back') }}</a></p>
 
 <div class="page-head">
   <h1>{{ t.text('web.delete.confirmHeading', code=trialCode) }}</h1>

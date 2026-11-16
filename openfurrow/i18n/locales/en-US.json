@@ -1029,6 +1029,94 @@
       "text": "Treatments",
       "status": "source"
     },
+    "web.trial.enterData": {
+      "text": "Enter data",
+      "status": "source"
+    },
+    "web.trial.enterIntro": {
+      "text": "Type values plot by plot. Each one is checked as it is saved.",
+      "status": "source"
+    },
+    "web.entry.heading": {
+      "text": "Enter data",
+      "status": "source"
+    },
+    "web.entry.back": {
+      "text": "Back to trial",
+      "status": "source"
+    },
+    "web.entry.chooseAssessment": {
+      "text": "Choose the assessment to enter.",
+      "status": "source"
+    },
+    "web.entry.intro": {
+      "text": "One value per plot. Leave a box empty for no value. Nothing is saved until every value is accepted.",
+      "status": "source"
+    },
+    "web.entry.limits": {
+      "text": "Expected values: {limits}.",
+      "status": "source"
+    },
+    "web.entry.column.plot": {
+      "text": "Plot",
+      "status": "source"
+    },
+    "web.entry.column.block": {
+      "text": "Block",
+      "status": "source"
+    },
+    "web.entry.column.treatment": {
+      "text": "Treatment",
+      "status": "source"
+    },
+    "web.entry.column.value": {
+      "text": "Value",
+      "status": "source"
+    },
+    "web.entry.column.note": {
+      "text": "Note",
+      "status": "source"
+    },
+    "web.entry.checkOf": {
+      "text": "untreated check of {plots}",
+      "status": "source"
+    },
+    "web.entry.completeness": {
+      "text": "{entered} of {total} plots have a value.",
+      "status": "source"
+    },
+    "web.entry.save": {
+      "text": "Save",
+      "status": "source"
+    },
+    "web.entry.saved": {
+      "text": "Saved.",
+      "status": "source"
+    },
+    "web.entry.refusedHeading": {
+      "text": "Nothing was saved: the marked values cannot be accepted.",
+      "status": "source"
+    },
+    "web.entry.confirmHeading": {
+      "text": "Nothing was saved yet: the marked values are outside the expected values. Tick each one you want to keep, then save again.",
+      "status": "source"
+    },
+    "web.entry.outOfRange": {
+      "text": "Outside the expected values; keep it",
+      "status": "source"
+    },
+    "web.entry.refused.notNumber": {
+      "text": "Not a number.",
+      "status": "source"
+    },
+    "web.entry.refused.twoDecimalMarks": {
+      "text": "Written with both a point and a comma.",
+      "status": "source"
+    },
+    "web.entry.refused.notCategory": {
+      "text": "Not one of: {values}.",
+      "status": "source"
+    },
     "web.import.heading": {
       "text": "Import observations",
       "status": "source"

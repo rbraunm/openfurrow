@@ -1037,6 +1037,86 @@
       "text": "سيؤدي هذا إلى إزالة التجربة وجميع مشاهداتها نهائيًا. لا يمكن التراجع.",
       "status": "machineDraft"
     },
+    "web.entry.back": {
+      "text": "العودة إلى التجربة",
+      "status": "machineDraft"
+    },
+    "web.entry.checkOf": {
+      "text": "شاهد غير معامل لـ {plots}",
+      "status": "machineDraft"
+    },
+    "web.entry.chooseAssessment": {
+      "text": "اختر التقييم المراد إدخاله.",
+      "status": "machineDraft"
+    },
+    "web.entry.column.block": {
+      "text": "القطاع",
+      "status": "machineDraft"
+    },
+    "web.entry.column.note": {
+      "text": "ملاحظة",
+      "status": "machineDraft"
+    },
+    "web.entry.column.plot": {
+      "text": "القطعة",
+      "status": "machineDraft"
+    },
+    "web.entry.column.treatment": {
+      "text": "المعاملة",
+      "status": "machineDraft"
+    },
+    "web.entry.column.value": {
+      "text": "القيمة",
+      "status": "machineDraft"
+    },
+    "web.entry.completeness": {
+      "text": "{entered} من {total} قطعة لها قيمة.",
+      "status": "machineDraft"
+    },
+    "web.entry.confirmHeading": {
+      "text": "لم يُحفظ شيء بعد: القيم المعلَّمة خارج القيم المتوقعة. ضع علامة على كل قيمة تريد الاحتفاظ بها ثم احفظ مرة أخرى.",
+      "status": "machineDraft"
+    },
+    "web.entry.heading": {
+      "text": "إدخال البيانات",
+      "status": "machineDraft"
+    },
+    "web.entry.intro": {
+      "text": "قيمة واحدة لكل قطعة. اترك الخانة فارغة إذا لم توجد قيمة. لا يُحفظ شيء حتى تُقبل كل القيم.",
+      "status": "machineDraft"
+    },
+    "web.entry.limits": {
+      "text": "القيم المتوقعة: {limits}.",
+      "status": "machineDraft"
+    },
+    "web.entry.outOfRange": {
+      "text": "خارج القيم المتوقعة؛ احتفظ بها",
+      "status": "machineDraft"
+    },
+    "web.entry.refused.notCategory": {
+      "text": "ليس من بين: {values}.",
+      "status": "machineDraft"
+    },
+    "web.entry.refused.notNumber": {
+      "text": "ليس رقمًا.",
+      "status": "machineDraft"
+    },
+    "web.entry.refused.twoDecimalMarks": {
+      "text": "مكتوب بنقطة وفاصلة معًا.",
+      "status": "machineDraft"
+    },
+    "web.entry.refusedHeading": {
+      "text": "لم يُحفظ شيء: لا يمكن قبول القيم المعلَّمة.",
+      "status": "machineDraft"
+    },
+    "web.entry.save": {
+      "text": "حفظ",
+      "status": "machineDraft"
+    },
+    "web.entry.saved": {
+      "text": "تم الحفظ.",
+      "status": "machineDraft"
+    },
     "web.footer.offline": {
       "text": "يعمل دون اتصال. تبقى بياناتك على هذا الجهاز.",
       "status": "machineDraft"
@@ -1127,6 +1207,14 @@
     },
     "web.trial.contentHash": {
       "text": "بصمة المحتوى",
+      "status": "machineDraft"
+    },
+    "web.trial.enterData": {
+      "text": "إدخال البيانات",
+      "status": "machineDraft"
+    },
+    "web.trial.enterIntro": {
+      "text": "اكتب القيم قطعةً قطعة. تُفحص كل قيمة عند الحفظ.",
       "status": "machineDraft"
     },
     "web.trial.layoutHeading": {

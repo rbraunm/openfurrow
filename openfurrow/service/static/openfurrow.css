@@ -294,3 +294,18 @@ fieldset.format label { display: block; padding: 0.15rem 0; font-size: 0.95rem; 
 @media (prefers-reduced-motion: reduce) {
   * { animation: none !important; transition: none !important; }
 }
+
+/* Data entry --------------------------------------------------------------- */
+
+.entry-assessments ul { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.entry-assessments a { display: inline-block; padding: 0.3rem 0.7rem; border: 1px solid var(--line); border-radius: var(--radius); }
+.entry-assessments a[aria-current="page"] { border-color: var(--accent); font-weight: 600; }
+.entry-table { border-collapse: collapse; width: 100%; max-width: 48rem; margin-block: 1rem; }
+.entry-table th, .entry-table td { text-align: start; padding: 0.35rem 0.6rem; border-block-end: 1px solid var(--line); }
+.entry-table input[type="text"] { width: 8rem; font: inherit; }
+.entry-table tr.refused { background: color-mix(in srgb, #D55E00 12%, transparent); }
+.entry-table tr.flagged { background: color-mix(in srgb, #E69F00 16%, transparent); }
+.entry-problem { font-weight: 600; }
+.entry-confirm { display: inline-flex; gap: 0.35rem; align-items: center; }
+.warning { padding: 0.7rem 1rem; border: 1px solid #E69F00; border-radius: var(--radius); margin-block: 1rem; }
+

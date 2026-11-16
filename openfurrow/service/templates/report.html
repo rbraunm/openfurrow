@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block title %}{{ t.text('web.report.heading') }} {{ trialCode }} - {{ t.text('web.app.name') }}{% endblock %}
 {% block content %}
-<p class="back"><a href="{{ url_for('web.trial', trialCode=trialCode, locale=locale if locale != 'en-US' else none) }}">&larr; {{ t.text('web.report.back') }}</a></p>
+<p class="back"><a href="{{ url_for('web.trial', trialCode=trialCode, locale=locale if locale != 'en-US' else none) }}">{{ ('&rarr;' if direction == 'rtl' else '&larr;') | safe }} {{ t.text('web.report.back') }}</a></p>
 
 <div class="page-head">
   <h1>{{ t.text('web.report.heading') }}</h1>

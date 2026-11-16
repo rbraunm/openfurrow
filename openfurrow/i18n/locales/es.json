@@ -1037,6 +1037,86 @@
       "text": "Esto elimina permanentemente el ensayo y todas sus observaciones. No se puede deshacer.",
       "status": "machineDraft"
     },
+    "web.entry.back": {
+      "text": "Volver al ensayo",
+      "status": "machineDraft"
+    },
+    "web.entry.checkOf": {
+      "text": "testigo sin tratar de {plots}",
+      "status": "machineDraft"
+    },
+    "web.entry.chooseAssessment": {
+      "text": "Elija la evaluación que va a introducir.",
+      "status": "machineDraft"
+    },
+    "web.entry.column.block": {
+      "text": "Bloque",
+      "status": "machineDraft"
+    },
+    "web.entry.column.note": {
+      "text": "Nota",
+      "status": "machineDraft"
+    },
+    "web.entry.column.plot": {
+      "text": "Parcela",
+      "status": "machineDraft"
+    },
+    "web.entry.column.treatment": {
+      "text": "Tratamiento",
+      "status": "machineDraft"
+    },
+    "web.entry.column.value": {
+      "text": "Valor",
+      "status": "machineDraft"
+    },
+    "web.entry.completeness": {
+      "text": "{entered} de {total} parcelas tienen un valor.",
+      "status": "machineDraft"
+    },
+    "web.entry.confirmHeading": {
+      "text": "Aún no se guardó nada: los valores marcados están fuera de los valores esperados. Marque cada uno que quiera conservar y guarde de nuevo.",
+      "status": "machineDraft"
+    },
+    "web.entry.heading": {
+      "text": "Introducir datos",
+      "status": "machineDraft"
+    },
+    "web.entry.intro": {
+      "text": "Un valor por parcela. Deje una casilla vacía si no hay valor. No se guarda nada hasta que todos los valores se acepten.",
+      "status": "machineDraft"
+    },
+    "web.entry.limits": {
+      "text": "Valores esperados: {limits}.",
+      "status": "machineDraft"
+    },
+    "web.entry.outOfRange": {
+      "text": "Fuera de los valores esperados; conservarlo",
+      "status": "machineDraft"
+    },
+    "web.entry.refused.notCategory": {
+      "text": "No es uno de: {values}.",
+      "status": "machineDraft"
+    },
+    "web.entry.refused.notNumber": {
+      "text": "No es un número.",
+      "status": "machineDraft"
+    },
+    "web.entry.refused.twoDecimalMarks": {
+      "text": "Escrito con punto y coma a la vez.",
+      "status": "machineDraft"
+    },
+    "web.entry.refusedHeading": {
+      "text": "No se guardó nada: los valores marcados no se pueden aceptar.",
+      "status": "machineDraft"
+    },
+    "web.entry.save": {
+      "text": "Guardar",
+      "status": "machineDraft"
+    },
+    "web.entry.saved": {
+      "text": "Guardado.",
+      "status": "machineDraft"
+    },
     "web.footer.offline": {
       "text": "Funciona sin conexión. Sus datos permanecen en este equipo.",
       "status": "machineDraft"
@@ -1127,6 +1207,14 @@
     },
     "web.trial.contentHash": {
       "text": "Hash de contenido",
+      "status": "machineDraft"
+    },
+    "web.trial.enterData": {
+      "text": "Introducir datos",
+      "status": "machineDraft"
+    },
+    "web.trial.enterIntro": {
+      "text": "Escriba los valores parcela por parcela. Cada uno se comprueba al guardar.",
       "status": "machineDraft"
     },
     "web.trial.layoutHeading": {
