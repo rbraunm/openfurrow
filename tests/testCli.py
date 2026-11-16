@@ -197,7 +197,7 @@ def testDeleteRemovesTrial(project, capsys):
 
 def testMissingDatabaseErrors(project, capsys):
   assert main(["list", project["db"]]) == 1
-  assert "does not exist" in capsys.readouterr().err
+  assert "create it first" in capsys.readouterr().err
 
 
 def testMissingTrialErrors(project, capsys):

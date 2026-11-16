@@ -14,11 +14,10 @@ raise the declared error types.
 import copy
 import csv
 import json
-import sqlite3
-from pathlib import Path
 
 import pytest
 from pydantic import ValidationError
+from sqlalchemy import text
 
 from openfurrow.analysis import MeanComparison
 from openfurrow import schemaVersion
@@ -27,6 +26,7 @@ from openfurrow.config import defaultConfig
 from openfurrow.design import generateRcbdLayout
 from openfurrow.reports import buildReport
 from openfurrow.schema import TrialDocument, TrialPackage, contentHash
+from openfurrow.store.database import openEngine
 from openfurrow.workspace import (
   AnalysisError,
   RoundTripCheck,
@@ -86,8 +86,8 @@ def _populated(trial):
 
 def testCreateMakesUsableStore(trial):
   workspace = Workspace.create(trial["db"])
-  assert Path(trial["db"]).exists()
   assert workspace.listTrials() == []
+  assert Workspace.open(trial["db"]).listTrials() == []
 
 
 def testOpenMissingDatabaseRaises(trial):
@@ -209,18 +209,13 @@ def testLayoutIsReadFromTheStoreNotRegenerated(trial):
 
   # Change one stored assignment behind the facade's back: the layout that comes out
   # follows the store, and the document refuses it because it no longer matches its seed.
-  connection = sqlite3.connect(trial["db"])
   first, second = recorded[0], recorded[1]
-  connection.execute(
-    "UPDATE plot SET treatmentCode = ? WHERE trialCode = 'WS-1' AND plotNumber = ?",
-    (second.treatmentCode, first.plotNumber),
-  )
-  connection.execute(
-    "UPDATE plot SET treatmentCode = ? WHERE trialCode = 'WS-1' AND plotNumber = ?",
-    (first.treatmentCode, second.plotNumber),
-  )
-  connection.commit()
-  connection.close()
+  engine = openEngine(trial["db"])
+  update = text('UPDATE plot SET "treatmentCode" = :code WHERE "trialCode" = \'WS-1\' AND "plotNumber" = :plot')
+  with engine.begin() as connection:
+    connection.execute(update, {"code": second.treatmentCode, "plot": first.plotNumber})
+    connection.execute(update, {"code": first.treatmentCode, "plot": second.plotNumber})
+  engine.dispose()
   swapped = workspace.layoutFor("WS-1").plots
   assert (swapped[0].treatmentCode, swapped[1].treatmentCode) == (second.treatmentCode, first.treatmentCode)
   with pytest.raises(ValidationError, match="is not the one method"):

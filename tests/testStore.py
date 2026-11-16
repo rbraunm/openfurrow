@@ -14,7 +14,7 @@ import sqlite3
 import pytest
 from pydantic import ValidationError
 from sqlalchemy import select
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import DBAPIError
 from sqlalchemy.orm import Session
 
 from openfurrow import schemaVersion
@@ -242,7 +242,8 @@ def testDeleteUnknownTrialRejected(engine):
 def testForeignKeyEnforcedForOrphanObservation(engine):
   # Inserting an observation for a non-existent trial must be rejected by the DB
   # itself (SQLite foreign keys enabled via pragma), not just by the repository.
-  with pytest.raises(IntegrityError):
+  # SQLite reports an IntegrityError; pg8000 reports SQLSTATE 23503 as a ProgrammingError.
+  with pytest.raises(DBAPIError, match="(?i)foreign key constraint"):
     with Session(engine) as session:
       session.add(ObservationRow(trialCode="GHOST", plotNumber=1, assessmentCode="YIELD", subsample=0,
                                  numericValue=1.0, textValue=None, outOfRangeConfirmed=False))

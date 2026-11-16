@@ -47,7 +47,7 @@ def testServeMissingDatabaseFailsLoud(tmp_path, newStore):
 
   args = _buildParser().parse_args(["serve", newStore("absent")])
   # Workspace.open raises before any socket is bound.
-  with pytest.raises(StoreError, match="does not exist"):
+  with pytest.raises(StoreError, match="create it first"):
     _commandServe(args)
 
 
