@@ -449,6 +449,30 @@
       "text": "ترجمة مسودة (آلية، لم تُراجع بعد): قد تكون الصياغة غير دقيقة. الأرقام والمعرفات وبصمة المحتوى غير متأثرة.",
       "status": "machineDraft"
     },
+    "report.dunnett.column.difference": {
+      "text": "الفرق عن {check}",
+      "status": "machineDraft"
+    },
+    "report.dunnett.column.differenceAnalysed": {
+      "text": "الفرق عن {check} (المقياس المحلَّل)",
+      "status": "machineDraft"
+    },
+    "report.dunnett.column.different": {
+      "text": "مختلف عن {check}",
+      "status": "machineDraft"
+    },
+    "report.dunnett.no": {
+      "text": "لا",
+      "status": "machineDraft"
+    },
+    "report.dunnett.separation": {
+      "text": "كل معاملة مقابل {check} باختبار دانيت ثنائي الطرف (ألفا = {alpha}). تأثير المعاملة {significance} (P {probability}).",
+      "status": "machineDraft"
+    },
+    "report.dunnett.yes": {
+      "text": "نعم",
+      "status": "machineDraft"
+    },
     "report.factorial.heading": {
       "text": "التحليل العاملي",
       "status": "machineDraft"
@@ -569,6 +593,10 @@
       "text": "المعاملة",
       "status": "machineDraft"
     },
+    "report.means.dunnettDifference": {
+      "text": "الفرق الحرج (دانيت، ألفا = {alpha})",
+      "status": "machineDraft"
+    },
     "report.means.honestlySignificantDifference": {
       "text": "HSD (ألفا = {alpha})",
       "status": "machineDraft"
@@ -591,6 +619,10 @@
     },
     "report.means.significant": {
       "text": "معنوي",
+      "status": "machineDraft"
+    },
+    "report.method.dunnett": {
+      "text": "اختبار دانيت",
       "status": "machineDraft"
     },
     "report.method.fisherLSD": {

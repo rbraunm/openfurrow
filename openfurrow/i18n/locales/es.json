@@ -449,6 +449,30 @@
       "text": "Traducción preliminar (generada automáticamente, sin revisión): la redacción puede ser imprecisa. Los números, los identificadores y el hash de contenido no se ven afectados.",
       "status": "machineDraft"
     },
+    "report.dunnett.column.difference": {
+      "text": "Diferencia con {check}",
+      "status": "machineDraft"
+    },
+    "report.dunnett.column.differenceAnalysed": {
+      "text": "Diferencia con {check} (escala analizada)",
+      "status": "machineDraft"
+    },
+    "report.dunnett.column.different": {
+      "text": "Distinto de {check}",
+      "status": "machineDraft"
+    },
+    "report.dunnett.no": {
+      "text": "no",
+      "status": "machineDraft"
+    },
+    "report.dunnett.separation": {
+      "text": "Cada tratamiento frente a {check} con la prueba bilateral de Dunnett (alfa = {alpha}). Efecto del tratamiento {significance} (P {probability}).",
+      "status": "machineDraft"
+    },
+    "report.dunnett.yes": {
+      "text": "sí",
+      "status": "machineDraft"
+    },
     "report.factorial.heading": {
       "text": "Análisis factorial",
       "status": "machineDraft"
@@ -569,6 +593,10 @@
       "text": "Tratamiento",
       "status": "machineDraft"
     },
+    "report.means.dunnettDifference": {
+      "text": "Diferencia crítica (Dunnett, alfa = {alpha})",
+      "status": "machineDraft"
+    },
     "report.means.honestlySignificantDifference": {
       "text": "DHS (alfa = {alpha})",
       "status": "machineDraft"
@@ -591,6 +619,10 @@
     },
     "report.means.significant": {
       "text": "significativo",
+      "status": "machineDraft"
+    },
+    "report.method.dunnett": {
+      "text": "prueba de Dunnett",
       "status": "machineDraft"
     },
     "report.method.fisherLSD": {

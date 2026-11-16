@@ -969,6 +969,38 @@
       "text": "Tukey's HSD",
       "status": "source"
     },
+    "report.method.dunnett": {
+      "text": "Dunnett's test",
+      "status": "source"
+    },
+    "report.dunnett.separation": {
+      "text": "Each treatment against {check} by Dunnett's two-sided test (alpha = {alpha}). Treatment effect {significance} (P {probability}).",
+      "status": "source"
+    },
+    "report.dunnett.column.difference": {
+      "text": "Difference from {check}",
+      "status": "source"
+    },
+    "report.dunnett.column.differenceAnalysed": {
+      "text": "Difference from {check} (analyzed scale)",
+      "status": "source"
+    },
+    "report.dunnett.column.different": {
+      "text": "Different from {check}",
+      "status": "source"
+    },
+    "report.dunnett.yes": {
+      "text": "yes",
+      "status": "source"
+    },
+    "report.dunnett.no": {
+      "text": "no",
+      "status": "source"
+    },
+    "report.means.dunnettDifference": {
+      "text": "Critical difference (Dunnett, alpha = {alpha})",
+      "status": "source"
+    },
     "report.means.honestlySignificantDifference": {
       "text": "HSD (alpha = {alpha})",
       "status": "source"

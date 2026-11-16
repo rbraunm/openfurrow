@@ -449,6 +449,30 @@
       "text": "Traduction provisoire (générée automatiquement, non relue): la formulation peut être imprécise. Les nombres, les identifiants et l'empreinte du contenu ne sont pas affectés.",
       "status": "machineDraft"
     },
+    "report.dunnett.column.difference": {
+      "text": "Écart à {check}",
+      "status": "machineDraft"
+    },
+    "report.dunnett.column.differenceAnalysed": {
+      "text": "Écart à {check} (échelle analysée)",
+      "status": "machineDraft"
+    },
+    "report.dunnett.column.different": {
+      "text": "Différent de {check}",
+      "status": "machineDraft"
+    },
+    "report.dunnett.no": {
+      "text": "non",
+      "status": "machineDraft"
+    },
+    "report.dunnett.separation": {
+      "text": "Chaque traitement face à {check} par le test bilatéral de Dunnett (alpha = {alpha}). Effet traitement {significance} (P {probability}).",
+      "status": "machineDraft"
+    },
+    "report.dunnett.yes": {
+      "text": "oui",
+      "status": "machineDraft"
+    },
     "report.factorial.heading": {
       "text": "Analyse factorielle",
       "status": "machineDraft"
@@ -569,6 +593,10 @@
       "text": "Traitement",
       "status": "machineDraft"
     },
+    "report.means.dunnettDifference": {
+      "text": "Écart critique (Dunnett, alpha = {alpha})",
+      "status": "machineDraft"
+    },
     "report.means.honestlySignificantDifference": {
       "text": "HSD (alpha = {alpha})",
       "status": "machineDraft"
@@ -591,6 +619,10 @@
     },
     "report.means.significant": {
       "text": "significatif",
+      "status": "machineDraft"
+    },
+    "report.method.dunnett": {
+      "text": "test de Dunnett",
       "status": "machineDraft"
     },
     "report.method.fisherLSD": {

@@ -969,6 +969,38 @@
       "text": "Tukey's HSD",
       "status": "humanApproved"
     },
+    "report.method.dunnett": {
+      "text": "Dunnett's test",
+      "status": "humanApproved"
+    },
+    "report.dunnett.separation": {
+      "text": "Each treatment against {check} by Dunnett's two-sided test (alpha = {alpha}). Treatment effect {significance} (P {probability}).",
+      "status": "humanApproved"
+    },
+    "report.dunnett.column.difference": {
+      "text": "Difference from {check}",
+      "status": "humanApproved"
+    },
+    "report.dunnett.column.differenceAnalysed": {
+      "text": "Difference from {check} (analysed scale)",
+      "status": "humanApproved"
+    },
+    "report.dunnett.column.different": {
+      "text": "Different from {check}",
+      "status": "humanApproved"
+    },
+    "report.dunnett.yes": {
+      "text": "yes",
+      "status": "humanApproved"
+    },
+    "report.dunnett.no": {
+      "text": "no",
+      "status": "humanApproved"
+    },
+    "report.means.dunnettDifference": {
+      "text": "Critical difference (Dunnett, alpha = {alpha})",
+      "status": "humanApproved"
+    },
     "report.means.honestlySignificantDifference": {
       "text": "HSD (alpha = {alpha})",
       "status": "humanApproved"

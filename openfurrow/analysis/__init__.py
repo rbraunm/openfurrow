@@ -25,6 +25,13 @@ from openfurrow.analysis.factorial import (
   separateFactorialMeans,
 )
 from openfurrow.analysis.crd import analyzeCrd
+from openfurrow.analysis.dunnett import (
+  CheckComparison,
+  DunnettResult,
+  compareWithControl,
+  dunnettCdf,
+  dunnettQuantile,
+)
 from openfurrow.analysis.diagnostics import (
   Assumptions,
   DiagnosticOutcome,
@@ -56,9 +63,11 @@ __all__ = [
   "AnalysisError",
   "AnovaResult",
   "AnovaSource",
+  "CheckComparison",
   "Assumptions",
   "CheckPair",
   "DiagnosticOutcome",
+  "DunnettResult",
   "FactorialResult",
   "InteractionComparisons",
   "LeastSignificantDifference",
@@ -82,7 +91,10 @@ __all__ = [
   "assessAssumptions",
   "checkPairs",
   "compareWithChecks",
+  "compareWithControl",
   "criticalDifference",
+  "dunnettCdf",
+  "dunnettQuantile",
   "letterGroups",
   "methodKeyFor",
   "plotEfficacies",

@@ -44,6 +44,7 @@ from openfurrow.analysis import (
   checkPairs,
   compareWithChecks,
   analyzeSplitPlot,
+  compareWithControl,
   separateFactorMeans,
   assessAssumptions,
   methodKeyFor,
@@ -593,9 +594,7 @@ def _assessmentSection(
     lines.append("")
     return lines
 
-  separation = separateMeans(result, significanceLevel=significanceLevel, meanComparison=meanComparison)
   unit = f" ({rating.unit})" if rating.unit else ""
-  alpha = translator.number(significanceLevel, decimals=2)
 
   lines.append(f"### {translator.text('report.heading.anova')}")
   lines.append("")
@@ -641,52 +640,7 @@ def _assessmentSection(
   )
   lines.append("")
 
-  treatmentRow = next(row for row in result.table if row.source == "treatment")
-  significance = translator.text(
-    "report.means.significant" if separation.treatmentSignificant else "report.means.notSignificant"
-  )
-  lines.append(f"### {translator.text('report.heading.treatmentMeans')}")
-  lines.append("")
-  lines.append(
-    translator.text(
-      "report.means.separation",
-      method=translator.text(separation.methodKey),
-      alpha=alpha,
-      significance=significance,
-      probability=_probabilityStatement(treatmentRow.pValue, translator),
-    )
-  )
-  lines.append("")
-  meanHeaderKey = (
-    "report.means.column.mean" if result.transform is Transform.none
-    else "report.means.column.meanOriginalScale"
-  )
-  meanHeader = translator.text(meanHeaderKey, unit=unit)
-  lines.append(
-    f"| {translator.text('report.means.column.treatment')} | {meanHeader} "
-    f"| {translator.text('report.means.column.group')} |"
-  )
-  lines.append("|---|---:|:--:|")
-  for group in separation.groups:
-    displayedMean = backTransformMean(result.transform, group.mean, result.transformOffset)
-    lines.append(
-      f"| {group.treatmentCode} | {translator.number(displayedMean, decimals=3)} | {group.group} |"
-    )
-  lines.append("")
-  if result.transform is not Transform.none:
-    lines.append(
-      translator.text("report.means.backTransformNote", scale=_scaleName(result.transform, result.transformOffset, translator))
-    )
-    lines.append("")
-  lines.append(_field(
-    translator,
-    _differenceKey(meanComparison),
-    translator.number(separation.criticalDifference, decimals=3),
-    alpha=alpha,
-  ))
-  if meanComparison is MeanComparison.protectedLSD and not separation.treatmentSignificant:
-    lines.append(f"- {translator.text('report.means.notSeparated')}")
-  lines.append("")
+  lines += _treatmentMeansLines(result, package, significanceLevel, meanComparison, unit, 3, translator)
 
   if package.factors:
     lines += _factorialSubsections(
@@ -774,35 +728,14 @@ def _efficacySubsection(
     result = analyzeEfficacy(assessment.assessmentCode, package, layout, observations)
   except AnalysisError as error:
     return lines + [translator.text("report.assessment.notAnalyzed", reason=str(error)), ""]
-  separation = separateMeans(result, significanceLevel=significanceLevel, meanComparison=meanComparison)
   sourceNames = {
     source: translator.text(f"report.anova.source.{source}") for source in ("block", "treatment", "error", "total")
   }
-  alpha = translator.number(significanceLevel, decimals=2)
-  treatmentRow = next(row for row in result.table if row.source == "treatment")
-  significance = translator.text(
-    "report.means.significant" if separation.treatmentSignificant else "report.means.notSignificant"
+  lines += _anovaTable(result.table, sourceNames, translator) + [""]
+  lines += _treatmentMeansLines(
+    result, package, significanceLevel, meanComparison, "", 1, translator,
+    meanLabel=translator.text("report.checks.column.efficacy"), heading="#####",
   )
-  lines += _anovaTable(result.table, sourceNames, translator)
-  lines += [
-    "",
-    translator.text(
-      "report.means.separation", method=translator.text(separation.methodKey), alpha=alpha,
-      significance=significance, probability=_probabilityStatement(treatmentRow.pValue, translator),
-    ),
-    "",
-    f"| {translator.text('report.means.column.treatment')} | {translator.text('report.checks.column.efficacy')} "
-    f"| {translator.text('report.means.column.group')} |",
-    "|---|---:|:--:|",
-    *(
-      f"| {group.treatmentCode} | {translator.number(group.mean, decimals=1)} | {group.group} |"
-      for group in separation.groups
-    ),
-    "",
-    _field(translator, _differenceKey(meanComparison),
-           translator.number(separation.criticalDifference, decimals=2), alpha=alpha),
-    "",
-  ]
   return lines
 
 
@@ -842,7 +775,7 @@ def _splitPlotSubsections(
   ]
   lines += _twoFactorMeans(
     result, package, result.mainPlotFactor, result.subPlotFactor,
-    lambda factorCode: separateFactorMeans(result, factorCode, significanceLevel=significanceLevel, meanComparison=meanComparison),
+    lambda factorCode: separateFactorMeans(result, factorCode, significanceLevel=significanceLevel, meanComparison=_factorMethod(meanComparison)),
     lambda factorCode: next(
       row for row in result.table if row.source == ("mainPlot" if factorCode == result.mainPlotFactor else "subPlot")
     ),
@@ -894,7 +827,7 @@ def _twoFactorMeans(
         for group in separation.groups
       ),
       "",
-      _field(translator, _differenceKey(meanComparison),
+      _field(translator, _differenceKey(_factorMethod(meanComparison)),
              translator.number(separation.criticalDifference, decimals=3), alpha=alpha),
       "",
     ]
@@ -965,7 +898,7 @@ def _factorialSubsections(
   lines += _anovaTable(result.table, sourceNames, translator) + [""]
   lines += _twoFactorMeans(
     result, package, result.firstFactor, result.secondFactor,
-    lambda factorCode: separateFactorialMeans(result, factorCode, significanceLevel=significanceLevel, meanComparison=meanComparison),
+    lambda factorCode: separateFactorialMeans(result, factorCode, significanceLevel=significanceLevel, meanComparison=_factorMethod(meanComparison)),
     lambda factorCode: next(
       row for row in result.table if row.source == ("firstFactor" if factorCode == result.firstFactor else "secondFactor")
     ),
@@ -1105,6 +1038,92 @@ def _reproducibilitySection(
   )
   lines.append("")
   return lines
+
+
+def _treatmentMeansLines(
+  result, package, significanceLevel, meanComparison, unit: str, decimals: int, translator: Translator,
+  meanLabel: str | None = None, heading: str = "###",
+) -> list[str]:
+  """The treatment means after an ANOVA: lettered groups, or each against the check by Dunnett.
+
+  `meanLabel` names the mean column when it is not a plain mean (percent control), and
+  `heading` is the level of the section heading where it sits.
+  """
+  alpha = translator.number(significanceLevel, decimals=2)
+  treatmentRow = next(row for row in result.table if row.source == "treatment")
+  meanHeaderKey = (
+    "report.means.column.mean" if result.transform is Transform.none else "report.means.column.meanOriginalScale"
+  )
+  meanHeader = meanLabel if meanLabel is not None else translator.text(meanHeaderKey, unit=unit)
+  lines = [f"{heading} {translator.text('report.heading.treatmentMeans')}", ""]
+
+  def shown(mean: float) -> str:
+    return translator.number(backTransformMean(result.transform, mean, result.transformOffset), decimals=decimals)
+
+  if meanComparison is MeanComparison.dunnett:
+    comparison = compareWithControl(result, package, significanceLevel)
+    significance = translator.text(
+      "report.means.significant" if treatmentRow.pValue is not None and treatmentRow.pValue <= significanceLevel
+      else "report.means.notSignificant"
+    )
+    differenceKey = (
+      "report.dunnett.column.difference" if result.transform is Transform.none
+      else "report.dunnett.column.differenceAnalysed"
+    )
+    lines += [
+      translator.text(
+        "report.dunnett.separation", check=comparison.checkCode, alpha=alpha, significance=significance,
+        probability=_probabilityStatement(treatmentRow.pValue, translator),
+      ),
+      "",
+      f"| {translator.text('report.means.column.treatment')} | {meanHeader} "
+      f"| {translator.text(differenceKey, check=comparison.checkCode)} "
+      f"| {translator.text('report.dunnett.column.different', check=comparison.checkCode)} |",
+      "|---|---:|---:|:--:|",
+      f"| {comparison.checkCode} | {shown(comparison.checkMean)} | - | - |",
+      *(
+        f"| {row.treatmentCode} | {shown(row.mean)} | {translator.number(row.difference, decimals=decimals)} "
+        f"| {translator.text('report.dunnett.yes' if row.significant else 'report.dunnett.no')} |"
+        for row in comparison.comparisons
+      ),
+      "",
+      _field(translator, "report.means.dunnettDifference",
+             translator.number(comparison.criticalDifference, decimals=decimals + 1), alpha=alpha),
+      "",
+    ]
+    return lines
+
+  separation = separateMeans(result, significanceLevel=significanceLevel, meanComparison=meanComparison)
+  significance = translator.text(
+    "report.means.significant" if separation.treatmentSignificant else "report.means.notSignificant"
+  )
+  lines += [
+    translator.text(
+      "report.means.separation", method=translator.text(separation.methodKey), alpha=alpha,
+      significance=significance, probability=_probabilityStatement(treatmentRow.pValue, translator),
+    ),
+    "",
+    f"| {translator.text('report.means.column.treatment')} | {meanHeader} | {translator.text('report.means.column.group')} |",
+    "|---|---:|:--:|",
+    *(f"| {group.treatmentCode} | {shown(group.mean)} | {group.group} |" for group in separation.groups),
+    "",
+  ]
+  if result.transform is not Transform.none:
+    lines += [
+      translator.text("report.means.backTransformNote", scale=_scaleName(result.transform, result.transformOffset, translator)),
+      "",
+    ]
+  lines.append(_field(translator, _differenceKey(meanComparison),
+                      translator.number(separation.criticalDifference, decimals=decimals), alpha=alpha))
+  if meanComparison is MeanComparison.protectedLSD and not separation.treatmentSignificant:
+    lines.append(f"- {translator.text('report.means.notSeparated')}")
+  lines.append("")
+  return lines
+
+
+def _factorMethod(meanComparison: MeanComparison) -> MeanComparison:
+  """Factor levels are grouped by letters; under Dunnett, which compares treatments with the check, by protected LSD."""
+  return MeanComparison.protectedLSD if meanComparison is MeanComparison.dunnett else meanComparison
 
 
 def _differenceKey(meanComparison: MeanComparison) -> str:

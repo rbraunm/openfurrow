@@ -37,12 +37,14 @@ from openfurrow.analysis import (
   AnalysisError,
   AnovaResult,
   Assumptions,
+  DunnettResult,
   FactorSeparation,
   FactorialResult,
   MeanComparison,
   MeanSeparation,
   SplitPlotResult,
   analyzeCrd as _analyzeCrd,
+  compareWithControl as _compareWithControl,
   analyzeFactorialRcbd as _analyzeFactorialRcbd,
   analyzeRcbd as _analyzeRcbd,
   separateFactorialMeans as _separateFactorialMeans,
@@ -245,6 +247,13 @@ class Workspace:
       raise AnalysisError(f"trial '{trialCode}' has no factors to separate")
     factorial = _analyzeFactorialRcbd(assessmentCode, package, layout, observations)
     return _separateFactorialMeans(factorial, factor, significanceLevel=significanceLevel, meanComparison=meanComparison)
+
+  def compareWithControl(self, trialCode: str, assessmentCode: str, significanceLevel: float = 0.05) -> DunnettResult:
+    """Dunnett's two-sided test of every treatment against the untreated check (decision 0029)."""
+    result = self.analyze(trialCode, assessmentCode)
+    if isinstance(result, (SplitPlotResult, FactorialResult)):
+      raise AnalysisError(f"trial '{trialCode}' compares factor levels, not treatments against a check")
+    return _compareWithControl(result, self.loadPackage(trialCode), significanceLevel)
 
   def analyzeFactorial(self, trialCode: str, assessmentCode: str) -> FactorialResult:
     """The factorial ANOVA of a two-factor RCBD (decision 0025)."""

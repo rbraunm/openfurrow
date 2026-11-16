@@ -38,6 +38,7 @@ class MeanComparison(str, Enum):
   protectedLSD = "protectedLSD"  # Fisher's LSD, only when the treatment F is significant
   lsd = "lsd"  # Fisher's LSD, applied regardless
   tukeyHSD = "tukeyHSD"  # Tukey's honestly significant difference, applied regardless
+  dunnett = "dunnett"  # Dunnett's test of every treatment against the untreated check
 
 
 def criticalDifference(
@@ -45,6 +46,8 @@ def criticalDifference(
   errorMeanSquare: float, errorDegreesOfFreedom: int, perMean: int,
 ) -> float:
   """The difference two of `meanCount` means must exceed to be called different."""
+  if meanComparison is MeanComparison.dunnett:
+    raise AnalysisError("Dunnett's critical difference compares with the check; see analysis.dunnett")
   if meanComparison is MeanComparison.tukeyHSD:
     q = studentizedRangeQuantile(1.0 - significanceLevel, meanCount, errorDegreesOfFreedom)
     return q * math.sqrt(errorMeanSquare / perMean)
@@ -73,6 +76,7 @@ def methodKeyFor(meanComparison: MeanComparison) -> str:
     MeanComparison.protectedLSD: "report.method.fisherProtectedLSD",
     MeanComparison.lsd: "report.method.fisherLSD",
     MeanComparison.tukeyHSD: "report.method.tukeyHSD",
+    MeanComparison.dunnett: "report.method.dunnett",
   }[meanComparison]
 
 
@@ -93,7 +97,9 @@ def separateMeans(
   significanceLevel: float = 0.05,
   meanComparison: MeanComparison = MeanComparison.protectedLSD,
 ) -> MeanSeparation:
-  """Separate treatment means by the chosen test."""
+  """Separate treatment means by the chosen test into letter groups."""
+  if meanComparison is MeanComparison.dunnett:
+    raise AnalysisError("Dunnett's test compares each treatment with the check rather than grouping them; use compareWithControl")
   if not 0.0 < significanceLevel < 1.0:
     raise AnalysisError(f"significance level must be in (0, 1), got {significanceLevel}")
   difference = criticalDifference(
