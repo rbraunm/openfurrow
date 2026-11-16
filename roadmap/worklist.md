@@ -6,7 +6,7 @@ Findings, defects, checks and owner calls that the plans do not carry.
 Status tags: `fix` (a defect to correct), `build` (work to add), `check` (a suspicion to
 measure), `owner` (the owner's call), `done`.
 
-**Counts.** fix 6, build 9, check 0, owner 3, done 15; 33 in all.
+**Counts.** fix 5, build 10, check 0, owner 3, done 16; 34 in all.
 
 ## Owner decisions
 
@@ -48,14 +48,16 @@ measure), `owner` (the owner's call), `done`.
   Decided in decision 0015: the plot map becomes recorded data (stored, exported, hashed),
   the seed and the method's name become provenance, new layouts come from a shuffle the
   project specifies itself on SHA-256, and the store carries a version. To build.
-- **REP-2** `fix` **Library versions are not pinned.** Dependencies carry lower bounds
-  only, so every install takes the newest releases. A validation run is then not
-  repeatable. The baseline of PLT-1 ran against statsmodels 0.15.0, pandas 3.1.1,
-  SQLAlchemy 2.1.8 and numpy 2.5.5 and passed, which says nothing about the next release.
-  One case already in the tree: formulaic (pulled in by statsmodels) requires
-  `wrapt>=1.17.0rc1` on Python 3.13 and newer, and a pre-release in a specifier makes pip
-  accept pre-releases, so the install took wrapt 2.6.0.dev1 over the stable 2.5.2. Pin the
-  test environment.
+- **REP-2** `done` **Library versions were not pinned.** Dependencies carry lower bounds
+  only, so every install took the newest releases and a validation run could not be
+  repeated. One install had already taken a pre-release: formulaic (pulled in by
+  statsmodels) requires `wrapt>=1.17.0rc1` on Python 3.13 and newer, a pre-release in a
+  specifier makes pip accept pre-releases, and wrapt 2.6.0.dev1 was installed over the
+  stable 2.5.2. `constraints.txt` now pins every dependency of the test and service extras
+  and the build backend, at the versions that passed on Linux and Windows with Python 3.13
+  and 3.14, wrapt at its stable release. The bootstrap script, the workflow and the
+  product smoke install with it; `CONTRIBUTING.md` ("Pinned versions") says how to move
+  the pins.
 - **REP-3** `done` **Exported JSON took the platform's line endings.** On Windows all 152
   lines of the worked example's export ended in CRLF, so the file was not byte-identical
   across platforms although the content hash was. `exportJson` and the report's
@@ -127,6 +129,10 @@ measure), `owner` (the owner's call), `done`.
   release or tag exists. Merge by pull request once the workflow passes. That pull request
   is also the first to meet the gate: a merge attempted before `validated` has passed must
   be refused. Whether the merge is tagged 0.1.0 is the owner's call.
+- **VAL-4** `build` **A run against the newest libraries.** With the versions pinned
+  (REP-2), nothing reports that a new release of a dependency breaks the project until
+  someone moves the pins. A scheduled run of the workflow that installs without
+  `constraints.txt` would.
 
 ## Plan and documents (DOC)
 

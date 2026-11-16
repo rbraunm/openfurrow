@@ -16,6 +16,9 @@ repositoryRoot = Path(__file__).resolve().parent.parent
 exampleDirectory = repositoryRoot / "examples" / "yatesOats"
 localeDirectory = repositoryRoot / "openfurrow" / "i18n" / "locales"
 executableSuffix = ".exe" if os.name == "nt" else ""
+# Every pip this script starts, the build's isolated environments included, installs the
+# pinned versions.
+pinnedEnvironment = {**os.environ, "PIP_CONSTRAINT": str(repositoryRoot / "constraints.txt")}
 commandTimeoutSeconds = 900
 serviceStartTimeoutSeconds = 30
 serviceStopTimeoutSeconds = 15
@@ -34,7 +37,8 @@ def require(condition, message):
 def run(arguments, workDirectory):
   command = [str(argument) for argument in arguments]
   completed = subprocess.run(
-    command, cwd=workDirectory, stdout=subprocess.PIPE, text=True, timeout=commandTimeoutSeconds,
+    command, cwd=workDirectory, env=pinnedEnvironment, stdout=subprocess.PIPE, text=True,
+    timeout=commandTimeoutSeconds,
   )
   if completed.returncode != 0:
     print(completed.stdout, flush=True)

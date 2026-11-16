@@ -18,7 +18,8 @@ pip install ".[service]" # adds the web interface and HTTP API
 ```
 
 This installs the `openfurrow` command. (To run without installing, use the module
-form `python -m openfurrow.cli.main` in place of `openfurrow` below.)
+form `python -m openfurrow.cli.main` in place of `openfurrow` below.) To get exactly the
+dependency versions the project is validated with, add `--constraint constraints.txt`.
 
 ## The loop
 

@@ -25,6 +25,23 @@ The script installs Python 3.13 if it is missing, creates `.venv`, and installs 
 editable with its test extras. It is idempotent. New system-level dependencies belong in
 that script, and new Python dependencies in `pyproject.toml`.
 
+### Pinned versions
+
+`pyproject.toml` states what the library accepts, with lower bounds only. `constraints.txt`
+states what was tested: the exact version of every dependency of the test and service
+extras, and of the build backend. The bootstrap script, the validation workflow and the
+product smoke all install with it, so a validation run can be repeated. Outside the
+bootstrap script the same install is:
+
+```bash
+python -m pip install --constraint constraints.txt --editable ".[test,service]"
+```
+
+To move the pins, install without the file, run the suite and `scripts/productSmoke.py`,
+write the versions that passed (`python -m pip freeze --exclude-editable`, plus the
+setuptools the build used), and let the workflow confirm them on every platform. A
+pre-release is never pinned when a release satisfies the requirement.
+
 ## Validation: every change is tested on Linux and Windows
 
 Every push to `claude` and every pull request into `main` runs the `validate` workflow
