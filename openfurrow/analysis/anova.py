@@ -77,7 +77,7 @@ def buildRcbdMatrix(
   package: TrialPackage,
   layout: TrialLayout,
   observations: list[Observation],
-) -> tuple[numpy.ndarray, list[str], list[int]]:
+) -> tuple[numpy.ndarray, list[str], list[int], Transform]:
   """Validate inputs and build the block-by-treatment value matrix for an RCBD.
 
   Shared by the ANOVA and its assumption diagnostics so the structural checks and

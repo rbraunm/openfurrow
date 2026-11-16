@@ -16,7 +16,7 @@ import urllib.request
 
 import pytest
 
-from openfurrow import Workspace
+from openfurrow import StoreError, Workspace
 from openfurrow.cli.main import _buildParser
 from openfurrow.service import createApp
 from openfurrow.service.runner import runService
@@ -47,7 +47,7 @@ def testServeMissingDatabaseFailsLoud(tmp_path):
 
   args = _buildParser().parse_args(["serve", str(tmp_path / "absent.db")])
   # Workspace.open raises before any socket is bound.
-  with pytest.raises(Exception):
+  with pytest.raises(StoreError, match="does not exist"):
     _commandServe(args)
 
 

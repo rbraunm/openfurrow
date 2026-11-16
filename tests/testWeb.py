@@ -10,10 +10,8 @@ trial's content hash. The plot map is a redundant-cue design (colour plus code),
 is asserted by the codes it must contain, not by colour.
 """
 
-import glob
 import json
 import re
-import zipfile
 
 import pytest
 
@@ -164,7 +162,9 @@ def testLocalePersistsAcrossNavigation(client, populated):
   assert "locale=en-GB" in body
 
 
-# ---- offline / packaging --------------------------------------------------
+# ---- offline --------------------------------------------------------------
+# That an installed wheel carries the templates and the stylesheet is proved by
+# scripts/productSmoke.py, which serves the pages from one.
 
 def testNoExternalAssetReferences(client, populated):
   """Offline posture: no CDN or off-site asset references anywhere in the markup."""
@@ -173,20 +173,6 @@ def testNoExternalAssetReferences(client, populated):
     assert "http://" not in body
     assert "https://" not in body
     assert "cdn" not in body.lower()
-
-
-def testTemplatesAndStaticArePackaged(tmp_path):
-  """A source checkout renders; an installed wheel must carry the templates and CSS too."""
-  import subprocess, sys
-  subprocess.run(
-    [sys.executable, "-m", "build", "--wheel", "--outdir", str(tmp_path)],
-    check=True, capture_output=True,
-  )
-  wheel = glob.glob(str(tmp_path / "*.whl"))[0]
-  names = zipfile.ZipFile(wheel).namelist()
-  assert any(n.endswith("service/templates/base.html") for n in names)
-  assert any(n.endswith("service/templates/trial.html") for n in names)
-  assert any(n.endswith("service/static/openfurrow.css") for n in names)
 
 
 def testLocaleSwitchHasNoScriptFallback(client, populated):

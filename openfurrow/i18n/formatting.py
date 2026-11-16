@@ -125,8 +125,8 @@ def formatDate(value: date, locale: str) -> str:
 
 # Scripts that read right-to-left. Decision 0007 requires the UI to mirror its layout,
 # not just its glyphs, for these -- so direction is derived from the locale's language
-# subtag and set on the document, structurally, from the first UI code. None of these
-# locales ships yet; the mechanism is here so RTL is designed in, not retrofitted.
+# subtag and set on the document, structurally. Arabic ships as a draft locale; the
+# others are listed so the rule is in place before their catalogs arrive.
 _rightToLeftLanguages = {"ar", "fa", "ur", "he", "ps", "sd", "ug", "yi"}
 
 

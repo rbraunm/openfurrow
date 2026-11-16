@@ -2,11 +2,11 @@
 """Configuration schema for an OpenFurrow project.
 
 All project configuration lives in a single YAML file (conventionally
-config/openfurrow.yaml) under namespaced sections. The only section today is
-the import profile, which declares how an observation CSV is shaped so the
-importer can map arbitrary column layouts onto the canonical long-format
-observation atom. The profile sets defaults; individual fields can be
-overridden per import (by the CLI) for a one-off file.
+config/openfurrow.yaml) under namespaced sections: the import profile, the
+analysis settings, and the service settings. The import profile declares how an
+observation CSV is shaped so the importer can map arbitrary column layouts onto
+the canonical long-format observation atom; it sets defaults, and individual
+fields can be overridden per import for a one-off file.
 
 Every setting is validated loud at construction: contradictory or ambiguous
 configuration is rejected here rather than misparsing a data file later.

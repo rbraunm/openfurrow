@@ -352,34 +352,33 @@ def testEveryDiagnosticKeyResolvesInEveryLocale(workspace):
       assert key in catalog.keys, f"{locale} is missing {key}"
 
 
-def testDiagnosticTextFollowsTheLocale(workspace, tmp_path):
+def testDiagnosticTextFollowsTheLocale(workspace, tmp_path, monkeypatch):
   """A report in another locale renders the diagnostics in that locale.
 
-  Uses a temporary catalog with two diagnostic strings overridden, so the assertion is
-  about the mechanism (the text follows the catalog) rather than about any shipped
-  translation.
+  Reads from a copy of the catalogs with one diagnostic string overridden, so the
+  assertion is about the mechanism (the text follows the catalog) rather than about any
+  shipped translation. The shipped catalogs are never written to.
   """
   import json
+  import shutil
 
-  from openfurrow.i18n.catalog import _localeDirectory
+  from openfurrow.i18n import catalog
 
-  source = json.loads((_localeDirectory / f"{sourceLocale}.json").read_text(encoding="utf-8"))
-  source["locale"] = "fr"                       # fr has formatting rules but no catalog
+  catalogCopy = tmp_path / "locales"
+  shutil.copytree(catalog._localeDirectory, catalogCopy)
+  source = json.loads((catalogCopy / f"{sourceLocale}.json").read_text(encoding="utf-8"))
+  source["locale"] = "fr"
   for entry in source["messages"].values():
     entry["status"] = "humanApproved"
   source["messages"]["diagnostic.equalVariance.clear"]["text"] = "VERDICT-IN-LOCALE"
-  temporary = _localeDirectory / "fr.json"
-  # fr ships a real catalog now: save it and put it back, never delete it.
-  original = temporary.read_bytes()
-  temporary.write_text(json.dumps(source, indent=2, ensure_ascii=False), encoding="utf-8")
-  try:
-    before = workspace.contentHashFor("L10N-1")
-    localized = workspace.buildReport("L10N-1", locale="fr")
-    assert "VERDICT-IN-LOCALE" in localized
-    assert "No evidence of unequal variance" not in localized
-    assert workspace.contentHashFor("L10N-1") == before
-  finally:
-    temporary.write_bytes(original)
+  (catalogCopy / "fr.json").write_text(json.dumps(source, indent=2, ensure_ascii=False), encoding="utf-8")
+  monkeypatch.setattr(catalog, "_localeDirectory", catalogCopy)
+
+  before = workspace.contentHashFor("L10N-1")
+  localized = workspace.buildReport("L10N-1", locale="fr")
+  assert "VERDICT-IN-LOCALE" in localized
+  assert "No evidence of unequal variance" not in localized
+  assert workspace.contentHashFor("L10N-1") == before
 
 
 # ---- draft locales surface their status (decision 0007) --------------------

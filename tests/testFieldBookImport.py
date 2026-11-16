@@ -15,7 +15,7 @@ from pathlib import Path
 import pytest
 
 from openfurrow.schema import TrialPackage
-from openfurrow.workspace import Workspace
+from openfurrow.workspace import ObservationImportError, Workspace
 
 _fixtureDir = Path(__file__).parent / "fixtures"
 
@@ -68,7 +68,7 @@ def testIngestRejectsPlotOutsideLayout(workspace, tmp_path):
     writer = csv.writer(handle)
     writer.writerow(["plotNumber", "block", "treatment", "trait", "value", "device_name"])
     writer.writerow([999, 1, "A", "YIELD", 100, "Pixel-7"])
-  with pytest.raises(Exception):
+  with pytest.raises(ObservationImportError, match="plot 999 is not in the trial layout"):
     workspace.importFieldBook("FB-IN", str(path))
 
 

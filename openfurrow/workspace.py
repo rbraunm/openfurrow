@@ -1,9 +1,9 @@
 # SPDX-License-Identifier: Apache-2.0
 """The OpenFurrow core facade -- the single surface every non-core caller uses.
 
-Every non-core surface (the CLI, the future Flask service, later apps) reaches the
-core through a `Workspace` and the public schema/analysis result types, never by
-importing store, analysis, exchange, or design internals directly. This is the
+Every non-core surface (the CLI, the HTTP service and its web interface, later apps)
+reaches the core through a `Workspace` and the public schema/analysis result types,
+never by importing store, analysis, exchange, or design internals directly. This is the
 "one facade" invariant from the implementation plan: the math and the store have
 exactly one caller-facing shape, so a surface can never drift from the core or
 re-implement part of it.
