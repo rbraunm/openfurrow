@@ -377,12 +377,20 @@
       "text": "Moyenne des parcelles traitées",
       "status": "machineDraft"
     },
+    "report.crd.assumptionsNotComputed": {
+      "text": "Les vérifications des hypothèses ne sont pas encore calculées pour les dispositifs complètement randomisés.",
+      "status": "machineDraft"
+    },
     "report.design.arrangement": {
       "text": "Disposition dans les blocs",
       "status": "machineDraft"
     },
     "report.design.blocks": {
       "text": "Blocs (répétitions)",
+      "status": "machineDraft"
+    },
+    "report.design.crd": {
+      "text": "Dispositif complètement randomisé",
       "status": "machineDraft"
     },
     "report.design.design": {
@@ -719,6 +727,10 @@
     },
     "report.ratings.range": {
       "text": "{low} à {high}",
+      "status": "machineDraft"
+    },
+    "report.reproducibility.crdMethodValue": {
+      "text": "ANOVA à un facteur (complètement randomisé); {test} (alpha = {alpha})",
       "status": "machineDraft"
     },
     "report.reproducibility.inputHash": {
@@ -1321,6 +1333,10 @@
       "text": "La graine est un nombre entier.",
       "status": "machineDraft"
     },
+    "web.form.replications": {
+      "text": "Blocs, ou parcelles de chaque traitement",
+      "status": "machineDraft"
+    },
     "web.form.roleNone": {
       "text": "(non précisé)",
       "status": "machineDraft"
@@ -1447,6 +1463,10 @@
     },
     "web.report.print": {
       "text": "Imprimer",
+      "status": "machineDraft"
+    },
+    "web.trial.allPlots": {
+      "text": "Toutes les parcelles",
       "status": "machineDraft"
     },
     "web.trial.back": {

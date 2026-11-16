@@ -31,6 +31,7 @@ class DesignType(str, Enum):
   """Experimental design used to lay out treatments into plots."""
 
   rcbd = "rcbd"  # randomized complete block design
+  crd = "crd"  # completely randomized design: no blocks
   splitPlot = "splitPlot"  # main plots in complete blocks, subplots within them
 
 
@@ -93,7 +94,7 @@ class DesignSpecification(BaseModel):
   model_config = ConfigDict(extra="forbid")
 
   designType: DesignType = DesignType.rcbd
-  replications: int = Field(ge=2, description="Number of complete blocks; RCBD requires at least 2.")
+  replications: int = Field(ge=2, description="Complete blocks, or for a CRD the plots of each treatment; at least 2.")
   randomizationMethod: RandomizationMethod = Field(description="The procedure that made the layout, or 'imported'.")
   randomizationSeed: int | None = Field(
     default=None, ge=0, description="The seed of a generated layout; absent for an imported one.",
@@ -126,6 +127,13 @@ class DesignSpecification(BaseModel):
       raise ValueError("a split plot's main-plot and subplot factors must differ")
     if not splitPlot and named != (None, None):
       raise ValueError(f"a {self.designType.value} design has no main-plot or subplot factor")
+    if self.designType is DesignType.crd:
+      if self.checkArrangement is not CheckArrangement.none:
+        raise ValueError("untreated checks beside plots apply to an RCBD, not to a completely randomized design yet")
+      if self.firstBlockInTreatmentOrder:
+        raise ValueError("a completely randomized design has no blocks, so no first block to keep in order")
+      if self.randomizationMethod is RandomizationMethod.sha256SpatialBalance1:
+        raise ValueError("spatial balance arranges blocks; a completely randomized design has none")
     if splitPlot and self.checkArrangement is not CheckArrangement.none:
       raise ValueError("untreated checks beside plots apply to an RCBD, not to a split plot yet")
     if self.randomizationMethod is RandomizationMethod.sha256SpatialBalance1 and splitPlot:
@@ -190,6 +198,8 @@ class TrialPackage(BaseModel):
           f"got {codes}"
         )
       first, second = design.mainPlotFactor, design.subPlotFactor
+    elif design.designType is DesignType.crd and self.factors:
+      raise ValueError("factors are not used by a completely randomized design yet")
     elif not self.factors:
       if any(treatment.factorLevels for treatment in self.treatments):
         raise ValueError("a treatment states factor levels, but the trial declares no factors")

@@ -30,6 +30,10 @@ factor order, are shuffled the same way, main plot 1 first, each continuing the 
 Main plot m holds positions (m - 1) * b + 1 to m * b of the block, b being the number of
 subplot levels. Step 6 leaves block 1 entirely in factor order, drawing nothing.
 
+A completely randomized design (decision 0027) lists every treatment as many times as it
+is replicated, treatments in package order, and shuffles the whole list once by step 4 on
+the same stream; position k of the list is plot 100 + k, all in block 1.
+
 A changed procedure gets a new method name. This one stays as it is, so a layout
 recorded under it can always be regenerated and checked.
 """
@@ -60,9 +64,29 @@ def generateLayout(package: TrialPackage) -> TrialLayout:
   """Generate the plot map a package's design and seed call for."""
   if package.design.designType is DesignType.splitPlot:
     return generateSplitPlotLayout(package)
+  if package.design.designType is DesignType.crd:
+    return generateCrdLayout(package)
   if package.design.randomizationMethod is RandomizationMethod.sha256SpatialBalance1:
     return generateSpatiallyBalancedLayout(package)
   return generateRcbdLayout(package)
+
+
+def generateCrdLayout(package: TrialPackage) -> TrialLayout:
+  """Generate the plot map of a completely randomized design from its seed."""
+  design = package.design
+  if design.randomizationMethod is not RandomizationMethod.sha256FisherYates1:
+    raise ValueError(
+      f"a layout with randomization method '{design.randomizationMethod.value}' is supplied with the trial, not generated"
+    )
+  codes = [treatment.treatmentCode for treatment in package.treatments for _ in range(design.replications)]
+  if len(codes) > _maxTreatmentsPerBlock:
+    raise ValueError(f"{len(codes)} plots exceeds the {_maxTreatmentsPerBlock}-plot numbering of a completely randomized design")
+  order = shuffled(len(codes), Sha256Stream(design.randomizationSeed, RandomizationMethod.sha256FisherYates1.value))
+  plots = [
+    PlotAssignment(plotNumber=100 + position, block=1, positionInBlock=position, treatmentCode=codes[index])
+    for position, index in enumerate(order, start=1)
+  ]
+  return TrialLayout.forPackage(package, plots, generatedCheckPlots(package, plots))
 
 
 def generateSplitPlotLayout(package: TrialPackage) -> TrialLayout:

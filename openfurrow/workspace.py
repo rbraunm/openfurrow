@@ -41,6 +41,7 @@ from openfurrow.analysis import (
   FactorialResult,
   MeanSeparation,
   SplitPlotResult,
+  analyzeCrd as _analyzeCrd,
   analyzeFactorialRcbd as _analyzeFactorialRcbd,
   analyzeRcbd as _analyzeRcbd,
   separateFactorialMeans as _separateFactorialMeans,
@@ -222,6 +223,8 @@ class Workspace:
     package, layout, observations = self._loadContext(trialCode)
     if package.design.designType is DesignType.splitPlot:
       return _analyzeSplitPlot(assessmentCode, package, layout, observations)
+    if package.design.designType is DesignType.crd:
+      return _analyzeCrd(assessmentCode, package, layout, observations)
     return _analyzeRcbd(assessmentCode, package, layout, observations)
 
   def separateFactorMeans(

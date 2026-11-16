@@ -231,6 +231,16 @@ grain yield in t/ha.
   totals and the grand total (297.390) agree with the book. The book subtracts a rounded
   correction factor and divides mean squares cut to three decimals; see decision 0025.
 
+### D9. gomez.insecticide -- rice insecticides (completely randomized)
+
+**7 treatments x 4 replications**, grain yield in kg/ha, in a completely randomized design.
+
+- **Source:** Gomez & Gomez (1984), Tables 2.1 (data) and 2.2 (ANOVA). Read from an openly
+  posted scan of the book and transcribed; one value the scan garbles (2,211) is fixed by
+  its printed treatment total.
+- **Status:** IN USE. Fixture `tests/fixtures/gomezInsecticide.csv`, validated by
+  `tests/testCrd.py` against the book and statsmodels.
+
 ### D3. sweetpotato -- virus conditions (completely randomized)
 
 **4 virus conditions x 3 plots**, no blocks, harvested weight. The agricolae tutorial

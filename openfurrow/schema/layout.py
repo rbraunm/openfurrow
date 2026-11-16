@@ -125,6 +125,30 @@ def checkMainPlots(mainPlotLevels: dict[str, str], plots: list[PlotAssignment]) 
       raise ValueError(f"block {block} holds a main-plot level in more than one main plot")
 
 
+def checkCompletelyRandomized(treatmentCodes: list[str], replications: int, plots: list[PlotAssignment]) -> None:
+  """Raise unless the plots are one field holding each treatment `replications` times, each plot distinct."""
+  if len(plots) != len(treatmentCodes) * replications:
+    raise ValueError(
+      f"plot count {len(plots)} does not equal treatments {len(treatmentCodes)} x replications {replications}"
+    )
+  plotNumbers = [plot.plotNumber for plot in plots]
+  if len(set(plotNumbers)) != len(plotNumbers):
+    raise ValueError(f"plot numbers used more than once: {sorted({n for n in plotNumbers if plotNumbers.count(n) > 1})}")
+  if {plot.block for plot in plots} != {1}:
+    raise ValueError("a completely randomized design has no blocks; every plot is in block 1")
+  positions = [plot.positionInBlock for plot in plots]
+  if len(set(positions)) != len(positions):
+    raise ValueError("two plots share a position")
+  counts = {code: 0 for code in treatmentCodes}
+  for plot in plots:
+    if plot.treatmentCode not in counts:
+      raise ValueError(f"plot {plot.plotNumber} holds treatment '{plot.treatmentCode}', which the trial does not have")
+    counts[plot.treatmentCode] += 1
+  uneven = sorted(code for code, count in counts.items() if count != replications)
+  if uneven:
+    raise ValueError(f"treatments {uneven} are not on exactly {replications} plots")
+
+
 class TrialLayout(BaseModel):
   """The complete plot map for a trial, with the design it belongs to.
 
@@ -149,7 +173,10 @@ class TrialLayout(BaseModel):
 
   @model_validator(mode="after")
   def plotsFormCompleteBlocks(self) -> TrialLayout:
-    checkCompleteBlocks(self.treatmentCodes, self.replications, self.plots)
+    if self.designType is DesignType.crd:
+      checkCompletelyRandomized(self.treatmentCodes, self.replications, self.plots)
+    else:
+      checkCompleteBlocks(self.treatmentCodes, self.replications, self.plots)
     if self.designType is DesignType.splitPlot:
       if self.mainPlotLevels is None:
         raise ValueError("a split-plot layout needs each treatment's main-plot level")

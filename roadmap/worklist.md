@@ -201,8 +201,9 @@ measure), `owner` (the owner's call), `done`.
   RCBD as the two principal designs; the tool has only the second.
   Built so far: the transformation with its offset and log10 (decision 0026), percent
   control (decision 0022), and the split-plot and factorial RCBD designs (decisions 0020,
-  0025). Still to come: the completely randomized design, Tukey for all pairs and Dunnett
-  against a check, and an explicit policy for the untreated check in the analysis.
+  0025), and the completely randomized design (decision 0027). Still to come: Tukey for all
+  pairs and Dunnett against a check, and an explicit policy for the untreated check in the
+  analysis.
 - **USR-4** `build` **Data entry.** Values can be typed in the tool (REC-9) or arrive by
   CSV or a Field Book export. No Excel import yet (the brief lists it second after CSV).
 - **USR-5** `done` **A printable report.** The report page has a Print button and a print
@@ -267,8 +268,9 @@ measure), `owner` (the owner's call), `done`.
   a factorial RCBD uses its one error for both. Under the protected rule the letters appear
   only when the interaction is significant. Checked against the book's 482.8 kg/ha and LSD
   of 980 (its tabulated t, 2.029, is 2.0281 exactly) and its weighted-t example (2.178).
-- **USR-12** `build` **Assumption checks for a split plot.** The RCBD checks do not carry
-  over to two error strata; the report says they are not computed.
+- **USR-12** `build` **Assumption checks for a split plot and a CRD.** The RCBD checks do
+  not carry over to two error strata or to a design without blocks; the report says they
+  are not computed.
 - **USR-13** `done` **The field map of a split plot or a trial with checks.** The map
   outlines each main plot with its main-plot level, and draws each check plot dashed and
   marked untreated, right after the last plot it serves.

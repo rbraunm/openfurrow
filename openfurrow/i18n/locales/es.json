@@ -377,12 +377,20 @@
       "text": "Media de las parcelas tratadas",
       "status": "machineDraft"
     },
+    "report.crd.assumptionsNotComputed": {
+      "text": "Las comprobaciones de supuestos aún no se calculan para diseños completamente al azar.",
+      "status": "machineDraft"
+    },
     "report.design.arrangement": {
       "text": "Disposición en los bloques",
       "status": "machineDraft"
     },
     "report.design.blocks": {
       "text": "Bloques (repeticiones)",
+      "status": "machineDraft"
+    },
+    "report.design.crd": {
+      "text": "Diseño completamente al azar",
       "status": "machineDraft"
     },
     "report.design.design": {
@@ -719,6 +727,10 @@
     },
     "report.ratings.range": {
       "text": "{low} a {high}",
+      "status": "machineDraft"
+    },
+    "report.reproducibility.crdMethodValue": {
+      "text": "ANOVA de un factor (completamente al azar); {test} (alfa = {alpha})",
       "status": "machineDraft"
     },
     "report.reproducibility.inputHash": {
@@ -1321,6 +1333,10 @@
       "text": "La semilla es un número entero.",
       "status": "machineDraft"
     },
+    "web.form.replications": {
+      "text": "Bloques, o parcelas de cada tratamiento",
+      "status": "machineDraft"
+    },
     "web.form.roleNone": {
       "text": "(sin indicar)",
       "status": "machineDraft"
@@ -1447,6 +1463,10 @@
     },
     "web.report.print": {
       "text": "Imprimir",
+      "status": "machineDraft"
+    },
+    "web.trial.allPlots": {
+      "text": "Todas las parcelas",
       "status": "machineDraft"
     },
     "web.trial.back": {

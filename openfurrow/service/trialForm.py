@@ -41,6 +41,7 @@ def emptyForm() -> dict:
       dict.fromkeys(assessmentFields, "") | {"dataType": "numeric"} for _ in range(startingRows["assessments"])
     ],
     "replications": "4",
+    "designType": "rcbd",
     "layoutSource": "generate",
     "seed": "",
   }
@@ -61,6 +62,7 @@ def formFromRequest(form) -> dict:
     "treatments": rows("treatments", treatmentFields),
     "assessments": rows("assessments", assessmentFields),
     "replications": form.get("replications", ""),
+    "designType": form.get("designType", "rcbd"),
     "layoutSource": form.get("layoutSource", "generate"),
     "seed": form.get("seed", ""),
   }
@@ -116,7 +118,7 @@ def packageFromForm(typed: dict, decimalSeparator: str) -> dict:
     replications = int(typed["replications"].strip())
   except ValueError as error:
     raise FormProblem("web.form.problem.replications") from error
-  design: dict = {"designType": "rcbd", "replications": replications}
+  design: dict = {"designType": typed["designType"], "replications": replications}
   if typed["layoutSource"] == "upload":
     design["randomizationMethod"] = RandomizationMethod.imported.value
   else:

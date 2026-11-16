@@ -24,6 +24,7 @@ from openfurrow.analysis.factorial import (
   factorialInteractionComparisons,
   separateFactorialMeans,
 )
+from openfurrow.analysis.crd import analyzeCrd
 from openfurrow.analysis.diagnostics import (
   Assumptions,
   DiagnosticOutcome,
@@ -68,6 +69,7 @@ __all__ = [
   "SplitPlotResult",
   "TreatmentGroup",
   "TreatmentMean",
+  "analyzeCrd",
   "analyzeEfficacy",
   "analyzeFactorialRcbd",
   "factorialInteractionComparisons",

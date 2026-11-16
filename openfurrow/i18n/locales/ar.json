@@ -377,12 +377,20 @@
       "text": "متوسط القطع المعاملة",
       "status": "machineDraft"
     },
+    "report.crd.assumptionsNotComputed": {
+      "text": "لا تُحسب فحوص الافتراضات للتصاميم العشوائية الكاملة بعد.",
+      "status": "machineDraft"
+    },
     "report.design.arrangement": {
       "text": "الترتيب",
       "status": "machineDraft"
     },
     "report.design.blocks": {
       "text": "القطاعات (المكررات)",
+      "status": "machineDraft"
+    },
+    "report.design.crd": {
+      "text": "التصميم العشوائي الكامل",
       "status": "machineDraft"
     },
     "report.design.design": {
@@ -719,6 +727,10 @@
     },
     "report.ratings.range": {
       "text": "{low} إلى {high}",
+      "status": "machineDraft"
+    },
+    "report.reproducibility.crdMethodValue": {
+      "text": "تحليل تباين أحادي (عشوائي كامل)؛ {test} (ألفا = {alpha})",
       "status": "machineDraft"
     },
     "report.reproducibility.inputHash": {
@@ -1321,6 +1333,10 @@
       "text": "البذرة عدد صحيح.",
       "status": "machineDraft"
     },
+    "web.form.replications": {
+      "text": "القطاعات، أو قطع كل معاملة",
+      "status": "machineDraft"
+    },
     "web.form.roleNone": {
       "text": "(غير محدد)",
       "status": "machineDraft"
@@ -1447,6 +1463,10 @@
     },
     "web.report.print": {
       "text": "طباعة",
+      "status": "machineDraft"
+    },
+    "web.trial.allPlots": {
+      "text": "جميع القطع",
       "status": "machineDraft"
     },
     "web.trial.back": {

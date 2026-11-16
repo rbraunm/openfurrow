@@ -56,8 +56,12 @@
 
   <fieldset>
     <legend>{{ t.text('web.form.designHeading') }}</legend>
+    <div class="layout-source">
+      <label class="choice"><input type="radio" name="designType" value="rcbd" {% if typed.designType != 'crd' %}checked{% endif %}> {{ t.text('report.design.rcbd') }}</label>
+      <label class="choice"><input type="radio" name="designType" value="crd" {% if typed.designType == 'crd' %}checked{% endif %}> {{ t.text('report.design.crd') }}</label>
+    </div>
     <label>
-      <span class="field-label">{{ t.text('report.design.blocks') }}</span>
+      <span class="field-label">{{ t.text('web.form.replications') }}</span>
       <input type="text" class="number" inputmode="numeric" name="replications" value="{{ typed.replications }}">
     </label>
     <div class="layout-source">

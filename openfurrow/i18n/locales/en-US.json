@@ -49,6 +49,26 @@
       "text": "Randomized complete block design",
       "status": "source"
     },
+    "report.design.crd": {
+      "text": "Completely randomized design",
+      "status": "source"
+    },
+    "report.crd.assumptionsNotComputed": {
+      "text": "Assumption checks are not computed for completely randomized designs yet.",
+      "status": "source"
+    },
+    "report.reproducibility.crdMethodValue": {
+      "text": "One-way ANOVA (completely randomized); {test} (alpha = {alpha})",
+      "status": "source"
+    },
+    "web.trial.allPlots": {
+      "text": "All plots",
+      "status": "source"
+    },
+    "web.form.replications": {
+      "text": "Blocks, or plots of each treatment",
+      "status": "source"
+    },
     "report.design.treatments": {
       "text": "Treatments",
       "status": "source"

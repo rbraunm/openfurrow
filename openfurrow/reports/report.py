@@ -32,6 +32,7 @@ import numpy
 
 from openfurrow.analysis import (
   AnalysisError,
+  analyzeCrd,
   analyzeEfficacy,
   analyzeFactorialRcbd,
   factorialInteractionComparisons,
@@ -584,7 +585,8 @@ def _assessmentSection(
       assessment.assessmentCode, rating, package, layout, observations, significanceLevel, protected, translator,
     )
   try:
-    result = analyzeRcbd(assessment.assessmentCode, package, layout, observations)
+    analyze = analyzeCrd if package.design.designType is DesignType.crd else analyzeRcbd
+    result = analyze(assessment.assessmentCode, package, layout, observations)
   except AnalysisError as error:
     lines.append(translator.text("report.assessment.notAnalyzed", reason=str(error)))
     lines.append("")
@@ -689,9 +691,13 @@ def _assessmentSection(
     lines += _factorialSubsections(
       assessment.assessmentCode, rating, package, layout, observations, significanceLevel, protected, translator,
     )
-  lines += _assumptionsSubsection(
-    assessment.assessmentCode, package, layout, observations, significanceLevel, translator
-  )
+  if package.design.designType is DesignType.crd:
+    lines += [f"### {translator.text('report.heading.assumptions')}", "",
+              translator.text("report.crd.assumptionsNotComputed"), ""]
+  else:
+    lines += _assumptionsSubsection(
+      assessment.assessmentCode, package, layout, observations, significanceLevel, translator
+    )
   if package.design.checkArrangement is not CheckArrangement.none:
     lines += _checksSubsections(assessment, package, layout, observations, significanceLevel, protected, translator)
   return lines
@@ -1049,10 +1055,10 @@ def _reproducibilitySection(
   package, layout, observations, significanceLevel, protected, translator: Translator
 ) -> list[str]:
   test = translator.text(methodKeyFor(protected))
-  methodKey = (
-    "report.reproducibility.splitPlotMethodValue" if package.design.designType is DesignType.splitPlot
-    else "report.reproducibility.methodValue"
-  )
+  methodKey = {
+    DesignType.splitPlot: "report.reproducibility.splitPlotMethodValue",
+    DesignType.crd: "report.reproducibility.crdMethodValue",
+  }.get(package.design.designType, "report.reproducibility.methodValue")
   method = translator.text(
     methodKey,
     test=test,

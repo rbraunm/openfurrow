@@ -106,7 +106,7 @@
   <div class="field">
     {% for block in blocks %}
     <div class="block">
-      <div class="block-label code">{{ t.text('web.trial.blockLabel', block=t.integer(block.block)) }}</div>
+      <div class="block-label code">{% if package.design.designType.value == 'crd' %}{{ t.text('web.trial.allPlots') }}{% else %}{{ t.text('web.trial.blockLabel', block=t.integer(block.block)) }}{% endif %}</div>
       <ol class="plots">
         {% for group in block.groups %}
         {% if group.mainPlot is not none %}

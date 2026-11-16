@@ -106,3 +106,12 @@ log10(count + 1).
 - Source: Gomez & Gomez (1984), Statistical Procedures for Agricultural Research, Table
   7.14; obtained via the Rdatasets agridat CSV mirror, dataset `agridat/gomez.nonnormal1`.
   The analysis it is checked against is Tables 7.16 and 7.17.
+
+## gomezInsecticide.csv
+
+Rice grain yield under seven insecticide treatments in a completely randomized design
+with four replications (`treatment, replicate, yield`).
+
+- Source: Gomez & Gomez (1984), Statistical Procedures for Agricultural Research, Table
+  2.1; the ANOVA it is checked against is Table 2.2. Transcribed from the book and checked
+  against its printed treatment totals and grand total.

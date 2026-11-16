@@ -49,6 +49,26 @@
       "text": "Randomised complete block design",
       "status": "humanApproved"
     },
+    "report.design.crd": {
+      "text": "Completely randomised design",
+      "status": "humanApproved"
+    },
+    "report.crd.assumptionsNotComputed": {
+      "text": "Assumption checks are not computed for completely randomised designs yet.",
+      "status": "humanApproved"
+    },
+    "report.reproducibility.crdMethodValue": {
+      "text": "One-way ANOVA (completely randomised); {test} (alpha = {alpha})",
+      "status": "humanApproved"
+    },
+    "web.trial.allPlots": {
+      "text": "All plots",
+      "status": "humanApproved"
+    },
+    "web.form.replications": {
+      "text": "Blocks, or plots of each treatment",
+      "status": "humanApproved"
+    },
     "report.design.treatments": {
       "text": "Treatments",
       "status": "humanApproved"
