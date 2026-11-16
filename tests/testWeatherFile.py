@@ -55,15 +55,15 @@ def testProblemsAreNamed(tmp_path, text, message):
 
 
 @pytest.fixture
-def trial(tmp_path, validPackageDict):
-  databasePath = str(tmp_path / "trials.db")
+def trial(tmp_path, newStore, validPackageDict):
+  databasePath = newStore("trials")
   workspace = Workspace.create(databasePath)
   validPackageDict["weather"] = [{"date": "2026-04-01", "rainfall": {"value": 1, "unit": "mm"}}]
   workspace.addPackage(TrialPackage.model_validate(validPackageDict))
   return databasePath, workspace
 
 
-def testImportReplacesTheLogAndTheHashFollows(tmp_path, trial):
+def testImportReplacesTheLogAndTheHashFollows(tmp_path, newStore, trial):
   _, workspace = trial
   before = workspace.contentHashFor("ESV-2025-01")
   assert workspace.importWeather("ESV-2025-01", str(write(tmp_path, goodFile))) == 3
@@ -72,7 +72,7 @@ def testImportReplacesTheLogAndTheHashFollows(tmp_path, trial):
   assert workspace.contentHashFor("ESV-2025-01") != before
   exported = tmp_path / "doc.json"
   workspace.exportDocument("ESV-2025-01", str(exported))
-  other = Workspace.create(str(tmp_path / "other.db"))
+  other = Workspace.create(newStore("other"))
   other.importDocument(str(exported))
   assert other.contentHashFor("ESV-2025-01") == workspace.contentHashFor("ESV-2025-01")
 

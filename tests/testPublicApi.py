@@ -52,9 +52,9 @@ _values = {
 }
 
 
-def testFullLoopThroughPublicSurfaceOnly(tmp_path):
+def testFullLoopThroughPublicSurfaceOnly(tmp_path, newStore):
   """Author, import, analyze, report, export, and verify -- public imports only."""
-  workspace = Workspace.create(str(tmp_path / "trials.db"))
+  workspace = Workspace.create(newStore("trials"))
   package = TrialPackage.model_validate(_packageDict)
   workspace.addPackage(package)
   assert workspace.listTrials() == [("PUB-1", "Public API trial")]
@@ -110,10 +110,10 @@ def testFullLoopThroughPublicSurfaceOnly(tmp_path):
   assert workspace.listTrials() == []
 
 
-def testPublicErrorsAreCatchableFromTheRoot(tmp_path):
+def testPublicErrorsAreCatchableFromTheRoot(tmp_path, newStore):
   """A caller catches core failures using only the root's error types."""
   with pytest.raises(StoreError):
-    Workspace.open(str(tmp_path / "missing.db"))
+    Workspace.open(newStore("missing"))
 
 
 def testPublicSurfaceIsExported():

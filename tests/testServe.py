@@ -23,8 +23,8 @@ from openfurrow.service.runner import runService
 
 
 @pytest.fixture
-def databasePath(tmp_path):
-  path = str(tmp_path / "trials.db")
+def databasePath(tmp_path, newStore):
+  path = newStore("trials")
   Workspace.create(path)
   return path
 
@@ -42,10 +42,10 @@ def testServeParsesHostAndPort():
   assert (args.database, args.host, args.port) == ("trials.db", "0.0.0.0", 9000)
 
 
-def testServeMissingDatabaseFailsLoud(tmp_path):
+def testServeMissingDatabaseFailsLoud(tmp_path, newStore):
   from openfurrow.cli.main import _commandServe
 
-  args = _buildParser().parse_args(["serve", str(tmp_path / "absent.db")])
+  args = _buildParser().parse_args(["serve", newStore("absent")])
   # Workspace.open raises before any socket is bound.
   with pytest.raises(StoreError, match="does not exist"):
     _commandServe(args)

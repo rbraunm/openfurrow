@@ -45,7 +45,7 @@ demoValues = {
 
 
 @pytest.fixture
-def project(tmp_path):
+def project(tmp_path, newStore):
   packagePath = tmp_path / "demo.json"
   packagePath.write_text(json.dumps(demoPackage), encoding="utf-8")
   package = TrialPackage.model_validate(demoPackage)
@@ -57,8 +57,8 @@ def project(tmp_path):
     for plot in sorted(layout.plots, key=lambda plot: plot.plotNumber):
       writer.writerow([plot.plotNumber, "YIELD", demoValues[(plot.treatmentCode, plot.block)]])
   return {
-    "db": str(tmp_path / "trials.db"),
-    "db2": str(tmp_path / "trials2.db"),
+    "db": newStore("trials"),
+    "db2": newStore("trials2"),
     "package": str(packagePath),
     "obs": str(observationsPath),
     "dir": tmp_path,
@@ -233,7 +233,7 @@ def testInvalidPackageRejected(project, capsys):
   assert "error:" in capsys.readouterr().err
 
 
-def testInfoSurfacesTransformAndMeasurementKind(tmp_path, capsys):
+def testInfoSurfacesTransformAndMeasurementKind(tmp_path, newStore, capsys):
   """info shows each numeric assessment's transform and measurement kind (the gap the
   unit closes: previously visible only by reading the trial JSON), and the allowed
   values of a categorical/ordinal assessment."""
@@ -254,7 +254,7 @@ def testInfoSurfacesTransformAndMeasurementKind(tmp_path, capsys):
   }
   packagePath = tmp_path / "info.json"
   packagePath.write_text(json.dumps(packageDict), encoding="utf-8")
-  db = str(tmp_path / "info.db")
+  db = newStore("info")
   assert main(["init", db]) == 0
   assert main(["add", db, str(packagePath)]) == 0
   capsys.readouterr()
@@ -279,10 +279,10 @@ def testInfoShowsDefaultTransformForPlainNumeric(project, capsys):
   assert "Layout: sha256FisherYates1, seed 1" in out
 
 
-def testInfoListsTreatmentsAndApplications(tmp_path, capsys, validPackageDict):
+def testInfoListsTreatmentsAndApplications(tmp_path, newStore, capsys, validPackageDict):
   packagePath = tmp_path / "package.json"
   packagePath.write_text(json.dumps(validPackageDict), encoding="utf-8")
-  database = str(tmp_path / "trials.db")
+  database = newStore("trials")
   assert main(["init", database]) == 0
   assert main(["add", database, str(packagePath)]) == 0
   capsys.readouterr()

@@ -36,8 +36,8 @@ def packageDict():
 
 
 @pytest.fixture
-def served(tmp_path):
-  databasePath = str(tmp_path / "trials.db")
+def served(tmp_path, newStore):
+  databasePath = newStore("trials")
   workspace = Workspace.create(databasePath)
   workspace.addPackage(TrialPackage.model_validate(packageDict()))
   return workspace, createApp(databasePath).test_client()
@@ -121,7 +121,7 @@ def testDocumentWithAWrongTypeOrCategoryIsRefused():
                   observations=[Observation(plotNumber=plot, assessmentCode="SEV", value="12")])
 
 
-def testConfirmationTravelsThroughStoreExportAndHash(tmp_path, served):
+def testConfirmationTravelsThroughStoreExportAndHash(tmp_path, newStore, served):
   workspace, _ = served
   plots, checks = plotNumbers(workspace)
   workspace.recordValues("ENT-1", "SEV", [
@@ -134,7 +134,7 @@ def testConfirmationTravelsThroughStoreExportAndHash(tmp_path, served):
   workspace.exportDocument("ENT-1", str(exported))
   assert {"plotNumber": plots[0], "assessmentCode": "SEV", "value": 120.0, "outOfRangeConfirmed": True, "subsample": None} in json.loads(
     exported.read_text(encoding="utf-8"))["observations"]
-  other = Workspace.create(str(tmp_path / "other.db"))
+  other = Workspace.create(newStore("other"))
   other.importDocument(str(exported))
   assert other.contentHashFor("ENT-1") == workspace.contentHashFor("ENT-1")
 
@@ -235,10 +235,10 @@ def testReportPageOffersPrinting(served):
   assert 'onclick="window.print()">Print</button>' in client.get("/trials/ENT-1/report").get_data(as_text=True)
   assert 'onclick="window.print()">Imprimir</button>' in client.get("/trials/ENT-1/report?locale=es").get_data(as_text=True)
 
-def testFieldMapOutlinesMainPlotsAndDrawsChecks(tmp_path):
+def testFieldMapOutlinesMainPlotsAndDrawsChecks(tmp_path, newStore):
   from testSplitPlot import gomezPackageDict
   from testChecks import packageDict as checksPackageDict
-  databasePath = str(tmp_path / "map.db")
+  databasePath = newStore("map")
   workspace = Workspace.create(databasePath)
   workspace.addPackage(TrialPackage.model_validate(gomezPackageDict()))
   workspace.addPackage(TrialPackage.model_validate(checksPackageDict("paired")))

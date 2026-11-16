@@ -19,8 +19,8 @@ openpyxl = pytest.importorskip("openpyxl")
 
 
 @pytest.fixture
-def setup(tmp_path):
-  path = str(tmp_path / "trials.db")
+def setup(tmp_path, newStore):
+  path = newStore("trials")
   workspace = Workspace.create(path)
   workspace.addPackage(TrialPackage.model_validate(_packageDict))
   return workspace, createApp(path).test_client()

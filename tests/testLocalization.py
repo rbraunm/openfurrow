@@ -76,8 +76,8 @@ _values = {
 
 
 @pytest.fixture
-def workspace(tmp_path):
-  ws = Workspace.create(str(tmp_path / "trials.db"))
+def workspace(tmp_path, newStore):
+  ws = Workspace.create(newStore("trials"))
   package = TrialPackage.model_validate(_packageDict)
   ws.addPackage(package)
   layout = ws.layoutFor("L10N-1")

@@ -35,8 +35,8 @@ _packageDict = {
 
 
 @pytest.fixture
-def databasePath(tmp_path):
-  path = str(tmp_path / "trials.db")
+def databasePath(tmp_path, newStore):
+  path = newStore("trials")
   Workspace.create(path)
   return path
 

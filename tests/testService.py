@@ -46,8 +46,8 @@ _values = {
 
 
 @pytest.fixture
-def databasePath(tmp_path):
-  path = str(tmp_path / "trials.db")
+def databasePath(tmp_path, newStore):
+  path = newStore("trials")
   Workspace.create(path)
   return path
 
@@ -133,14 +133,14 @@ def testFullLoopOverHttp(client, workspace, tmp_path):
   assert client.get("/api/trials").get_json() == []
 
 
-def testDocumentRoundTripOverHttp(client, workspace, tmp_path):
+def testDocumentRoundTripOverHttp(client, workspace, tmp_path, newStore):
   _populate(client, workspace, tmp_path)
   exported = client.get("/api/trials/API-1/document")
   assert exported.status_code == 200
   sourceHash = workspace.contentHashFor("API-1")
 
   # Into a second, empty store: the same document must reproduce the same hash.
-  freshPath = str(tmp_path / "fresh.db")
+  freshPath = newStore("fresh")
   Workspace.create(freshPath)
   freshClient = createApp(freshPath).test_client()
   imported = freshClient.post("/api/documents", data=exported.get_data())
@@ -154,12 +154,12 @@ def testDocumentThatIsNotJsonIsABadRequest(client):
   assert "not valid JSON" in response.get_json()["error"]
 
 
-def testDocumentWithAChangedLayoutIsABadRequest(client, workspace, tmp_path):
+def testDocumentWithAChangedLayoutIsABadRequest(client, workspace, tmp_path, newStore):
   _populate(client, workspace, tmp_path)
   document = client.get("/api/trials/API-1/document").get_json()
   first, second = document["layout"][0], document["layout"][1]
   first["treatmentCode"], second["treatmentCode"] = second["treatmentCode"], first["treatmentCode"]
-  freshPath = str(tmp_path / "fresh.db")
+  freshPath = newStore("fresh")
   Workspace.create(freshPath)
   response = createApp(freshPath).test_client().post("/api/documents", data=json.dumps(document))
   assert response.status_code == 400

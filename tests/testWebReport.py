@@ -40,8 +40,8 @@ _values = {
 
 
 @pytest.fixture
-def databasePath(tmp_path):
-  path = str(tmp_path / "trials.db")
+def databasePath(tmp_path, newStore):
+  path = newStore("trials")
   workspace = Workspace.create(path)
   workspace.addPackage(TrialPackage.model_validate(_packageDict))
   return path

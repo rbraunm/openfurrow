@@ -91,7 +91,7 @@ def testLetterSeparationRefusesDunnett():
     separateMeans(analyzeRcbd("D", package, layout, observations), meanComparison=MeanComparison.dunnett)
 
 
-def testReportShowsEachTreatmentAgainstTheCheck(tmp_path):
+def testReportShowsEachTreatmentAgainstTheCheck(tmp_path, newStore):
   report = buildReport(*checkTrial(), meanComparison=MeanComparison.dunnett)
   assert "Each treatment against UTC by Dunnett's two-sided test (alpha = 0.05)" in report
   assert "| Treatment | Mean (%) | Difference from UTC | Different from UTC |" in report
@@ -99,7 +99,7 @@ def testReportShowsEachTreatmentAgainstTheCheck(tmp_path):
   assert "| A | 12.500 | -8.000 | yes |" in report and "| B | 19.500 | -1.000 | no |" in report
   assert "- Critical difference (Dunnett, alpha = 0.05): " in report
   assert "RCBD ANOVA; Dunnett's test (alpha = 0.05)" in report
-  workspace = Workspace.create(str(tmp_path / "t.db"))
+  workspace = Workspace.create(newStore("t"))
   package, _, observations = checkTrial()
   workspace.addPackage(package)
   csvPath = tmp_path / "d.csv"

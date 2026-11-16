@@ -129,9 +129,9 @@ def testSubsamplesNeedANumericRatingAndTwoOrMore():
     TrialPackage.model_validate(packageDict(count=1))
 
 
-def testSubsamplesSurviveStoreExportAndCsv(tmp_path):
+def testSubsamplesSurviveStoreExportAndCsv(tmp_path, newStore):
   package, layout, observations = trial()
-  workspace = Workspace.create(str(tmp_path / "t.db"))
+  workspace = Workspace.create(newStore("t"))
   workspace.addPackage(package)
   workspace.recordValues("SUB-1", "SEV", observations)
   stored = workspace.loadObservations("SUB-1")
@@ -144,9 +144,9 @@ def testSubsamplesSurviveStoreExportAndCsv(tmp_path):
   assert len(rows) == 48 and [row["subsample"] for row in rows[:3]] == ["1", "2", "3"]
 
 
-def testWideFileGivesOneColumnPerSubsample(tmp_path):
+def testWideFileGivesOneColumnPerSubsample(tmp_path, newStore):
   package, layout, observations = trial()
-  workspace = Workspace.create(str(tmp_path / "t.db"))
+  workspace = Workspace.create(newStore("t"))
   workspace.addPackage(package)
   values = {(o.plotNumber, o.subsample): o.value for o in observations}
   lines = ["Plot,Leaf 1,Leaf 2,Leaf 3"] + [
@@ -155,7 +155,7 @@ def testWideFileGivesOneColumnPerSubsample(tmp_path):
   ]
   data = ("\n".join(lines) + "\n").encode()
   from openfurrow.service import createApp
-  client = createApp(str(tmp_path / "t.db")).test_client()
+  client = createApp(newStore("t")).test_client()
   response = client.post("/trials/SUB-1/import", data={
     "fileName": "leaves.csv", "fileData": base64.b64encode(data).decode(), "previewedSheet": "", "shape": "wide",
     "plot": "0", "column-1": "SEV", "column-2": "SEV", "column-3": "SEV", "decimal": ".", "action": "import"})
@@ -164,9 +164,9 @@ def testWideFileGivesOneColumnPerSubsample(tmp_path):
   assert stored == values
 
 
-def testLongFileNamesTheSubsample(tmp_path):
+def testLongFileNamesTheSubsample(tmp_path, newStore):
   package, layout, observations = trial()
-  workspace = Workspace.create(str(tmp_path / "t.db"))
+  workspace = Workspace.create(newStore("t"))
   workspace.addPackage(package)
   path = tmp_path / "long.csv"
   path.write_text("plot,code,leaf,value\n" + "".join(
@@ -179,11 +179,11 @@ def testLongFileNamesTheSubsample(tmp_path):
     workspace.importObservations("SUB-1", str(path), profile)
 
 
-def testWideColumnsForAnAssessmentWithoutSubsamplesAreRefused(tmp_path):
+def testWideColumnsForAnAssessmentWithoutSubsamplesAreRefused(tmp_path, newStore):
   data = packageDict()
   del data["assessments"][0]["subsamples"]
   package = TrialPackage.model_validate(data)
-  workspace = Workspace.create(str(tmp_path / "t.db"))
+  workspace = Workspace.create(newStore("t"))
   workspace.addPackage(package)
   path = tmp_path / "w.csv"
   path.write_text("Plot,S1,S2\n101,1,2\n", encoding="utf-8")
@@ -193,12 +193,12 @@ def testWideColumnsForAnAssessmentWithoutSubsamplesAreRefused(tmp_path):
     workspace.importObservations("SUB-1", str(path), profile)
 
 
-def testEntryPageTakesARowOfSubsamplesPerPlot(tmp_path):
+def testEntryPageTakesARowOfSubsamplesPerPlot(tmp_path, newStore):
   package, layout, _ = trial()
-  workspace = Workspace.create(str(tmp_path / "t.db"))
+  workspace = Workspace.create(newStore("t"))
   workspace.addPackage(package)
   from openfurrow.service import createApp
-  client = createApp(str(tmp_path / "t.db")).test_client()
+  client = createApp(newStore("t")).test_client()
   plot = layout.plots[0].plotNumber
   page = client.get("/trials/SUB-1/entry?assessment=SEV").get_data(as_text=True)
   assert f'name="value-{plot}-3"' in page and "Each plot takes 3 subsamples; the plot&#39;s value is their mean." in page

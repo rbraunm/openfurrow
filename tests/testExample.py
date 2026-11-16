@@ -23,8 +23,8 @@ def loadExample(database):
   assert main(["import", database, "yatesOats1935", observationsPath]) == 0
 
 
-def testExampleReproducesPublishedYatesTable(tmp_path, capsys):
-  database = str(tmp_path / "oats.db")
+def testExampleReproducesPublishedYatesTable(tmp_path, newStore, capsys):
+  database = newStore("oats")
   loadExample(database)
   capsys.readouterr()
   assert main(["report", database, "yatesOats1935"]) == 0
@@ -37,8 +37,8 @@ def testExampleReproducesPublishedYatesTable(tmp_path, capsys):
   assert knownInputHash in report
 
 
-def testExampleVerifyPasses(tmp_path, capsys):
-  database = str(tmp_path / "oats.db")
+def testExampleVerifyPasses(tmp_path, newStore, capsys):
+  database = newStore("oats")
   loadExample(database)
   capsys.readouterr()
   assert main(["verify", database, "yatesOats1935"]) == 0

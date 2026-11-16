@@ -55,7 +55,7 @@ _values = {
 
 
 @pytest.fixture
-def trial(tmp_path):
+def trial(tmp_path, newStore):
   """Paths and the parsed package for the facade loop; CSV written from the layout."""
   package = TrialPackage.model_validate(_packageDict)
   layout = generateRcbdLayout(package)
@@ -66,8 +66,8 @@ def trial(tmp_path):
     for plot in sorted(layout.plots, key=lambda plot: plot.plotNumber):
       writer.writerow([plot.plotNumber, "YIELD", _values[(plot.treatmentCode, plot.block)]])
   return {
-    "db": str(tmp_path / "trials.db"),
-    "db2": str(tmp_path / "copy.db"),
+    "db": newStore("trials"),
+    "db2": newStore("copy"),
     "csv": str(csvPath),
     "package": package,
     "dir": tmp_path,

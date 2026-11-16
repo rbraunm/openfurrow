@@ -121,10 +121,10 @@ def testJsonExportHasLfLineEndingsOnEveryPlatform(tmp_path):
   assert exported.endswith(b"}\n")
 
 
-def testDatabaseAndJsonAgreeOnHash(tmp_path):
+def testDatabaseAndJsonAgreeOnHash(tmp_path, newStore):
   # The ownership guarantee: the store and a JSON export describe the same trial.
   document = sampleDocument()
-  engine = createDatabase(str(tmp_path / "trials.db"))
+  engine = createDatabase(newStore("trials"))
   with sessionScope(engine) as session:
     savePackage(session, document.package, document.layout, document.checkPlots)
     saveObservations(session, "TRIAL-1", document.observations)

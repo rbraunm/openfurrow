@@ -229,10 +229,10 @@ def testRcbdAnalysisRefusesASplitPlot():
     analyzeRcbd("Y", *gomezInputs())
 
 
-def testSplitPlotTrialServesItsPages(tmp_path):
+def testSplitPlotTrialServesItsPages(tmp_path, newStore):
   from openfurrow import ImportProfile, Workspace
   from openfurrow.service import createApp
-  databasePath = str(tmp_path / "trials.db")
+  databasePath = newStore("trials")
   workspace = Workspace.create(databasePath)
   package, layout, observations = gomezInputs()
   workspace.addPackage(package)

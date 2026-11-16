@@ -38,8 +38,8 @@ _packageDict = {
 
 
 @pytest.fixture
-def workspace(tmp_path):
-  ws = Workspace.create(str(tmp_path / "trials.db"))
+def workspace(tmp_path, newStore):
+  ws = Workspace.create(newStore("trials"))
   ws.addPackage(TrialPackage.model_validate(_packageDict))
   return ws
 
@@ -92,7 +92,7 @@ def _writeFieldBookExport(observations, path):
                        "", "", "", "Pixel-7"])
 
 
-def testRoundTripThroughFieldBookPreservesHash(workspace, tmp_path):
+def testRoundTripThroughFieldBookPreservesHash(workspace, tmp_path, newStore):
   # Populate the source trial with a complete set of YIELD observations.
   plotNumbers = sorted(plot.plotNumber for plot in workspace.layoutFor("FB-IN").plots)
   sourceCsv = tmp_path / "obs.csv"
@@ -109,7 +109,7 @@ def testRoundTripThroughFieldBookPreservesHash(workspace, tmp_path):
   exportCsv = tmp_path / "fb_database.csv"
   _writeFieldBookExport(workspace.loadObservations("FB-IN"), exportCsv)
 
-  fresh = Workspace.create(str(tmp_path / "fresh.db"))
+  fresh = Workspace.create(newStore("fresh"))
   fresh.addPackage(TrialPackage.model_validate(_packageDict))
   fresh.importFieldBook("FB-IN", str(exportCsv))
   assert fresh.contentHashFor("FB-IN") == sourceHash

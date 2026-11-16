@@ -116,11 +116,11 @@ def testEveryTableOfMeansGetsItsChartOnThePageOnly(tmp_path):
     buildReportWithCharts(*inputs, marker="<p>")
 
 
-def testTheReportPageDrawsTheCharts(tmp_path):
+def testTheReportPageDrawsTheCharts(tmp_path, newStore):
   from openfurrow.service import createApp
   from testDunnett import checkTrial
   package, _, observations = checkTrial()
-  path = str(tmp_path / "t.db")
+  path = newStore("t")
   workspace = Workspace.create(path)
   workspace.addPackage(package)
   workspace.recordValues("DUN-1", "D", observations)

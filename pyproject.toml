@@ -24,10 +24,15 @@ service = [
   "flask>=3",
   "markdown>=3.5",
 ]
+# A PostgreSQL store needs a driver; pg8000 is pure Python under a BSD licence.
+postgresql = [
+  "pg8000>=1.31",
+]
 test = [
   "pytest>=8",
   "statsmodels>=0.14",
   "openpyxl>=3.1",
+  "pg8000>=1.31",
   "flask>=3",
   "markdown>=3.5",
   "build>=1",

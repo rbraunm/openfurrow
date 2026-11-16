@@ -45,8 +45,8 @@ from openfurrow.store.database import (
 
 
 @pytest.fixture
-def engine(tmp_path):
-  return createDatabase(str(tmp_path / "trials.db"))
+def engine(tmp_path, newStore):
+  return createDatabase(newStore("trials"))
 
 
 def samplePackage(trialCode="TRIAL-1"):
@@ -347,8 +347,8 @@ def testAssessmentTransformAndKindSurviveRoundTrip(engine):
 
 # ---- the store carries a version ------------------------------------------
 
-def testReopeningAStoreOfThisVersionSucceeds(tmp_path):
-  path = str(tmp_path / "trials.db")
+def testReopeningAStoreOfThisVersionSucceeds(tmp_path, newStore):
+  path = newStore("trials")
   package = samplePackage()
   with sessionScope(createDatabase(path)) as session:
     savePackage(session, package, generateRcbdLayout(package).plots, [])

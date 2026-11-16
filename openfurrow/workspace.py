@@ -93,6 +93,7 @@ from openfurrow.schema.document import checkObservationValues as _checkObservati
 from openfurrow.store import (
   StoreError,
   createDatabase as _createDatabase,
+  isDatabaseURL as _isDatabaseURL,
   deleteTrial as _deleteTrial,
   listTrials as _listTrials,
   loadCheckPlots as _loadCheckPlots,
@@ -136,11 +137,12 @@ class RoundTripCheck(BaseModel):
 
 
 class Workspace:
-  """One SQLite database of trials, and the trial loop over it.
+  """One store of trials -- a SQLite file or a PostgreSQL database -- and the trial loop over it.
 
-  Construct with `Workspace.create(path)` for a new database or
-  `Workspace.open(path)` for an existing one; `open` fails loud if the file is
-  absent rather than silently creating an empty store.
+  Construct with `Workspace.create(location)` for a new store or `Workspace.open(location)`
+  for an existing one; `open` fails loud if the file is absent or the database holds no
+  store, rather than silently creating an empty one. A location is a file path or a
+  `postgresql+pg8000://` URL.
   """
 
   def __init__(self, engine) -> None:
@@ -149,16 +151,16 @@ class Workspace:
     self._engine = engine
 
   @classmethod
-  def create(cls, databasePath: str) -> "Workspace":
-    """Create (or open) the database at `databasePath` and ensure its schema."""
-    return cls(_createDatabase(databasePath))
+  def create(cls, location: str) -> "Workspace":
+    """Create (or open) the store at `location` and ensure its schema."""
+    return cls(_createDatabase(location))
 
   @classmethod
-  def open(cls, databasePath: str) -> "Workspace":
-    """Open an existing database; raise if the file does not exist."""
-    if not Path(databasePath).exists():
-      raise StoreError(f"database '{databasePath}' does not exist; create it first")
-    return cls(_createDatabase(databasePath))
+  def open(cls, location: str) -> "Workspace":
+    """Open an existing store; raise if the file does not exist or the database holds none."""
+    if not _isDatabaseURL(location) and not Path(location).exists():
+      raise StoreError(f"database '{location}' does not exist; create it first")
+    return cls(_createDatabase(location, create=False))
 
   # ---- trial management ---------------------------------------------------
 

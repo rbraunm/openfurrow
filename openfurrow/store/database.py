@@ -1,10 +1,11 @@
 # SPDX-License-Identifier: Apache-2.0
 """Canonical store: SQLAlchemy schema and engine.
 
-The canonical store is a single SQLite file (decision 0001), accessed through
-SQLAlchemy so the same schema runs on PostgreSQL for a future team mode without a
-rewrite. The schema is kept inside the portable intersection of the two engines:
-generic column types only, no SQLite-specific features.
+The store is a SQLite file or a PostgreSQL database (decision 0001), accessed through
+SQLAlchemy with one schema for both; which a deployment uses is its choice. The schema
+is kept inside the portable intersection of the two engines: generic column types only.
+A location is a file path for SQLite or a `postgresql+pg8000://` URL; pg8000 is the
+driver because its licence (BSD) and its dependencies' are permissive.
 
 Modeling choices, recorded in decisions 0001 and 0015:
 
@@ -31,6 +32,7 @@ Modeling choices, recorded in decisions 0001 and 0015:
 from __future__ import annotations
 
 import datetime
+import re
 
 from sqlalchemy import ForeignKey, Text, event, inspect, select
 from sqlalchemy.engine import Engine
@@ -478,21 +480,46 @@ class ObservationRow(Base):
   trial: Mapped[TrialRow] = relationship(back_populates="observations")
 
 
-def createDatabase(path: str) -> Engine:
-  """Open the SQLite store at `path`, creating it if the file holds no tables yet.
+postgresqlScheme = "postgresql+pg8000://"
 
-  An existing store must have been written under this schema's version; any other is
-  refused here. Foreign keys are enforced for SQLite via a per-connection pragma; on
-  PostgreSQL they are enforced natively and the pragma is not applied.
-  """
+
+def isDatabaseURL(location: str) -> bool:
+  """True for a database URL, False for a SQLite file path; any URL but PostgreSQL's is refused."""
+  if "://" not in location:
+    return False
+  if not location.startswith(postgresqlScheme):
+    raise StoreError(f"a store URL starts with '{postgresqlScheme}'; got '{location.split('://')[0]}://'")
+  return True
+
+
+def displayLocation(location: str) -> str:
+  """The location without a password, for messages."""
+  return re.sub(r"://([^:/@]+):[^@]*@", r"://\1:***@", location)
+
+
+def openEngine(location: str) -> Engine:
+  """An engine on the store's database, foreign keys enforced on both engines."""
   from sqlalchemy import create_engine
 
-  engine = create_engine(f"sqlite:///{path}")
-  if engine.dialect.name == "sqlite":
+  if not isDatabaseURL(location):
+    engine = create_engine(f"sqlite:///{location}")
     event.listen(engine, "connect", _enableSqliteForeignKeys)
+    return engine
+  return create_engine(location, pool_pre_ping=True)
 
+
+def createDatabase(location: str, create: bool = True) -> Engine:
+  """Open the store at `location`, creating its tables in an empty database when `create`.
+
+  An existing store must have been written under this schema's version; any other is
+  refused here, and so is an empty database when `create` is false. Foreign keys are
+  enforced for SQLite via a per-connection pragma; PostgreSQL enforces them itself.
+  """
+  engine = openEngine(location)
   existingTables = set(inspect(engine).get_table_names())
   if not existingTables:
+    if not create:
+      raise StoreError(f"database '{displayLocation(location)}' holds no OpenFurrow store; create it first")
     Base.metadata.create_all(engine)
     with Session(engine) as session:
       session.add(StoreVersionRow(version=storeVersion))
@@ -501,7 +528,7 @@ def createDatabase(path: str) -> Engine:
 
   if StoreVersionRow.__tablename__ not in existingTables:
     raise StoreError(
-      f"database '{path}' was written by an earlier build of OpenFurrow, before stores "
+      f"database '{displayLocation(location)}' was written by an earlier build of OpenFurrow, before stores "
       f"carried a version. Export its trials with that build and import them into a new "
       f"database."
     )
@@ -509,7 +536,7 @@ def createDatabase(path: str) -> Engine:
     versions = session.execute(select(StoreVersionRow.version)).scalars().all()
   if versions != [storeVersion]:
     raise StoreError(
-      f"database '{path}' holds store version {versions}, and this build reads version "
+      f"database '{displayLocation(location)}' holds store version {versions}, and this build reads version "
       f"{storeVersion}. Export its trials with the build that wrote it and import them "
       f"into a new database."
     )

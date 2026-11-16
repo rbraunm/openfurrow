@@ -142,8 +142,8 @@ def testReportSplitsTheTreatmentLine():
   assert "| Treatment | 14 |" in report
 
 
-def testWorkspaceSeparatesAFactorOfAFactorialTrial(tmp_path):
-  workspace = Workspace.create(str(tmp_path / "trials.db"))
+def testWorkspaceSeparatesAFactorOfAFactorialTrial(tmp_path, newStore):
+  workspace = Workspace.create(newStore("trials"))
   package, _, observations = gomezInputs()
   workspace.addPackage(package)
   path = tmp_path / "y.csv"

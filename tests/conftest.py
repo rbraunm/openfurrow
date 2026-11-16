@@ -2,10 +2,67 @@
 """Shared test fixtures."""
 
 import copy
+import os
+import secrets
 
 import pytest
 
 from openfurrow import schemaVersion
+
+postgresVariable = "OPENFURROW_TEST_POSTGRES"
+
+
+def pytest_addoption(parser):
+  parser.addoption(
+    "--store", choices=("sqlite", "postgresql"), default="sqlite",
+    help=f"the database every store test runs on; postgresql takes its server from {postgresVariable}",
+  )
+
+
+def pytest_configure(config):
+  if config.getoption("--store") == "postgresql" and not os.environ.get(postgresVariable):
+    raise pytest.UsageError(
+      f"--store postgresql needs {postgresVariable}, a postgresql+pg8000:// URL of a role that may create databases"
+    )
+
+
+@pytest.fixture
+def storeKind(request):
+  return request.config.getoption("--store")
+
+
+@pytest.fixture
+def newStore(request, tmp_path, storeKind):
+  """Store locations by name for one test: a SQLite file, or a PostgreSQL database dropped afterwards.
+
+  The same name gives the same store within a test, so a test can reopen what it made.
+  """
+  made: dict[str, str] = {}
+
+  def make(name: str) -> str:
+    if name in made:
+      return made[name]
+    if storeKind == "sqlite":
+      made[name] = str(tmp_path / f"{name}.db")
+      return made[name]
+    from sqlalchemy import create_engine, text
+    server = os.environ[postgresVariable]
+    database = f"openfurrow_test_{secrets.token_hex(6)}"
+    admin = create_engine(server, isolation_level="AUTOCOMMIT")
+    with admin.connect() as connection:
+      connection.execute(text(f'CREATE DATABASE "{database}"'))
+    admin.dispose()
+    made[name] = server.rsplit("/", 1)[0] + f"/{database}"
+    return made[name]
+
+  yield make
+  if storeKind == "postgresql" and made:
+    from sqlalchemy import create_engine, text
+    admin = create_engine(os.environ[postgresVariable], isolation_level="AUTOCOMMIT")
+    with admin.connect() as connection:
+      for location in made.values():
+        connection.execute(text(f'DROP DATABASE "{location.rsplit("/", 1)[1]}" WITH (FORCE)'))
+    admin.dispose()
 
 _validPackage = {
   "schemaVersion": schemaVersion,

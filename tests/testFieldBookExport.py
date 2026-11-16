@@ -125,8 +125,8 @@ def testTraitFileIsFullyQuoted(package, tmp_path):
 
 # ---- via the facade -------------------------------------------------------
 
-def testFacadeExportWritesBothFiles(package, tmp_path):
-  workspace = Workspace.create(str(tmp_path / "trials.db"))
+def testFacadeExportWritesBothFiles(package, tmp_path, newStore):
+  workspace = Workspace.create(newStore("trials"))
   workspace.addPackage(package)
   fieldPath = tmp_path / "f.csv"
   traitPath = tmp_path / "t.trt"

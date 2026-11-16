@@ -99,7 +99,7 @@ def testLayoutShufflesEveryPlotInOneField():
   assert [plot.treatmentCode for plot in sorted(plots, key=lambda p: p.plotNumber)][:4] != ["DolMix1"] * 4
 
 
-def testLayoutWithATreatmentOnTooFewPlotsIsRefused(tmp_path):
+def testLayoutWithATreatmentOnTooFewPlotsIsRefused(tmp_path, newStore):
   package = TrialPackage.model_validate(packageDict(randomizationMethod="imported", randomizationSeed=None))
   plots = [{"plotNumber": 100 + index, "block": 1, "positionInBlock": index, "treatmentCode": code}
            for index, code in enumerate(treatments * 3 + ["Control"] * 7, start=1)]
@@ -107,7 +107,7 @@ def testLayoutWithATreatmentOnTooFewPlotsIsRefused(tmp_path):
   path.write_text(json.dumps({"package": package.model_dump(mode="json"), "layout": plots, "observations": []}),
                   encoding="utf-8")
   with pytest.raises(ExchangeError, match="are not on exactly 4 plots"):
-    Workspace.create(str(tmp_path / "t.db")).importDocument(str(path))
+    Workspace.create(newStore("t")).importDocument(str(path))
 
 
 @pytest.mark.parametrize("design, message", [
@@ -125,13 +125,13 @@ def testRcbdAnalysisRefusesACrd():
     analyzeRcbd("Y", *gomezInputs())
 
 
-def testReportAndPages(tmp_path):
+def testReportAndPages(tmp_path, newStore):
   report = buildReport(*gomezInputs())
   assert "- Design: Completely randomized design" in report
   assert "| Treatment | 6 | 5587174.9286 | 931195.8214 | 9.83 | < 0.0001 |" in report
   assert "| Error | 21 | 1990237.5000 | 94773.2143 | - | - |" in report
   assert "One-way ANOVA (completely randomized)" in report
-  databasePath = str(tmp_path / "trials.db")
+  databasePath = newStore("trials")
   workspace = Workspace.create(databasePath)
   package, _, observations = gomezInputs()
   workspace.addPackage(package)
@@ -139,8 +139,8 @@ def testReportAndPages(tmp_path):
   assert "All plots" in body and "Block 1" not in body
 
 
-def testFormSetsUpACrd(tmp_path):
-  databasePath = str(tmp_path / "trials.db")
+def testFormSetsUpACrd(tmp_path, newStore):
+  databasePath = newStore("trials")
   Workspace.create(databasePath)
   client = createApp(databasePath).test_client()
   response = client.post("/trials/form", data={

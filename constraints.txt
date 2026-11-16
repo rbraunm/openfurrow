@@ -4,6 +4,7 @@
 # pyproject.toml states what the library accepts; this file states what was tested.
 # To move the pins, see "Pinned versions" in CONTRIBUTING.md.
 annotated-types==0.8.0
+asn1crypto==1.5.1
 blinker==1.9.0
 build==1.6.1
 click==8.5.1
@@ -23,6 +24,7 @@ openpyxl==3.1.5
 packaging==26.3
 pandas==3.1.1
 patsy==1.0.3
+pg8000==1.31.6
 pluggy==1.7.0
 pydantic==2.14.3
 pydantic_core==2.50.4
@@ -32,11 +34,12 @@ pytest==9.2.0
 python-dateutil==4.0.0
 PyYAML==6.0.3
 scipy==1.18.1
+scramp==1.5.0
 setuptools==84.2.1
 SQLAlchemy==2.1.8
 statsmodels==0.15.0
-typing_extensions==4.16.0
 typing-inspection==0.4.5
+typing_extensions==4.16.0
 tzdata==2026.6
 Werkzeug==3.1.9
 wrapt==2.5.2

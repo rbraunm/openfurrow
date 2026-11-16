@@ -13,8 +13,8 @@ from openfurrow.service import createApp
 
 
 @pytest.fixture
-def setup(tmp_path):
-  databasePath = str(tmp_path / "trials.db")
+def setup(tmp_path, newStore):
+  databasePath = newStore("trials")
   Workspace.create(databasePath)
   return Workspace.open(databasePath), createApp(databasePath).test_client()
 

@@ -90,7 +90,7 @@ def testSpatialBalanceOnASplitPlotRejected():
     TrialPackage.model_validate(data)
 
 
-def testDocumentWhoseLayoutIsNotTheBalancedOneRejected(tmp_path):
+def testDocumentWhoseLayoutIsNotTheBalancedOneRejected(tmp_path, newStore):
   package = TrialPackage.model_validate(balancedPackageDict())
   plots = [plot.model_dump() for plot in generateLayout(package).plots]
   first, second = plots[0], plots[1]
@@ -99,7 +99,7 @@ def testDocumentWhoseLayoutIsNotTheBalancedOneRejected(tmp_path):
   path.write_text(json.dumps({"package": package.model_dump(mode="json"), "layout": plots, "observations": []}),
                   encoding="utf-8")
   with pytest.raises(ExchangeError, match="not a valid trial document"):
-    Workspace.create(str(tmp_path / "trials.db")).importDocument(str(path))
+    Workspace.create(newStore("trials")).importDocument(str(path))
 
 
 def testReportNamesTheArrangement():

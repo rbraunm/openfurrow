@@ -188,19 +188,19 @@ def importedPackage(arrangement):
   return data
 
 
-def testOneStripMayServeSeveralPlots(tmp_path):
+def testOneStripMayServeSeveralPlots(tmp_path, newStore):
   """A strip between plots is shared; it comes through the store and the exchange unchanged."""
   checks = [{"plotNumber": 91, "block": 1, "pairedPlots": [1, 2, 3]},
             {"plotNumber": 92, "block": 2, "pairedPlots": [4, 5]},
             {"plotNumber": 93, "block": 2, "pairedPlots": [6]}]
   path = tmp_path / "doc.json"
   path.write_text(json.dumps(documentWith(importedPackage("imbricated"), importedPlots(), checks)), encoding="utf-8")
-  first = Workspace.create(str(tmp_path / "a.db"))
+  first = Workspace.create(newStore("a"))
   first.importDocument(str(path))
   assert [check.model_dump() for check in first.layoutFor("CHK-1").checkPlots] == checks
   exported = str(tmp_path / "out.json")
   first.exportDocument("CHK-1", exported)
-  second = Workspace.create(str(tmp_path / "b.db"))
+  second = Workspace.create(newStore("b"))
   second.importDocument(exported)
   assert second.contentHashFor("CHK-1") == first.contentHashFor("CHK-1")
 
@@ -218,11 +218,11 @@ def testOneStripMayServeSeveralPlots(tmp_path):
   ("none", [{"plotNumber": 91, "block": 1, "pairedPlots": [1]}], "the design has no checkArrangement"),
   ("adjacent", [], "needs its check plots"),
 ])
-def testCheckPlotsThatDoNotFitAreRefused(tmp_path, arrangement, checks, message):
+def testCheckPlotsThatDoNotFitAreRefused(tmp_path, newStore, arrangement, checks, message):
   path = tmp_path / "doc.json"
   path.write_text(json.dumps(documentWith(importedPackage(arrangement), importedPlots(), checks)), encoding="utf-8")
   with pytest.raises(ExchangeError, match=message):
-    Workspace.create(str(tmp_path / "a.db")).importDocument(str(path))
+    Workspace.create(newStore("a")).importDocument(str(path))
 
 
 def testPercentControlNeedsChecks():
