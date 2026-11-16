@@ -230,10 +230,13 @@ measure), `owner` (the owner's call), `done`.
   (`import-json`, or the API). The path through the interface remains to build.
 - **USR-9** `owner` **Field collection for a university pilot.** The specialist's route to a
   first user (Owner decisions, "The specialist's answers") needs data collected on a
-  phone or tablet. Decision 0014 already commits to collection apps after Field Book
-  interoperability; the file-based Field Book path exists today (export a field book,
-  collect, import the export). Whether that is enough to offer, or a collection app of the
-  project's own moves ahead of the rest of the first-user work, is the owner's call.
+  phone or tablet. The owner's direction (2026-11-15): too big to settle now, and a very
+  important part of the proof-of-concept deliverable. The bar is ease: most of the time
+  someone is sent a link, clicks it, and can do the work they need to do. What that looks
+  like is to be discussed once the substrate (the trial record, entry and the analysis)
+  is in place. For that discussion: the file-based Field Book path exists today but needs
+  an Android app and a file hand-off; decision 0014 plans the project's own apps; a link
+  that just works points at a served, phone-ready web interface (decisions 0011, 0012).
 - **USR-8** `build` **What happened to a plot.** A lost plot, a misapplied treatment or a
   difference between the plan and what was planted has no record. EPPO PP 1/181 asks for
   deviations to be noted and reported (decision 0015, "Consequences").
