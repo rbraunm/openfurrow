@@ -1,0 +1,6 @@
+# SPDX-License-Identifier: Apache-2.0
+# Text is LF in the repository and in every checkout, whatever the platform's Git
+# settings: a shell script with CRLF does not run, and a wheel built from CRLF data
+# files differs from one built elsewhere. PowerShell scripts are the exception.
+* text=auto eol=lf
+*.ps1 text eol=crlf

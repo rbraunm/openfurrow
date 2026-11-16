@@ -1,0 +1,629 @@
+{
+  "locale": "en-US",
+  "messages": {
+    "report.labelValue": {
+      "text": "{label}: {value}",
+      "status": "source"
+    },
+    "report.heading.trialReport": {
+      "text": "Trial Report: {title}",
+      "status": "source"
+    },
+    "report.field.trialCode": {
+      "text": "Trial code",
+      "status": "source"
+    },
+    "report.field.crop": {
+      "text": "Crop",
+      "status": "source"
+    },
+    "report.field.season": {
+      "text": "Season",
+      "status": "source"
+    },
+    "report.field.site": {
+      "text": "Site",
+      "status": "source"
+    },
+    "report.field.objective": {
+      "text": "Objective",
+      "status": "source"
+    },
+    "report.field.investigator": {
+      "text": "Investigator",
+      "status": "source"
+    },
+    "report.field.organization": {
+      "text": "Organization",
+      "status": "source"
+    },
+    "report.heading.design": {
+      "text": "Design",
+      "status": "source"
+    },
+    "report.design.design": {
+      "text": "Design",
+      "status": "source"
+    },
+    "report.design.rcbd": {
+      "text": "Randomized complete block design",
+      "status": "source"
+    },
+    "report.design.treatments": {
+      "text": "Treatments",
+      "status": "source"
+    },
+    "report.design.blocks": {
+      "text": "Blocks (replications)",
+      "status": "source"
+    },
+    "report.design.plots": {
+      "text": "Plots",
+      "status": "source"
+    },
+    "report.design.seed": {
+      "text": "Randomization seed",
+      "status": "source"
+    },
+    "report.design.layout": {
+      "text": "Layout",
+      "status": "source"
+    },
+    "report.design.layoutSupplied": {
+      "text": "supplied with the trial, not randomized here",
+      "status": "source"
+    },
+    "report.heading.treatments": {
+      "text": "Treatments",
+      "status": "source"
+    },
+    "report.treatments.column.code": {
+      "text": "Code",
+      "status": "source"
+    },
+    "report.treatments.column.name": {
+      "text": "Name",
+      "status": "source"
+    },
+    "report.treatments.column.product": {
+      "text": "Product",
+      "status": "source"
+    },
+    "report.treatments.column.rate": {
+      "text": "Rate",
+      "status": "source"
+    },
+    "report.treatments.column.timing": {
+      "text": "Timing",
+      "status": "source"
+    },
+    "report.treatments.untreatedControl": {
+      "text": "(untreated control)",
+      "status": "source"
+    },
+    "report.heading.assessment": {
+      "text": "Assessment: {name} ({code})",
+      "status": "source"
+    },
+    "report.assessment.notNumeric": {
+      "text": "Not analyzed: AOV requires a numeric assessment (this assessment is {dataType}).",
+      "status": "source"
+    },
+    "report.assessment.notAnalyzed": {
+      "text": "Not analyzed: {reason}",
+      "status": "source"
+    },
+    "report.heading.anova": {
+      "text": "Analysis of variance",
+      "status": "source"
+    },
+    "report.anova.transformedScale": {
+      "text": "Analyzed on the {scale} scale; the table, grand mean, and CV below are on that scale.",
+      "status": "source"
+    },
+    "report.anova.column.source": {
+      "text": "Source",
+      "status": "source"
+    },
+    "report.anova.column.degreesOfFreedom": {
+      "text": "df",
+      "status": "source"
+    },
+    "report.anova.column.sumOfSquares": {
+      "text": "SS",
+      "status": "source"
+    },
+    "report.anova.column.meanSquare": {
+      "text": "MS",
+      "status": "source"
+    },
+    "report.anova.column.fStatistic": {
+      "text": "F",
+      "status": "source"
+    },
+    "report.anova.column.probability": {
+      "text": "P",
+      "status": "source"
+    },
+    "report.anova.source.block": {
+      "text": "Block",
+      "status": "source"
+    },
+    "report.anova.source.treatment": {
+      "text": "Treatment",
+      "status": "source"
+    },
+    "report.anova.source.error": {
+      "text": "Error",
+      "status": "source"
+    },
+    "report.anova.source.total": {
+      "text": "Total",
+      "status": "source"
+    },
+    "report.anova.grandMean": {
+      "text": "Grand mean",
+      "status": "source"
+    },
+    "report.anova.coefficientOfVariation": {
+      "text": "Coefficient of variation",
+      "status": "source"
+    },
+    "report.heading.treatmentMeans": {
+      "text": "Treatment means",
+      "status": "source"
+    },
+    "report.means.separation": {
+      "text": "Mean separation: {method} (alpha = {alpha}). Treatment effect {significance} (P {probability}).",
+      "status": "source"
+    },
+    "report.means.significant": {
+      "text": "significant",
+      "status": "source"
+    },
+    "report.means.notSignificant": {
+      "text": "not significant",
+      "status": "source"
+    },
+    "report.means.column.treatment": {
+      "text": "Treatment",
+      "status": "source"
+    },
+    "report.means.column.mean": {
+      "text": "Mean{unit}",
+      "status": "source"
+    },
+    "report.means.column.meanOriginalScale": {
+      "text": "Mean (original scale){unit}",
+      "status": "source"
+    },
+    "report.means.column.group": {
+      "text": "Group",
+      "status": "source"
+    },
+    "report.means.backTransformNote": {
+      "text": "Means are back-transformed to the original scale as point estimates (not symmetric intervals); the analysis of variance and mean separation were computed on the {scale} scale.",
+      "status": "source"
+    },
+    "report.means.leastSignificantDifference": {
+      "text": "LSD (alpha = {alpha})",
+      "status": "source"
+    },
+    "report.means.notSeparated": {
+      "text": "Means were not separated: the treatment effect was not significant (protected LSD).",
+      "status": "source"
+    },
+    "report.heading.assumptions": {
+      "text": "Assumption checks",
+      "status": "source"
+    },
+    "report.assumptions.note": {
+      "text": "Reported only; these do not change the analysis above (significance level alpha = {alpha}).",
+      "status": "source"
+    },
+    "report.assumptions.residualsNote": {
+      "text": "Residuals are from the additive block-and-treatment model and are constrained (they sum to zero within each block and each treatment), so the normality test is approximate.",
+      "status": "source"
+    },
+    "report.assumptions.recommendation": {
+      "text": "Recommendation: {recommendation}",
+      "status": "source"
+    },
+    "report.heading.reproducibility": {
+      "text": "Reproducibility",
+      "status": "source"
+    },
+    "report.reproducibility.method": {
+      "text": "Method",
+      "status": "source"
+    },
+    "report.reproducibility.methodValue": {
+      "text": "RCBD ANOVA; {test} (alpha = {alpha})",
+      "status": "source"
+    },
+    "report.method.fisherProtectedLSD": {
+      "text": "Fisher's Protected LSD",
+      "status": "source"
+    },
+    "report.method.fisherLSD": {
+      "text": "Fisher's LSD",
+      "status": "source"
+    },
+    "report.reproducibility.seed": {
+      "text": "Randomization seed",
+      "status": "source"
+    },
+    "report.reproducibility.randomizationMethod": {
+      "text": "Randomization method",
+      "status": "source"
+    },
+    "report.reproducibility.transforms": {
+      "text": "Transforms",
+      "status": "source"
+    },
+    "report.reproducibility.inputHash": {
+      "text": "Input hash (SHA-256)",
+      "status": "source"
+    },
+    "report.reproducibility.versions": {
+      "text": "Versions: OpenFurrow {openfurrow}, numpy {numpy}, Python {python}",
+      "status": "source"
+    },
+    "report.scale.sqrt": {
+      "text": "square-root",
+      "status": "source"
+    },
+    "report.scale.log": {
+      "text": "natural-log",
+      "status": "source"
+    },
+    "report.scale.arcsinSqrt": {
+      "text": "arcsine-square-root",
+      "status": "source"
+    },
+    "report.scale.logit": {
+      "text": "logit",
+      "status": "source"
+    },
+    "report.value.absent": {
+      "text": "-",
+      "status": "source"
+    },
+    "report.value.lessThan": {
+      "text": "< {value}",
+      "status": "source"
+    },
+    "report.value.equalTo": {
+      "text": "= {value}",
+      "status": "source"
+    },
+    "web.app.name": {
+      "text": "OpenFurrow",
+      "status": "source"
+    },
+    "web.app.tagline": {
+      "text": "Reproducible agricultural trials",
+      "status": "source"
+    },
+    "web.nav.trials": {
+      "text": "Trials",
+      "status": "source"
+    },
+    "web.nav.addTrial": {
+      "text": "Add trial",
+      "status": "source"
+    },
+    "web.locale.label": {
+      "text": "Language",
+      "status": "source"
+    },
+    "web.footer.offline": {
+      "text": "Runs offline. Your data stays on this machine.",
+      "status": "source"
+    },
+    "web.trials.heading": {
+      "text": "Trials",
+      "status": "source"
+    },
+    "web.trials.empty": {
+      "text": "No trials yet. Add one to get started.",
+      "status": "source"
+    },
+    "web.trials.count": {
+      "text": "{count} trials",
+      "status": "source"
+    },
+    "web.trials.column.code": {
+      "text": "Code",
+      "status": "source"
+    },
+    "web.trials.column.title": {
+      "text": "Title",
+      "status": "source"
+    },
+    "web.trials.column.crop": {
+      "text": "Crop",
+      "status": "source"
+    },
+    "web.trials.column.plots": {
+      "text": "Plots",
+      "status": "source"
+    },
+    "web.trials.open": {
+      "text": "Open",
+      "status": "source"
+    },
+    "web.add.heading": {
+      "text": "Add a trial",
+      "status": "source"
+    },
+    "web.add.intro": {
+      "text": "Paste a trial package as JSON, or choose a file. This is the trial's canonical design; the layout is randomized from its seed.",
+      "status": "source"
+    },
+    "web.add.pasteLabel": {
+      "text": "Trial package (JSON)",
+      "status": "source"
+    },
+    "web.add.fileLabel": {
+      "text": "or choose a .json file",
+      "status": "source"
+    },
+    "web.add.loadExample": {
+      "text": "Load example",
+      "status": "source"
+    },
+    "web.add.submit": {
+      "text": "Create trial",
+      "status": "source"
+    },
+    "web.add.error": {
+      "text": "Could not create the trial: {reason}",
+      "status": "source"
+    },
+    "web.trial.back": {
+      "text": "Back to trials",
+      "status": "source"
+    },
+    "web.trial.notFound": {
+      "text": "No trial with code {code}.",
+      "status": "source"
+    },
+    "web.trial.summary": {
+      "text": "Summary",
+      "status": "source"
+    },
+    "web.trial.observations": {
+      "text": "Observations",
+      "status": "source"
+    },
+    "web.trial.contentHash": {
+      "text": "Content hash",
+      "status": "source"
+    },
+    "web.trial.viewReport": {
+      "text": "View report",
+      "status": "source"
+    },
+    "web.trial.layoutHeading": {
+      "text": "Field layout",
+      "status": "source"
+    },
+    "web.trial.layoutIntro": {
+      "text": "Plots as drilled in the field, grouped by block. Randomized from seed {seed}.",
+      "status": "source"
+    },
+    "web.trial.layoutIntroSupplied": {
+      "text": "Plots as drilled in the field, grouped by block. This layout was supplied with the trial.",
+      "status": "source"
+    },
+    "web.trial.plot": {
+      "text": "Plot",
+      "status": "source"
+    },
+    "web.trial.blockLabel": {
+      "text": "Block {block}",
+      "status": "source"
+    },
+    "web.trial.legendHeading": {
+      "text": "Treatments",
+      "status": "source"
+    },
+    "web.import.heading": {
+      "text": "Import observations",
+      "status": "source"
+    },
+    "web.import.intro": {
+      "text": "Upload collected data as CSV. Values are checked against the layout before anything is saved.",
+      "status": "source"
+    },
+    "web.import.formatLabel": {
+      "text": "Format",
+      "status": "source"
+    },
+    "web.import.formatOpenFurrow": {
+      "text": "OpenFurrow CSV (plot, assessment, value)",
+      "status": "source"
+    },
+    "web.import.formatFieldBook": {
+      "text": "Field Book export (database format)",
+      "status": "source"
+    },
+    "web.import.fileLabel": {
+      "text": "CSV file",
+      "status": "source"
+    },
+    "web.import.submit": {
+      "text": "Import",
+      "status": "source"
+    },
+    "web.import.result": {
+      "text": "Imported {count} observations.",
+      "status": "source"
+    },
+    "web.import.warningsHeading": {
+      "text": "Warnings",
+      "status": "source"
+    },
+    "web.import.error": {
+      "text": "Import failed: {reason}",
+      "status": "source"
+    },
+    "web.report.heading": {
+      "text": "Report",
+      "status": "source"
+    },
+    "web.report.intro": {
+      "text": "The AOV Means Table and reproducibility record for every numeric assessment.",
+      "status": "source"
+    },
+    "web.report.download": {
+      "text": "Download Markdown",
+      "status": "source"
+    },
+    "web.report.back": {
+      "text": "Back to trial",
+      "status": "source"
+    },
+    "web.trial.noObservations": {
+      "text": "No observations yet. Import some to run the analysis.",
+      "status": "source"
+    },
+    "web.manage.heading": {
+      "text": "Manage",
+      "status": "source"
+    },
+    "web.verify.action": {
+      "text": "Verify reproducibility",
+      "status": "source"
+    },
+    "web.verify.intro": {
+      "text": "Export the trial and re-import it; the content hash must match.",
+      "status": "source"
+    },
+    "web.verify.pass": {
+      "text": "Reproducibility check passed. The trial exports and re-imports to the same content hash.",
+      "status": "source"
+    },
+    "web.verify.fail": {
+      "text": "Reproducibility check failed: the re-imported hash does not match.",
+      "status": "source"
+    },
+    "web.verify.stored": {
+      "text": "Stored",
+      "status": "source"
+    },
+    "web.verify.roundTrip": {
+      "text": "Round-trip",
+      "status": "source"
+    },
+    "web.delete.action": {
+      "text": "Delete trial",
+      "status": "source"
+    },
+    "web.delete.confirmHeading": {
+      "text": "Delete {code}?",
+      "status": "source"
+    },
+    "web.delete.confirmIntro": {
+      "text": "This permanently removes the trial and all its observations. It cannot be undone.",
+      "status": "source"
+    },
+    "web.delete.confirm": {
+      "text": "Delete permanently",
+      "status": "source"
+    },
+    "web.delete.cancel": {
+      "text": "Cancel",
+      "status": "source"
+    },
+    "diagnostic.equalVariance.name": {
+      "text": "Equal variance across treatments (Brown-Forsythe)",
+      "status": "source"
+    },
+    "diagnostic.equalVariance.flagged": {
+      "text": "Unequal error variance across treatments",
+      "status": "source"
+    },
+    "diagnostic.equalVariance.clear": {
+      "text": "No evidence of unequal variance",
+      "status": "source"
+    },
+    "diagnostic.nonAdditivity.name": {
+      "text": "Non-additivity (Tukey one df)",
+      "status": "source"
+    },
+    "diagnostic.nonAdditivity.flagged": {
+      "text": "Significant non-additivity; the additive RCBD model may be inadequate",
+      "status": "source"
+    },
+    "diagnostic.nonAdditivity.clear": {
+      "text": "No evidence of non-additivity",
+      "status": "source"
+    },
+    "diagnostic.normality.name": {
+      "text": "Normality of residuals (Shapiro-Wilk)",
+      "status": "source"
+    },
+    "diagnostic.normality.flagged": {
+      "text": "Residuals depart from normality",
+      "status": "source"
+    },
+    "diagnostic.normality.clear": {
+      "text": "No evidence against normal residuals",
+      "status": "source"
+    },
+    "diagnostic.notComputed.needsTwoByTwo": {
+      "text": "not computed: needs at least two treatments and two blocks",
+      "status": "source"
+    },
+    "diagnostic.notComputed.noDeviationVariation": {
+      "text": "not computed: no within-treatment variation in absolute deviations",
+      "status": "source"
+    },
+    "diagnostic.notComputed.tooFewErrorDegreesOfFreedom": {
+      "text": "not computed: too few error degrees of freedom for the one-df test",
+      "status": "source"
+    },
+    "diagnostic.notComputed.noTreatmentOrBlockVariation": {
+      "text": "not computed: no treatment or no block variation",
+      "status": "source"
+    },
+    "diagnostic.notComputed.noRemainderVariation": {
+      "text": "not computed: no residual variation after the non-additivity term",
+      "status": "source"
+    },
+    "diagnostic.notComputed.tooFewResiduals": {
+      "text": "not computed: only {count} residuals (need at least {minimum})",
+      "status": "source"
+    },
+    "diagnostic.notComputed.zeroResidualSpread": {
+      "text": "not computed: residuals have zero spread",
+      "status": "source"
+    },
+    "diagnostic.line": {
+      "text": "{name}: {statistic}. {reading}",
+      "status": "source"
+    },
+    "diagnostic.reading": {
+      "text": "{verdict} (P {probability}).",
+      "status": "source"
+    },
+    "diagnostic.recommendation.forKind": {
+      "text": "assumptions were flagged and this is {kind} data; a {transform} transform may help. Declare it on the assessment -- it is never applied automatically.",
+      "status": "source"
+    },
+    "diagnostic.recommendation.generic": {
+      "text": "assumptions were flagged; if this is count or proportion data, declaring a measurementKind and a variance-stabilizing transform on the assessment may help (transforms are never applied automatically).",
+      "status": "source"
+    },
+    "report.draftNotice": {
+      "text": "Draft translation (machine-generated, not yet reviewed): wording may be imprecise. Numbers, identifiers, and the content hash are unaffected.",
+      "status": "source"
+    },
+    "web.locale.draftNotice": {
+      "text": "This translation is an unreviewed machine draft; wording may be imprecise.",
+      "status": "source"
+    }
+  }
+}

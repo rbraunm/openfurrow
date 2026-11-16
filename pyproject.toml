@@ -1,0 +1,60 @@
+# SPDX-License-Identifier: Apache-2.0
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "openfurrow"
+dynamic = ["version"]
+description = "Open, reproducible management for agricultural trials."
+readme = "README.md"
+requires-python = ">=3.13"
+license = "Apache-2.0"
+dependencies = [
+  "pydantic>=2",
+  "sqlalchemy>=2",
+  "numpy>=1.26",
+  "pyyaml>=6",
+]
+
+[project.optional-dependencies]
+# Flask is an extra, not a core dependency: the core is usable as a plain library, and
+# decision 0010 keeps the deployment shape open. Installing the service is a choice.
+service = [
+  "flask>=3",
+  "markdown>=3.5",
+]
+test = [
+  "pytest>=8",
+  "statsmodels>=0.14",
+  "flask>=3",
+  "markdown>=3.5",
+  "build>=1",
+]
+
+[project.scripts]
+openfurrow = "openfurrow.cli.main:main"
+
+[tool.setuptools.packages.find]
+include = ["openfurrow*"]
+
+# One source for the version: the module a report reads its provenance from.
+[tool.setuptools.dynamic]
+version = {attr = "openfurrow.version.softwareVersion"}
+
+# The message catalogs are data, not code, so setuptools does not pick them up by
+# default -- without this an installed OpenFurrow builds no report at all, even though
+# a source checkout passes its tests.
+[tool.setuptools.package-data]
+openfurrow = [
+  "i18n/locales/*.json",
+  "service/templates/*.html",
+  "service/static/*.css",
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+python_files = ["test*.py"]
+python_classes = ["Test*"]
+python_functions = ["test*"]

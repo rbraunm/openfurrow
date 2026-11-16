@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% block title %}{{ package.trial.trialCode }} - {{ t.text('web.app.name') }}{% endblock %}
+{% block content %}
+<p class="back"><a href="{{ url_for('web.index', locale=locale if locale != 'en-US' else none) }}">&larr; {{ t.text('web.trial.back') }}</a></p>
+
+<div class="page-head">
+  <h1>{{ package.trial.title }}</h1>
+  <p class="code trial-code">{{ package.trial.trialCode }}</p>
+</div>
+
+<section class="summary" aria-label="{{ t.text('web.trial.summary') }}">
+  <dl>
+    <div><dt>{{ t.text('report.field.crop') }}</dt><dd>{{ package.trial.crop }}</dd></div>
+    <div><dt>{{ t.text('report.field.season') }}</dt><dd>{{ package.trial.season }}</dd></div>
+    <div><dt>{{ t.text('report.field.site') }}</dt><dd>{{ package.trial.site }}</dd></div>
+    <div><dt>{{ t.text('report.design.treatments') }}</dt><dd class="code">{{ t.integer(package.treatments | length) }}</dd></div>
+    <div><dt>{{ t.text('report.design.blocks') }}</dt><dd class="code">{{ t.integer(package.design.replications) }}</dd></div>
+    <div><dt>{{ t.text('report.design.plots') }}</dt><dd class="code">{{ t.integer(package.plotCount) }}</dd></div>
+    <div><dt>{{ t.text('web.trial.observations') }}</dt><dd class="code">{{ t.integer(observationCount) }}</dd></div>
+    {% if package.design.randomizationSeed is none %}
+    <div><dt>{{ t.text('report.design.layout') }}</dt><dd>{{ t.text('report.design.layoutSupplied') }}</dd></div>
+    {% else %}
+    <div><dt>{{ t.text('report.design.seed') }}</dt><dd class="code">{{ t.integer(package.design.randomizationSeed) }}</dd></div>
+    {% endif %}
+  </dl>
+  <p class="hash"><span class="hash-label">{{ t.text('web.trial.contentHash') }}</span> <span class="code hash-value">{{ contentHash }}</span></p>
+  {% if observationCount > 0 %}
+  <p class="report-link"><a class="button" href="{{ url_for('web.report', trialCode=package.trial.trialCode, locale=locale if locale != 'en-US' else none) }}">{{ t.text('web.trial.viewReport') }}</a></p>
+  {% endif %}
+</section>
+
+<section class="import" aria-label="{{ t.text('web.import.heading') }}">
+  <h2>{{ t.text('web.import.heading') }}</h2>
+  <p class="intro">{{ t.text('web.import.intro') }}</p>
+
+  {% if result %}
+  <div class="notice" role="status">
+    {{ t.text('web.import.result', count=t.integer(result.imported)) }}
+    {% if result.warnings %}
+    <details open>
+      <summary>{{ t.text('web.import.warningsHeading') }}</summary>
+      <ul>{% for warning in result.warnings %}<li>{{ warning }}</li>{% endfor %}</ul>
+    </details>
+    {% endif %}
+  </div>
+  {% endif %}
+  {% if importError %}
+  <div class="error" role="alert">{{ t.text('web.import.error', reason=importError) }}</div>
+  {% endif %}
+
+  <form class="import-form" method="post"
+        action="{{ url_for('web.importObservations', trialCode=package.trial.trialCode, locale=locale if locale != 'en-US' else none) }}"
+        enctype="multipart/form-data">
+    <fieldset class="format">
+      <legend>{{ t.text('web.import.formatLabel') }}</legend>
+      <label><input type="radio" name="format" value="openfurrow" checked> {{ t.text('web.import.formatOpenFurrow') }}</label>
+      <label><input type="radio" name="format" value="fieldbook"> {{ t.text('web.import.formatFieldBook') }}</label>
+    </fieldset>
+    <div class="file-row">
+      <label class="field-label" for="obs-file">{{ t.text('web.import.fileLabel') }}</label>
+      <input type="file" id="obs-file" name="file" accept=".csv,text/csv">
+    </div>
+    <div class="form-actions"><button class="button" type="submit">{{ t.text('web.import.submit') }}</button></div>
+  </form>
+</section>
+
+<section class="layout" aria-label="{{ t.text('web.trial.layoutHeading') }}">
+  <h2>{{ t.text('web.trial.layoutHeading') }}</h2>
+  {% if package.design.randomizationSeed is none %}
+  <p class="intro">{{ t.text('web.trial.layoutIntroSupplied') }}</p>
+  {% else %}
+  <p class="intro">{{ t.text('web.trial.layoutIntro', seed=t.integer(package.design.randomizationSeed)) }}</p>
+  {% endif %}
+
+  <ul class="legend" aria-label="{{ t.text('web.trial.legendHeading') }}">
+    {% for item in legend %}
+    <li><span class="swatch" style="background: {{ item.color }}" aria-hidden="true"></span><span class="code">{{ item.code }}</span> {{ item.name }}</li>
+    {% endfor %}
+  </ul>
+
+  <div class="field">
+    {% for block in blocks %}
+    <div class="block">
+      <div class="block-label code">{{ t.text('web.trial.blockLabel', block=t.integer(block.block)) }}</div>
+      <ol class="plots">
+        {% for plot in block.plots %}
+        {% set color = (legend | selectattr('code', 'equalto', plot.treatmentCode) | first).color %}
+        <li class="plot" style="--treatment: {{ color }}">
+          <span class="plot-number code">{{ plot.plotNumber }}</span>
+          <span class="plot-treatment code">{{ plot.treatmentCode }}</span>
+        </li>
+        {% endfor %}
+      </ol>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+
+<section class="manage" aria-label="{{ t.text('web.manage.heading') }}">
+  <h2>{{ t.text('web.manage.heading') }}</h2>
+
+  {% if verifyResult %}
+  <div class="{{ 'notice' if verifyResult.matches else 'error' }}" role="status">
+    {{ t.text('web.verify.pass') if verifyResult.matches else t.text('web.verify.fail') }}
+    <p class="verify-hash"><span class="hash-label">{{ t.text('web.verify.stored') }}</span> <span class="code">{{ verifyResult.storedHash }}</span></p>
+    {% if not verifyResult.matches %}
+    <p class="verify-hash"><span class="hash-label">{{ t.text('web.verify.roundTrip') }}</span> <span class="code">{{ verifyResult.roundTripHash }}</span></p>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  <p class="intro">{{ t.text('web.verify.intro') }}</p>
+  <div class="manage-actions">
+    <a class="button button-quiet" href="{{ url_for('web.verify', trialCode=package.trial.trialCode, locale=locale if locale != 'en-US' else none) }}">{{ t.text('web.verify.action') }}</a>
+    <a class="delete-link" href="{{ url_for('web.confirmDelete', trialCode=package.trial.trialCode, locale=locale if locale != 'en-US' else none) }}">{{ t.text('web.delete.action') }}</a>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,16 @@
+plotNumber,block,treatment,trait,value,timestamp,person,location,number,attached_photo,attached_video,attached_audio,device_name
+101,1,A,YIELD,101,2025-06-01 10:00:00-05:00,Field Tech,North Field,1,,,,Pixel-7
+102,1,B,YIELD,102,2025-06-01 10:01:00-05:00,Field Tech,North Field,1,,,,Pixel-7
+103,1,C,YIELD,103,2025-06-01 10:02:00-05:00,Field Tech,North Field,1,,,,Pixel-7
+104,1,D,YIELD,104,2025-06-01 10:03:00-05:00,Field Tech,North Field,1,,,,Pixel-7
+201,2,A,YIELD,201,2025-06-01 10:04:00-05:00,Field Tech,North Field,1,,,,Pixel-7
+202,2,B,YIELD,202,2025-06-01 10:05:00-05:00,Field Tech,North Field,1,,,,Pixel-7
+203,2,C,YIELD,203,2025-06-01 10:06:00-05:00,Field Tech,North Field,1,,,,Pixel-7
+204,2,D,YIELD,204,2025-06-01 10:07:00-05:00,Field Tech,North Field,1,,,,Pixel-7
+301,3,A,YIELD,301,2025-06-01 10:08:00-05:00,Field Tech,North Field,1,,,,Pixel-7
+302,3,B,YIELD,302,2025-06-01 10:09:00-05:00,Field Tech,North Field,1,,,,Pixel-7
+303,3,C,YIELD,303,2025-06-01 10:10:00-05:00,Field Tech,North Field,1,,,,Pixel-7
+304,3,D,YIELD,304,2025-06-01 10:11:00-05:00,Field Tech,North Field,1,,,,Pixel-7
+101,1,A,SEV,low,2025-06-01 10:12:00-05:00,Field Tech,North Field,1,,,,Pixel-7
+102,1,B,SEV,moderate,2025-06-01 10:13:00-05:00,Field Tech,North Field,1,,,,Pixel-7
+103,1,C,SEV,high,2025-06-01 10:14:00-05:00,Field Tech,North Field,1,,,,Pixel-7

@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}{{ t.text('web.delete.confirmHeading', code=trialCode) }}{% endblock %}
+{% block content %}
+<p class="back"><a href="{{ url_for('web.trial', trialCode=trialCode, locale=locale if locale != 'en-US' else none) }}">&larr; {{ t.text('web.trial.back') }}</a></p>
+
+<div class="page-head">
+  <h1>{{ t.text('web.delete.confirmHeading', code=trialCode) }}</h1>
+</div>
+<p class="intro">{{ title }}</p>
+
+<div class="error" role="alert">{{ t.text('web.delete.confirmIntro') }}</div>
+
+<form class="delete-form" method="post"
+      action="{{ url_for('web.deleteTrial', trialCode=trialCode, locale=locale if locale != 'en-US' else none) }}">
+  <button class="button button-danger" type="submit">{{ t.text('web.delete.confirm') }}</button>
+  <a class="cancel" href="{{ url_for('web.trial', trialCode=trialCode, locale=locale if locale != 'en-US' else none) }}">{{ t.text('web.delete.cancel') }}</a>
+</form>
+{% endblock %}
