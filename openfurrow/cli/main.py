@@ -201,6 +201,13 @@ def _commandInfo(args) -> int:
     f"{len(package.treatments)} treatments, {package.plotCount} plots"
   )
   print(f"Layout: {_layoutOrigin(package.design)}")
+  print("Treatments:")
+  for treatment in package.treatments:
+    print(f"  {_treatmentLine(treatment)}")
+  if package.applications:
+    print("Applications:")
+    for application in package.applications:
+      print(f"  {_applicationLine(application)}")
   print("Assessments:")
   for assessment in package.assessments:
     print(f"  {_assessmentLine(assessment)}")
@@ -214,6 +221,30 @@ def _layoutOrigin(design) -> str:
   if design.randomizationSeed is None:
     return design.randomizationMethod.value
   return f"{design.randomizationMethod.value}, seed {design.randomizationSeed}"
+
+
+def _treatmentLine(treatment) -> str:
+  """One line for a treatment: its code, its role when stated, and what it is made of."""
+  parts = [treatment.treatmentCode]
+  if treatment.role is not None:
+    parts.append(f"role={treatment.role.value}")
+  for line in treatment.lines:
+    applications = ",".join(line.applicationCodes)
+    parts.append(
+      f"{line.product} {line.rate.value} {line.rate.unit} ({line.rateBasis.value}) at {applications}"
+    )
+  return "  ".join(parts)
+
+
+def _applicationLine(application) -> str:
+  parts = [application.applicationCode]
+  if application.timing:
+    parts.append(f"timing={application.timing}")
+  if application.date is not None:
+    parts.append(f"date={application.date.isoformat()}")
+  if application.time is not None:
+    parts.append(f"time={application.time.isoformat()}")
+  return "  ".join(parts)
 
 
 def _assessmentLine(assessment) -> str:

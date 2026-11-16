@@ -12,10 +12,12 @@ delete and SQLite foreign-key enforcement are checked directly.
 import sqlite3
 
 import pytest
+from pydantic import ValidationError
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
+from openfurrow import schemaVersion
 from openfurrow.design import generateRcbdLayout
 from openfurrow.reports import inputHash
 from openfurrow.schema import TrialLayout, TrialPackage
@@ -33,7 +35,13 @@ from openfurrow.store import (
   sessionScope,
   storeVersion,
 )
-from openfurrow.store.database import ObservationRow, PlotRow
+from openfurrow.store.database import (
+  ApplicationRow,
+  ObservationRow,
+  PlotRow,
+  TreatmentLineRow,
+  TreatmentRow,
+)
 
 
 @pytest.fixture
@@ -43,16 +51,22 @@ def engine(tmp_path):
 
 def samplePackage(trialCode="TRIAL-1"):
   return TrialPackage.model_validate({
-    "schemaVersion": "0.2.0",
+    "schemaVersion": schemaVersion,
     "trial": {"trialCode": trialCode, "title": "Sample trial", "crop": "Wheat", "season": "2025",
               "site": "Field A", "objective": "Compare fungicides", "investigator": "Dr. X",
               "organization": "Org Y"},
     "treatments": [
-      {"treatmentCode": "T1", "name": "Untreated control"},
-      {"treatmentCode": "T2", "name": "Fungicide X", "product": "Prod X", "rate": 2.5,
-       "rateUnit": "L/ha", "timing": "BBCH 30"},
-      {"treatmentCode": "T3", "name": "Fungicide Y", "product": "Prod Y", "rate": 1.0, "rateUnit": "kg/ha"},
+      {"treatmentCode": "T1", "name": "Untreated control", "role": "untreatedControl"},
+      {"treatmentCode": "T2", "name": "Fungicide X", "role": "test", "lines": [
+        {"product": "Prod X", "rate": {"value": 2.5, "unit": "L/ha"}, "rateBasis": "formulatedProduct",
+         "applicationCodes": ["A"]},
+      ]},
+      {"treatmentCode": "T3", "name": "Fungicide Y", "role": "reference", "lines": [
+        {"product": "Prod Y", "rate": {"value": 1.0, "unit": "kg/ha"}, "rateBasis": "formulatedProduct",
+         "applicationCodes": ["A"]},
+      ]},
     ],
+    "applications": [{"applicationCode": "A", "timing": "BBCH 30"}],
     "design": {"designType": "rcbd", "replications": 4, "randomizationMethod": "sha256FisherYates1", "randomizationSeed": 42},
     "assessments": [
       {"assessmentCode": "YIELD", "name": "Grain yield", "dataType": "numeric", "unit": "kg/ha", "minValue": 0},
@@ -211,10 +225,9 @@ def testDeleteTrialCascades(engine):
       select(ObservationRow).where(ObservationRow.trialCode == "TRIAL-1")
     ).scalars().all()
     assert remaining == []
-    remainingPlots = session.execute(
-      select(PlotRow).where(PlotRow.trialCode == "TRIAL-1")
-    ).scalars().all()
-    assert remainingPlots == []
+    for table in (PlotRow, TreatmentRow, TreatmentLineRow, ApplicationRow):
+      remaining = session.execute(select(table).where(table.trialCode == "TRIAL-1")).scalars().all()
+      assert remaining == [], table.__tablename__
 
 
 def testDeleteUnknownTrialRejected(engine):
@@ -233,6 +246,69 @@ def testForeignKeyEnforcedForOrphanObservation(engine):
       session.commit()
 
 
+# ---- treatment lines and applications (decision 0016) ----------------------
+
+def testTreatmentLinesAndApplicationsAreRowsOfTheirOwn(engine):
+  package = samplePackage()
+  with sessionScope(engine) as session:
+    savePackage(session, package, generateRcbdLayout(package).plots)
+  with sessionScope(engine) as session:
+    lines = session.execute(
+      select(TreatmentLineRow).order_by(TreatmentLineRow.treatmentCode, TreatmentLineRow.ordinal)
+    ).scalars().all()
+    assert [
+      (line.treatmentCode, line.product, line.rateValue, line.rateUnit, line.rateBasis, line.applicationCodes)
+      for line in lines
+    ] == [
+      ("T2", "Prod X", 2.5, "L/ha", "formulatedProduct", '["A"]'),
+      ("T3", "Prod Y", 1.0, "kg/ha", "formulatedProduct", '["A"]'),
+    ]
+    applications = session.execute(select(ApplicationRow)).scalars().all()
+    assert [(row.applicationCode, row.timing, row.date) for row in applications] == [("A", "BBCH 30", None)]
+    roles = session.execute(select(TreatmentRow.treatmentCode, TreatmentRow.role)).all()
+    assert sorted(roles) == [("T1", "untreatedControl"), ("T2", "test"), ("T3", "reference")]
+
+
+def testRateRoundTripsExactly(engine):
+  # A rate is authored data and enters the content hash, so it must come back bit for bit.
+  awkward = 0.1 + 0.2
+  data = samplePackage().model_dump(mode="json")
+  data["treatments"][1]["lines"][0]["rate"]["value"] = awkward
+  package = TrialPackage.model_validate(data)
+  with sessionScope(engine) as session:
+    savePackage(session, package, generateRcbdLayout(package).plots)
+  with sessionScope(engine) as session:
+    assert loadPackage(session, "TRIAL-1").treatments[1].lines[0].rate.value == awkward
+
+
+def testProductLinesOfATreatmentTheTrialLacksAreRefused(engine):
+  package = samplePackage()
+  with sessionScope(engine) as session:
+    savePackage(session, package, generateRcbdLayout(package).plots)
+    session.add(TreatmentLineRow(
+      trialCode="TRIAL-1", treatmentCode="GHOST", ordinal=0, product="Prod Z", kind=None,
+      formulationType=None, activeSubstances="[]", rateValue=1.0, rateUnit="L/ha",
+      rateBasis="formulatedProduct", applicationCodes='["A"]',
+    ))
+  with sessionScope(engine) as session:
+    with pytest.raises(StoreError, match=r"holds product lines for treatment\(s\) \['GHOST'\] it does not have"):
+      loadPackage(session, "TRIAL-1")
+
+
+def testHalfAQuantityInTheStoreIsRefused(engine):
+  # A value without its unit is a damaged row; it is not read as a bare number.
+  package = samplePackage()
+  with sessionScope(engine) as session:
+    savePackage(session, package, generateRcbdLayout(package).plots)
+  with sessionScope(engine) as session:
+    row = session.execute(select(ApplicationRow)).scalar_one()
+    row.pressureValue = 250.0
+  with sessionScope(engine) as session:
+    with pytest.raises(ValidationError) as excInfo:
+      loadPackage(session, "TRIAL-1")
+  assert [error["loc"] for error in excInfo.value.errors()] == [("unit",)]
+
+
 # ---- regression: transform and measurementKind must persist ---------------
 
 def testAssessmentTransformAndKindSurviveRoundTrip(engine):
@@ -244,7 +320,7 @@ def testAssessmentTransformAndKindSurviveRoundTrip(engine):
   round-trip test missed it because its sample used the defaults on both sides.
   """
   package = TrialPackage.model_validate({
-    "schemaVersion": "0.2.0",
+    "schemaVersion": schemaVersion,
     "trial": {"trialCode": "TR-1", "title": "t", "crop": "Barley", "season": "2025",
               "site": "s", "objective": "o"},
     "treatments": [{"treatmentCode": code, "name": code} for code in ["A", "B"]],

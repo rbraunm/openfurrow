@@ -6,7 +6,7 @@ Findings, defects, checks and owner calls that the plans do not carry.
 Status tags: `fix` (a defect to correct), `build` (work to add), `check` (a suspicion to
 measure), `owner` (the owner's call), `done`.
 
-**Counts.** fix 0, build 17, check 0, owner 3, done 24; 44 in all.
+**Counts.** fix 0, build 16, check 0, owner 3, done 26; 45 in all.
 
 ## Owner decisions
 
@@ -53,7 +53,7 @@ measure), `owner` (the owner's call), `done`.
   A document whose layout is not what its method and seed produce is rejected. A layout
   made elsewhere is `imported`, has no seed, and is kept as supplied. The schema is 0.2.0,
   and the store carries a version, so a database of an earlier build is refused by name.
-  Every existing trial hash changed; the worked example's is now `8bb10a52...e725`.
+  Every existing trial hash changed.
 - **REP-2** `done` **Library versions were not pinned.** Dependencies carry lower bounds
   only, so every install took the newest releases and a validation run could not be
   repeated. One install had already taken a pre-release: formulaic (pulled in by
@@ -249,16 +249,22 @@ sections added beside them. REC-9 needs data entry in the tool (USR-4).
   trial's targets, each with a name, a scientific name or EPPO code and a kind (weed,
   disease, insect, other). A target's stage and level are recorded where they occur: at
   each application (REC-4) and at each assessment (REC-8).
-- **REC-3** `build` **Treatment information.** Today: a code, a name, one product, one
-  rate with its unit and a free-text timing. Plan, after sections 2.1 and 2.2: a treatment
-  has a role (test product, reference product, untreated check) and one or more lines. A
-  line is a product (its formulated name, active substances, formulation concentration
-  and type) at a rate with its unit, tied by code to the applications it goes on at.
-- **REC-4** `build` **Application information.** Today: nothing. Plan, after section 2.2:
-  applications as events, each with a code, a date and time, the method, equipment,
-  nozzle, pressure and spray volume, the crop's growth stage (BBCH), the target's stage,
-  and the conditions at the time (air temperature, humidity, wind, cloud, soil moisture).
-  A difference from the planned dose is recorded as a deviation (USR-8).
+- **REC-3** `done` **Treatment information.** Built as decision 0016 says: a treatment
+  may state its role (test, reference, untreated control, other control) and has product
+  lines, each a formulated product with its kind, formulation type, active substances and
+  their concentrations, and a rate whose basis (product or active substance) must be
+  stated, tied by code to its applications. Stored, exported, hashed and printed; the
+  report shows one row per line and leaves out a column nothing is recorded in.
+- **REC-4** `done` **Application information.** Built as decision 0016 says: each
+  application has a code, the planned timing, date and time of day, method, placement,
+  equipment, nozzle, pressure, spray quality, travel speed, spray volume, crop and target
+  stage, air temperature, relative humidity, wind speed, cloud cover, soil moisture and
+  notes; the report tabulates them. Impossible values are refused on entry. A difference
+  from the planned dose stays with USR-8; entry by form stays with USR-1.
+- **REC-10** `build` **The Markdown report on right-to-left readers.** In the web view each
+  table cell now takes its direction from its own text, so "250 kPa" reads correctly on
+  the Arabic page. The downloaded Markdown file has no such rule, and a right-to-left
+  viewer may show a quantity as "kPa 250". Not yet measured in a viewer.
 - **REC-5** `build` **Soil information.** Today: nothing. Plan, after section 3.1.2: soil
   type or texture, pH, organic matter, seed-bed quality and the fertilizer regime; soil
   moisture at application sits with the application (REC-4). Sand, silt and clay

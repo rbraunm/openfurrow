@@ -16,7 +16,7 @@ than rendering something plausible-looking and wrong.
 
 from __future__ import annotations
 
-from datetime import date
+from datetime import date, time
 
 from openfurrow.i18n.catalog import (
   Catalog,
@@ -25,7 +25,13 @@ from openfurrow.i18n.catalog import (
   loadCatalog,
   placeholdersIn,
 )
-from openfurrow.i18n.formatting import formatDate, formatInteger, formatNumber, textDirection
+from openfurrow.i18n.formatting import (
+  formatDate,
+  formatInteger,
+  formatNumber,
+  formatTime,
+  textDirection,
+)
 
 
 class Translator:
@@ -95,6 +101,10 @@ class Translator:
   def date(self, value: date) -> str:
     """Format a date for display in this locale."""
     return formatDate(value, self.locale)
+
+  def time(self, value: time) -> str:
+    """Format a time of day for display in this locale."""
+    return formatTime(value, self.locale)
 
 
 def translatorFor(locale: str) -> Translator:

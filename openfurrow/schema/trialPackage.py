@@ -17,6 +17,8 @@ from enum import Enum
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
+from openfurrow.schema.application import Application
+from openfurrow.schema.treatment import Treatment
 from openfurrow.version import schemaVersion as currentSchemaVersion
 
 
@@ -80,33 +82,6 @@ class TrialMetadata(BaseModel):
   objective: str = Field(min_length=1)
   investigator: str | None = None
   organization: str | None = None
-
-
-class Treatment(BaseModel):
-  """One treatment under comparison.
-
-  A treatment with no product is an untreated control. A rate and its unit are
-  inseparable: a number without a unit is meaningless, and a unit without a
-  number is incomplete, so the package is rejected if exactly one is present.
-  """
-
-  model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
-
-  treatmentCode: str = Field(min_length=1, description="Stable per-trial code, e.g. 'T1'.")
-  name: str = Field(min_length=1)
-  product: str | None = Field(default=None, description="Material applied; omit for an untreated control.")
-  rate: float | None = Field(default=None, gt=0.0)
-  rateUnit: str | None = Field(default=None, min_length=1, description="Unit for rate, e.g. 'L/ha'.")
-  timing: str | None = Field(default=None, description="Application timing or growth stage.")
-
-  @model_validator(mode="after")
-  def rateAndUnitTogether(self) -> Treatment:
-    if (self.rate is None) != (self.rateUnit is None):
-      raise ValueError(
-        f"treatment '{self.treatmentCode}': rate and rateUnit must be provided together "
-        f"(got rate={self.rate!r}, rateUnit={self.rateUnit!r})"
-      )
-    return self
 
 
 class RandomizationMethod(str, Enum):
@@ -216,7 +191,9 @@ class TrialPackage(BaseModel):
 
   Treatment and assessment codes must each be unique within the package; they
   are the join keys observation import and analysis rely on, so a collision is
-  rejected here rather than producing silently merged rows downstream.
+  rejected here rather than producing silently merged rows downstream. Application
+  codes are the join between treatment lines and applications, and are held to the
+  same rule: a line may only name an application the package declares.
   """
 
   model_config = ConfigDict(extra="forbid")
@@ -224,6 +201,7 @@ class TrialPackage(BaseModel):
   schemaVersion: str = Field(description="The schema this package is written in; must be the one this build reads.")
   trial: TrialMetadata
   treatments: list[Treatment] = Field(min_length=2, description="At least two treatments to compare.")
+  applications: list[Application] = Field(default_factory=list)
   design: DesignSpecification
   assessments: list[AssessmentDefinition] = Field(min_length=1)
 
@@ -251,6 +229,22 @@ class TrialPackage(BaseModel):
     if len(set(codes)) != len(codes):
       raise ValueError(f"duplicate assessmentCode values: {sorted(_duplicates(codes))}")
     return assessments
+
+  @model_validator(mode="after")
+  def treatmentLinesNameDeclaredApplications(self) -> TrialPackage:
+    codes = [application.applicationCode for application in self.applications]
+    if len(set(codes)) != len(codes):
+      raise ValueError(f"duplicate applicationCode values: {sorted(_duplicates(codes))}")
+    declared = set(codes)
+    for treatment in self.treatments:
+      for line in treatment.lines:
+        unknown = sorted(set(line.applicationCodes) - declared)
+        if unknown:
+          raise ValueError(
+            f"treatment '{treatment.treatmentCode}', product '{line.product}': "
+            f"application(s) {unknown} are not declared in the package"
+          )
+    return self
 
   @property
   def plotCount(self) -> int:

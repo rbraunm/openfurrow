@@ -301,9 +301,18 @@ def _examplePackageJson() -> str:
       "objective": "Compare fungicide programs for yield",
     },
     "treatments": [
-      {"treatmentCode": "UTC", "name": "Untreated control"},
-      {"treatmentCode": "A", "name": "Program A", "product": "Fungicide A", "rate": 1.0, "rateUnit": "L/ha"},
-      {"treatmentCode": "B", "name": "Program B", "product": "Fungicide B", "rate": 0.75, "rateUnit": "L/ha"},
+      {"treatmentCode": "UTC", "name": "Untreated control", "role": "untreatedControl"},
+      {"treatmentCode": "A", "name": "Program A", "role": "test", "lines": [
+        {"product": "Fungicide A", "kind": "fungicide", "rate": {"value": 1.0, "unit": "L/ha"},
+         "rateBasis": "formulatedProduct", "applicationCodes": ["A"]},
+      ]},
+      {"treatmentCode": "B", "name": "Program B", "role": "reference", "lines": [
+        {"product": "Fungicide B", "kind": "fungicide", "rate": {"value": 0.75, "unit": "L/ha"},
+         "rateBasis": "formulatedProduct", "applicationCodes": ["A"]},
+      ]},
+    ],
+    "applications": [
+      {"applicationCode": "A", "timing": "BBCH 31", "method": "Broadcast spray"},
     ],
     "design": {"designType": "rcbd", "replications": 4,
                "randomizationMethod": RandomizationMethod.sha256FisherYates1.value,

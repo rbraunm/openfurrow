@@ -10,16 +10,17 @@ trial's content hash. The plot map is a redundant-cue design (colour plus code),
 is asserted by the codes it must contain, not by colour.
 """
 
+import html
 import json
 import re
 
 import pytest
 
-from openfurrow import TrialPackage, Workspace
+from openfurrow import TrialPackage, Workspace, schemaVersion
 from openfurrow.service import createApp
 
 _packageDict = {
-  "schemaVersion": "0.2.0",
+  "schemaVersion": schemaVersion,
   "trial": {"trialCode": "WEB-1", "title": "Barley trial", "crop": "Barley",
             "season": "2025", "site": "North Field", "objective": "Compare programs"},
   "treatments": [{"treatmentCode": code, "name": f"Treatment {code}"} for code in ["A", "B", "C", "D"]],
@@ -71,6 +72,17 @@ def testAddFormShowsExample(client):
   # The form is seeded with an editable example package.
   assert "ESV-2025-01" in body
   assert "<textarea" in body
+
+
+def testTheFormsOwnExampleCreatesATrial(client):
+  """The example a new user starts from has to be a valid trial itself, treatment lines included."""
+  body = _text(client.get("/trials/new"))
+  example = html.unescape(re.search(r"<textarea[^>]*>(.*?)</textarea>", body, re.DOTALL).group(1))
+  assert client.post("/trials/new", data={"package": example}).status_code == 302
+  report = _text(client.get("/trials/ESV-2025-01/report"))
+  for cell in ("<td>Reference</td>", "<td>Fungicide B</td>", "<td>0.75 L/ha of product</td>",
+               "<th>Application</th>", "<td>Broadcast spray</td>"):
+    assert cell in report, cell
 
 
 def testHtmlDeclaresLangAndDir(client):

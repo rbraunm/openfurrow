@@ -20,6 +20,7 @@ from pathlib import Path
 import pytest
 from pydantic import ValidationError
 
+from openfurrow import schemaVersion
 from openfurrow.analysis import analyzeRcbd, assessAssumptions, separateMeans
 from openfurrow.config import defaultConfig
 from openfurrow.design import generateRcbdLayout
@@ -33,7 +34,7 @@ from openfurrow.workspace import (
 )
 
 _packageDict = {
-  "schemaVersion": "0.2.0",
+  "schemaVersion": schemaVersion,
   "trial": {"trialCode": "WS-1", "title": "Facade trial", "crop": "Barley", "season": "2025",
             "site": "Field A", "objective": "Compare treatments"},
   "treatments": [{"treatmentCode": code, "name": code} for code in ["A", "B", "C", "D"]],

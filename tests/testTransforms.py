@@ -11,6 +11,7 @@ import math
 
 import pytest
 
+from openfurrow import schemaVersion
 from openfurrow.analysis.transforms import (
   TransformError,
   applyTransform,
@@ -135,7 +136,7 @@ def testCompatibilityMapExcludesNone():
 
 def _packageDict(assessment):
   return {
-    "schemaVersion": "0.2.0",
+    "schemaVersion": schemaVersion,
     "trial": {"trialCode": "T1", "title": "t", "crop": "Maize", "season": "2025",
               "site": "s", "objective": "o"},
     "treatments": [{"treatmentCode": "A", "name": "A"}, {"treatmentCode": "B", "name": "B"}],

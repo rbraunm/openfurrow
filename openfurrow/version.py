@@ -13,4 +13,4 @@ module that imports nothing removes the load-order hazard entirely.
 """
 
 softwareVersion = "0.1.0.dev0"
-schemaVersion = "0.2.0"
+schemaVersion = "0.3.0"

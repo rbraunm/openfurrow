@@ -16,6 +16,7 @@ import statsmodels.api as statsmodelsApi
 import statsmodels.formula.api as statsmodelsFormula
 from scipy import stats
 
+from openfurrow import schemaVersion
 from openfurrow.analysis import analyzeRcbd, separateMeans
 from openfurrow.design import generateRcbdLayout
 from openfurrow.schema import Observation, TrialDocument, TrialLayout, TrialPackage
@@ -60,7 +61,7 @@ def clewerWheatTrial():
   """The trial as it stood in the field: plot numbers from row and column, no seed."""
   rows = readFixture("clewerWheat.csv")
   package = TrialPackage.model_validate({
-    "schemaVersion": "0.2.0",
+    "schemaVersion": schemaVersion,
     "trial": {"trialCode": "CLEWER-WHEAT", "title": "Wheat varieties", "crop": "Wheat",
               "season": "2001", "site": "Example 10.1", "objective": "Compare three new varieties with a standard"},
     "treatments": [{"treatmentCode": code, "name": code} for code in ["V1", "V2", "V3", "V4"]],
@@ -129,7 +130,7 @@ def gomezSeedRateResult():
   rows = readFixture("gomezSeedRate.csv")
   rates = ["25", "50", "75", "100", "125", "150"]
   package = TrialPackage.model_validate({
-    "schemaVersion": "0.2.0",
+    "schemaVersion": schemaVersion,
     "trial": {"trialCode": "GOMEZ-SEEDRATE", "title": "Rice seeding rates", "crop": "Rice",
               "season": "1984", "site": "Table 2.5", "objective": "Compare six seeding rates"},
     "treatments": [{"treatmentCode": rate, "name": f"{rate} kg seed/ha"} for rate in rates],

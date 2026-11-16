@@ -14,6 +14,7 @@ import statsmodels.api as sm
 import statsmodels.formula.api as smf
 from scipy import stats
 
+from openfurrow import schemaVersion
 from openfurrow.analysis.diagnostics import (
   Assumptions,
   DiagnosticOutcome,
@@ -171,7 +172,7 @@ def _stirretSetup(assessmentColumn):
     for row in csv.DictReader(handle):
       cells[(row["trt"], int(row["block"]))] = float(row[assessmentColumn])
   package = TrialPackage.model_validate({
-    "schemaVersion": "0.2.0",
+    "schemaVersion": schemaVersion,
     "trial": {"trialCode": "STIRRET-1935", "title": "Corn borer", "crop": "Maize",
               "season": "1935", "site": "Ottawa", "objective": "control"},
     "treatments": [{"treatmentCode": t, "name": t} for t in ("None", "Early", "Late", "Both")],

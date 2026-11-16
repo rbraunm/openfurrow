@@ -5,8 +5,10 @@ import copy
 
 import pytest
 
+from openfurrow import schemaVersion
+
 _validPackage = {
-  "schemaVersion": "0.2.0",
+  "schemaVersion": schemaVersion,
   "trial": {
     "trialCode": "ESV-2025-01",
     "title": "Fungicide efficacy on winter wheat",
@@ -18,11 +20,19 @@ _validPackage = {
     "organization": "Research Station",
   },
   "treatments": [
-    {"treatmentCode": "T1", "name": "Untreated control"},
-    {"treatmentCode": "T2", "name": "Program A", "product": "Fungicide A",
-     "rate": 2.5, "rateUnit": "L/ha", "timing": "GS31"},
-    {"treatmentCode": "T3", "name": "Program B", "product": "Fungicide B",
-     "rate": 1.0, "rateUnit": "L/ha", "timing": "GS39"},
+    {"treatmentCode": "T1", "name": "Untreated control", "role": "untreatedControl"},
+    {"treatmentCode": "T2", "name": "Program A", "role": "test", "lines": [
+      {"product": "Fungicide A", "rate": {"value": 2.5, "unit": "L/ha"},
+       "rateBasis": "formulatedProduct", "applicationCodes": ["GS31"]},
+    ]},
+    {"treatmentCode": "T3", "name": "Program B", "role": "reference", "lines": [
+      {"product": "Fungicide B", "rate": {"value": 1.0, "unit": "L/ha"},
+       "rateBasis": "formulatedProduct", "applicationCodes": ["GS39"]},
+    ]},
+  ],
+  "applications": [
+    {"applicationCode": "GS31", "timing": "BBCH 31"},
+    {"applicationCode": "GS39", "timing": "BBCH 39"},
   ],
   "design": {"designType": "rcbd", "replications": 4, "randomizationMethod": "sha256FisherYates1", "randomizationSeed": 42},
   "assessments": [

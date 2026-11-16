@@ -133,6 +133,102 @@
       "text": "حُلل على مقياس {scale}؛ الجدول والمتوسط العام ومعامل الاختلاف أدناه على ذلك المقياس.",
       "status": "machineDraft"
     },
+    "report.applications.column.application": {
+      "text": "التطبيق",
+      "status": "machineDraft"
+    },
+    "report.applications.row.airTemperature": {
+      "text": "درجة حرارة الهواء",
+      "status": "machineDraft"
+    },
+    "report.applications.row.cloudCover": {
+      "text": "الغطاء السحابي",
+      "status": "machineDraft"
+    },
+    "report.applications.row.cropStage": {
+      "text": "طور المحصول",
+      "status": "machineDraft"
+    },
+    "report.applications.row.date": {
+      "text": "التاريخ",
+      "status": "machineDraft"
+    },
+    "report.applications.row.equipment": {
+      "text": "المعدات",
+      "status": "machineDraft"
+    },
+    "report.applications.row.method": {
+      "text": "الطريقة",
+      "status": "machineDraft"
+    },
+    "report.applications.row.notes": {
+      "text": "ملاحظات",
+      "status": "machineDraft"
+    },
+    "report.applications.row.nozzle": {
+      "text": "الفوهة",
+      "status": "machineDraft"
+    },
+    "report.applications.row.placement": {
+      "text": "موضع التطبيق",
+      "status": "machineDraft"
+    },
+    "report.applications.row.pressure": {
+      "text": "الضغط",
+      "status": "machineDraft"
+    },
+    "report.applications.row.relativeHumidity": {
+      "text": "الرطوبة النسبية",
+      "status": "machineDraft"
+    },
+    "report.applications.row.soilMoisture": {
+      "text": "رطوبة التربة",
+      "status": "machineDraft"
+    },
+    "report.applications.row.sprayQuality": {
+      "text": "جودة الرش",
+      "status": "machineDraft"
+    },
+    "report.applications.row.sprayVolume": {
+      "text": "حجم الرش",
+      "status": "machineDraft"
+    },
+    "report.applications.row.targetStage": {
+      "text": "طور الهدف",
+      "status": "machineDraft"
+    },
+    "report.applications.row.time": {
+      "text": "الوقت",
+      "status": "machineDraft"
+    },
+    "report.applications.row.timing": {
+      "text": "التوقيت",
+      "status": "machineDraft"
+    },
+    "report.applications.row.travelSpeed": {
+      "text": "سرعة السير",
+      "status": "machineDraft"
+    },
+    "report.applications.row.windSpeed": {
+      "text": "سرعة الرياح",
+      "status": "machineDraft"
+    },
+    "report.applications.soilMoisture.dry": {
+      "text": "جافة",
+      "status": "machineDraft"
+    },
+    "report.applications.soilMoisture.moist": {
+      "text": "رطبة",
+      "status": "machineDraft"
+    },
+    "report.applications.soilMoisture.waterlogged": {
+      "text": "مشبعة بالماء",
+      "status": "machineDraft"
+    },
+    "report.applications.soilMoisture.wet": {
+      "text": "مبتلة",
+      "status": "machineDraft"
+    },
     "report.assessment.notAnalyzed": {
       "text": "لم يُحلل: {reason}",
       "status": "machineDraft"
@@ -219,6 +315,10 @@
     },
     "report.heading.anova": {
       "text": "تحليل التباين",
+      "status": "machineDraft"
+    },
+    "report.heading.applications": {
+      "text": "التطبيقات",
       "status": "machineDraft"
     },
     "report.heading.assessment": {
@@ -345,8 +445,24 @@
       "text": "الجذر التربيعي",
       "status": "machineDraft"
     },
+    "report.treatments.column.activeSubstances": {
+      "text": "المادة الفعالة",
+      "status": "machineDraft"
+    },
+    "report.treatments.column.applications": {
+      "text": "التطبيقات",
+      "status": "machineDraft"
+    },
     "report.treatments.column.code": {
       "text": "الرمز",
+      "status": "machineDraft"
+    },
+    "report.treatments.column.formulation": {
+      "text": "المستحضر",
+      "status": "machineDraft"
+    },
+    "report.treatments.column.kind": {
+      "text": "النوع",
       "status": "machineDraft"
     },
     "report.treatments.column.name": {
@@ -361,12 +477,64 @@
       "text": "المعدل",
       "status": "machineDraft"
     },
-    "report.treatments.column.timing": {
-      "text": "التوقيت",
+    "report.treatments.column.role": {
+      "text": "الدور",
       "status": "machineDraft"
     },
-    "report.treatments.untreatedControl": {
-      "text": "(شاهد بدون معاملة)",
+    "report.treatments.kind.adjuvant": {
+      "text": "مادة مساعدة",
+      "status": "machineDraft"
+    },
+    "report.treatments.kind.biological": {
+      "text": "حيوي",
+      "status": "machineDraft"
+    },
+    "report.treatments.kind.fertilizer": {
+      "text": "سماد",
+      "status": "machineDraft"
+    },
+    "report.treatments.kind.fungicide": {
+      "text": "مبيد فطري",
+      "status": "machineDraft"
+    },
+    "report.treatments.kind.growthRegulator": {
+      "text": "منظم نمو",
+      "status": "machineDraft"
+    },
+    "report.treatments.kind.herbicide": {
+      "text": "مبيد أعشاب",
+      "status": "machineDraft"
+    },
+    "report.treatments.kind.insecticide": {
+      "text": "مبيد حشري",
+      "status": "machineDraft"
+    },
+    "report.treatments.kind.other": {
+      "text": "أخرى",
+      "status": "machineDraft"
+    },
+    "report.treatments.rate.activeSubstance": {
+      "text": "{rate} من المادة الفعالة",
+      "status": "machineDraft"
+    },
+    "report.treatments.rate.formulatedProduct": {
+      "text": "{rate} من المنتج",
+      "status": "machineDraft"
+    },
+    "report.treatments.role.otherControl": {
+      "text": "شاهد آخر",
+      "status": "machineDraft"
+    },
+    "report.treatments.role.reference": {
+      "text": "مرجعي",
+      "status": "machineDraft"
+    },
+    "report.treatments.role.test": {
+      "text": "قيد الاختبار",
+      "status": "machineDraft"
+    },
+    "report.treatments.role.untreatedControl": {
+      "text": "شاهد بدون معاملة",
       "status": "machineDraft"
     },
     "report.value.absent": {
@@ -379,6 +547,10 @@
     },
     "report.value.lessThan": {
       "text": "< {value}",
+      "status": "machineDraft"
+    },
+    "report.value.percent": {
+      "text": "{value}%",
       "status": "machineDraft"
     },
     "web.add.error": {

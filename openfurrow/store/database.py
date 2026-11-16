@@ -15,6 +15,10 @@ Modeling choices, recorded in decisions 0001 and 0015:
   significant -- the randomizer permutes treatments in package order, and the input
   hash preserves list order -- so it must survive a round trip, which SQL row order
   does not guarantee without an ordering column.
+- A quantity (a rate, a pressure) is two columns, its value and its unit. A treatment's
+  product lines and a trial's applications are tables of their own (decision 0016); the
+  short lists inside a line -- its active substances, the applications it names -- are
+  JSON text, as `allowedValues` is.
 - An observation value is float | str | None. It is stored in two nullable columns,
   `numericValue` (REAL) and `textValue`, with the assessment's data type selecting
   which is populated and both NULL meaning missing. Native REAL keeps floats exact
@@ -26,11 +30,13 @@ Modeling choices, recorded in decisions 0001 and 0015:
 
 from __future__ import annotations
 
+import datetime
+
 from sqlalchemy import ForeignKey, Text, event, inspect, select
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, relationship
 
-storeVersion = 2
+storeVersion = 3
 
 
 class StoreError(RuntimeError):
@@ -71,6 +77,12 @@ class TrialRow(Base):
   treatments: Mapped[list[TreatmentRow]] = relationship(
     back_populates="trial", cascade="all, delete-orphan"
   )
+  treatmentLines: Mapped[list[TreatmentLineRow]] = relationship(
+    back_populates="trial", cascade="all, delete-orphan"
+  )
+  applications: Mapped[list[ApplicationRow]] = relationship(
+    back_populates="trial", cascade="all, delete-orphan"
+  )
   assessments: Mapped[list[AssessmentRow]] = relationship(
     back_populates="trial", cascade="all, delete-orphan"
   )
@@ -93,12 +105,69 @@ class TreatmentRow(Base):
   treatmentCode: Mapped[str] = mapped_column(primary_key=True)
   ordinal: Mapped[int]
   name: Mapped[str]
-  product: Mapped[str | None]
-  rate: Mapped[float | None]
-  rateUnit: Mapped[str | None]
-  timing: Mapped[str | None]
+  role: Mapped[str | None]
 
   trial: Mapped[TrialRow] = relationship(back_populates="treatments")
+
+
+class TreatmentLineRow(Base):
+  """One product line of a treatment. `ordinal` preserves the order of its lines."""
+
+  __tablename__ = "treatmentLine"
+
+  trialCode: Mapped[str] = mapped_column(
+    ForeignKey("trial.trialCode", ondelete="CASCADE"), primary_key=True
+  )
+  treatmentCode: Mapped[str] = mapped_column(primary_key=True)
+  ordinal: Mapped[int] = mapped_column(primary_key=True)
+  product: Mapped[str]
+  kind: Mapped[str | None]
+  formulationType: Mapped[str | None]
+  activeSubstances: Mapped[str] = mapped_column(Text)
+  rateValue: Mapped[float]
+  rateUnit: Mapped[str]
+  rateBasis: Mapped[str]
+  applicationCodes: Mapped[str] = mapped_column(Text)
+
+  trial: Mapped[TrialRow] = relationship(back_populates="treatmentLines")
+
+
+class ApplicationRow(Base):
+  """One application: its plan, and what was done and found when it was made."""
+
+  __tablename__ = "application"
+
+  trialCode: Mapped[str] = mapped_column(
+    ForeignKey("trial.trialCode", ondelete="CASCADE"), primary_key=True
+  )
+  applicationCode: Mapped[str] = mapped_column(primary_key=True)
+  ordinal: Mapped[int]
+  timing: Mapped[str | None]
+  date: Mapped[datetime.date | None]
+  time: Mapped[datetime.time | None]
+  method: Mapped[str | None]
+  placement: Mapped[str | None]
+  equipment: Mapped[str | None]
+  nozzle: Mapped[str | None]
+  pressureValue: Mapped[float | None]
+  pressureUnit: Mapped[str | None]
+  sprayQuality: Mapped[str | None]
+  travelSpeedValue: Mapped[float | None]
+  travelSpeedUnit: Mapped[str | None]
+  sprayVolumeValue: Mapped[float | None]
+  sprayVolumeUnit: Mapped[str | None]
+  cropStage: Mapped[str | None]
+  targetStage: Mapped[str | None]
+  airTemperatureValue: Mapped[float | None]
+  airTemperatureUnit: Mapped[str | None]
+  relativeHumidity: Mapped[float | None]
+  windSpeedValue: Mapped[float | None]
+  windSpeedUnit: Mapped[str | None]
+  cloudCover: Mapped[float | None]
+  soilMoisture: Mapped[str | None]
+  notes: Mapped[str | None]
+
+  trial: Mapped[TrialRow] = relationship(back_populates="applications")
 
 
 class AssessmentRow(Base):

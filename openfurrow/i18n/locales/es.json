@@ -133,6 +133,102 @@
       "text": "Analizado en la escala {scale}; la tabla, la media general y el CV siguientes están en esa escala.",
       "status": "machineDraft"
     },
+    "report.applications.column.application": {
+      "text": "Aplicación",
+      "status": "machineDraft"
+    },
+    "report.applications.row.airTemperature": {
+      "text": "Temperatura del aire",
+      "status": "machineDraft"
+    },
+    "report.applications.row.cloudCover": {
+      "text": "Nubosidad",
+      "status": "machineDraft"
+    },
+    "report.applications.row.cropStage": {
+      "text": "Estadio del cultivo",
+      "status": "machineDraft"
+    },
+    "report.applications.row.date": {
+      "text": "Fecha",
+      "status": "machineDraft"
+    },
+    "report.applications.row.equipment": {
+      "text": "Equipo",
+      "status": "machineDraft"
+    },
+    "report.applications.row.method": {
+      "text": "Método",
+      "status": "machineDraft"
+    },
+    "report.applications.row.notes": {
+      "text": "Notas",
+      "status": "machineDraft"
+    },
+    "report.applications.row.nozzle": {
+      "text": "Boquilla",
+      "status": "machineDraft"
+    },
+    "report.applications.row.placement": {
+      "text": "Colocación",
+      "status": "machineDraft"
+    },
+    "report.applications.row.pressure": {
+      "text": "Presión",
+      "status": "machineDraft"
+    },
+    "report.applications.row.relativeHumidity": {
+      "text": "Humedad relativa",
+      "status": "machineDraft"
+    },
+    "report.applications.row.soilMoisture": {
+      "text": "Humedad del suelo",
+      "status": "machineDraft"
+    },
+    "report.applications.row.sprayQuality": {
+      "text": "Calidad de pulverización",
+      "status": "machineDraft"
+    },
+    "report.applications.row.sprayVolume": {
+      "text": "Volumen de aplicación",
+      "status": "machineDraft"
+    },
+    "report.applications.row.targetStage": {
+      "text": "Estadio del objetivo",
+      "status": "machineDraft"
+    },
+    "report.applications.row.time": {
+      "text": "Hora",
+      "status": "machineDraft"
+    },
+    "report.applications.row.timing": {
+      "text": "Momento",
+      "status": "machineDraft"
+    },
+    "report.applications.row.travelSpeed": {
+      "text": "Velocidad de avance",
+      "status": "machineDraft"
+    },
+    "report.applications.row.windSpeed": {
+      "text": "Velocidad del viento",
+      "status": "machineDraft"
+    },
+    "report.applications.soilMoisture.dry": {
+      "text": "Seco",
+      "status": "machineDraft"
+    },
+    "report.applications.soilMoisture.moist": {
+      "text": "Húmedo",
+      "status": "machineDraft"
+    },
+    "report.applications.soilMoisture.waterlogged": {
+      "text": "Encharcado",
+      "status": "machineDraft"
+    },
+    "report.applications.soilMoisture.wet": {
+      "text": "Mojado",
+      "status": "machineDraft"
+    },
     "report.assessment.notAnalyzed": {
       "text": "No analizado: {reason}",
       "status": "machineDraft"
@@ -219,6 +315,10 @@
     },
     "report.heading.anova": {
       "text": "Análisis de varianza",
+      "status": "machineDraft"
+    },
+    "report.heading.applications": {
+      "text": "Aplicaciones",
       "status": "machineDraft"
     },
     "report.heading.assessment": {
@@ -345,8 +445,24 @@
       "text": "raíz cuadrada",
       "status": "machineDraft"
     },
+    "report.treatments.column.activeSubstances": {
+      "text": "Sustancia activa",
+      "status": "machineDraft"
+    },
+    "report.treatments.column.applications": {
+      "text": "Aplicaciones",
+      "status": "machineDraft"
+    },
     "report.treatments.column.code": {
       "text": "Código",
+      "status": "machineDraft"
+    },
+    "report.treatments.column.formulation": {
+      "text": "Formulación",
+      "status": "machineDraft"
+    },
+    "report.treatments.column.kind": {
+      "text": "Tipo",
       "status": "machineDraft"
     },
     "report.treatments.column.name": {
@@ -361,12 +477,64 @@
       "text": "Dosis",
       "status": "machineDraft"
     },
-    "report.treatments.column.timing": {
-      "text": "Momento",
+    "report.treatments.column.role": {
+      "text": "Función",
       "status": "machineDraft"
     },
-    "report.treatments.untreatedControl": {
-      "text": "(testigo sin tratar)",
+    "report.treatments.kind.adjuvant": {
+      "text": "Coadyuvante",
+      "status": "machineDraft"
+    },
+    "report.treatments.kind.biological": {
+      "text": "Biológico",
+      "status": "machineDraft"
+    },
+    "report.treatments.kind.fertilizer": {
+      "text": "Fertilizante",
+      "status": "machineDraft"
+    },
+    "report.treatments.kind.fungicide": {
+      "text": "Fungicida",
+      "status": "machineDraft"
+    },
+    "report.treatments.kind.growthRegulator": {
+      "text": "Regulador de crecimiento",
+      "status": "machineDraft"
+    },
+    "report.treatments.kind.herbicide": {
+      "text": "Herbicida",
+      "status": "machineDraft"
+    },
+    "report.treatments.kind.insecticide": {
+      "text": "Insecticida",
+      "status": "machineDraft"
+    },
+    "report.treatments.kind.other": {
+      "text": "Otro",
+      "status": "machineDraft"
+    },
+    "report.treatments.rate.activeSubstance": {
+      "text": "{rate} de sustancia activa",
+      "status": "machineDraft"
+    },
+    "report.treatments.rate.formulatedProduct": {
+      "text": "{rate} de producto",
+      "status": "machineDraft"
+    },
+    "report.treatments.role.otherControl": {
+      "text": "Otro testigo",
+      "status": "machineDraft"
+    },
+    "report.treatments.role.reference": {
+      "text": "Referencia",
+      "status": "machineDraft"
+    },
+    "report.treatments.role.test": {
+      "text": "En ensayo",
+      "status": "machineDraft"
+    },
+    "report.treatments.role.untreatedControl": {
+      "text": "Testigo sin tratar",
       "status": "machineDraft"
     },
     "report.value.absent": {
@@ -379,6 +547,10 @@
     },
     "report.value.lessThan": {
       "text": "< {value}",
+      "status": "machineDraft"
+    },
+    "report.value.percent": {
+      "text": "{value}%",
       "status": "machineDraft"
     },
     "web.add.error": {

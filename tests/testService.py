@@ -22,12 +22,12 @@ import json
 
 import pytest
 
-from openfurrow import TrialPackage, Workspace, defaultConfig
+from openfurrow import TrialPackage, Workspace, defaultConfig, schemaVersion
 from openfurrow.config import OpenFurrowConfig, TLSSettings
 from openfurrow.service import ServiceError, createApp, serviceUrl, tlsContext
 
 _packageDict = {
-  "schemaVersion": "0.2.0",
+  "schemaVersion": schemaVersion,
   "trial": {"trialCode": "API-1", "title": "Service trial", "crop": "Barley",
             "season": "2025", "site": "Field A", "objective": "Compare treatments"},
   "treatments": [{"treatmentCode": code, "name": code} for code in ["A", "B", "C", "D"]],

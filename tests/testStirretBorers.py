@@ -29,6 +29,7 @@ from pathlib import Path
 
 import pytest
 
+from openfurrow import schemaVersion
 from openfurrow.analysis import analyzeRcbd, separateMeans
 from openfurrow.design import generateRcbdLayout
 from openfurrow.reports import buildReport
@@ -82,7 +83,7 @@ def loadStirretCells():
 
 def stirretPackage():
   return TrialPackage.model_validate({
-    "schemaVersion": "0.2.0",
+    "schemaVersion": schemaVersion,
     "trial": {
       "trialCode": "STIRRET-1935",
       "title": "European corn borer control by Beauveria bassiana",

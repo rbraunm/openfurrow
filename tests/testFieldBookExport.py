@@ -14,6 +14,7 @@ from pathlib import Path
 
 import pytest
 
+from openfurrow import schemaVersion
 from openfurrow.design import generateRcbdLayout
 from openfurrow.interop.fieldbook import (
   _rejectForbiddenHeaders,
@@ -25,7 +26,7 @@ from openfurrow.schema import TrialPackage
 from openfurrow.workspace import Workspace
 
 _packageDict = {
-  "schemaVersion": "0.2.0",
+  "schemaVersion": schemaVersion,
   "trial": {"trialCode": "FB-1", "title": "Field Book export", "crop": "Barley", "season": "2025",
             "site": "Field A", "objective": "Compare treatments"},
   "treatments": [{"treatmentCode": code, "name": code} for code in ["A", "B", "C", "D"]],

@@ -25,7 +25,7 @@ the ones actually shipped is the signal that the real mechanism is overdue.
 
 from __future__ import annotations
 
-from datetime import date
+from datetime import date, time
 
 
 class LocaleFormat:
@@ -121,6 +121,16 @@ def formatDate(value: date, locale: str) -> str:
   if rules.dateOrder == "YMD":
     return f"{year}-{month}-{day}"
   raise FormattingError(f"locale '{locale}' has an unknown date order '{rules.dateOrder}'")
+
+
+def formatTime(value: time, locale: str) -> str:
+  """Render a time of day for display in `locale`.
+
+  Every locale shipped so far gets the 24-hour clock, which no reader takes for another
+  hour; the 12-hour forms come with the CLDR mechanism. Seconds show only when recorded.
+  """
+  formatFor(locale)
+  return value.isoformat(timespec="seconds" if value.second else "minutes")
 
 
 # Scripts that read right-to-left. Decision 0007 requires the UI to mirror its layout,

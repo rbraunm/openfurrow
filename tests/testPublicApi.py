@@ -30,10 +30,11 @@ from openfurrow import (
   Workspace,
   contentHash,
   defaultConfig,
+  schemaVersion,
 )
 
 _packageDict = {
-  "schemaVersion": "0.2.0",
+  "schemaVersion": schemaVersion,
   "trial": {"trialCode": "PUB-1", "title": "Public API trial", "crop": "Barley",
             "season": "2025", "site": "Field A", "objective": "Compare treatments"},
   "treatments": [{"treatmentCode": code, "name": code} for code in ["A", "B", "C", "D"]],

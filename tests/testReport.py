@@ -12,6 +12,7 @@ from pathlib import Path
 
 import pytest
 
+from openfurrow import schemaVersion
 from openfurrow.analysis import AnalysisError
 from openfurrow.design import generateRcbdLayout
 from openfurrow.reports import buildReport, inputHash
@@ -36,7 +37,7 @@ def yatesPackage(extraAssessments=None):
   if extraAssessments:
     assessments.extend(extraAssessments)
   return TrialPackage.model_validate({
-    "schemaVersion": "0.2.0",
+    "schemaVersion": schemaVersion,
     "trial": {"trialCode": "YATES-OATS", "title": "Yates oats variety", "crop": "Oats",
               "season": "1935", "site": "Rothamsted", "objective": "Compare oat variety yield"},
     "treatments": [{"treatmentCode": code, "name": code} for code in ["GoldenRain", "Marvellous", "Victory"]],
@@ -67,7 +68,7 @@ syntheticCells = {
 
 def syntheticInputs():
   package = TrialPackage.model_validate({
-    "schemaVersion": "0.2.0",
+    "schemaVersion": schemaVersion,
     "trial": {"trialCode": "SYN", "title": "Synthetic", "crop": "x", "season": "x", "site": "x", "objective": "x"},
     "treatments": [{"treatmentCode": code, "name": code} for code in ["A", "B", "C", "D"]],
     "design": {"designType": "rcbd", "replications": 3, "randomizationMethod": "sha256FisherYates1", "randomizationSeed": 1},
@@ -132,6 +133,169 @@ def testReportUnprotectedLabel():
   report = buildReport(*syntheticInputs(), protected=False)
   assert "Fisher's LSD (alpha = 0.05)" in report
   assert "Protected" not in report
+
+
+# ---- the trial as recorded: treatments and applications -------------------
+
+def recordedPackage(change=None):
+  """A program trial: a control, a two-product program over two applications, a standard."""
+  data = {
+    "schemaVersion": schemaVersion,
+    "trial": {"trialCode": "REC", "title": "Recorded", "crop": "Barley", "season": "2025",
+              "site": "North Field", "objective": "Compare programs"},
+    "treatments": [
+      {"treatmentCode": "UTC", "name": "Untreated control", "role": "untreatedControl"},
+      {"treatmentCode": "T2", "name": "Program A", "role": "test", "lines": [
+        {"product": "Fungicide A", "kind": "fungicide", "formulationType": "SC",
+         "activeSubstances": [
+           {"name": "azoxystrobin", "concentration": {"value": 200, "unit": "g/L"}},
+           {"name": "difenoconazole", "concentration": {"value": 125, "unit": "g/L"}},
+         ],
+         "rate": {"value": 0.125, "unit": "kg/ha"}, "rateBasis": "activeSubstance",
+         "applicationCodes": ["A", "B"]},
+        {"product": "Wetter W", "kind": "adjuvant", "rate": {"value": 0.5, "unit": "L/ha"},
+         "rateBasis": "formulatedProduct", "applicationCodes": ["A"]},
+      ]},
+      {"treatmentCode": "T3", "name": "Standard", "role": "reference", "lines": [
+        {"product": "Fungicide B", "activeSubstances": [{"name": "tebuconazole"}],
+         "rate": {"value": 2.0, "unit": "L/ha"}, "rateBasis": "formulatedProduct",
+         "applicationCodes": ["B"]},
+      ]},
+    ],
+    "applications": [
+      {"applicationCode": "A", "timing": "BBCH 31", "date": "2025-05-02", "time": "09:30",
+       "method": "Broadcast spray", "placement": "Foliar", "equipment": "Plot sprayer", "nozzle": "XR 11002",
+       "pressure": {"value": 250, "unit": "kPa"}, "sprayQuality": "medium",
+       "travelSpeed": {"value": 6, "unit": "km/h"}, "sprayVolume": {"value": 200, "unit": "L/ha"},
+       "cropStage": "BBCH 30", "targetStage": "First pustules",
+       "airTemperature": {"value": 14.5, "unit": "C"}, "relativeHumidity": 64.5,
+       "windSpeed": {"value": 2.1, "unit": "m/s"}, "cloudCover": 30, "soilMoisture": "moist",
+       "notes": "Dew | light\nwind"},
+      {"applicationCode": "B", "timing": "BBCH 39"},
+    ],
+    "design": {"designType": "rcbd", "replications": 3, "randomizationMethod": "sha256FisherYates1", "randomizationSeed": 1},
+    "assessments": [{"assessmentCode": "Y", "name": "Yield", "dataType": "numeric"}],
+  }
+  if change:
+    change(data)
+  return TrialPackage.model_validate(data)
+
+
+def recordedReport(change=None, locale="en-US"):
+  package = recordedPackage(change)
+  return buildReport(package, generateRcbdLayout(package), [], locale=locale)
+
+
+def testReportListsEachProductLineOfATreatment():
+  report = recordedReport()
+  assert (
+    "| Code | Name | Role | Product | Type | Active substance | Formulation | Rate | Applications |\n"
+    "|---|---|---|---|---|---|---|---|---|\n"
+    "| UTC | Untreated control | Untreated control | - | - | - | - | - | - |\n"
+    "| T2 | Program A | Test | Fungicide A | Fungicide | azoxystrobin 200 g/L + difenoconazole 125 g/L "
+    "| SC | 0.125 kg/ha of active substance | A, B |\n"
+    "| T2 |  |  | Wetter W | Adjuvant | - | - | 0.5 L/ha of product | A |\n"
+    "| T3 | Standard | Reference | Fungicide B | - | tebuconazole | - | 2 L/ha of product | B |\n"
+  ) in report
+
+
+def testReportOfAVarietyTrialListsCodesAndNamesOnly():
+  # Nothing is recorded of roles, products or applications, so no column or section is made for them.
+  report = buildReport(*yatesInputs())
+  assert "## Treatments\n\n| Code | Name |\n|---|---|\n| GoldenRain | GoldenRain |\n" in report
+  assert "## Applications" not in report
+
+
+def testReportLeavesOutATreatmentColumnNothingIsRecordedIn():
+  def dropKindsAndFormulations(data):
+    for treatment in data["treatments"]:
+      for line in treatment.get("lines", []):
+        line.pop("kind", None)
+        line.pop("formulationType", None)
+  report = recordedReport(dropKindsAndFormulations)
+  assert "| Code | Name | Role | Product | Active substance | Rate | Applications |\n|---|---|---|---|---|---|---|\n" in report
+  assert "| T2 |  |  | Wetter W | - | 0.5 L/ha of product | A |" in report
+
+
+@pytest.mark.parametrize("entered, shown", [
+  (0.125, "0.125"), (2.0, "2"), (2.5, "2.5"), (1500.0, "1500"), (0.00001, "0.00001"), (1 / 3, "0.3333333333333333"),
+])
+def testReportShowsARateAsItWasEntered(entered, shown):
+  # Neither padded (2.50) nor rounded (0.13): the number in the report is the number in the record.
+  def setRate(data):
+    data["treatments"][2]["lines"][0]["rate"]["value"] = entered
+  assert f"| {shown} L/ha of product | B |" in recordedReport(setRate)
+
+
+def testReportTabulatesWhatIsRecordedOfEachApplication():
+  report = recordedReport()
+  assert (
+    "## Applications\n\n"
+    "| Application | A | B |\n"
+    "|---|---|---|\n"
+    "| Timing | BBCH 31 | BBCH 39 |\n"
+    "| Date | 05/02/2025 | - |\n"
+    "| Time | 09:30 | - |\n"
+    "| Method | Broadcast spray | - |\n"
+    "| Placement | Foliar | - |\n"
+    "| Equipment | Plot sprayer | - |\n"
+    "| Nozzle | XR 11002 | - |\n"
+    "| Pressure | 250 kPa | - |\n"
+    "| Spray quality | medium | - |\n"
+    "| Travel speed | 6 km/h | - |\n"
+    "| Spray volume | 200 L/ha | - |\n"
+    "| Crop stage | BBCH 30 | - |\n"
+    "| Target stage | First pustules | - |\n"
+    "| Air temperature | 14.5 C | - |\n"
+    "| Relative humidity | 64.5% | - |\n"
+    "| Wind speed | 2.1 m/s | - |\n"
+    "| Cloud cover | 30% | - |\n"
+    "| Soil moisture | Moist | - |\n"
+    "| Notes | Dew \\| light wind | - |\n"
+    "\n## Assessment: Yield (Y)"
+  ) in report
+
+
+def testReportHasARowForEveryFactAnApplicationCanHold():
+  """A field added to the application and not to the report would be recorded and never shown."""
+  package = recordedPackage()
+  facts = set(type(package.applications[0]).model_fields) - {"applicationCode"}
+  assert all(getattr(package.applications[0], fact) is not None for fact in facts)
+  report = recordedReport()
+  section = report[report.index("## Applications"):report.index("## Assessment")]
+  assert len(section.strip().splitlines()) == 4 + len(facts)
+
+
+def testReportLeavesOutAnApplicationRowNothingIsRecordedIn():
+  def keepTimingsOnly(data):
+    data["applications"] = [{"applicationCode": "A", "timing": "BBCH 31"}, {"applicationCode": "B"}]
+  report = recordedReport(keepTimingsOnly)
+  assert "## Applications\n\n| Application | A | B |\n|---|---|---|\n| Timing | BBCH 31 | - |\n\n" in report
+
+
+def testReportShowsSecondsOfATimeOnlyWhenRecorded():
+  def recordSeconds(data):
+    data["applications"][0]["time"] = "09:30:15"
+  assert "| Time | 09:30:15 | - |" in recordedReport(recordSeconds)
+  assert "| Time | 09:30 | - |" in recordedReport()
+
+
+def testRecordedTrialRendersInTheReadersLocale():
+  spanish = recordedReport(locale="es")
+  assert (
+    "| T2 | Program A | En ensayo | Fungicide A | Fungicida | azoxystrobin 200 g/L + difenoconazole 125 g/L "
+    "| SC | 0,125 kg/ha de sustancia activa | A, B |"
+  ) in spanish
+  assert "| Humedad relativa | 64,5% | - |" in spanish
+  assert "| Humedad del suelo | H\u00famedo | - |" in spanish
+  # Day first in British English, month first in American.
+  assert "| Date | 02/05/2025 | - |" in recordedReport(locale="en-GB")
+
+
+def testRecordedTrialRendersInEveryShippedLocale():
+  for locale in ("en-US", "en-GB", "es", "fr", "ar"):
+    report = recordedReport(locale=locale)
+    assert report.count("| T2 |") == 2, locale
 
 
 # ---- input hash -----------------------------------------------------------

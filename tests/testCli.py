@@ -18,6 +18,7 @@ from pathlib import Path
 
 import pytest
 
+from openfurrow import schemaVersion
 from openfurrow.cli.main import main
 from openfurrow.design import generateRcbdLayout
 from openfurrow.schema import TrialPackage
@@ -25,7 +26,7 @@ from openfurrow.schema import TrialPackage
 repositoryRoot = Path(__file__).parent.parent
 
 demoPackage = {
-  "schemaVersion": "0.2.0",
+  "schemaVersion": schemaVersion,
   "trial": {"trialCode": "DEMO", "title": "Demo trial", "crop": "Wheat", "season": "2025",
             "site": "Field A", "objective": "Compare treatments"},
   "treatments": [{"treatmentCode": code, "name": code} for code in ["A", "B", "C", "D"]],
@@ -232,7 +233,7 @@ def testInfoSurfacesTransformAndMeasurementKind(tmp_path, capsys):
   unit closes: previously visible only by reading the trial JSON), and the allowed
   values of a categorical/ordinal assessment."""
   packageDict = {
-    "schemaVersion": "0.2.0",
+    "schemaVersion": schemaVersion,
     "trial": {"trialCode": "INFO-1", "title": "Info trial", "crop": "Barley", "season": "2025",
               "site": "Field A", "objective": "Compare"},
     "treatments": [{"treatmentCode": code, "name": code} for code in ["A", "B"]],
@@ -269,6 +270,36 @@ def testInfoShowsDefaultTransformForPlainNumeric(project, capsys):
   assert "transform=none" in out
   assert "kind=unspecified" in out
   assert "Layout: sha256FisherYates1, seed 1" in out
+
+
+def testInfoListsTreatmentsAndApplications(tmp_path, capsys, validPackageDict):
+  packagePath = tmp_path / "package.json"
+  packagePath.write_text(json.dumps(validPackageDict), encoding="utf-8")
+  database = str(tmp_path / "trials.db")
+  assert main(["init", database]) == 0
+  assert main(["add", database, str(packagePath)]) == 0
+  capsys.readouterr()
+  assert main(["info", database, "ESV-2025-01"]) == 0
+  out = capsys.readouterr().out
+  assert (
+    "Treatments:\n"
+    "  T1  role=untreatedControl\n"
+    "  T2  role=test  Fungicide A 2.5 L/ha (formulatedProduct) at GS31\n"
+    "  T3  role=reference  Fungicide B 1.0 L/ha (formulatedProduct) at GS39\n"
+    "Applications:\n"
+    "  GS31  timing=BBCH 31\n"
+    "  GS39  timing=BBCH 39\n"
+    "Assessments:\n"
+  ) in out
+
+
+def testInfoOfATrialWithoutApplicationsListsNone(project, capsys):
+  assert main(["init", project["db"]]) == 0
+  assert main(["add", project["db"], project["package"]]) == 0
+  capsys.readouterr()
+  assert main(["info", project["db"], "DEMO"]) == 0
+  out = capsys.readouterr().out
+  assert "Treatments:\n  A\n  B\n  C\n  D\nAssessments:\n" in out
 
 
 def importedTrialDocument():

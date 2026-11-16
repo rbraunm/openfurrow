@@ -14,13 +14,14 @@ from pathlib import Path
 
 import pytest
 
+from openfurrow import schemaVersion
 from openfurrow.schema import TrialPackage
 from openfurrow.workspace import ObservationImportError, Workspace
 
 _fixtureDir = Path(__file__).parent / "fixtures"
 
 _packageDict = {
-  "schemaVersion": "0.2.0",
+  "schemaVersion": schemaVersion,
   "trial": {"trialCode": "FB-IN", "title": "Field Book ingest", "crop": "Barley", "season": "2025",
             "site": "North Field", "objective": "Compare treatments"},
   "treatments": [{"treatmentCode": code, "name": code} for code in ["A", "B", "C", "D"]],

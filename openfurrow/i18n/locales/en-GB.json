@@ -93,12 +93,180 @@
       "text": "Rate",
       "status": "humanApproved"
     },
-    "report.treatments.column.timing": {
+    "report.treatments.column.role": {
+      "text": "Role",
+      "status": "humanApproved"
+    },
+    "report.treatments.column.kind": {
+      "text": "Type",
+      "status": "humanApproved"
+    },
+    "report.treatments.column.activeSubstances": {
+      "text": "Active substance",
+      "status": "humanApproved"
+    },
+    "report.treatments.column.formulation": {
+      "text": "Formulation",
+      "status": "humanApproved"
+    },
+    "report.treatments.column.applications": {
+      "text": "Applications",
+      "status": "humanApproved"
+    },
+    "report.treatments.role.test": {
+      "text": "Test",
+      "status": "humanApproved"
+    },
+    "report.treatments.role.reference": {
+      "text": "Reference",
+      "status": "humanApproved"
+    },
+    "report.treatments.role.untreatedControl": {
+      "text": "Untreated control",
+      "status": "humanApproved"
+    },
+    "report.treatments.role.otherControl": {
+      "text": "Other control",
+      "status": "humanApproved"
+    },
+    "report.treatments.kind.herbicide": {
+      "text": "Herbicide",
+      "status": "humanApproved"
+    },
+    "report.treatments.kind.fungicide": {
+      "text": "Fungicide",
+      "status": "humanApproved"
+    },
+    "report.treatments.kind.insecticide": {
+      "text": "Insecticide",
+      "status": "humanApproved"
+    },
+    "report.treatments.kind.growthRegulator": {
+      "text": "Growth regulator",
+      "status": "humanApproved"
+    },
+    "report.treatments.kind.fertilizer": {
+      "text": "Fertiliser",
+      "status": "humanApproved"
+    },
+    "report.treatments.kind.biological": {
+      "text": "Biological",
+      "status": "humanApproved"
+    },
+    "report.treatments.kind.adjuvant": {
+      "text": "Adjuvant",
+      "status": "humanApproved"
+    },
+    "report.treatments.kind.other": {
+      "text": "Other",
+      "status": "humanApproved"
+    },
+    "report.treatments.rate.formulatedProduct": {
+      "text": "{rate} of product",
+      "status": "humanApproved"
+    },
+    "report.treatments.rate.activeSubstance": {
+      "text": "{rate} of active substance",
+      "status": "humanApproved"
+    },
+    "report.heading.applications": {
+      "text": "Applications",
+      "status": "humanApproved"
+    },
+    "report.applications.column.application": {
+      "text": "Application",
+      "status": "humanApproved"
+    },
+    "report.applications.row.timing": {
       "text": "Timing",
       "status": "humanApproved"
     },
-    "report.treatments.untreatedControl": {
-      "text": "(untreated control)",
+    "report.applications.row.date": {
+      "text": "Date",
+      "status": "humanApproved"
+    },
+    "report.applications.row.time": {
+      "text": "Time",
+      "status": "humanApproved"
+    },
+    "report.applications.row.method": {
+      "text": "Method",
+      "status": "humanApproved"
+    },
+    "report.applications.row.placement": {
+      "text": "Placement",
+      "status": "humanApproved"
+    },
+    "report.applications.row.equipment": {
+      "text": "Equipment",
+      "status": "humanApproved"
+    },
+    "report.applications.row.nozzle": {
+      "text": "Nozzle",
+      "status": "humanApproved"
+    },
+    "report.applications.row.pressure": {
+      "text": "Pressure",
+      "status": "humanApproved"
+    },
+    "report.applications.row.sprayQuality": {
+      "text": "Spray quality",
+      "status": "humanApproved"
+    },
+    "report.applications.row.travelSpeed": {
+      "text": "Travel speed",
+      "status": "humanApproved"
+    },
+    "report.applications.row.sprayVolume": {
+      "text": "Spray volume",
+      "status": "humanApproved"
+    },
+    "report.applications.row.cropStage": {
+      "text": "Crop stage",
+      "status": "humanApproved"
+    },
+    "report.applications.row.targetStage": {
+      "text": "Target stage",
+      "status": "humanApproved"
+    },
+    "report.applications.row.airTemperature": {
+      "text": "Air temperature",
+      "status": "humanApproved"
+    },
+    "report.applications.row.relativeHumidity": {
+      "text": "Relative humidity",
+      "status": "humanApproved"
+    },
+    "report.applications.row.windSpeed": {
+      "text": "Wind speed",
+      "status": "humanApproved"
+    },
+    "report.applications.row.cloudCover": {
+      "text": "Cloud cover",
+      "status": "humanApproved"
+    },
+    "report.applications.row.soilMoisture": {
+      "text": "Soil moisture",
+      "status": "humanApproved"
+    },
+    "report.applications.row.notes": {
+      "text": "Notes",
+      "status": "humanApproved"
+    },
+    "report.applications.soilMoisture.dry": {
+      "text": "Dry",
+      "status": "humanApproved"
+    },
+    "report.applications.soilMoisture.moist": {
+      "text": "Moist",
+      "status": "humanApproved"
+    },
+    "report.applications.soilMoisture.wet": {
+      "text": "Wet",
+      "status": "humanApproved"
+    },
+    "report.applications.soilMoisture.waterlogged": {
+      "text": "Waterlogged",
       "status": "humanApproved"
     },
     "report.heading.assessment": {
@@ -295,6 +463,10 @@
     },
     "report.value.equalTo": {
       "text": "= {value}",
+      "status": "humanApproved"
+    },
+    "report.value.percent": {
+      "text": "{value}%",
       "status": "humanApproved"
     },
     "web.app.name": {

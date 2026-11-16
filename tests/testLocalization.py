@@ -25,7 +25,18 @@ from pathlib import Path
 
 import pytest
 
-from openfurrow import TrialPackage, Workspace, contentHash, defaultConfig
+from openfurrow import (
+  Application,
+  ProductKind,
+  RateBasis,
+  SoilMoisture,
+  TreatmentRole,
+  TrialPackage,
+  Workspace,
+  contentHash,
+  defaultConfig,
+  schemaVersion,
+)
 from openfurrow.i18n import (
   Catalog,
   FormattingError,
@@ -43,7 +54,7 @@ from openfurrow.i18n import (
 _localeDirectory = Path("openfurrow/i18n/locales")
 
 _packageDict = {
-  "schemaVersion": "0.2.0",
+  "schemaVersion": schemaVersion,
   "trial": {"trialCode": "L10N-1", "title": "Localization trial", "crop": "Barley",
             "season": "2025", "site": "Field A", "objective": "Compare treatments"},
   "treatments": [{"treatmentCode": code, "name": code} for code in ["A", "B", "C", "D"]],
@@ -185,6 +196,25 @@ def testEveryLocaleCoversTheFullKeySet():
     extra = loadCatalog(locale).keys - sourceKeys
     assert missing == set(), f"{locale} is missing {sorted(missing)}"
     assert extra == set(), f"{locale} defines unknown keys {sorted(extra)}"
+
+
+def testEveryRecordedCategoryAndApplicationFactHasAName():
+  """The report looks these names up by value, so the catalog and the schema must agree.
+
+  A role, product kind, rate basis or soil moisture added to the schema without a name
+  would fail only when a trial using it is printed; one removed would leave a name
+  nothing asks for. Both show here instead.
+  """
+  named = {
+    "report.treatments.role.": {role.value for role in TreatmentRole},
+    "report.treatments.kind.": {kind.value for kind in ProductKind},
+    "report.treatments.rate.": {basis.value for basis in RateBasis},
+    "report.applications.soilMoisture.": {moisture.value for moisture in SoilMoisture},
+    "report.applications.row.": set(Application.model_fields) - {"applicationCode"},
+  }
+  keys = loadCatalog(sourceLocale).keys
+  for prefix, values in named.items():
+    assert {key[len(prefix):] for key in keys if key.startswith(prefix)} == values, prefix
 
 
 def testPlaceholdersMatchAcrossLocales():

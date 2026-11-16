@@ -12,6 +12,7 @@ import math
 
 import pytest
 
+from openfurrow import schemaVersion
 from openfurrow.analysis import AnalysisError, analyzeRcbd, separateMeans
 from openfurrow.analysis.meanSeparation import _letterFor, _letterGroups
 from openfurrow.design import generateRcbdLayout
@@ -21,7 +22,7 @@ from openfurrow.schema.observation import Observation
 
 def buildResult(treatments, replications, cellValues, seed=1):
   package = TrialPackage.model_validate({
-    "schemaVersion": "0.2.0",
+    "schemaVersion": schemaVersion,
     "trial": {"trialCode": "SEP", "title": "sep", "crop": "x", "season": "x", "site": "x", "objective": "x"},
     "treatments": [{"treatmentCode": code, "name": code} for code in treatments],
     "design": {"designType": "rcbd", "replications": replications, "randomizationMethod": "sha256FisherYates1", "randomizationSeed": seed},

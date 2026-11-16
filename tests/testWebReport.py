@@ -16,11 +16,11 @@ import io
 
 import pytest
 
-from openfurrow import TrialPackage, Workspace
+from openfurrow import TrialPackage, Workspace, schemaVersion
 from openfurrow.service import createApp
 
 _packageDict = {
-  "schemaVersion": "0.2.0",
+  "schemaVersion": schemaVersion,
   "trial": {"trialCode": "D2-1", "title": "Barley trial", "crop": "Barley",
             "season": "2025", "site": "North Field", "objective": "Compare programs"},
   "treatments": [{"treatmentCode": code, "name": f"Treatment {code}"} for code in ["A", "B", "C", "D"]],
@@ -176,7 +176,7 @@ def testReportEscapesHtmlInTrialFields(client, workspace, tmp_path):
   markup must render inert in the report, not execute. Regression: the report once
   wrapped raw Markdown output in Markup, passing <script> through unescaped."""
   malicious = {
-    "schemaVersion": "0.2.0",
+    "schemaVersion": schemaVersion,
     "trial": {"trialCode": "XSS", "title": "<script>alert(1)</script>", "crop": "Barley",
               "season": "2025", "site": "s", "objective": "o"},
     "treatments": [{"treatmentCode": "A", "name": "<img src=x onerror=alert(1)>"},

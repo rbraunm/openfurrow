@@ -13,6 +13,7 @@ from pathlib import Path
 
 import pytest
 
+from openfurrow import schemaVersion
 from openfurrow.analysis import AnalysisError, analyzeRcbd
 from openfurrow.design import generateRcbdLayout
 from openfurrow.schema import TrialPackage
@@ -35,7 +36,7 @@ def yatesPackage(extraAssessments=None):
   if extraAssessments:
     assessments.extend(extraAssessments)
   return TrialPackage.model_validate({
-    "schemaVersion": "0.2.0",
+    "schemaVersion": schemaVersion,
     "trial": {"trialCode": "YATES-OATS", "title": "Yates oats variety", "crop": "Oats",
               "season": "1935", "site": "Rothamsted", "objective": "variety yield"},
     "treatments": [{"treatmentCode": code, "name": code} for code in yatesTreatments],
@@ -203,7 +204,7 @@ def testZeroErrorMeanSquareRejected():
   # Perfectly additive data: value = blockEffect + treatmentEffect, so the
   # no-interaction model fits exactly and the error sum of squares is zero.
   package = TrialPackage.model_validate({
-    "schemaVersion": "0.2.0",
+    "schemaVersion": schemaVersion,
     "trial": {"trialCode": "ADDITIVE", "title": "additive", "crop": "x", "season": "x",
               "site": "x", "objective": "x"},
     "treatments": [{"treatmentCode": "T1", "name": "T1"}, {"treatmentCode": "T2", "name": "T2"}],

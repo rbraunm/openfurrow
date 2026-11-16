@@ -18,6 +18,7 @@ import statsmodels.api as sm
 import statsmodels.formula.api as smf
 from scipy import stats
 
+from openfurrow import schemaVersion
 from openfurrow.analysis import AnalysisError, analyzeRcbd, assessAssumptions, separateMeans
 from openfurrow.analysis.transforms import backTransformMean
 from openfurrow.design import generateRcbdLayout
@@ -30,7 +31,7 @@ def buildRcbd(values, transform="none", measurementKind="unspecified"):
   treatments = sorted({treatment for treatment, _ in values})
   blocks = sorted({block for _, block in values})
   package = TrialPackage.model_validate({
-    "schemaVersion": "0.2.0",
+    "schemaVersion": schemaVersion,
     "trial": {"trialCode": "TX", "title": "t", "crop": "Maize", "season": "2025",
               "site": "s", "objective": "o"},
     "treatments": [{"treatmentCode": treatment, "name": treatment} for treatment in treatments],

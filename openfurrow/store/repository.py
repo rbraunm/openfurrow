@@ -19,15 +19,27 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
 from openfurrow.store.database import (
+  ApplicationRow,
   AssessmentRow,
   ObservationRow,
   PlotRow,
   StoreError,
+  TreatmentLineRow,
   TreatmentRow,
   TrialRow,
 )
+from openfurrow.schema.application import Application, SoilMoisture
 from openfurrow.schema.layout import PlotAssignment
 from openfurrow.schema.observation import Observation
+from openfurrow.schema.quantity import Quantity
+from openfurrow.schema.treatment import (
+  ActiveSubstance,
+  ProductKind,
+  RateBasis,
+  Treatment,
+  TreatmentLine,
+  TreatmentRole,
+)
 from openfurrow.schema.trialPackage import (
   AssessmentDataType,
   AssessmentDefinition,
@@ -36,7 +48,6 @@ from openfurrow.schema.trialPackage import (
   MeasurementKind,
   RandomizationMethod,
   Transform,
-  Treatment,
   TrialMetadata,
   TrialPackage,
 )
@@ -97,10 +108,56 @@ def savePackage(session: Session, package: TrialPackage, layout: list[PlotAssign
       treatmentCode=treatment.treatmentCode,
       ordinal=ordinal,
       name=treatment.name,
-      product=treatment.product,
-      rate=treatment.rate,
-      rateUnit=treatment.rateUnit,
-      timing=treatment.timing,
+      role=treatment.role.value if treatment.role is not None else None,
+    ))
+    for lineOrdinal, line in enumerate(treatment.lines):
+      trial.treatmentLines.append(TreatmentLineRow(
+        trialCode=trialCode,
+        treatmentCode=treatment.treatmentCode,
+        ordinal=lineOrdinal,
+        product=line.product,
+        kind=line.kind.value if line.kind is not None else None,
+        formulationType=line.formulationType,
+        activeSubstances=json.dumps([substance.model_dump(mode="json") for substance in line.activeSubstances]),
+        rateValue=line.rate.value,
+        rateUnit=line.rate.unit,
+        rateBasis=line.rateBasis.value,
+        applicationCodes=json.dumps(line.applicationCodes),
+      ))
+  for ordinal, application in enumerate(package.applications):
+    pressureValue, pressureUnit = _valueAndUnit(application.pressure)
+    travelSpeedValue, travelSpeedUnit = _valueAndUnit(application.travelSpeed)
+    sprayVolumeValue, sprayVolumeUnit = _valueAndUnit(application.sprayVolume)
+    airTemperatureValue, airTemperatureUnit = _valueAndUnit(application.airTemperature)
+    windSpeedValue, windSpeedUnit = _valueAndUnit(application.windSpeed)
+    trial.applications.append(ApplicationRow(
+      trialCode=trialCode,
+      applicationCode=application.applicationCode,
+      ordinal=ordinal,
+      timing=application.timing,
+      date=application.date,
+      time=application.time,
+      method=application.method,
+      placement=application.placement,
+      equipment=application.equipment,
+      nozzle=application.nozzle,
+      pressureValue=pressureValue,
+      pressureUnit=pressureUnit,
+      sprayQuality=application.sprayQuality,
+      travelSpeedValue=travelSpeedValue,
+      travelSpeedUnit=travelSpeedUnit,
+      sprayVolumeValue=sprayVolumeValue,
+      sprayVolumeUnit=sprayVolumeUnit,
+      cropStage=application.cropStage,
+      targetStage=application.targetStage,
+      airTemperatureValue=airTemperatureValue,
+      airTemperatureUnit=airTemperatureUnit,
+      relativeHumidity=application.relativeHumidity,
+      windSpeedValue=windSpeedValue,
+      windSpeedUnit=windSpeedUnit,
+      cloudCover=application.cloudCover,
+      soilMoisture=application.soilMoisture.value if application.soilMoisture is not None else None,
+      notes=application.notes,
     ))
   for ordinal, assessment in enumerate(package.assessments):
     trial.assessments.append(AssessmentRow(
@@ -139,16 +196,25 @@ def loadPackage(session: Session, trialCode: str) -> TrialPackage:
   if trial is None:
     raise TrialNotFoundError(f"trial '{trialCode}' not found")
 
+  linesByTreatment: dict[str, list[TreatmentLine]] = {}
+  for row in sorted(trial.treatmentLines, key=lambda row: (row.treatmentCode, row.ordinal)):
+    linesByTreatment.setdefault(row.treatmentCode, []).append(_lineFrom(row))
+  orphaned = sorted(set(linesByTreatment) - {row.treatmentCode for row in trial.treatments})
+  if orphaned:
+    raise StoreError(
+      f"trial '{trial.trialCode}' holds product lines for treatment(s) {orphaned} it does not have"
+    )
   treatments = [
     Treatment(
       treatmentCode=row.treatmentCode,
       name=row.name,
-      product=row.product,
-      rate=row.rate,
-      rateUnit=row.rateUnit,
-      timing=row.timing,
+      role=TreatmentRole(row.role) if row.role is not None else None,
+      lines=linesByTreatment.get(row.treatmentCode, []),
     )
     for row in sorted(trial.treatments, key=lambda row: row.ordinal)
+  ]
+  applications = [
+    _applicationFrom(row) for row in sorted(trial.applications, key=lambda row: row.ordinal)
   ]
   assessments = [
     AssessmentDefinition(
@@ -184,6 +250,7 @@ def loadPackage(session: Session, trialCode: str) -> TrialPackage:
       randomizationSeed=trial.randomizationSeed,
     ),
     treatments=treatments,
+    applications=applications,
     assessments=assessments,
   )
 
@@ -262,6 +329,56 @@ def deleteTrial(session: Session, trialCode: str) -> None:
     raise TrialNotFoundError(f"trial '{trialCode}' not found")
   session.delete(trial)
   session.flush()
+
+
+def _valueAndUnit(quantity: Quantity | None) -> tuple[float | None, str | None]:
+  if quantity is None:
+    return None, None
+  return quantity.value, quantity.unit
+
+
+def _quantity(value: float | None, unit: str | None) -> Quantity | None:
+  """The quantity two columns hold; half a quantity is a damaged row and is rejected."""
+  if value is None and unit is None:
+    return None
+  return Quantity(value=value, unit=unit)
+
+
+def _lineFrom(row: TreatmentLineRow) -> TreatmentLine:
+  return TreatmentLine(
+    product=row.product,
+    kind=ProductKind(row.kind) if row.kind is not None else None,
+    formulationType=row.formulationType,
+    activeSubstances=[ActiveSubstance.model_validate(item) for item in json.loads(row.activeSubstances)],
+    rate=Quantity(value=row.rateValue, unit=row.rateUnit),
+    rateBasis=RateBasis(row.rateBasis),
+    applicationCodes=json.loads(row.applicationCodes),
+  )
+
+
+def _applicationFrom(row: ApplicationRow) -> Application:
+  return Application(
+    applicationCode=row.applicationCode,
+    timing=row.timing,
+    date=row.date,
+    time=row.time,
+    method=row.method,
+    placement=row.placement,
+    equipment=row.equipment,
+    nozzle=row.nozzle,
+    pressure=_quantity(row.pressureValue, row.pressureUnit),
+    sprayQuality=row.sprayQuality,
+    travelSpeed=_quantity(row.travelSpeedValue, row.travelSpeedUnit),
+    sprayVolume=_quantity(row.sprayVolumeValue, row.sprayVolumeUnit),
+    cropStage=row.cropStage,
+    targetStage=row.targetStage,
+    airTemperature=_quantity(row.airTemperatureValue, row.airTemperatureUnit),
+    relativeHumidity=row.relativeHumidity,
+    windSpeed=_quantity(row.windSpeedValue, row.windSpeedUnit),
+    cloudCover=row.cloudCover,
+    soilMoisture=SoilMoisture(row.soilMoisture) if row.soilMoisture is not None else None,
+    notes=row.notes,
+  )
 
 
 def _splitValue(value: float | str | None) -> tuple[float | None, str | None]:

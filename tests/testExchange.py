@@ -15,6 +15,7 @@ from pathlib import Path
 import pytest
 from pydantic import ValidationError
 
+from openfurrow import schemaVersion
 from openfurrow.design import generateRcbdLayout
 from openfurrow.exchange import ExchangeError, exportJson, exportObservationsCsv, importJson
 from openfurrow.schema import TrialDocument, TrialPackage, contentHash
@@ -32,14 +33,21 @@ from openfurrow.store import (
 
 def samplePackage(trialCode="TRIAL-1"):
   return TrialPackage.model_validate({
-    "schemaVersion": "0.2.0",
+    "schemaVersion": schemaVersion,
     "trial": {"trialCode": trialCode, "title": "Sample trial", "crop": "Wheat", "season": "2025",
               "site": "Field A", "objective": "Compare fungicides", "investigator": "Dr. X"},
     "treatments": [
-      {"treatmentCode": "T1", "name": "Untreated control"},
-      {"treatmentCode": "T2", "name": "Fungicide X", "product": "Prod X", "rate": 2.5, "rateUnit": "L/ha"},
-      {"treatmentCode": "T3", "name": "Fungicide Y", "product": "Prod Y", "rate": 1.0, "rateUnit": "kg/ha"},
+      {"treatmentCode": "T1", "name": "Untreated control", "role": "untreatedControl"},
+      {"treatmentCode": "T2", "name": "Fungicide X", "role": "test", "lines": [
+        {"product": "Prod X", "rate": {"value": 2.5, "unit": "L/ha"}, "rateBasis": "formulatedProduct",
+         "applicationCodes": ["A"]},
+      ]},
+      {"treatmentCode": "T3", "name": "Fungicide Y", "role": "reference", "lines": [
+        {"product": "Prod Y", "rate": {"value": 1.0, "unit": "kg/ha"}, "rateBasis": "formulatedProduct",
+         "applicationCodes": ["A"]},
+      ]},
     ],
+    "applications": [{"applicationCode": "A", "timing": "BBCH 30"}],
     "design": {"designType": "rcbd", "replications": 4, "randomizationMethod": "sha256FisherYates1", "randomizationSeed": 42},
     "assessments": [
       {"assessmentCode": "YIELD", "name": "Grain yield", "dataType": "numeric", "unit": "kg/ha", "minValue": 0},

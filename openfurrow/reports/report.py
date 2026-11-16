@@ -1,11 +1,12 @@
 # SPDX-License-Identifier: Apache-2.0
 """Markdown trial report.
 
-Renders the deliverable an ARM user recognizes: for each numeric assessment, the
-AOV Means Table -- the analysis-of-variance table, the lettered treatment means,
-the grand mean, the coefficient of variation, and the LSD -- followed by a
-reproducibility block (decision 0004): the method, the randomization seed, a
-stable hash of the inputs, and the library versions.
+Renders the deliverable an ARM user recognizes: the trial as recorded -- its design,
+its treatments with their product lines, its applications (decision 0016) -- then, for
+each numeric assessment, the AOV Means Table -- the analysis-of-variance table, the
+lettered treatment means, the grand mean, the coefficient of variation, and the LSD --
+followed by a reproducibility block (decision 0004): the method, the randomization
+seed, a stable hash of the inputs, and the library versions.
 
 The report orchestrates the analysis. A per-assessment analysis that cannot be
 performed (a missing cell, a non-numeric assessment) is reported as an explicit
@@ -24,6 +25,7 @@ the report.
 from __future__ import annotations
 
 import platform
+from decimal import Decimal
 
 import numpy
 
@@ -36,9 +38,12 @@ from openfurrow.analysis import (
 )
 from openfurrow.analysis.transforms import backTransformMean
 from openfurrow.i18n import Translator, sourceLocale, translatorFor
+from openfurrow.schema.application import Application
 from openfurrow.schema.document import TrialDocument, contentHash
 from openfurrow.schema.layout import TrialLayout
 from openfurrow.schema.observation import Observation
+from openfurrow.schema.quantity import Quantity
+from openfurrow.schema.treatment import ActiveSubstance, TreatmentLine
 from openfurrow.schema.trialPackage import AssessmentDataType, Transform, TrialPackage
 from openfurrow.version import softwareVersion
 
@@ -73,6 +78,7 @@ def buildReport(
   lines += _metadataSection(package, translator)
   lines += _designSection(package, translator)
   lines += _treatmentsSection(package, translator)
+  lines += _applicationsSection(package, translator)
   for assessment in package.assessments:
     lines += _assessmentSection(
       assessment, package, layout, observations, significanceLevel, protected, translator
@@ -144,28 +150,148 @@ def _designSection(package: TrialPackage, translator: Translator) -> list[str]:
 
 
 def _treatmentsSection(package: TrialPackage, translator: Translator) -> list[str]:
-  absent = translator.text("report.value.absent")
-  header = " | ".join(
-    translator.text(key)
-    for key in (
-      "report.treatments.column.code",
-      "report.treatments.column.name",
-      "report.treatments.column.product",
-      "report.treatments.column.rate",
-      "report.treatments.column.timing",
+  """One row for each product line; a treatment without lines has a row of its own.
+
+  A column no treatment has anything in is left out, so a variety trial prints its codes
+  and names and a program trial prints its products, rates and applications.
+  """
+  header = [
+    translator.text(f"report.treatments.column.{column}")
+    for column in (
+      "code", "name", "role", "product", "kind", "activeSubstances", "formulation", "rate",
+      "applications",
     )
-  )
-  lines = [f"## {translator.text('report.heading.treatments')}", "", f"| {header} |", "|---|---|---|---|---|"]
+  ]
+  rows: list[list[str | None]] = []
   for treatment in package.treatments:
-    product = treatment.product or translator.text("report.treatments.untreatedControl")
-    if treatment.rate is None:
-      rate = absent
-    else:
-      rate = f"{translator.number(treatment.rate, decimals=_significantDecimals(treatment.rate))} {treatment.rateUnit}"
-    timing = treatment.timing or absent
-    lines.append(f"| {treatment.treatmentCode} | {treatment.name} | {product} | {rate} | {timing} |")
-  lines.append("")
+    role = (
+      None if treatment.role is None
+      else translator.text(f"report.treatments.role.{treatment.role.value}")
+    )
+    if not treatment.lines:
+      rows.append([treatment.treatmentCode, treatment.name, role, None, None, None, None, None, None])
+    for position, line in enumerate(treatment.lines):
+      described = [treatment.name, role] if position == 0 else ["", ""]
+      rows.append([treatment.treatmentCode, *described, *_lineCells(line, translator)])
+  filled = [column for column in range(len(header)) if any(row[column] for row in rows)]
+  return [
+    f"## {translator.text('report.heading.treatments')}",
+    "",
+    *_table(
+      [header[column] for column in filled],
+      [[row[column] for column in filled] for row in rows],
+      translator,
+    ),
+    "",
+  ]
+
+
+def _lineCells(line: TreatmentLine, translator: Translator) -> list[str | None]:
+  kind = None if line.kind is None else translator.text(f"report.treatments.kind.{line.kind.value}")
+  substances = " + ".join(
+    _substanceText(substance, translator) for substance in line.activeSubstances
+  )
+  rate = translator.text(
+    f"report.treatments.rate.{line.rateBasis.value}", rate=_quantityText(line.rate, translator)
+  )
+  return [
+    line.product,
+    kind,
+    substances or None,
+    line.formulationType,
+    rate,
+    ", ".join(line.applicationCodes),
+  ]
+
+
+def _substanceText(substance: ActiveSubstance, translator: Translator) -> str:
+  if substance.concentration is None:
+    return substance.name
+  return f"{substance.name} {_quantityText(substance.concentration, translator)}"
+
+
+def _applicationsSection(package: TrialPackage, translator: Translator) -> list[str]:
+  """What is recorded of each application: one column for each, one row for each fact.
+
+  The planned timing is always shown; any other row appears once an application has
+  something in it.
+  """
+  if not package.applications:
+    return []
+  recorded = [_applicationFacts(application, translator) for application in package.applications]
+  header = [
+    translator.text("report.applications.column.application"),
+    *(application.applicationCode for application in package.applications),
+  ]
+  rows = [
+    [translator.text(f"report.applications.row.{fact}"), *(facts[fact] for facts in recorded)]
+    for fact in recorded[0]
+    if fact == "timing" or any(facts[fact] for facts in recorded)
+  ]
+  return [
+    f"## {translator.text('report.heading.applications')}",
+    "",
+    *_table(header, rows, translator),
+    "",
+  ]
+
+
+def _applicationFacts(application: Application, translator: Translator) -> dict[str, str | None]:
+  """An application's facts as display text, in the order the report lists them."""
+  def amount(quantity: Quantity | None) -> str | None:
+    return None if quantity is None else _quantityText(quantity, translator)
+
+  def percent(value: float | None) -> str | None:
+    if value is None:
+      return None
+    return translator.text(
+      "report.value.percent", value=translator.number(value, decimals=_authoredDecimals(value))
+    )
+
+  return {
+    "timing": application.timing,
+    "date": None if application.date is None else translator.date(application.date),
+    "time": None if application.time is None else translator.time(application.time),
+    "method": application.method,
+    "placement": application.placement,
+    "equipment": application.equipment,
+    "nozzle": application.nozzle,
+    "pressure": amount(application.pressure),
+    "sprayQuality": application.sprayQuality,
+    "travelSpeed": amount(application.travelSpeed),
+    "sprayVolume": amount(application.sprayVolume),
+    "cropStage": application.cropStage,
+    "targetStage": application.targetStage,
+    "airTemperature": amount(application.airTemperature),
+    "relativeHumidity": percent(application.relativeHumidity),
+    "windSpeed": amount(application.windSpeed),
+    "cloudCover": percent(application.cloudCover),
+    "soilMoisture": (
+      None if application.soilMoisture is None
+      else translator.text(f"report.applications.soilMoisture.{application.soilMoisture.value}")
+    ),
+    "notes": application.notes,
+  }
+
+
+def _table(header: list[str], rows: list[list[str | None]], translator: Translator) -> list[str]:
+  """A pipe table of text cells. A cell that is None shows as absent; an empty one stays empty."""
+  absent = translator.text("report.value.absent")
+  lines = [f"| {' | '.join(header)} |", "|" + "---|" * len(header)]
+  for row in rows:
+    cells = (absent if cell is None else _cell(cell) for cell in row)
+    lines.append(f"| {' | '.join(cells)} |")
   return lines
+
+
+def _cell(text: str) -> str:
+  """Authored text as a table cell: a pipe or a line break in it would end the cell."""
+  return " ".join(text.split()).replace("|", "\\|")
+
+
+def _quantityText(quantity: Quantity, translator: Translator) -> str:
+  value = translator.number(quantity.value, decimals=_authoredDecimals(quantity.value))
+  return f"{value} {quantity.unit}"
 
 
 def _assessmentSection(
@@ -227,7 +353,9 @@ def _assessmentSection(
     _field(
       translator,
       "report.anova.coefficientOfVariation",
-      f"{translator.number(result.coefficientOfVariation, decimals=2)}%",
+      translator.text(
+        "report.value.percent", value=translator.number(result.coefficientOfVariation, decimals=2)
+      ),
     )
   )
   lines.append("")
@@ -403,9 +531,13 @@ def _scaleName(transform, translator: Translator) -> str:
   return translator.text(key)
 
 
-def _significantDecimals(value: float) -> int:
-  """Rate is authored data: show it as written, not padded to a fixed width."""
-  return 0 if float(value).is_integer() else 2
+def _authoredDecimals(value: float) -> int:
+  """The decimals of a number someone entered, so that it is shown as written.
+
+  The shortest form that reads back as the same number has exactly the decimals that
+  were typed: 0.125 keeps three and 2 keeps none, neither padded nor rounded.
+  """
+  return max(0, -Decimal(repr(float(value))).normalize().as_tuple().exponent)
 
 
 def _belowProbabilityThreshold(value: float) -> bool:
