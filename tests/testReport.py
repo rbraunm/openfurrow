@@ -17,6 +17,7 @@ from openfurrow.design import generateRcbdLayout
 from openfurrow.reports import buildReport, inputHash
 from openfurrow.schema import TrialPackage
 from openfurrow.schema.observation import Observation
+from openfurrow.version import softwareVersion
 
 fixturesDirectory = Path(__file__).parent / "fixtures"
 
@@ -109,6 +110,12 @@ def testReportRendersAovMeansTable():
   assert "Input hash (SHA-256): " in report
   assert "OpenFurrow 0.1.0" in report
   assert "numpy" in report
+
+
+def testReportNamesTheSoftwareVersion():
+  package, layout, observations = yatesInputs()
+  report = buildReport(package, layout, observations)
+  assert f"- Versions: OpenFurrow {softwareVersion}, numpy " in report
 
 
 def testReportSeparatesSignificantTrial():

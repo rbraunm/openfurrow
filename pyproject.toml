@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "openfurrow"
-version = "0.1.0.dev0"
+dynamic = ["version"]
 description = "Open, reproducible management for agricultural trials."
 readme = "README.md"
 requires-python = ">=3.13"
@@ -37,6 +37,10 @@ openfurrow = "openfurrow.cli.main:main"
 
 [tool.setuptools.packages.find]
 include = ["openfurrow*"]
+
+# One source for the version: the module a report reads its provenance from.
+[tool.setuptools.dynamic]
+version = {attr = "openfurrow.version.softwareVersion"}
 
 # The message catalogs are data, not code, so setuptools does not pick them up by
 # default -- without this an installed OpenFurrow builds no report at all, even though

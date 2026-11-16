@@ -40,7 +40,7 @@ from openfurrow.schema.document import TrialDocument, contentHash
 from openfurrow.schema.layout import TrialLayout
 from openfurrow.schema.observation import Observation
 from openfurrow.schema.trialPackage import AssessmentDataType, Transform, TrialPackage
-from openfurrow.version import schemaVersion
+from openfurrow.version import softwareVersion
 
 # The precision p-values print at, and the value below which one rounds to zero at that
 # precision. Derived, not written twice: change the decimals and the threshold follows.
@@ -366,7 +366,7 @@ def _reproducibilitySection(
     "- "
     + translator.text(
       "report.reproducibility.versions",
-      openfurrow=schemaVersion,
+      openfurrow=softwareVersion,
       numpy=numpy.__version__,
       python=platform.python_version(),
     )

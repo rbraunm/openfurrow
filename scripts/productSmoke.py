@@ -116,8 +116,14 @@ def main():
     run([openfurrow, "init", database], workDirectory)
     run([openfurrow, "add", database, exampleDirectory / "trial.json"], workDirectory)
     run([openfurrow, "import", database, trialCode, exampleDirectory / "observations.csv"], workDirectory)
+    wheelVersion = wheels[0].name.split("-")[1]
     for locale in locales:
-      run([openfurrow, "report", database, trialCode, "--locale", locale, "--output", workDirectory / f"report-{locale}.md"], workDirectory)
+      reportPath = workDirectory / f"report-{locale}.md"
+      run([openfurrow, "report", database, trialCode, "--locale", locale, "--output", reportPath], workDirectory)
+      require(
+        f"OpenFurrow {wheelVersion}" in reportPath.read_text(encoding="utf-8"),
+        f"the {locale} report does not name the installed version {wheelVersion}",
+      )
     run([openfurrow, "verify", database, trialCode], workDirectory)
 
     documentPath = workDirectory / "trial.json"
