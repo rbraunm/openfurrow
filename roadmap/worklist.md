@@ -6,7 +6,7 @@ Findings, defects, checks and owner calls that the plans do not carry.
 Status tags: `fix` (a defect to correct), `build` (work to add), `check` (a suspicion to
 measure), `owner` (the owner's call), `done`.
 
-**Counts.** fix 5, build 10, check 0, owner 3, done 16; 34 in all.
+**Counts.** fix 5, build 19, check 0, owner 3, done 16; 43 in all.
 
 ## Owner decisions
 
@@ -202,7 +202,8 @@ measure), `owner` (the owner's call), `done`.
   - *A bounded pilot.* A supervised session, and their established analysis stays the
     analysis of record.
   Showing all of this on open, finished trials (Owner decisions, "Oracles") is the case to
-  make to the owner.
+  make to the owner. The parts of a trial record the specialist named (REC) belong to the
+  bar as far as the pilot trial uses them.
 - **USR-7** `build` **Trials laid out elsewhere.** A layout is always generated from the
   seed. A trial randomized by another tool, or already in the ground, cannot be entered
   with its own plot numbers and its own plot-to-treatment map; its observations could
@@ -213,6 +214,41 @@ measure), `owner` (the owner's call), `done`.
 - **USR-8** `build` **What happened to a plot.** A lost plot, a misapplied treatment or a
   difference between the plan and what was planted has no record. EPPO PP 1/181 asks for
   deviations to be noted and reported (decision 0015, "Consequences").
+
+## Trial record (REC)
+
+A research specialist who runs such trials looked at screenshots of a trial page, a
+report and the Arabic view (2026-11-15). The verdict: the basic idea is there, but a
+trial has to hold much more than its design and its numbers. Each point named is an item
+below, with what the tool holds today against it. The list is close to what EPPO PP 1/181
+asks a trial report to contain (its Appendix 1).
+
+- **REC-1** `build` **Planting details.** Seeding rate, spacing, emergence and the like.
+  Today a trial has a crop, a season and a site as free text, and nothing else about the
+  crop.
+- **REC-2** `build` **Pest information.** The pests a trial targets, their stage and
+  pressure. Nothing today.
+- **REC-3** `build` **Treatment information.** Today a treatment is a code, a name, one
+  product, one rate with its unit, and a free-text timing. No formulation, concentration
+  or active ingredient, and no treatment made of several products or several
+  applications.
+- **REC-4** `build` **Application information.** When, how and under what conditions each
+  application was made. Nothing today; the brief lists application events as early scope.
+- **REC-5** `build` **Soil information.** Nothing today.
+- **REC-6** `build` **Weather information.** Nothing today.
+- **REC-7** `build` **Special randomizations.** Today one design, the RCBD, with every
+  block shuffled independently. Decision 0015 makes any layout representable as data, so
+  an arrangement made by hand or by another tool can be held once REP-1 is built;
+  generating each special arrangement is work of its own. Which kinds are meant is a
+  question for the specialist.
+- **REC-8** `build` **Assessment definitions.** Today an assessment is a code, a name, a
+  data type, a unit, a free-text timing, a numeric range or a list of allowed values, a
+  measurement kind and a transform. No rating date, no crop or pest stage, no part rated,
+  no sample size or rating scale, and one value per plot (no subsamples).
+- **REC-9** `build` **Validation rules for data entry.** Today a value is checked on
+  import against the assessment's range or allowed values, and a bad one rejects the
+  file. The tool has no data entry of its own (USR-4), so no rule is applied as a value
+  is typed, and no softer rule (a warning for an unlikely value) exists.
 
 ## Small finds (SML)
 
