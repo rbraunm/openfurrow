@@ -133,8 +133,9 @@ With F1 to F6 in place:
 ## Our own sign-in library
 
 The project writes its own sign-in library, so that no third-party licence limits where
-OpenFurrow can be used (owner, 2026-11-16). It is part of the project, under its licence,
-and uses only the Python standard library:
+OpenFurrow can be used (owner, 2026-11-16). It is its own project,
+[Carnelian](https://github.com/rbraunm/carnelian), under MIT (decision 0039), and uses only
+the Python standard library:
 
 - **SAML 2.0** service provider: the request, the response, and the XML signature checked
   with exclusive canonicalization and the provider's certificate, refusing anything outside

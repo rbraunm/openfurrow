@@ -53,6 +53,7 @@ in `milestones.md`, a finding in `research/`), not turned into busywork ADRs.
 | 0036 | Identity and signing in               | Accepted          | yes        | Sign-in mode open (everyone holds everything) or accounts; scrypt passwords; session and API tokens kept as hashes; one refusal message; Origin check on changes; the CLI and library act as the operator. |
 | 0037 | Roles and permissions                 | Accepted          | yes        | Eleven permissions in five built-in roles and custom ones, given to accounts or groups at the server, a place or a trial and holding below; checked in the facade, unviewable answering not found. |
 | 0038 | Audit log                             | Accepted          | yes        | Every facade change writes an event in its transaction: when, who, surface, action, scope and what changed before and after; refused sign-ins recorded; never edited by the tool. |
+| 0039 | Sign-in library: Carnelian            | Accepted          | yes        | The sign-in library is its own project, Carnelian, under MIT so others (GPLv2 projects included) can use it; standard library only, verification-only cryptography; OpenFurrow depends on it and stays Apache-2.0. |
 
 ## Recorded elsewhere (not ADRs)
 
