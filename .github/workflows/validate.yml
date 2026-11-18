@@ -27,6 +27,14 @@ jobs:
         python: ["3.13", "3.14"]
     steps:
       - uses: actions/checkout@v7
+      # Real-time scanning stays on; only this job's own folders are excluded, since the suite writes thousands of small
+      # files and starts many Python processes. Temp files go to the job's temp folder, not the profile's.
+      - name: Exclude the checkout, the job's temp folder and pip's cache from real-time scanning
+        if: runner.os == 'Windows'
+        run: |
+          Add-MpPreference -ExclusionPath $env:GITHUB_WORKSPACE, $env:RUNNER_TEMP, (Join-Path $env:LOCALAPPDATA "pip\Cache")
+          "TEMP=$env:RUNNER_TEMP" >> $env:GITHUB_ENV
+          "TMP=$env:RUNNER_TEMP" >> $env:GITHUB_ENV
       - uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python }}
@@ -34,6 +42,9 @@ jobs:
           cache-dependency-path: |
             constraints.txt
             pyproject.toml
+      - name: Exclude the job's Python from real-time scanning
+        if: runner.os == 'Windows'
+        run: Add-MpPreference -ExclusionPath (python -c "import sys; print(sys.base_prefix)")
       - name: Install the project with its test and service extras
         run: python -m pip install --constraint constraints.txt --editable ".[test,service]"
       - name: Record the installed versions
