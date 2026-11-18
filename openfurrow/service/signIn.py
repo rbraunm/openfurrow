@@ -21,9 +21,11 @@ from openfurrow.workspace import IdentityError, Workspace
 
 sessionCookie = "openfurrowSession"
 pendingCookie = "openfurrowPending"
-_open = {"health", "web.static", "web.signIn", "web.providerStart", "web.providerReturn", "web.providerMetadata"}
-# A provider's answer arrives from the provider's site (SAML by POST); its signature is its proof, not its origin.
-_crossSite = {"web.providerReturn"}
+_open = {"health", "web.static", "web.signIn", "web.providerStart", "web.providerReturn", "web.providerMetadata",
+         "web.providerSignOut", "web.backChannelLogout"}
+# A provider's messages arrive from the provider's site (SAML by POST) or its server (back-channel and CAS logout); the
+# signature, or for CAS the ticket only its server and this one know, is their proof, not their origin.
+_crossSite = {"web.providerReturn", "web.providerSignOut", "web.backChannelLogout"}
 
 
 class RequestWorkspace:

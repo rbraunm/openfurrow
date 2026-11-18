@@ -14,7 +14,7 @@ import re
 import threading
 import time
 from collections.abc import Callable
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
 from typing import Any
@@ -28,8 +28,8 @@ from carnelian.fetching import Fetcher, HTTPFailure, secureContext
 from carnelian.ldap import Directory
 from carnelian.oidc import RelyingParty, SignInRefused, discover
 from carnelian.keys import LocalDecryptionKey, LocalSigningKey
-from carnelian.saml import (EncryptionPolicy, SAMLRefused, ServiceProvider, aes128CBC, aes128GCM, aes256CBC, aes256GCM,
-                            identityProviderFromMetadata)
+from carnelian.saml import (EncryptionPolicy, ReplayStore, SAMLRefused, ServiceProvider, aes128CBC, aes128GCM, aes256CBC,
+                            aes256GCM, identityProviderFromMetadata)
 from carnelian.saml import serviceProviderMetadata as plainServiceProviderMetadata
 from pydantic import BaseModel, ConfigDict, field_validator, model_validator
 
@@ -70,6 +70,12 @@ def _secureURL(value: str) -> str:
   raise ValueError(f"'{value}' must be an https address")
 
 
+def _httpsURL(value: str | None) -> str | None:
+  if value is not None and not (urlsplit(value).scheme == "https" and urlsplit(value).hostname):
+    raise ValueError(f"'{value}' must be an https address")
+  return value
+
+
 class _SignInSettings(BaseModel):
   model_config = ConfigDict(extra="forbid")
 
@@ -78,7 +84,27 @@ class _SignInSettings(BaseModel):
   certificateAuthority: str | None = None
 
 
-class OpenIDConnectSettings(_SignInSettings):
+class _SignOutSettings(_SignInSettings):
+  """Signing out of OpenFurrow ends only its own session, unless signOutEverywhere sends the person on to sign out at
+  the provider too, which then sends them to signedOutURL when it is given."""
+
+  signOutEverywhere: bool = False
+  signedOutURL: str | None = None
+
+  @field_validator("signedOutURL")
+  @classmethod
+  def secureSignedOut(cls, value: str | None) -> str | None:
+    return _httpsURL(value)
+
+  @model_validator(mode="after")
+  def signedOutNeedsEverywhere(self) -> _SignOutSettings:
+    if self.signedOutURL is not None and not self.signOutEverywhere:
+      raise ValueError("signedOutURL is where the provider sends the person after signing out everywhere; "
+                       "set signOutEverywhere too")
+    return self
+
+
+class OpenIDConnectSettings(_SignOutSettings):
   issuer: str
   clientID: str
   clientSecretVariable: str
@@ -100,18 +126,29 @@ class KeyPair(BaseModel):
   passwordVariable: str | None = None
 
 
-class _SAMLKeys(_SignInSettings):
-  """The service's own SAML keys: one that signs its requests, and those that decrypt assertions (the first is
-  current; the others are kept while a provider still encrypts to them)."""
+class _SAMLKeys(_SignOutSettings):
+  """The service's own SAML keys: one that signs its requests and logout messages, and those that decrypt assertions
+  (the first is current; the others are kept while a provider still encrypts to them); and this service's address
+  for logout messages."""
 
   signingKey: KeyPair | None = None
   decryptionKeys: list[KeyPair] = []
   allowCBC: bool = False
+  singleLogoutURL: str | None = None
+
+  @field_validator("singleLogoutURL")
+  @classmethod
+  def secureLogout(cls, value: str | None) -> str | None:
+    return _httpsURL(value)
 
   @model_validator(mode="after")
   def keysMakeSense(self) -> _SAMLKeys:
     if self.allowCBC and not self.decryptionKeys:
       raise ValueError("allowCBC is a setting for decrypting assertions; name decryptionKeys too")
+    if self.signOutEverywhere and self.singleLogoutURL is None:
+      raise ValueError("signOutEverywhere needs singleLogoutURL, the address the identity provider answers at")
+    if self.singleLogoutURL is not None and self.signingKey is None:
+      raise ValueError("single logout needs signingKey: every logout message is signed")
     files = [pair.keyFile for pair in self.decryptionKeys] + ([self.signingKey.keyFile] if self.signingKey else [])
     if len(set(files)) != len(files):
       raise ValueError("each key is named once: the signing key and every decryption key are different keys")
@@ -188,7 +225,7 @@ class FederationSettings(_SAMLKeys):
     return certificate
 
 
-class CASSettings(_SignInSettings):
+class CASSettings(_SignOutSettings):
   """An Apereo CAS server (protocol 3.0); the attributes are those the server releases to this service."""
 
   serverURL: str
@@ -273,13 +310,17 @@ def secret(variable: str) -> str:
 
 @dataclass(frozen=True)
 class ProvidedIdentity:
-  """What a provider vouches for: its stable subject for the person, and what it says about them."""
+  """What a provider vouches for: its stable subject for the person and what it says about them; and the provider's
+  session, by the provider's own identifier for it (an OpenID Connect sid, a SAML SessionIndex, a CAS service
+  ticket), with what signing out of it needs."""
 
   subject: str
   userName: str | None
   displayName: str | None
   email: str | None
   groups: tuple[str, ...]
+  sessionID: str | None = None
+  signOutDetail: dict[str, str | None] = field(default_factory=dict)
 
 
 class ProviderFailure(IdentityError):
@@ -296,16 +337,16 @@ providerRefreshSeconds = 60 * 60
 
 
 class _ProviderCache:
-  """Each provider's discovery, metadata and keys, built once and rebuilt after providerRefreshSeconds; a failed build
-  is never kept, so the next sign-in tries again."""
+  """What each provider's settings make (its discovery, metadata, keys), kept by purpose, built once and rebuilt after
+  providerRefreshSeconds; a failed build is never kept, so the next sign-in tries again."""
 
   def __init__(self, clock: Callable[[], float] = time.monotonic) -> None:
     self._clock = clock
     self._lock = threading.Lock()
-    self._built: dict[tuple[str, str], tuple[float, Any]] = {}
+    self._built: dict[tuple[str, str, str], tuple[float, Any]] = {}
 
-  def get(self, settings: BaseModel, build: Callable[[], Any]) -> Any:
-    key = (type(settings).__name__, settings.model_dump_json())
+  def get(self, purpose: str, settings: BaseModel, build: Callable[[], Any]) -> Any:
+    key = (purpose, type(settings).__name__, settings.model_dump_json())
     with self._lock:
       found = self._built.get(key)
       if found is not None and self._clock() - found[0] < providerRefreshSeconds:
@@ -328,20 +369,21 @@ def relyingParty(settings: OpenIDConnectSettings):
       raise ProviderFailure(f"the provider at {settings.issuer} cannot be used: {error}") from None
     return RelyingParty(provider, settings.clientID, secret(settings.clientSecretVariable), settings.returnURL, fetcher)
 
-  return _providers.get(settings, build)
+  return _providers.get("relyingParty", settings, build)
 
 
-def serviceProvider(settings: SAMLSettings):
+def serviceProvider(settings: SAMLSettings, replays: ReplayStore) -> ServiceProvider:
+  """A service provider for one use: the identity provider's metadata and the keys are reused, while the replay store
+  is the caller's, since it belongs to the database and not to the process."""
   def build():
     try:
       metadata = Fetcher(_context(settings)).getBytes(settings.metadataURL,
                                                       "application/samlmetadata+xml, application/xml;q=0.9")
-      identityProvider = identityProviderFromMetadata(metadata, settings.identityProviderEntityID)
+      return identityProviderFromMetadata(metadata, settings.identityProviderEntityID)
     except (HTTPFailure, SAMLRefused) as error:
       raise ProviderFailure(f"the metadata at {settings.metadataURL} cannot be used: {error}") from None
-    return _keyedServiceProvider(settings, identityProvider)
 
-  return _providers.get(settings, build)
+  return _keyedServiceProvider(settings, _providers.get("identityProvider", settings, build), replays)
 
 
 def _pem(path: str, what: str) -> bytes:
@@ -354,6 +396,10 @@ def _pem(path: str, what: str) -> bytes:
 def _keyArguments(pair: KeyPair) -> tuple[bytes, bytes, bytes | None]:
   password = secret(pair.passwordVariable).encode("utf-8") if pair.passwordVariable else None
   return _pem(pair.keyFile, "private key"), _pem(pair.certificateFile, "certificate"), password
+
+
+def _loadedKeys(settings: _SAMLKeys) -> tuple[LocalSigningKey | None, tuple[LocalDecryptionKey, ...]]:
+  return _providers.get("keys", settings, lambda: (_signingKey(settings), _decryptionKeys(settings)))
 
 
 def _signingKey(settings: _SAMLKeys) -> LocalSigningKey | None:
@@ -383,20 +429,23 @@ def _encryptionPolicy(settings: _SAMLKeys) -> EncryptionPolicy:
   return EncryptionPolicy(contentAlgorithms=frozenset({aes128GCM, aes256GCM, aes128CBC, aes256CBC}))
 
 
-def _keyedServiceProvider(settings: SAMLSettings | FederationSettings, identityProvider) -> ServiceProvider:
-  return ServiceProvider(settings.entityID, settings.returnURL, identityProvider, signingKey=_signingKey(settings),
-                         decryptionKeys=_decryptionKeys(settings), encryptionPolicy=_encryptionPolicy(settings))
+def _keyedServiceProvider(settings: SAMLSettings | FederationSettings, identityProvider,
+                          replays: ReplayStore) -> ServiceProvider:
+  signing, decryption = _loadedKeys(settings)
+  return ServiceProvider(settings.entityID, settings.returnURL, identityProvider, replayCache=replays, signingKey=signing,
+                         decryptionKeys=decryption, encryptionPolicy=_encryptionPolicy(settings),
+                         singleLogoutURL=settings.singleLogoutURL)
 
 
 def _metadataKeys(settings: _SAMLKeys) -> dict[str, Any]:
-  signing = _signingKey(settings)
+  signing, decryption = _loadedKeys(settings)
   return {"signingCertificate": signing.certificate if signing else None,
-          "encryptionCertificates": tuple(key.certificate for key in _decryptionKeys(settings)),
-          "encryptionPolicy": _encryptionPolicy(settings)}
+          "encryptionCertificates": tuple(key.certificate for key in decryption),
+          "encryptionPolicy": _encryptionPolicy(settings), "singleLogoutURL": settings.singleLogoutURL}
 
 
 def samlMetadata(settings: SAMLSettings) -> bytes:
-  """What the identity provider registers for this service: its entity ID, return address and keys."""
+  """What the identity provider registers for this service: its entity ID, return and logout addresses, and keys."""
   return plainServiceProviderMetadata(settings.entityID, settings.returnURL, **_metadataKeys(settings))
 
 
@@ -407,8 +456,16 @@ def directory(settings: LDAPSettings):
 
 
 def fromOpenIDConnect(identity) -> ProvidedIdentity:
+  sessionID = identity.claims.get("sid")
+  if sessionID is not None and (not isinstance(sessionID, str) or not sessionID):
+    raise ProviderFailure("the ID token's sid is not text")
   return ProvidedIdentity(subject=identity.subject, userName=identity.userName, displayName=identity.displayName,
-                          email=identity.email if identity.emailVerified else None, groups=identity.groups)
+                          email=identity.email if identity.emailVerified else None, groups=identity.groups,
+                          sessionID=sessionID, signOutDetail={"idToken": identity.idToken})
+
+
+def _samlSignOutDetail(identity) -> dict[str, str | None]:
+  return {"nameID": identity.nameID, "nameIDFormat": identity.nameIDFormat, "sessionIndex": identity.sessionIndex}
 
 
 def fromSAML(settings: SAMLSettings, identity) -> ProvidedIdentity:
@@ -419,6 +476,7 @@ def fromSAML(settings: SAMLSettings, identity) -> ProvidedIdentity:
     subject=identity.nameID, userName=_single(identity, settings.userNameAttribute) or identity.nameID,
     displayName=_single(identity, settings.displayNameAttribute), email=_single(identity, settings.emailAttribute),
     groups=tuple(identity.attributes.get(settings.groupsAttribute, ())) if settings.groupsAttribute else (),
+    sessionID=identity.sessionIndex, signOutDetail=_samlSignOutDetail(identity),
   )
 
 
@@ -440,7 +498,7 @@ def institution(settings: FederationSettings, entityID: str):
   """An institution offered here, its metadata fetched from the federation and checked."""
   if entityID not in settings.institutions:
     raise IdentityError(f"'{entityID}' is not an institution offered here")
-  federation = _providers.get(settings, lambda: Federation("the federation", settings.mdqURL, settings.signingCertificate,
+  federation = _providers.get("federation", settings, lambda: Federation("the federation", settings.mdqURL, settings.signingCertificate,
                                                            Fetcher(_context(settings))))
   try:
     return federation.institution(entityID)
@@ -448,8 +506,8 @@ def institution(settings: FederationSettings, entityID: str):
     raise ProviderFailure(f"the institution {entityID} cannot be used: {error}") from None
 
 
-def federationServiceProvider(settings: FederationSettings, chosen) -> ServiceProvider:
-  return _keyedServiceProvider(settings, chosen.identityProvider)
+def federationServiceProvider(settings: FederationSettings, chosen, replays: ReplayStore) -> ServiceProvider:
+  return _keyedServiceProvider(settings, chosen.identityProvider, replays)
 
 
 def fromFederation(settings: FederationSettings, chosen, identity) -> ProvidedIdentity:
@@ -461,6 +519,7 @@ def fromFederation(settings: FederationSettings, chosen, identity) -> ProvidedId
     subject=subject, userName=_single(identity, settings.userNameAttribute),
     displayName=_single(identity, settings.displayNameAttribute), email=_single(identity, settings.emailAttribute),
     groups=tuple(identity.attributes.get(settings.groupsAttribute, ())) if settings.groupsAttribute else (),
+    sessionID=identity.sessionIndex, signOutDetail=_samlSignOutDetail(identity) | {"institution": chosen.entityID},
   )
 
 
@@ -480,4 +539,5 @@ def fromCAS(settings: CASSettings, identity) -> ProvidedIdentity:
     subject=foldedUserName(identity.userName), userName=identity.userName,
     displayName=_single(identity, settings.displayNameAttribute), email=_single(identity, settings.emailAttribute),
     groups=identity.attributes.get(settings.groupsAttribute, ()) if settings.groupsAttribute else (),
+    sessionID=identity.ticket,
   )

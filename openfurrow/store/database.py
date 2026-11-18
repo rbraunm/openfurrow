@@ -34,11 +34,11 @@ from __future__ import annotations
 import datetime
 import re
 
-from sqlalchemy import ForeignKey, Text, event, inspect, select
+from sqlalchemy import ForeignKey, Index, Text, event, inspect, select
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, relationship
 
-storeVersion = 17
+storeVersion = 18
 
 
 class StoreError(RuntimeError):
@@ -206,6 +206,31 @@ class PendingSignInRow(Base):
   keyHash: Mapped[str] = mapped_column(primary_key=True)
   providerName: Mapped[str] = mapped_column(ForeignKey("identityProvider.providerName", ondelete="CASCADE"))
   stateJSON: Mapped[str] = mapped_column(Text)
+  expiresAt: Mapped[datetime.datetime]
+
+
+class ProviderSessionRow(Base):
+  """The provider session a session token was issued for, kept so a sign-out at either end ends the other."""
+
+  __tablename__ = "providerSession"
+  __table_args__ = (Index("providerSessionByID", "providerName", "sessionID"),
+                    Index("providerSessionBySubject", "providerName", "subject"))
+
+  tokenHash: Mapped[str] = mapped_column(ForeignKey("authToken.tokenHash", ondelete="CASCADE"), primary_key=True)
+  providerName: Mapped[str] = mapped_column(ForeignKey("identityProvider.providerName", ondelete="CASCADE"))
+  subject: Mapped[str]
+  sessionID: Mapped[str | None]
+  detailJSON: Mapped[str] = mapped_column(Text)
+
+
+class ReplayClaimRow(Base):
+  """A message identifier used once (a SAML assertion or LogoutRequest, an OpenID Connect logout token), kept until
+  it could no longer be accepted anyway; inserting one is the atomic claim."""
+
+  __tablename__ = "replayClaim"
+
+  scope: Mapped[str] = mapped_column(primary_key=True)
+  identifier: Mapped[str] = mapped_column(primary_key=True)
   expiresAt: Mapped[datetime.datetime]
 
 

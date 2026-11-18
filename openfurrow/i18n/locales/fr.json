@@ -1921,6 +1921,26 @@
       "text": "Se déconnecter",
       "status": "machineDraft"
     },
+    "web.signOut.atProviderFailed": {
+      "text": "Vous êtes déconnecté d'OpenFurrow, mais la déconnexion auprès de {provider} a échoué : {reason}",
+      "status": "machineDraft"
+    },
+    "web.signOut.fromProviderRefused": {
+      "text": "La demande de déconnexion de {provider} a été refusée : {reason}",
+      "status": "machineDraft"
+    },
+    "web.signOut.notAnswer": {
+      "text": "Ceci n'est pas un message de déconnexion de {provider}.",
+      "status": "machineDraft"
+    },
+    "web.signedOut.heading": {
+      "text": "Déconnecté",
+      "status": "machineDraft"
+    },
+    "web.signedOut.signInAgain": {
+      "text": "Se reconnecter",
+      "status": "machineDraft"
+    },
     "web.trial.allPlots": {
       "text": "Toutes les parcelles",
       "status": "machineDraft"

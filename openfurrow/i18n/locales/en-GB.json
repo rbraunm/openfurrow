@@ -2068,6 +2068,26 @@
     "web.signIn.institution": {
       "text": "Choose your institution",
       "status": "humanApproved"
+    },
+    "web.signedOut.heading": {
+      "text": "Signed out",
+      "status": "humanApproved"
+    },
+    "web.signedOut.signInAgain": {
+      "text": "Sign in again",
+      "status": "humanApproved"
+    },
+    "web.signOut.atProviderFailed": {
+      "text": "You are signed out of OpenFurrow, but signing out at {provider} failed: {reason}",
+      "status": "humanApproved"
+    },
+    "web.signOut.fromProviderRefused": {
+      "text": "The sign-out request from {provider} was refused: {reason}",
+      "status": "humanApproved"
+    },
+    "web.signOut.notAnswer": {
+      "text": "This is not a sign-out message from {provider}.",
+      "status": "humanApproved"
     }
   }
 }

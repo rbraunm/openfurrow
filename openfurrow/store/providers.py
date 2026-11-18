@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 """Identity providers in the store: their configuration, the links to accounts, the sign-ins
-waiting for a provider's answer, and the groups a provider mirrors (decision 0040)."""
+waiting for a provider's answer, the provider sessions behind session tokens, the message
+identifiers already used, and the groups a provider mirrors (decision 0040)."""
 
 from __future__ import annotations
 
@@ -9,15 +10,19 @@ import hashlib
 import hmac
 import json
 import secrets
+from dataclasses import dataclass
 
-from sqlalchemy import select
+from carnelian.saml import SAMLRefused
+from sqlalchemy import delete, select
+from sqlalchemy.engine import Engine
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from openfurrow.identity.model import Account, IdentityError, normalizedUserName
 from openfurrow.identity.providers import GroupPolicy, NewAccounts, ProvidedIdentity, Provider, ProviderKind
-from openfurrow.store.database import (AccountGroupRow, AccountRow, ExternalIdentityRow, GroupMemberRow,
-                                       IdentityProviderRow, PendingSignInRow)
-from openfurrow.store.identity import _account, accountRow, now
+from openfurrow.store.database import (AccountGroupRow, AccountRow, AuthTokenRow, ExternalIdentityRow, GroupMemberRow,
+                                       IdentityProviderRow, PendingSignInRow, ProviderSessionRow, ReplayClaimRow)
+from openfurrow.store.identity import _account, _hashed as _tokenHash, accountRow, now
 
 pendingMinutes = 10
 
@@ -97,6 +102,79 @@ def takePending(session: Session, key: str) -> tuple[str, dict]:
   if row.expiresAt < now():
     raise IdentityError("the sign-in took too long; start again")
   return row.providerName, json.loads(row.stateJSON)
+
+
+# ---- provider sessions ------------------------------------------------------------
+
+@dataclass(frozen=True)
+class ProviderSession:
+  providerName: str
+  subject: str
+  sessionID: str | None
+  detail: dict
+
+
+def recordProviderSession(session: Session, token: str, providerName: str, identity: ProvidedIdentity) -> None:
+  session.add(ProviderSessionRow(tokenHash=_tokenHash(token), providerName=providerName, subject=identity.subject,
+                                 sessionID=identity.sessionID, detailJSON=json.dumps(identity.signOutDetail)))
+  session.flush()
+
+
+def providerSessionOf(session: Session, token: str) -> ProviderSession | None:
+  row = session.get(ProviderSessionRow, _tokenHash(token))
+  if row is None:
+    return None
+  return ProviderSession(row.providerName, row.subject, row.sessionID, json.loads(row.detailJSON))
+
+
+def endProviderSessions(session: Session, providerName: str, subject: str | None = None,
+                        sessionIDs: tuple[str, ...] | None = None) -> int:
+  """End the sessions here that came from a provider's sessions: those of a subject, those with given session IDs, or
+  both; how many ended. The tokens themselves are deleted, and their provider sessions with them."""
+  if subject is None and not sessionIDs:
+    raise IdentityError("ending a provider's sessions needs a subject or session IDs")
+  query = select(ProviderSessionRow.tokenHash).where(ProviderSessionRow.providerName == providerName)
+  if subject is not None:
+    query = query.where(ProviderSessionRow.subject == subject)
+  if sessionIDs:
+    query = query.where(ProviderSessionRow.sessionID.in_(sessionIDs))
+  hashes = session.execute(query).scalars().all()
+  if hashes:
+    session.execute(delete(AuthTokenRow).where(AuthTokenRow.tokenHash.in_(hashes)))
+    session.flush()
+  return len(hashes)
+
+
+# ---- message identifiers used once ---------------------------------------------------
+
+def _stored(instant: float) -> datetime.datetime:
+  return datetime.datetime.fromtimestamp(instant, datetime.UTC).replace(tzinfo=None)
+
+
+def claimOnce(engine: Engine, scope: str, identifier: str, until: float, at: float) -> bool:
+  """Claim an identifier in its scope until `until` (seconds since the epoch), in a transaction of its own so that
+  nothing after it can undo it: True for the one claim that is new, False while an earlier claim holds."""
+  with Session(engine) as session:
+    session.execute(delete(ReplayClaimRow).where(ReplayClaimRow.scope == scope, ReplayClaimRow.identifier == identifier,
+                                                 ReplayClaimRow.expiresAt <= _stored(at)))
+    session.add(ReplayClaimRow(scope=scope, identifier=identifier, expiresAt=_stored(until)))
+    try:
+      session.commit()
+    except IntegrityError:
+      session.rollback()
+      return False
+  return True
+
+
+class StoredReplays:
+  """Carnelian's ReplayStore over the store, so every process serving one database refuses a SAML message used once."""
+
+  def __init__(self, engine: Engine) -> None:
+    self._engine = engine
+
+  def admit(self, issuer: str, assertionID: str, until: float, now: float) -> None:
+    if not claimOnce(self._engine, json.dumps(["saml", issuer]), assertionID, until, now):
+      raise SAMLRefused(f"message {assertionID!r} from {issuer} was already used")
 
 
 # ---- what a provider vouches for ------------------------------------------------

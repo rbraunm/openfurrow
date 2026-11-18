@@ -1921,6 +1921,26 @@
       "text": "تسجيل الخروج",
       "status": "machineDraft"
     },
+    "web.signOut.atProviderFailed": {
+      "text": "تم تسجيل خروجك من OpenFurrow، لكن تسجيل الخروج لدى {provider} فشل: {reason}",
+      "status": "machineDraft"
+    },
+    "web.signOut.fromProviderRefused": {
+      "text": "تم رفض طلب تسجيل الخروج من {provider}: {reason}",
+      "status": "machineDraft"
+    },
+    "web.signOut.notAnswer": {
+      "text": "هذه ليست رسالة تسجيل خروج من {provider}.",
+      "status": "machineDraft"
+    },
+    "web.signedOut.heading": {
+      "text": "تم تسجيل الخروج",
+      "status": "machineDraft"
+    },
+    "web.signedOut.signInAgain": {
+      "text": "تسجيل الدخول من جديد",
+      "status": "machineDraft"
+    },
     "web.trial.allPlots": {
       "text": "جميع القطع",
       "status": "machineDraft"

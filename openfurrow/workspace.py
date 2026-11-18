@@ -36,11 +36,13 @@ from __future__ import annotations
 
 import dataclasses
 import datetime
+import json
 import tempfile
+import time
 from contextlib import contextmanager
 from pathlib import Path
 
-from carnelian.cas import CASRefused, Pending as CASPending
+from carnelian.cas import CASRefused, Pending as CASPending, readLogoutRequest as _readCASLogout
 from carnelian.ldap import DirectoryRefused
 from carnelian.oidc import Pending as OpenIDConnectPending, SignInRefused
 from carnelian.saml import Pending as SAMLPending, SAMLRefused
@@ -160,13 +162,18 @@ from openfurrow.identity.providers import (
   serviceProvider as _serviceProvider,
 )
 from openfurrow.store.providers import (
+  StoredReplays as _StoredReplays,
   addProvider as _addProvider,
+  claimOnce as _claimOnce,
   completeSignIn as _completeSignIn,
+  endProviderSessions as _endProviderSessions,
   issueProvisioningToken as _issueProvisioningToken,
   linkIdentity as _linkIdentity,
   listProviders as _listProviders,
   provider as _providerNamed,
+  providerSessionOf as _providerSessionOf,
   provisioningTokenMatches as _provisioningTokenMatches,
+  recordProviderSession as _recordProviderSession,
   setProviderEnabled as _setProviderEnabled,
   startPending as _startPending,
   takePending as _takePending,
@@ -218,6 +225,7 @@ __all__ = [
   "NotPermitted",
   "ObservationImportError",
   "RoundTripCheck",
+  "SignOutOutcome",
   "StoreError",
   "Workspace",
   "availableLocales",
@@ -234,6 +242,17 @@ def _jsonSetting(setting: EffectiveSetting | None) -> dict | None:
 
 class NotPermitted(PermissionError):
   """The actor does not hold the permission an operation needs where it acts; not bad input, so no form catches it."""
+
+
+@dataclasses.dataclass(frozen=True)
+class SignOutOutcome:
+  """A sign-out, the session here already ended: the provider it came from, and where the browser goes next to sign
+  out there too (with the key of the pending logout's cookie when an answer comes back), or why it cannot."""
+
+  provider: str | None
+  address: str | None = None
+  pendingKey: str | None = None
+  problem: str | None = None
 
 
 class RoundTripCheck(BaseModel):
@@ -588,9 +607,138 @@ class Workspace:
       self._audit(session, "token.issue", "server", {"name": name, "days": days})
       return token
 
-  def signOut(self, token: str) -> None:
+  def signOut(self, token: str, surface: str) -> SignOutOutcome:
+    """End a session here; when it came from a provider whose signOutEverywhere is set, also say where the browser
+    goes to sign out there. A failure at the provider leaves the session here ended, and is said and audited."""
     with _sessionScope(self._engine) as session:
+      try:
+        actor = _actorForToken(session, token, "session", surface)
+      except IdentityError:
+        return SignOutOutcome(provider=None)
+      held = _providerSessionOf(session, token)
+      provider = _providerNamed(session, held.providerName) if held is not None else None
+      everywhere = provider is not None and provider.settings.signOutEverywhere
       _revokeToken(session, token)
+      detail = {"everywhere": everywhere} | ({"provider": provider.name} if provider is not None else {})
+      _record(session, actor, "signOut", "server", detail)
+      session.commit()
+      if not everywhere:
+        return SignOutOutcome(provider=provider.name if provider is not None else None)
+      try:
+        address, key = self._signOutAt(session, provider, held, actor)
+      except (SignInRefused, SAMLRefused, CASRefused, IdentityError) as error:
+        session.rollback()
+        _record(session, actor, "signOut.atProvider.failed", "server", {"provider": provider.name, "why": str(error)})
+        return SignOutOutcome(provider=provider.name, problem=str(error))
+      _record(session, actor, "signOut.atProvider", "server", {"provider": provider.name})
+      return SignOutOutcome(provider=provider.name, address=address, pendingKey=key)
+
+  def _signOutAt(self, session, provider: Provider, held, actor: Actor) -> tuple[str, str | None]:
+    settings = provider.settings
+    if provider.kind is ProviderKind.openIDConnect:
+      return _relyingParty(settings).logoutAddress(held.detail["idToken"], settings.signedOutURL), None
+    if provider.kind is ProviderKind.cas:
+      return _casServer(settings).logoutAddress(settings.signedOutURL), None
+    institution = held.detail.get("institution")
+    address, pending = self._samlServiceProvider(provider, institution).beginSignOut(
+      held.detail["nameID"], held.detail["nameIDFormat"], held.detail["sessionIndex"])
+    key = _startPending(session, provider.name, {"purpose": "signOut", "protocol": dataclasses.asdict(pending),
+                                                 "institution": institution, "accountID": actor.accountID,
+                                                 "userName": actor.userName})
+    return address, key
+
+  def _samlServiceProvider(self, provider: Provider, institution: str | None):
+    if provider.kind is ProviderKind.saml:
+      return _serviceProvider(provider.settings, _StoredReplays(self._engine))
+    return _federationServiceProvider(provider.settings, _institution(provider.settings, institution),
+                                      _StoredReplays(self._engine))
+
+  def finishProviderSignOut(self, name: str, key: str, query: str | None, samlResponse: str | None,
+                            surface: str) -> tuple[str | None, str | None]:
+    """A SAML identity provider's answer to signing out there: where the person goes next (the provider's signedOutURL,
+    if any), and why the answer is refused, if it is; the session here ended already."""
+    with _sessionScope(self._engine) as session:
+      pendingName, state = _takePending(session, key)
+      session.commit()
+      if pendingName != name or state["purpose"] != "signOut":
+        raise IdentityError(f"this browser is not signing out at {name}")
+      actor = Actor(kind=ActorKind.account, accountID=state["accountID"], userName=state["userName"], surface=surface)
+      provider = _providerNamed(session, name)
+      try:
+        self._samlServiceProvider(provider, state["institution"]).finishSignOut(
+          SAMLPending(**state["protocol"]), query=query, samlResponse=samlResponse)
+      except (SAMLRefused, IdentityError) as error:
+        _record(session, actor, "signOut.atProvider.failed", "server", {"provider": name, "why": str(error)})
+        return None, str(error)
+      _record(session, actor, "signOut.atProvider.finished", "server", {"provider": name})
+      return provider.settings.signedOutURL, None
+
+  def _signedOutByProvider(self, session, name: str, how: str, ended: int, surface: str) -> None:
+    _record(session, Actor.everyone(surface), "signOut.fromProvider", "server",
+            {"provider": name, "how": how, "sessionsEnded": ended})
+
+  def _refusedSignOutFromProvider(self, session, name: str, how: str, why: str, surface: str) -> None:
+    session.rollback()
+    _record(session, Actor.everyone(surface), "signOut.fromProvider.refused", "server",
+            {"provider": name, "how": how, "why": why})
+    session.commit()
+
+  def backChannelSignOut(self, name: str, logoutToken: str, surface: str) -> int:
+    """An OpenID Connect provider's back-channel logout token (Back-Channel Logout 1.0): the sessions it names ended
+    here, and how many; a token refused, or already used, is a ProviderFailure."""
+    with _sessionScope(self._engine) as session:
+      provider = self._enabledProvider(session, name, (ProviderKind.openIDConnect,))
+      try:
+        notice = _relyingParty(provider.settings).checkLogoutToken(logoutToken)
+      except SignInRefused as error:
+        self._refusedSignOutFromProvider(session, name, "backChannel", str(error), surface)
+        raise ProviderFailure(str(error)) from None
+      scope = json.dumps(["openIDConnect", notice.issuer, notice.clientID])
+      if not _claimOnce(self._engine, scope, notice.tokenID, notice.rememberUntil, time.time()):
+        why = f"logout token {notice.tokenID!r} was already used"
+        self._refusedSignOutFromProvider(session, name, "backChannel", why, surface)
+        raise ProviderFailure(why)
+      if notice.sessionID is not None:
+        ended = _endProviderSessions(session, name, subject=notice.subject, sessionIDs=(notice.sessionID,))
+      else:
+        ended = _endProviderSessions(session, name, subject=notice.subject)
+      self._signedOutByProvider(session, name, "backChannel", ended, surface)
+      return ended
+
+  def samlSignOutRequest(self, name: str, query: str | None, samlRequest: str | None, relayState: str | None,
+                         surface: str) -> str:
+    """A SAML identity provider's LogoutRequest: the sessions of its NameID (with its SessionIndexes, when it gives
+    any) ended here, and the address of the signed answer to send the browser to."""
+    with _sessionScope(self._engine) as session:
+      provider = self._enabledProvider(session, name, (ProviderKind.saml, ProviderKind.samlFederation))
+      if provider.kind is ProviderKind.samlFederation:
+        why = (f"{name} is a federation: which institution sent a logout request cannot be checked before reading it, "
+               "so logout requests from a federation's institutions are refused")
+        self._refusedSignOutFromProvider(session, name, "saml", why, surface)
+        raise ProviderFailure(why)
+      serviceProvider = self._samlServiceProvider(provider, None)
+      try:
+        asked = serviceProvider.readSignOutRequest(query=query, samlRequest=samlRequest, relayState=relayState)
+      except SAMLRefused as error:
+        self._refusedSignOutFromProvider(session, name, "saml", str(error), surface)
+        raise ProviderFailure(f"{name}'s logout request is refused: {error}") from None
+      ended = _endProviderSessions(session, name, subject=asked.nameID, sessionIDs=asked.sessionIndexes or None)
+      self._signedOutByProvider(session, name, "saml", ended, surface)
+      session.commit()
+      return serviceProvider.answerSignOut(asked)
+
+  def casSignOut(self, name: str, logoutRequest: str, surface: str) -> int:
+    """A CAS server's single-logout notice: the one session its service ticket started ended here, and how many."""
+    with _sessionScope(self._engine) as session:
+      self._enabledProvider(session, name, (ProviderKind.cas,))
+      try:
+        ticket = _readCASLogout(logoutRequest)
+      except CASRefused as error:
+        self._refusedSignOutFromProvider(session, name, "cas", str(error), surface)
+        raise ProviderFailure(f"{name}'s logout notice is refused: {error}") from None
+      ended = _endProviderSessions(session, name, sessionIDs=(ticket,))
+      self._signedOutByProvider(session, name, "cas", ended, surface)
+      return ended
 
   def account(self) -> Account | None:
     """The signed-in account this workspace acts as, if any."""
@@ -665,10 +813,8 @@ class Workspace:
       elif provider.kind is ProviderKind.cas:
         address, pending = _casServer(provider.settings).beginSignIn()
       else:
-        serviceProvider = (_serviceProvider(provider.settings) if provider.kind is ProviderKind.saml else
-                           _federationServiceProvider(provider.settings, _institution(provider.settings, institution)))
-        address, pending = serviceProvider.beginSignIn()
-      key = _startPending(session, name, {"protocol": dataclasses.asdict(pending), "next": next,
+        address, pending = self._samlServiceProvider(provider, institution).beginSignIn()
+      key = _startPending(session, name, {"purpose": "signIn", "protocol": dataclasses.asdict(pending), "next": next,
                                           "institution": institution})
       return address, key
 
@@ -677,6 +823,8 @@ class Workspace:
     with _sessionScope(self._engine) as session:
       name, state = _takePending(session, key)
       session.commit()
+      if state["purpose"] != "signIn":
+        raise IdentityError("this browser is signing out, not in; start again")
       provider = self._enabledProvider(session, name, _redirectKinds)
       try:
         if provider.kind is ProviderKind.openIDConnect:
@@ -688,13 +836,14 @@ class Workspace:
         else:
           if "SAMLResponse" not in answer:
             raise IdentityError("the provider's answer has no SAMLResponse")
+          replays = _StoredReplays(self._engine)
           if provider.kind is ProviderKind.saml:
-            identity = _fromSAML(provider.settings, _serviceProvider(provider.settings).finishSignIn(
+            identity = _fromSAML(provider.settings, _serviceProvider(provider.settings, replays).finishSignIn(
               SAMLPending(**state["protocol"]), answer["SAMLResponse"]))
           else:
             chosen = _institution(provider.settings, state["institution"])
             identity = _fromFederation(provider.settings, chosen, _federationServiceProvider(
-              provider.settings, chosen).finishSignIn(SAMLPending(**state["protocol"]), answer["SAMLResponse"]))
+              provider.settings, chosen, replays).finishSignIn(SAMLPending(**state["protocol"]), answer["SAMLResponse"]))
       except (SignInRefused, SAMLRefused, CASRefused) as error:
         self._refusedSignIn(session, name, surface, str(error))
         raise ProviderFailure(f"{name} refused the sign-in: {error}") from None
@@ -727,6 +876,8 @@ class Workspace:
       raise
     hours = {s.key: s.value for s in _effectiveSettings(session, "server")}["identity.sessionHours"]
     token = _issueToken(session, account.userName, "session", datetime.timedelta(hours=hours), None)
+    if provider.kind is not ProviderKind.ldap:
+      _recordProviderSession(session, token, provider.name, identity)
     _record(session, Actor(kind=ActorKind.account, accountID=account.accountID, userName=account.userName,
                            surface=surface), "signIn", "server", {"provider": provider.name})
     return account, token

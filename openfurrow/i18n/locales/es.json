@@ -1921,6 +1921,26 @@
       "text": "Cerrar sesión",
       "status": "machineDraft"
     },
+    "web.signOut.atProviderFailed": {
+      "text": "Ha cerrado la sesión en OpenFurrow, pero no se pudo cerrar en {provider}: {reason}",
+      "status": "machineDraft"
+    },
+    "web.signOut.fromProviderRefused": {
+      "text": "Se rechazó la solicitud de cierre de sesión de {provider}: {reason}",
+      "status": "machineDraft"
+    },
+    "web.signOut.notAnswer": {
+      "text": "Esto no es un mensaje de cierre de sesión de {provider}.",
+      "status": "machineDraft"
+    },
+    "web.signedOut.heading": {
+      "text": "Sesión cerrada",
+      "status": "machineDraft"
+    },
+    "web.signedOut.signInAgain": {
+      "text": "Iniciar sesión de nuevo",
+      "status": "machineDraft"
+    },
     "web.trial.allPlots": {
       "text": "Todas las parcelas",
       "status": "machineDraft"

@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}{{ t.text('web.signedOut.heading') }} - {{ t.text('web.app.name') }}{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>{{ t.text('web.signedOut.heading') }}</h1>
+</div>
+{% if problem %}
+<div class="error" role="alert">{{ problem }}</div>
+{% endif %}
+<p><a class="button" href="{{ url_for('web.signIn', locale=locale if locale != 'en-US' else none) }}">{{ t.text('web.signedOut.signInAgain') }}</a></p>
+{% endblock %}

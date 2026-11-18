@@ -2068,6 +2068,26 @@
     "web.signIn.institution": {
       "text": "Choose your institution",
       "status": "source"
+    },
+    "web.signedOut.heading": {
+      "text": "Signed out",
+      "status": "source"
+    },
+    "web.signedOut.signInAgain": {
+      "text": "Sign in again",
+      "status": "source"
+    },
+    "web.signOut.atProviderFailed": {
+      "text": "You are signed out of OpenFurrow, but signing out at {provider} failed: {reason}",
+      "status": "source"
+    },
+    "web.signOut.fromProviderRefused": {
+      "text": "The sign-out request from {provider} was refused: {reason}",
+      "status": "source"
+    },
+    "web.signOut.notAnswer": {
+      "text": "This is not a sign-out message from {provider}.",
+      "status": "source"
     }
   }
 }

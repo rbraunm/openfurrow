@@ -254,16 +254,29 @@ def createWebBlueprint(workspace: Workspace, config: OpenFurrowConfig | None = N
       address, key = workspace.beginProviderSignIn(name, _target(), institution)
     except IdentityError as error:
       return _signInPage(_translator(), _translator().text("web.signIn.refused", reason=str(error)), status=401)
-    response = redirect(address)
+    return _withPending(redirect(address), key)
+
+  def _withPending(response: Response, key: str) -> Response:
     secure = current_app.config["openfurrowSecureCookies"]
     # SAML answers by a cross-site POST, which only a SameSite=None cookie goes with, and browsers take None only when Secure.
     response.set_cookie(pendingCookie, key, max_age=600, httponly=True, secure=secure,
                         samesite="None" if secure else "Lax", path="/signin/with")
     return response
 
+  def _signedOutPage(translator, problem: str | None, status: int = 200) -> Response:
+    g.signedIn = None
+    return Response(render_template("signedOut.html", problem=problem, **_localeContext(translator)), status=status)
+
   @blueprint.route("/signin/with/<name>/return", methods=["GET", "POST"])
   def providerReturn(name: str) -> Response:
-    """The provider's answer; on success a page of this site moves the browser on, so the Strict session cookie travels."""
+    """The provider's answer; on success a page of this site moves the browser on, so the Strict session cookie travels.
+    A CAS server also posts its single-logout notices here, server to server."""
+    if request.method == "POST" and "logoutRequest" in request.form:
+      try:
+        workspace.casSignOut(name, request.form["logoutRequest"], "web")
+      except IdentityError as error:
+        return Response(str(error), status=400, mimetype="text/plain")
+      return Response("", status=200)
     translator = _translator()
     key = request.cookies.get(pendingCookie)
     try:
@@ -281,12 +294,65 @@ def createWebBlueprint(workspace: Workspace, config: OpenFurrowConfig | None = N
 
   @blueprint.post("/signout")
   def signOut() -> Response:
+    """End the session here; a provider whose signOutEverywhere is set is visited next (decision 0040)."""
+    translator = _translator()
     token = request.cookies.get(sessionCookie)
-    if token:
-      workspace.signOut(token)
-    response = redirect(url_for("web.signIn"))
+    outcome = workspace.signOut(token, "web") if token else None
+    if outcome is not None and outcome.problem is not None:
+      response = _signedOutPage(translator, translator.text("web.signOut.atProviderFailed", provider=outcome.provider,
+                                                            reason=outcome.problem))
+    elif outcome is not None and outcome.address is not None:
+      response = redirect(outcome.address)
+      if outcome.pendingKey is not None:
+        _withPending(response, outcome.pendingKey)
+    else:
+      response = redirect(url_for("web.signIn"))
     response.delete_cookie(sessionCookie)
     return response
+
+  @blueprint.route("/signin/with/<name>/signout", methods=["GET", "POST"])
+  def providerSignOut(name: str) -> Response:
+    """A SAML identity provider's logout messages: its LogoutRequest, ending sessions here and answered; or its
+    LogoutResponse to this site's own, finishing a sign-out begun here."""
+    translator = _translator()
+    query = request.query_string.decode("latin-1") if request.method == "GET" else None
+    if "SAMLRequest" in request.values:
+      try:
+        address = workspace.samlSignOutRequest(name, query, request.form.get("SAMLRequest"),
+                                               request.form.get("RelayState"), "web")
+      except IdentityError as error:
+        return _signedOutPage(translator, translator.text("web.signOut.fromProviderRefused", provider=name,
+                                                          reason=str(error)), 400)
+      return redirect(address)
+    if "SAMLResponse" not in request.values:
+      return _signedOutPage(translator, translator.text("web.signOut.notAnswer", provider=name), 400)
+    key = request.cookies.get(pendingCookie)
+    try:
+      if not key:
+        raise IdentityError("this browser has no sign-out waiting")
+      target, problem = workspace.finishProviderSignOut(name, key, query, request.form.get("SAMLResponse"), "web")
+    except IdentityError as error:
+      target, problem = None, str(error)
+    if problem is not None:
+      response = _signedOutPage(translator, translator.text("web.signOut.atProviderFailed", provider=name,
+                                                            reason=problem))
+    else:
+      response = redirect(target or url_for("web.signIn"))
+    response.delete_cookie(pendingCookie, path="/signin/with")
+    return response
+
+  @blueprint.post("/signin/with/<name>/backchannel-logout")
+  def backChannelLogout(name: str) -> Response:
+    """An OpenID Connect provider's back-channel logout, server to server (Back-Channel Logout 1.0, section 2.8)."""
+    noStore = {"Cache-Control": "no-store"}
+    try:
+      if "logout_token" not in request.form:
+        raise IdentityError("the request carries no logout_token")
+      workspace.backChannelSignOut(name, request.form["logout_token"], "web")
+    except IdentityError as error:
+      return Response(json.dumps({"error": "invalid_request", "error_description": str(error)}), status=400,
+                      mimetype="application/json", headers=noStore)
+    return Response("", status=200, headers=noStore)
 
   @blueprint.route("/account", methods=["GET", "POST"])
   def account() -> Response:
