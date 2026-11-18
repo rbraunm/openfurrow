@@ -66,7 +66,7 @@ would make differently is a provider setting with the strict choice as its defau
 
 - Store version 17: the providers, the links, the provisioned resources and the pending
   sign-ins.
-- OpenFurrow depends on Carnelian as a package from PyPI (0.1 or later, with no upper bound),
+- OpenFurrow depends on Carnelian as a package from PyPI (0.1 releases; a new minor version of a 0.x package may break, so moving to it is a deliberate change),
   pinned exactly in `constraints.txt` like every other dependency.
 - Each provider is tested against the testbed's real one (Keycloak, Samba Active Directory)
   and SCIM against Entra ID's documented requests.
