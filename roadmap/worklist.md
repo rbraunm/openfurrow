@@ -224,6 +224,9 @@ measure), `owner` (the owner's call), `done`.
   - a provider's discovery and keys are fetched at each sign-in; cache them once it matters;
   - research federations offer a configured list of institutions; choosing among all of
     eduGAIN needs its 95 MB aggregate read as a stream;
+  - the lower bounds in `pyproject.toml` are not tested: a validation run on the oldest
+    allowed versions, with the bounds following SPEC 0 (Python releases for 3 years, core
+    dependencies for 2);
   - research federations and CAS are tested against the testbed's own federation and
     Apereo CAS, and Carnelian checks InCommon's live metadata; neither has met a partner
     university's real identity provider yet.
