@@ -72,5 +72,5 @@ testpaths = ["tests"]
 python_files = ["test*.py"]
 python_classes = ["Test*"]
 python_functions = ["test*"]
-# Tests run on every core (pytest-xdist); -n0 runs them in one process.
-addopts = "-n auto"
+# Tests run on every core (pytest-xdist); those marked with one xdist_group share a worker. -n0 runs them in one process.
+addopts = "-n auto --dist loadgroup"

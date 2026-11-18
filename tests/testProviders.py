@@ -32,6 +32,9 @@ from openfurrow.service import createApp
 from openfurrow.store.database import createDatabase
 from openfurrow.store.providers import StoredReplays, claimOnce, completeSignIn
 
+# Keycloak refuses some logins as expired codes when one realm's sign-ins run at once.
+pytestmark = pytest.mark.xdist_group("identityProviders")
+
 password = "correct horse battery"
 scimBase = "https://openfurrow.example.org/scim/entra/v2"
 coreUser = "urn:ietf:params:scim:schemas:core:2.0:User"

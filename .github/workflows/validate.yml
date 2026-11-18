@@ -39,7 +39,7 @@ jobs:
       - name: Record the installed versions
         run: python -m pip freeze
       - name: Run the test suite
-        run: python -m pytest
+        run: python -m pytest --durations=20
       - name: Smoke-test the installed wheel
         run: python scripts/productSmoke.py
 
@@ -71,7 +71,7 @@ jobs:
       - name: Install the project with its test and service extras
         run: python -m pip install --constraint constraints.txt --editable ".[test,service]"
       - name: Run the test suite on PostgreSQL
-        run: python -m pytest --store postgresql
+        run: python -m pytest --store postgresql --durations=20
       - name: Throw the testbed away
         if: always()
         run: docker compose -f testbed/compose.yaml down --volumes
