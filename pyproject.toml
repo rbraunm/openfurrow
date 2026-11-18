@@ -16,7 +16,7 @@ dependencies = [
   "numpy>=1.26",
   "pyyaml>=6",
   # Sign-in (decisions 0039, 0040).
-  "carnelian>=0.1,<0.2",
+  "carnelian>=0.1",
 ]
 
 [project.optional-dependencies]
