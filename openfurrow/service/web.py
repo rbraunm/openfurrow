@@ -238,8 +238,8 @@ def createWebBlueprint(workspace: Workspace, config: OpenFurrowConfig | None = N
 
   @blueprint.get("/signin/with/<name>/metadata")
   def providerMetadata(name: str) -> Response:
-    """The service provider's metadata, for a federation to register (decision 0040)."""
-    return Response(workspace.federationMetadata(name), mimetype="application/samlmetadata+xml")
+    """The service provider's metadata, for a SAML identity provider or a federation to register (decision 0040)."""
+    return Response(workspace.samlMetadata(name), mimetype="application/samlmetadata+xml")
 
   @blueprint.get("/signin/with/<name>")
   def providerStart(name: str) -> Response:

@@ -148,6 +148,7 @@ from openfurrow.identity.providers import (
   casServer as _casServer,
   directory as _directory,
   federationMetadata as _federationMetadata,
+  samlMetadata as _samlMetadata,
   federationServiceProvider as _federationServiceProvider,
   fromCAS as _fromCAS,
   fromDirectory as _fromDirectory,
@@ -645,10 +646,12 @@ class Workspace:
     found = [_institution(provider.settings, entityID) for entityID in provider.settings.institutions]
     return sorted(((chosen.entityID, chosen.displayName(locale)) for chosen in found), key=lambda pair: pair[1].casefold())
 
-  def federationMetadata(self, name: str) -> bytes:
-    """The metadata a federation registers for this service."""
+  def samlMetadata(self, name: str) -> bytes:
+    """The metadata a SAML identity provider, or a federation, registers for this service."""
     with _sessionScope(self._engine) as session:
-      provider = self._enabledProvider(session, name, (ProviderKind.samlFederation,))
+      provider = self._enabledProvider(session, name, (ProviderKind.saml, ProviderKind.samlFederation))
+    if provider.kind is ProviderKind.saml:
+      return _samlMetadata(provider.settings)
     return _federationMetadata(provider.settings)
 
   def beginProviderSignIn(self, name: str, next: str, institution: str | None = None) -> tuple[str, str]:

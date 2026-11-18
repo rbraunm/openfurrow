@@ -356,6 +356,84 @@ def testSigningInThroughKeycloakBySAML(testbed, location):
   assert mirroredOf(operator, "jose", "keycloak-saml/") == expectedGroups("keycloak-saml", expected["groups"])
 
 
+def keyPair(keyed, kind):
+  return {"keyFile": keyed[f"{kind}Key"], "certificateFile": keyed[f"{kind}Certificate"]}
+
+
+@pytest.mark.parametrize("client, keys", [
+  ("encryptsGCM", {"decryptionKeys": ["encryption"]}),
+  ("encryptsCBC", {"decryptionKeys": ["encryption"], "allowCBC": True}),
+  ("signsRequests", {"signingKey": "signing"}),
+])
+def testSigningInThroughKeycloakWithTheServicesOwnKeys(testbed, location, client, keys):
+  settings, keyed = testbed["saml"], testbed["saml"]["keyed"]
+  own = {name: ([keyPair(keyed, kind) for kind in value] if name == "decryptionKeys" else
+                keyPair(keyed, value) if name == "signingKey" else value) for name, value in keys.items()}
+  operator = Workspace.open(location)
+  operator.addProvider(Provider.of("keycloak-saml", "saml", {
+    "metadataURL": settings["metadataURL"], "identityProviderEntityID": settings["identityProviderEntityID"],
+    "entityID": keyed["entities"][client], "returnURL": settings["consumerURL"], "emailAttribute": "email",
+    "certificateAuthority": testbed["certificateAuthority"], "newAccounts": "create", **own}))
+  web = createApp(location).test_client()
+  started = web.get("/signin/with/keycloak-saml")
+  assert started.status_code == 302
+  assert ("Signature=" in started.headers["Location"]) == ("signingKey" in keys)
+  expected = account(testbed, "jose")
+  _, fields = atKeycloak(started.headers["Location"], "jose", expected["password"], secureContext(testbed["certificateAuthority"]))
+  answered = web.post("/signin/with/keycloak-saml/return", data=fields, headers={"Origin": "https://keycloak.example"})
+  assert answered.status_code == 200, answered.get_data(as_text=True)[:500]
+  assert {entry.userName: entry for entry in operator.accounts()}["jose"].email == expected["email"]
+
+
+def testAnEncryptedAssertionIsRefusedWithoutADecryptionKey(testbed, location):
+  settings, keyed = testbed["saml"], testbed["saml"]["keyed"]
+  Workspace.open(location).addProvider(Provider.of("keycloak-saml", "saml", {
+    "metadataURL": settings["metadataURL"], "identityProviderEntityID": settings["identityProviderEntityID"],
+    "entityID": keyed["entities"]["encryptsGCM"], "returnURL": settings["consumerURL"],
+    "certificateAuthority": testbed["certificateAuthority"], "newAccounts": "create"}))
+  web = createApp(location).test_client()
+  started = web.get("/signin/with/keycloak-saml")
+  _, fields = atKeycloak(started.headers["Location"], "jose", account(testbed, "jose")["password"],
+                         secureContext(testbed["certificateAuthority"]))
+  answered = web.post("/signin/with/keycloak-saml/return", data=fields, headers={"Origin": "https://keycloak.example"})
+  assert answered.status_code == 401 and "encrypted" in answered.get_data(as_text=True)
+  assert "jose" not in {entry.userName for entry in Workspace.open(location).accounts()}
+
+
+def testTheMetadataListsTheServicesKeys(testbed, location):
+  keyed = testbed["saml"]["keyed"]
+  Workspace.open(location).addProvider(Provider.of("keycloak-saml", "saml", {
+    "metadataURL": testbed["saml"]["metadataURL"], "entityID": "https://openfurrow.example.org/saml",
+    "returnURL": "https://openfurrow.example.org/signin/with/keycloak-saml/return",
+    "signingKey": keyPair(keyed, "signing"), "decryptionKeys": [keyPair(keyed, "encryption")]}))
+  answered = createApp(location).test_client().get("/signin/with/keycloak-saml/metadata")
+  assert answered.status_code == 200 and answered.mimetype == "application/samlmetadata+xml"
+  document = answered.get_data(as_text=True)
+  assert 'entityID="https://openfurrow.example.org/saml"' in document and 'AuthnRequestsSigned="true"' in document
+  assert document.count('use="signing"') == 1 and document.count('use="encryption"') == 1
+  assert "aes256-gcm" in document and "aes256-cbc" not in document
+
+
+@pytest.mark.parametrize("keys, why", [
+  ({"allowCBC": True}, "allowCBC is a setting for decrypting"),
+  ({"signingKey": {"keyFile": "k.pem", "certificateFile": "c.pem"},
+    "decryptionKeys": [{"keyFile": "k.pem", "certificateFile": "c.pem"}]}, "different keys"),
+])
+def testSAMLKeySettingsAreChecked(keys, why):
+  with pytest.raises(ValidationError, match=why):
+    Provider.of("idp", "saml", {"metadataURL": "https://idp.example.org/metadata", "entityID": "https://sp.example.org",
+                                "returnURL": "https://sp.example.org/back", **keys})
+
+
+def testAMissingKeyFileIsRefusedByName(location, tmp_path):
+  Workspace.open(location).addProvider(Provider.of("idp", "saml", {
+    "metadataURL": "https://idp.example.org/metadata", "entityID": "https://sp.example.org",
+    "returnURL": "https://sp.example.org/back",
+    "signingKey": {"keyFile": str(tmp_path / "absent.pem"), "certificateFile": str(tmp_path / "absent.crt")}}))
+  with pytest.raises(IdentityError, match=r"the private key file .*absent\.pem cannot be read"):
+    Workspace.open(location).samlMetadata("idp")
+
+
 @pytest.fixture
 def directory(request, testbed, location, monkeypatch):
   if not request.config.getoption("--directory"):

@@ -16,6 +16,7 @@ import time
 from collections.abc import Callable
 from dataclasses import dataclass
 from enum import Enum
+from pathlib import Path
 from typing import Any
 from urllib.parse import urlsplit
 
@@ -26,7 +27,10 @@ from carnelian.federation import Federation, scopedIdentifier, serviceProviderMe
 from carnelian.fetching import Fetcher, HTTPFailure, secureContext
 from carnelian.ldap import Directory
 from carnelian.oidc import RelyingParty, SignInRefused, discover
-from carnelian.saml import SAMLRefused, ServiceProvider, identityProviderFromMetadata
+from carnelian.keys import LocalDecryptionKey, LocalSigningKey
+from carnelian.saml import (EncryptionPolicy, SAMLRefused, ServiceProvider, aes128CBC, aes128GCM, aes256CBC, aes256GCM,
+                            identityProviderFromMetadata)
+from carnelian.saml import serviceProviderMetadata as plainServiceProviderMetadata
 from pydantic import BaseModel, ConfigDict, field_validator, model_validator
 
 from openfurrow.identity.model import IdentityError, foldedUserName
@@ -86,7 +90,35 @@ class OpenIDConnectSettings(_SignInSettings):
     return _secureURL(value)
 
 
-class SAMLSettings(_SignInSettings):
+class KeyPair(BaseModel):
+  """A private key and its certificate, as PEM files on the server; never stored in the database."""
+
+  model_config = ConfigDict(extra="forbid")
+
+  keyFile: str
+  certificateFile: str
+  passwordVariable: str | None = None
+
+
+class _SAMLKeys(_SignInSettings):
+  """The service's own SAML keys: one that signs its requests, and those that decrypt assertions (the first is
+  current; the others are kept while a provider still encrypts to them)."""
+
+  signingKey: KeyPair | None = None
+  decryptionKeys: list[KeyPair] = []
+  allowCBC: bool = False
+
+  @model_validator(mode="after")
+  def keysMakeSense(self) -> _SAMLKeys:
+    if self.allowCBC and not self.decryptionKeys:
+      raise ValueError("allowCBC is a setting for decrypting assertions; name decryptionKeys too")
+    files = [pair.keyFile for pair in self.decryptionKeys] + ([self.signingKey.keyFile] if self.signingKey else [])
+    if len(set(files)) != len(files):
+      raise ValueError("each key is named once: the signing key and every decryption key are different keys")
+    return self
+
+
+class SAMLSettings(_SAMLKeys):
   metadataURL: str
   identityProviderEntityID: str | None = None
   entityID: str
@@ -115,7 +147,7 @@ subjectAttributeNames = {SubjectAttribute.subjectID: federationAttributes.subjec
                          SubjectAttribute.eduPersonPrincipalName: federationAttributes.eduPersonPrincipalName}
 
 
-class FederationSettings(_SignInSettings):
+class FederationSettings(_SAMLKeys):
   """A research and education federation (decision 0040): its MDQ service and key, and the institutions offered."""
 
   mdqURL: str
@@ -307,9 +339,65 @@ def serviceProvider(settings: SAMLSettings):
       identityProvider = identityProviderFromMetadata(metadata, settings.identityProviderEntityID)
     except (HTTPFailure, SAMLRefused) as error:
       raise ProviderFailure(f"the metadata at {settings.metadataURL} cannot be used: {error}") from None
-    return ServiceProvider(settings.entityID, settings.returnURL, identityProvider)
+    return _keyedServiceProvider(settings, identityProvider)
 
   return _providers.get(settings, build)
+
+
+def _pem(path: str, what: str) -> bytes:
+  try:
+    return Path(path).read_bytes()
+  except OSError as error:
+    raise IdentityError(f"the {what} file {path} cannot be read: {error.strerror}") from None
+
+
+def _keyArguments(pair: KeyPair) -> tuple[bytes, bytes, bytes | None]:
+  password = secret(pair.passwordVariable).encode("utf-8") if pair.passwordVariable else None
+  return _pem(pair.keyFile, "private key"), _pem(pair.certificateFile, "certificate"), password
+
+
+def _signingKey(settings: _SAMLKeys) -> LocalSigningKey | None:
+  if settings.signingKey is None:
+    return None
+  privateKey, certificate, password = _keyArguments(settings.signingKey)
+  try:
+    return LocalSigningKey(privateKey, certificate, password=password)
+  except ValueError as error:
+    raise IdentityError(f"the signing key {settings.signingKey.keyFile} cannot be used: {error}") from None
+
+
+def _decryptionKeys(settings: _SAMLKeys) -> tuple[LocalDecryptionKey, ...]:
+  keys = []
+  for pair in settings.decryptionKeys:
+    privateKey, certificate, password = _keyArguments(pair)
+    try:
+      keys.append(LocalDecryptionKey(privateKey, certificate, password=password))
+    except ValueError as error:
+      raise IdentityError(f"the decryption key {pair.keyFile} cannot be used: {error}") from None
+  return tuple(keys)
+
+
+def _encryptionPolicy(settings: _SAMLKeys) -> EncryptionPolicy:
+  if not settings.allowCBC:
+    return EncryptionPolicy()
+  return EncryptionPolicy(contentAlgorithms=frozenset({aes128GCM, aes256GCM, aes128CBC, aes256CBC}))
+
+
+def _keyedServiceProvider(settings: SAMLSettings | FederationSettings, identityProvider) -> ServiceProvider:
+  return ServiceProvider(settings.entityID, settings.returnURL, identityProvider, signingKey=_signingKey(settings),
+                         decryptionKeys=_decryptionKeys(settings), encryptionPolicy=_encryptionPolicy(settings))
+
+
+def _metadataKeys(settings: _SAMLKeys) -> dict[str, Any]:
+  signing = _signingKey(settings)
+  return {"signingCertificate": signing.certificate if signing else None,
+          "encryptionCertificates": tuple(key.certificate for key in _decryptionKeys(settings)),
+          "encryptionPolicy": _encryptionPolicy(settings)}
+
+
+def samlMetadata(settings: SAMLSettings) -> bytes:
+  """What the identity provider registers for this service: its entity ID, return address and keys."""
+  return plainServiceProviderMetadata(settings.entityID, settings.returnURL, **_metadataKeys(settings))
 
 
 def directory(settings: LDAPSettings):
@@ -361,7 +449,7 @@ def institution(settings: FederationSettings, entityID: str):
 
 
 def federationServiceProvider(settings: FederationSettings, chosen) -> ServiceProvider:
-  return ServiceProvider(settings.entityID, settings.returnURL, chosen.identityProvider)
+  return _keyedServiceProvider(settings, chosen.identityProvider)
 
 
 def fromFederation(settings: FederationSettings, chosen, identity) -> ProvidedIdentity:
@@ -380,7 +468,7 @@ def federationMetadata(settings: FederationSettings) -> bytes:
   """What the federation registers for this service: its entity ID, return address, names and contacts."""
   return serviceProviderMetadata(settings.entityID, settings.returnURL, {"en": "OpenFurrow"}, settings.informationURL,
                                  settings.privacyStatementURL, settings.organizationName, settings.technicalContact,
-                                 settings.securityContact)
+                                 settings.securityContact, **_metadataKeys(settings))
 
 
 def casServer(settings: CASSettings) -> CASServer:

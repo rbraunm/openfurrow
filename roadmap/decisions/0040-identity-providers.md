@@ -46,9 +46,18 @@ would make differently is a provider setting with the strict choice as its defau
   fetched from the federation and checked against its key and expiry. A person is named by a
   scoped identifier (subject-id, pairwise-id or eduPersonPrincipalName, as the settings
   choose), and an institution may only vouch for the scopes its federation registered for
-  it. The service's own metadata, for the federation to register, is at
-  `/signin/with/<provider>/metadata`. Searching every institution of eduGAIN (about 6,600
+  it. Searching every institution of eduGAIN (about 6,600
   identity providers, a 95 MB signed file) is left until a deployment needs it.
+- **The service's own SAML keys** (owner, 2026-11-18: encrypted sign-ins supported, as
+  federations such as InCommon expect): a SAML or federation provider may name a key that
+  signs its requests and keys that decrypt its assertions, each a PEM key and certificate
+  file on the server (a password, if any, in an environment variable), never stored in the
+  database. Signing and decryption keys must differ; every decryption key is published, so
+  one can be replaced while the provider still encrypts to the old. Assertions are decrypted
+  with RSA-OAEP and AES-GCM; AES-CBC only where the provider's `allowCBC` says so, and then
+  only under the response's verified signature. Both kinds publish their metadata, keys
+  included, at `/signin/with/<provider>/metadata`. The private-key operations come from
+  Carnelian's `keys` extra (pyca/cryptography), which OpenFurrow requires.
 - **CAS** (Apereo's protocol 3.0; owner, 2026-11-17: many universities in France, Spain and
   Latin America sign in through it) is a provider kind of its own, `cas`: the person is the
   CAS user name, and the display name, e-mail and groups are the attributes the CAS server
