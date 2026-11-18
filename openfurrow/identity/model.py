@@ -5,8 +5,9 @@ A permission is held at a scope -- the server, a place, a trial -- through a rol
 an account or to a group the account belongs to, and it holds below where it is given.
 Five roles are built in; an organization defines its own from the same permissions. Who
 acts is an Actor: a signed-in account, everyone (the open mode, where every permission is
-held everywhere), or the store's operator (the command line and the library, which reach
-the store directly and so hold every permission too).
+held everywhere), the store's operator (the command line and the library, which reach
+the store directly and so hold every permission too), or the scheduler running a task
+(decision 0041), which acts for the operator and is recorded under the task's name.
 """
 
 from __future__ import annotations
@@ -34,6 +35,7 @@ class Permission(str, Enum):
   manageAccess = "manageAccess"
   manageRetention = "manageRetention"
   viewAudit = "viewAudit"
+  manageTasks = "manageTasks"
 
 
 class SignInMode(str, Enum):
@@ -47,6 +49,7 @@ class ActorKind(str, Enum):
   account = "account"
   everyone = "everyone"
   operator = "operator"
+  scheduler = "scheduler"
 
 
 class Actor(BaseModel):
@@ -57,7 +60,8 @@ class Actor(BaseModel):
   kind: ActorKind
   accountID: int | None = None
   userName: str | None = None
-  surface: str = Field(description="web, api, cli, library or provisioning")
+  taskName: str | None = None
+  surface: str = Field(description="web, api, cli, library, provisioning or scheduler")
 
   @classmethod
   def operator(cls, surface: str) -> Actor:
@@ -67,13 +71,23 @@ class Actor(BaseModel):
   def everyone(cls, surface: str) -> Actor:
     return cls(kind=ActorKind.everyone, surface=surface)
 
+  @classmethod
+  def scheduler(cls, taskName: str) -> Actor:
+    """A scheduled task's run (decision 0041), acting for the store like the operator, recorded under its task."""
+    return cls(kind=ActorKind.scheduler, taskName=taskName, surface="scheduler")
+
   @property
   def holdsEverything(self) -> bool:
     return self.kind is not ActorKind.account
 
   @property
+  def name(self) -> str | None:
+    """The account's user name, or the task a scheduler run belongs to."""
+    return self.taskName if self.kind is ActorKind.scheduler else self.userName
+
+  @property
   def label(self) -> str:
-    return self.userName if self.kind is ActorKind.account else self.kind.value
+    return self.name if self.kind in (ActorKind.account, ActorKind.scheduler) else self.kind.value
 
 
 roleCodePattern = re.compile(r"^[a-z][A-Za-z0-9]{1,39}$")

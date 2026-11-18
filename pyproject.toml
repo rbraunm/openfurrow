@@ -41,6 +41,9 @@ test = [
   "flask>=3",
   "markdown>=3.5",
   "build>=1",
+  # A federation aggregate signed in the test, as a federation signs one (decision 0040).
+  "signxml>=4",
+  "lxml>=5",
 ]
 
 [project.scripts]

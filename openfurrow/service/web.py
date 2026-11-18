@@ -22,16 +22,19 @@ access, no layout logic lives here.
 The pages: list trials; add a trial (the trial form, or the canonical package JSON); view
 a trial with its field layout; enter values; import observations from a CSV or an .xlsx
 workbook through a preview and an explicit column mapping (decision 0031); read the
-report; check reproducibility; delete a trial.
+report; check reproducibility; delete a trial; and the scheduled tasks with their runs
+(decision 0041).
 """
 
 from __future__ import annotations
 
 import base64
 import binascii
+import datetime
 import html
 import json
 import secrets
+from zoneinfo import ZoneInfo
 
 import markdown as markdownLibrary
 from flask import Blueprint, Response, current_app, g, redirect, render_template, request, url_for
@@ -49,15 +52,19 @@ from openfurrow.service.trialForm import FormProblem, emptyForm, formFromRequest
 from openfurrow.schema import AssessmentDataType, Observation, RandomizationMethod, TrialPackage
 from openfurrow.schema.document import isOutOfRange
 from openfurrow.version import schemaVersion
+from openfurrow.identity.model import Permission, SignInMode
 from openfurrow.identity.providers import ProviderKind
 from openfurrow.service.signIn import pendingCookie, sessionCookie
-from openfurrow.workspace import IdentityError, ObservationImportError, StoreError, Workspace
+from openfurrow.workspace import IdentityError, ObservationImportError, StoreError, TaskError, Workspace
 from pydantic import ValidationError
 
 # Okabe-Ito, a colorblind-safe qualitative palette. Treatment colour is a *redundant*
 # cue: every plot cell also shows its treatment code, so the map is readable without
 # relying on colour at all. The palette cycles if a trial has more treatments than
 # colours -- the code remains the definitive identifier.
+# A scheduler checks in every few seconds; a minute without word means it is not running.
+schedulerLateSeconds = 60
+
 _treatmentPalette = [
   "#E69F00", "#56B4E9", "#009E73", "#F0E442",
   "#0072B2", "#D55E00", "#CC79A7", "#7F7F7F",
@@ -86,12 +93,15 @@ def createWebBlueprint(workspace: Workspace, config: OpenFurrowConfig | None = N
   def _localeContext(translator):
     # Shared template context: the translator, the current locale, its direction, and
     # the locales offered in the switcher.
+    mayManageTasks = ((g.signedIn is not None or g.signInMode is SignInMode.open)
+                      and Permission.manageTasks in workspace.permissionsAt("server"))
     return {
       "t": translator,
       "locale": translator.locale,
       "direction": translator.direction,
       "locales": availableLocales(),
       "signedIn": g.signedIn,
+      "mayManageTasks": mayManageTasks,
     }
 
   def _levelName(level, translator) -> str:
@@ -248,8 +258,9 @@ def createWebBlueprint(workspace: Workspace, config: OpenFurrowConfig | None = N
     try:
       if institution is None and dict(workspace.signInProviders()).get(name) is ProviderKind.samlFederation:
         translator = _translator()
-        return Response(render_template("chooseInstitution.html", name=name, next=_target(),
-                                        institutions=workspace.federationInstitutions(name, translator.locale),
+        query = request.args.get("q", "").strip()
+        return Response(render_template("chooseInstitution.html", name=name, next=_target(), query=query,
+                                        choices=workspace.federationChoices(name, translator.locale, query),
                                         **_localeContext(translator)))
       address, key = workspace.beginProviderSignIn(name, _target(), institution)
     except IdentityError as error:
@@ -383,6 +394,62 @@ def createWebBlueprint(workspace: Workspace, config: OpenFurrowConfig | None = N
       me = workspace.account()
     status = 400 if context["problem"] else 200
     return Response(render_template("account.html", account=me, **context, **_localeContext(translator)), status=status)
+
+  def _moment(moment, zone: str, translator) -> str | None:
+    if moment is None:
+      return None
+    local = moment.astimezone(ZoneInfo(zone))
+    return f"{translator.date(local.date())} {translator.time(local.time().replace(microsecond=0))}"
+
+  def _heartbeatContext() -> dict:
+    heartbeat = workspace.schedulerHeartbeat()
+    if heartbeat is None:
+      return {"heartbeatAge": None, "schedulerLate": True}
+    age = max(0, int((datetime.datetime.now(datetime.UTC) - heartbeat.lastSeenAt).total_seconds()))
+    return {"heartbeatAge": age, "schedulerLate": age > schedulerLateSeconds}
+
+  @blueprint.get("/tasks")
+  def tasks() -> Response:
+    """Scheduled tasks for holders of manageTasks (decision 0041): schedules, next and last runs, the scheduler."""
+    translator = _translator()
+    every = workspace.tasks()
+    context = {"tasks": every, "moment": lambda moment, zone: _moment(moment, zone, translator)} | _heartbeatContext()
+    return Response(render_template("tasks.html", **context, **_localeContext(translator)))
+
+  @blueprint.route("/tasks/<name>", methods=["GET", "POST"])
+  def task(name: str) -> Response:
+    """One task: change its schedule and time limit, enable or disable it, run it now, and read its runs."""
+    translator = _translator()
+    current = workspace.task(name)
+    problem = notice = None
+    typed = {"schedule": current.schedule, "timeLimitMinutes": str(max(1, current.timeLimitSeconds // 60))}
+    if request.method == "POST":
+      action = request.form.get("action")
+      try:
+        if action == "save":
+          typed = {"schedule": request.form.get("schedule", "").strip(),
+                   "timeLimitMinutes": request.form.get("timeLimitMinutes", "").strip()}
+          if not typed["timeLimitMinutes"].isascii() or not typed["timeLimitMinutes"].isdigit():
+            raise TaskError(translator.text("web.task.problem.minutes"))
+          workspace.setTask(name, typed["schedule"], int(typed["timeLimitMinutes"]) * 60)
+          return redirect(_localized(url_for("web.task", name=name, done="saved"), translator))
+        if action in ("enable", "disable"):
+          workspace.setTaskEnabled(name, action == "enable")
+          return redirect(_localized(url_for("web.task", name=name, done=action), translator))
+        if action == "run":
+          workspace.runTaskNow(name)
+          return redirect(_localized(url_for("web.task", name=name, done="run"), translator))
+        raise TaskError(f"unknown action '{action}'")
+      except TaskError as error:
+        problem = translator.text("web.task.problem", reason=str(error))
+    done = request.args.get("done")
+    if done in ("saved", "enable", "disable", "run"):
+      notice = translator.text(f"web.task.done.{done}")
+    context = {"task": workspace.task(name), "runs": workspace.taskRuns(name), "typed": typed, "problem": problem,
+               "notice": notice, "moment": lambda moment, zone: _moment(moment, zone, translator)}
+    status = 400 if problem else 200
+    return Response(render_template("task.html", **context, **_heartbeatContext(), **_localeContext(translator)),
+                    status=status)
 
   @blueprint.route("/places", methods=["GET", "POST"])
   def places() -> Response:

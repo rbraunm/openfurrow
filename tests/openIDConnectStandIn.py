@@ -35,7 +35,7 @@ def _number(value: int) -> str:
   return _encoded(value.to_bytes((value.bit_length() + 7) // 8, "big"))
 
 
-def _certificates(directory: Path) -> tuple[Path, Path, Path]:
+def loopbackCertificates(directory: Path) -> tuple[Path, Path, Path]:
   start = datetime.datetime.now(datetime.UTC) - datetime.timedelta(minutes=5)
   authorityKey = rsa.generate_private_key(public_exponent=65537, key_size=2048)
   authorityName = x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, "stand-in authority")])
@@ -69,7 +69,7 @@ class StandInIssuer:
   """Issuers at https://127.0.0.1:<port>/<realm>; the realm 'noLogout' names no end_session_endpoint."""
 
   def __init__(self, directory: Path) -> None:
-    self.certificateAuthority, certificate, key = _certificates(directory)
+    self.certificateAuthority, certificate, key = loopbackCertificates(directory)
     self._signingKey = rsa.generate_private_key(public_exponent=65537, key_size=2048)
     self._codes: dict[str, dict] = {}
     self.nextPerson: dict = {}

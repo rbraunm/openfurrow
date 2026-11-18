@@ -22,6 +22,7 @@ def pytest_addoption(parser):
   parser.addoption("--testbed", help="Carnelian's testbed.json (rbraunm/carnelian testbed/prepare.py); "
                                      "the sign-in tests run against its identity providers")
   parser.addoption("--directory", action="store_true", help="the Carnelian testbed's Samba directory is running too")
+  parser.addoption("--live", action="store_true", help="also read real federations' published aggregates over the internet")
 
 
 def pytest_configure(config):

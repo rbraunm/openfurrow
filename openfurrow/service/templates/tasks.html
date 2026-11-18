@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}{{ t.text('web.tasks.heading') }} - {{ t.text('web.app.name') }}{% endblock %}
+{% block content %}
+{% set localeArgument = locale if locale != 'en-US' else none %}
+<div class="page-head">
+  <h1>{{ t.text('web.tasks.heading') }}</h1>
+</div>
+<p class="intro">{{ t.text('web.tasks.intro') }}</p>
+{% include "schedulerState.html" %}
+
+{% if tasks %}
+<table class="trials tasks">
+  <thead>
+    <tr>
+      <th scope="col">{{ t.text('web.tasks.column.name') }}</th>
+      <th scope="col">{{ t.text('web.tasks.column.kind') }}</th>
+      <th scope="col">{{ t.text('web.tasks.column.schedule') }}</th>
+      <th scope="col">{{ t.text('web.tasks.column.nextRun') }}</th>
+      <th scope="col">{{ t.text('web.tasks.column.lastRun') }}</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for task in tasks %}
+    <tr>
+      <td class="code"><a href="{{ url_for('web.task', name=task.name, locale=localeArgument) }}">{{ task.name }}</a></td>
+      <td class="code">{{ task.kind }}</td>
+      <td><span class="code" dir="ltr">{{ task.schedule }}</span>{% if not task.enabled %} ({{ t.text('web.tasks.disabled') }}){% endif %}</td>
+      <td>{% if task.nextRunAt %}<span dir="ltr">{{ moment(task.nextRunAt, task.timeZone) }}</span> <span class="code">{{ task.timeZone }}</span>{% else %}-{% endif %}</td>
+      <td>{% if task.lastRun %}{{ t.text('web.task.state.' ~ task.lastRun.state.value) }}, <span dir="ltr">{{ moment(task.lastRun.finishedAt or task.lastRun.requestedAt, task.timeZone) }}</span>{% else %}{{ t.text('web.tasks.noRun') }}{% endif %}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p class="notice">{{ t.text('web.tasks.none') }}</p>
+{% endif %}
+{% endblock %}

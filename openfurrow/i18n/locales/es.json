@@ -1785,6 +1785,10 @@
       "text": "Lugares",
       "status": "machineDraft"
     },
+    "web.nav.tasks": {
+      "text": "Tareas",
+      "status": "machineDraft"
+    },
     "web.nav.trials": {
       "text": "Ensayos",
       "status": "machineDraft"
@@ -1901,6 +1905,30 @@
       "text": "No se inició sesión: {reason}",
       "status": "machineDraft"
     },
+    "web.signIn.search.hint": {
+      "text": "Escriba parte de su nombre, su dominio web o su ID de entidad.",
+      "status": "machineDraft"
+    },
+    "web.signIn.search.label": {
+      "text": "Busque su institución",
+      "status": "machineDraft"
+    },
+    "web.signIn.search.more": {
+      "text": "Coinciden más instituciones que las {count} primeras mostradas; escriba más del nombre para acotar.",
+      "status": "machineDraft"
+    },
+    "web.signIn.search.noMatch": {
+      "text": "Ninguna institución coincide con «{query}».",
+      "status": "machineDraft"
+    },
+    "web.signIn.search.notLoaded": {
+      "text": "La lista de instituciones aún no se ha cargado. Vuelva a intentarlo más tarde o consulte al administrador del sitio.",
+      "status": "machineDraft"
+    },
+    "web.signIn.search.submit": {
+      "text": "Buscar",
+      "status": "machineDraft"
+    },
     "web.signIn.submit": {
       "text": "Entrar",
       "status": "machineDraft"
@@ -1939,6 +1967,214 @@
     },
     "web.signedOut.signInAgain": {
       "text": "Iniciar sesión de nuevo",
+      "status": "machineDraft"
+    },
+    "web.task.backToTasks": {
+      "text": "Todas las tareas",
+      "status": "machineDraft"
+    },
+    "web.task.changeHeading": {
+      "text": "Calendario y tiempo límite",
+      "status": "machineDraft"
+    },
+    "web.task.disable": {
+      "text": "Desactivar",
+      "status": "machineDraft"
+    },
+    "web.task.done.disable": {
+      "text": "Desactivada: ya no se ejecuta según su calendario.",
+      "status": "machineDraft"
+    },
+    "web.task.done.enable": {
+      "text": "Activada.",
+      "status": "machineDraft"
+    },
+    "web.task.done.run": {
+      "text": "Ejecución solicitada. El planificador la inicia en su próximo registro.",
+      "status": "machineDraft"
+    },
+    "web.task.done.saved": {
+      "text": "Guardado.",
+      "status": "machineDraft"
+    },
+    "web.task.enable": {
+      "text": "Activar",
+      "status": "machineDraft"
+    },
+    "web.task.heading": {
+      "text": "Tarea programada",
+      "status": "machineDraft"
+    },
+    "web.task.isDisabled": {
+      "text": "Desactivada: no se ejecuta según su calendario, pero puede ejecutarse ahora.",
+      "status": "machineDraft"
+    },
+    "web.task.isEnabled": {
+      "text": "Activada: se ejecuta según su calendario.",
+      "status": "machineDraft"
+    },
+    "web.task.kind": {
+      "text": "Tipo",
+      "status": "machineDraft"
+    },
+    "web.task.noNextRun": {
+      "text": "Ninguna: la tarea está desactivada.",
+      "status": "machineDraft"
+    },
+    "web.task.noRuns": {
+      "text": "Aún no hay ejecuciones.",
+      "status": "machineDraft"
+    },
+    "web.task.owner": {
+      "text": "Mantenida para el proveedor de identidad",
+      "status": "machineDraft"
+    },
+    "web.task.parameters": {
+      "text": "Parámetros",
+      "status": "machineDraft"
+    },
+    "web.task.problem": {
+      "text": "No se hizo: {reason}",
+      "status": "machineDraft"
+    },
+    "web.task.problem.minutes": {
+      "text": "el tiempo límite es un número entero de minutos",
+      "status": "machineDraft"
+    },
+    "web.task.run.bySchedule": {
+      "text": "el calendario",
+      "status": "machineDraft"
+    },
+    "web.task.run.finished": {
+      "text": "Terminada",
+      "status": "machineDraft"
+    },
+    "web.task.run.number": {
+      "text": "Ejecución",
+      "status": "machineDraft"
+    },
+    "web.task.run.output": {
+      "text": "Salida de la ejecución {number}",
+      "status": "machineDraft"
+    },
+    "web.task.run.requested": {
+      "text": "Solicitada",
+      "status": "machineDraft"
+    },
+    "web.task.run.requestedBy": {
+      "text": "Solicitada por",
+      "status": "machineDraft"
+    },
+    "web.task.run.started": {
+      "text": "Iniciada",
+      "status": "machineDraft"
+    },
+    "web.task.run.state": {
+      "text": "Resultado",
+      "status": "machineDraft"
+    },
+    "web.task.run.summary": {
+      "text": "Resumen",
+      "status": "machineDraft"
+    },
+    "web.task.runNow": {
+      "text": "Ejecutar ahora",
+      "status": "machineDraft"
+    },
+    "web.task.runs": {
+      "text": "Ejecuciones",
+      "status": "machineDraft"
+    },
+    "web.task.save": {
+      "text": "Guardar",
+      "status": "machineDraft"
+    },
+    "web.task.schedule": {
+      "text": "Calendario (minuto hora día mes día-semana)",
+      "status": "machineDraft"
+    },
+    "web.task.scheduleHelp": {
+      "text": "Se lee en la zona horaria del servidor, {zone}. Por ejemplo: 0 */6 * * * es cada seis horas, 30 2 * * * es a diario a las 02:30, 0 7 * * mon es los lunes a las 07:00.",
+      "status": "machineDraft"
+    },
+    "web.task.state.failed": {
+      "text": "fallida",
+      "status": "machineDraft"
+    },
+    "web.task.state.requested": {
+      "text": "solicitada",
+      "status": "machineDraft"
+    },
+    "web.task.state.running": {
+      "text": "en curso",
+      "status": "machineDraft"
+    },
+    "web.task.state.skipped": {
+      "text": "omitida",
+      "status": "machineDraft"
+    },
+    "web.task.state.stopped": {
+      "text": "detenida",
+      "status": "machineDraft"
+    },
+    "web.task.state.succeeded": {
+      "text": "correcta",
+      "status": "machineDraft"
+    },
+    "web.task.timeLimitMinutes": {
+      "text": "Tiempo límite (minutos)",
+      "status": "machineDraft"
+    },
+    "web.tasks.column.kind": {
+      "text": "Tipo",
+      "status": "machineDraft"
+    },
+    "web.tasks.column.lastRun": {
+      "text": "Última ejecución",
+      "status": "machineDraft"
+    },
+    "web.tasks.column.name": {
+      "text": "Tarea",
+      "status": "machineDraft"
+    },
+    "web.tasks.column.nextRun": {
+      "text": "Próxima ejecución",
+      "status": "machineDraft"
+    },
+    "web.tasks.column.schedule": {
+      "text": "Calendario",
+      "status": "machineDraft"
+    },
+    "web.tasks.disabled": {
+      "text": "desactivada",
+      "status": "machineDraft"
+    },
+    "web.tasks.heading": {
+      "text": "Tareas programadas",
+      "status": "machineDraft"
+    },
+    "web.tasks.intro": {
+      "text": "Trabajo que el planificador hace según un calendario, o de inmediato cuando se le pide. Un calendario es una expresión cron de cinco campos (minuto, hora, día del mes, mes, día de la semana), leída en la zona horaria del servidor.",
+      "status": "machineDraft"
+    },
+    "web.tasks.noRun": {
+      "text": "aún no ejecutada",
+      "status": "machineDraft"
+    },
+    "web.tasks.none": {
+      "text": "Aún no hay tareas. Una tarea se crea con la función que la necesita, como un proveedor de federación leído de un agregado de descubrimiento.",
+      "status": "machineDraft"
+    },
+    "web.tasks.scheduler.late": {
+      "text": "El planificador se registró por última vez hace {seconds} segundos. Puede haberse detenido; nada programado se ejecuta mientras esté detenido.",
+      "status": "machineDraft"
+    },
+    "web.tasks.scheduler.never": {
+      "text": "Ningún planificador se ha registrado, así que no se ejecuta nada programado. Inicie uno junto al servidor web con: openfurrow scheduler",
+      "status": "machineDraft"
+    },
+    "web.tasks.scheduler.seen": {
+      "text": "El planificador se registró hace {seconds} segundos.",
       "status": "machineDraft"
     },
     "web.trial.allPlots": {

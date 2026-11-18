@@ -4,9 +4,33 @@
 <div class="page-head">
   <h1>{{ t.text('web.signIn.institution') }}</h1>
 </div>
+{% if choices.searchable %}
+{% if not choices.loaded %}
+<p class="notice" role="status">{{ t.text('web.signIn.search.notLoaded') }}</p>
+{% else %}
+<form class="import-form" method="get" action="{{ url_for('web.providerStart', name=name) }}" role="search">
+  <input type="hidden" name="next" value="{{ next }}">
+  {% if locale != 'en-US' %}<input type="hidden" name="locale" value="{{ locale }}">{% endif %}
+  <div class="field-row">
+    <label class="field-label" for="q">{{ t.text('web.signIn.search.label') }}</label>
+    <input type="search" id="q" name="q" dir="auto" value="{{ query }}" aria-describedby="searchHint" autofocus>
+  </div>
+  <p class="intro" id="searchHint">{{ t.text('web.signIn.search.hint') }}</p>
+  <div class="form-actions"><button class="button" type="submit">{{ t.text('web.signIn.search.submit') }}</button></div>
+</form>
+{% if query and not choices.institutions %}
+<p class="notice" role="status">{{ t.text('web.signIn.search.noMatch', query=query) }}</p>
+{% endif %}
+{% if choices.more %}
+<p class="notice" role="status">{{ t.text('web.signIn.search.more', count=t.integer(choices.institutions | length)) }}</p>
+{% endif %}
+{% endif %}
+{% endif %}
+{% if choices.institutions %}
 <ul class="provider-list">
-  {% for entityID, displayName in institutions %}
-  <li><a class="button" href="{{ url_for('web.providerStart', name=name, institution=entityID, next=next) }}">{{ displayName }}</a></li>
+  {% for entityID, displayName in choices.institutions %}
+  <li><a class="button" dir="auto" href="{{ url_for('web.providerStart', name=name, institution=entityID, next=next) }}">{{ displayName }}</a></li>
   {% endfor %}
 </ul>
+{% endif %}
 {% endblock %}

@@ -1,0 +1,7 @@
+{% if heartbeatAge is none %}
+<div class="error" role="alert">{{ t.text('web.tasks.scheduler.never') }}</div>
+{% elif schedulerLate %}
+<div class="error" role="alert">{{ t.text('web.tasks.scheduler.late', seconds=t.integer(heartbeatAge)) }}</div>
+{% else %}
+<p class="notice" role="status">{{ t.text('web.tasks.scheduler.seen', seconds=t.integer(heartbeatAge)) }}</p>
+{% endif %}

@@ -1785,6 +1785,10 @@
       "text": "الأماكن",
       "status": "machineDraft"
     },
+    "web.nav.tasks": {
+      "text": "المهام",
+      "status": "machineDraft"
+    },
     "web.nav.trials": {
       "text": "التجارب",
       "status": "machineDraft"
@@ -1901,6 +1905,30 @@
       "text": "لم يتم الدخول: {reason}",
       "status": "machineDraft"
     },
+    "web.signIn.search.hint": {
+      "text": "اكتب جزءًا من اسمها أو نطاقها على الويب أو معرّف الكيان الخاص بها.",
+      "status": "machineDraft"
+    },
+    "web.signIn.search.label": {
+      "text": "ابحث عن مؤسستك",
+      "status": "machineDraft"
+    },
+    "web.signIn.search.more": {
+      "text": "تطابق مؤسسات أكثر من أول {count} معروضة؛ اكتب المزيد من الاسم لتضييق النتائج.",
+      "status": "machineDraft"
+    },
+    "web.signIn.search.noMatch": {
+      "text": "لا توجد مؤسسة تطابق «{query}».",
+      "status": "machineDraft"
+    },
+    "web.signIn.search.notLoaded": {
+      "text": "لم تُحمَّل قائمة المؤسسات بعد. حاول لاحقًا، أو اسأل مسؤول الموقع.",
+      "status": "machineDraft"
+    },
+    "web.signIn.search.submit": {
+      "text": "بحث",
+      "status": "machineDraft"
+    },
     "web.signIn.submit": {
       "text": "دخول",
       "status": "machineDraft"
@@ -1939,6 +1967,214 @@
     },
     "web.signedOut.signInAgain": {
       "text": "تسجيل الدخول من جديد",
+      "status": "machineDraft"
+    },
+    "web.task.backToTasks": {
+      "text": "كل المهام",
+      "status": "machineDraft"
+    },
+    "web.task.changeHeading": {
+      "text": "الجدول والحد الزمني",
+      "status": "machineDraft"
+    },
+    "web.task.disable": {
+      "text": "تعطيل",
+      "status": "machineDraft"
+    },
+    "web.task.done.disable": {
+      "text": "عُطّلت: لم تعد تُنفَّذ وفق جدولها.",
+      "status": "machineDraft"
+    },
+    "web.task.done.enable": {
+      "text": "فُعّلت.",
+      "status": "machineDraft"
+    },
+    "web.task.done.run": {
+      "text": "طُلب التشغيل. يبدؤه المُجدوِل عند تسجيله التالي.",
+      "status": "machineDraft"
+    },
+    "web.task.done.saved": {
+      "text": "حُفظ.",
+      "status": "machineDraft"
+    },
+    "web.task.enable": {
+      "text": "تفعيل",
+      "status": "machineDraft"
+    },
+    "web.task.heading": {
+      "text": "مهمة مجدولة",
+      "status": "machineDraft"
+    },
+    "web.task.isDisabled": {
+      "text": "معطّلة: لا تُنفَّذ وفق جدولها، لكن يمكن تشغيلها الآن.",
+      "status": "machineDraft"
+    },
+    "web.task.isEnabled": {
+      "text": "مفعّلة: تُنفَّذ وفق جدولها.",
+      "status": "machineDraft"
+    },
+    "web.task.kind": {
+      "text": "النوع",
+      "status": "machineDraft"
+    },
+    "web.task.noNextRun": {
+      "text": "لا يوجد: المهمة معطّلة.",
+      "status": "machineDraft"
+    },
+    "web.task.noRuns": {
+      "text": "لا توجد مرات تشغيل بعد.",
+      "status": "machineDraft"
+    },
+    "web.task.owner": {
+      "text": "محفوظة لمزوّد الهوية",
+      "status": "machineDraft"
+    },
+    "web.task.parameters": {
+      "text": "المعاملات",
+      "status": "machineDraft"
+    },
+    "web.task.problem": {
+      "text": "لم يُنفَّذ: {reason}",
+      "status": "machineDraft"
+    },
+    "web.task.problem.minutes": {
+      "text": "الحد الزمني عدد صحيح من الدقائق",
+      "status": "machineDraft"
+    },
+    "web.task.run.bySchedule": {
+      "text": "الجدول",
+      "status": "machineDraft"
+    },
+    "web.task.run.finished": {
+      "text": "الانتهاء",
+      "status": "machineDraft"
+    },
+    "web.task.run.number": {
+      "text": "التشغيل",
+      "status": "machineDraft"
+    },
+    "web.task.run.output": {
+      "text": "مخرجات التشغيل {number}",
+      "status": "machineDraft"
+    },
+    "web.task.run.requested": {
+      "text": "وقت الطلب",
+      "status": "machineDraft"
+    },
+    "web.task.run.requestedBy": {
+      "text": "طلبه",
+      "status": "machineDraft"
+    },
+    "web.task.run.started": {
+      "text": "البدء",
+      "status": "machineDraft"
+    },
+    "web.task.run.state": {
+      "text": "النتيجة",
+      "status": "machineDraft"
+    },
+    "web.task.run.summary": {
+      "text": "الملخص",
+      "status": "machineDraft"
+    },
+    "web.task.runNow": {
+      "text": "تشغيل الآن",
+      "status": "machineDraft"
+    },
+    "web.task.runs": {
+      "text": "مرات التشغيل",
+      "status": "machineDraft"
+    },
+    "web.task.save": {
+      "text": "حفظ",
+      "status": "machineDraft"
+    },
+    "web.task.schedule": {
+      "text": "الجدول (الدقيقة الساعة اليوم الشهر يوم-الأسبوع)",
+      "status": "machineDraft"
+    },
+    "web.task.scheduleHelp": {
+      "text": "يُقرأ بالمنطقة الزمنية للخادم، {zone}. مثلًا: 0 */6 * * * كل ست ساعات، و30 2 * * * يوميًا عند 02:30، و0 7 * * mon أيام الاثنين عند 07:00.",
+      "status": "machineDraft"
+    },
+    "web.task.state.failed": {
+      "text": "فشل",
+      "status": "machineDraft"
+    },
+    "web.task.state.requested": {
+      "text": "مطلوب",
+      "status": "machineDraft"
+    },
+    "web.task.state.running": {
+      "text": "قيد التشغيل",
+      "status": "machineDraft"
+    },
+    "web.task.state.skipped": {
+      "text": "تُخطّي",
+      "status": "machineDraft"
+    },
+    "web.task.state.stopped": {
+      "text": "أُوقف",
+      "status": "machineDraft"
+    },
+    "web.task.state.succeeded": {
+      "text": "نجح",
+      "status": "machineDraft"
+    },
+    "web.task.timeLimitMinutes": {
+      "text": "الحد الزمني (بالدقائق)",
+      "status": "machineDraft"
+    },
+    "web.tasks.column.kind": {
+      "text": "النوع",
+      "status": "machineDraft"
+    },
+    "web.tasks.column.lastRun": {
+      "text": "آخر تشغيل",
+      "status": "machineDraft"
+    },
+    "web.tasks.column.name": {
+      "text": "المهمة",
+      "status": "machineDraft"
+    },
+    "web.tasks.column.nextRun": {
+      "text": "التشغيل التالي",
+      "status": "machineDraft"
+    },
+    "web.tasks.column.schedule": {
+      "text": "الجدول",
+      "status": "machineDraft"
+    },
+    "web.tasks.disabled": {
+      "text": "معطّلة",
+      "status": "machineDraft"
+    },
+    "web.tasks.heading": {
+      "text": "المهام المجدولة",
+      "status": "machineDraft"
+    },
+    "web.tasks.intro": {
+      "text": "أعمال ينفذها المُجدوِل وفق جدول زمني، أو فورًا عند الطلب. الجدول تعبير cron من خمسة حقول (الدقيقة، الساعة، يوم الشهر، الشهر، يوم الأسبوع)، يُقرأ بالمنطقة الزمنية للخادم.",
+      "status": "machineDraft"
+    },
+    "web.tasks.noRun": {
+      "text": "لم تُنفَّذ بعد",
+      "status": "machineDraft"
+    },
+    "web.tasks.none": {
+      "text": "لا توجد مهام بعد. تُنشأ المهمة مع الميزة التي تحتاجها، مثل مزوّد اتحاد يُقرأ من مجمّع اكتشاف.",
+      "status": "machineDraft"
+    },
+    "web.tasks.scheduler.late": {
+      "text": "سجّل المُجدوِل حضوره آخر مرة قبل {seconds} ثانية. ربما توقف؛ ولا يُنفَّذ شيء مجدول ما دام متوقفًا.",
+      "status": "machineDraft"
+    },
+    "web.tasks.scheduler.never": {
+      "text": "لم يُسجّل أي مُجدوِل حضوره، فلا يُنفَّذ شيء مجدول. شغّل واحدًا بجانب خادم الويب بالأمر: openfurrow scheduler",
+      "status": "machineDraft"
+    },
+    "web.tasks.scheduler.seen": {
+      "text": "سجّل المُجدوِل حضوره قبل {seconds} ثانية.",
       "status": "machineDraft"
     },
     "web.trial.allPlots": {

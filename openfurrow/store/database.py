@@ -38,7 +38,7 @@ from sqlalchemy import ForeignKey, Index, Text, event, inspect, select
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, relationship
 
-storeVersion = 18
+storeVersion = 19
 
 
 class StoreError(RuntimeError):
@@ -232,6 +232,82 @@ class ReplayClaimRow(Base):
   scope: Mapped[str] = mapped_column(primary_key=True)
   identifier: Mapped[str] = mapped_column(primary_key=True)
   expiresAt: Mapped[datetime.datetime]
+
+
+class DiscoveryListRow(Base):
+  """A federation provider's discovery list (decision 0040): when its aggregate was last read, and until when it held."""
+
+  __tablename__ = "discoveryList"
+
+  providerName: Mapped[str] = mapped_column(ForeignKey("identityProvider.providerName", ondelete="CASCADE"),
+                                            primary_key=True)
+  fetchedAt: Mapped[datetime.datetime]
+  validUntil: Mapped[datetime.datetime]
+
+
+class DiscoveredInstitutionRow(Base):
+  """An institution a federation's aggregate offers for discovery; its keys are never kept, only what finding it
+  needs. `searchText` is its names, entity ID and scopes folded for case- and accent-insensitive search."""
+
+  __tablename__ = "discoveredInstitution"
+
+  providerName: Mapped[str] = mapped_column(ForeignKey("discoveryList.providerName", ondelete="CASCADE"),
+                                            primary_key=True)
+  entityID: Mapped[str] = mapped_column(primary_key=True)
+  displayNamesJSON: Mapped[str] = mapped_column(Text)
+  scopesJSON: Mapped[str] = mapped_column(Text)
+  registrationAuthority: Mapped[str | None]
+  searchText: Mapped[str] = mapped_column(Text)
+
+
+class ScheduledTaskRow(Base):
+  """A configured task of a kind defined in code (decision 0041). `ownerProvider` names the identity provider whose
+  feature made it and still needs it, so it is not deleted while that provider uses it."""
+
+  __tablename__ = "scheduledTask"
+
+  name: Mapped[str] = mapped_column(primary_key=True)
+  kind: Mapped[str]
+  parametersJSON: Mapped[str] = mapped_column(Text)
+  schedule: Mapped[str]
+  enabled: Mapped[bool]
+  timeLimitSeconds: Mapped[int]
+  nextRunAt: Mapped[datetime.datetime | None]
+  createdAt: Mapped[datetime.datetime]
+  ownerProvider: Mapped[str | None] = mapped_column(ForeignKey("identityProvider.providerName"))
+
+
+class TaskRunRow(Base):
+  """One run of a task: requested, then claimed by one scheduler (running), then succeeded, failed or stopped; or
+  skipped when its task was still running. `host`, `schedulerProcessID` and `processID` say where a running run is,
+  so a run whose scheduler died can be found."""
+
+  __tablename__ = "taskRun"
+  __table_args__ = (Index("taskRunByTask", "taskName", "requestedAt"), Index("taskRunByState", "state"))
+
+  runID: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+  taskName: Mapped[str] = mapped_column(ForeignKey("scheduledTask.name", ondelete="CASCADE"))
+  requestedBy: Mapped[str]
+  requestedAt: Mapped[datetime.datetime]
+  startedAt: Mapped[datetime.datetime | None]
+  finishedAt: Mapped[datetime.datetime | None]
+  state: Mapped[str]
+  summary: Mapped[str | None] = mapped_column(Text)
+  output: Mapped[str] = mapped_column(Text)
+  host: Mapped[str | None]
+  schedulerProcessID: Mapped[int | None]
+  processID: Mapped[int | None]
+
+
+class SchedulerHeartbeatRow(Base):
+  """When a scheduler last checked in, and which; exactly one row once any scheduler has run."""
+
+  __tablename__ = "schedulerHeartbeat"
+
+  heartbeatID: Mapped[int] = mapped_column(primary_key=True)
+  host: Mapped[str]
+  processID: Mapped[int]
+  lastSeenAt: Mapped[datetime.datetime]
 
 
 class AuditEventRow(Base):

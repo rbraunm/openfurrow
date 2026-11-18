@@ -2088,6 +2088,242 @@
     "web.signOut.notAnswer": {
       "text": "This is not a sign-out message from {provider}.",
       "status": "humanApproved"
+    },
+    "web.nav.tasks": {
+      "text": "Tasks",
+      "status": "humanApproved"
+    },
+    "web.tasks.heading": {
+      "text": "Scheduled tasks",
+      "status": "humanApproved"
+    },
+    "web.tasks.intro": {
+      "text": "Work the scheduler does on a schedule, or at once when asked. A schedule is a five-field cron expression (minute, hour, day of the month, month, day of the week), read in the server's time zone.",
+      "status": "humanApproved"
+    },
+    "web.tasks.scheduler.never": {
+      "text": "No scheduler has checked in, so nothing scheduled runs. Start one beside the web server with: openfurrow scheduler",
+      "status": "humanApproved"
+    },
+    "web.tasks.scheduler.late": {
+      "text": "The scheduler last checked in {seconds} seconds ago. It may have stopped; nothing scheduled runs while it is stopped.",
+      "status": "humanApproved"
+    },
+    "web.tasks.scheduler.seen": {
+      "text": "The scheduler checked in {seconds} seconds ago.",
+      "status": "humanApproved"
+    },
+    "web.tasks.column.name": {
+      "text": "Task",
+      "status": "humanApproved"
+    },
+    "web.tasks.column.kind": {
+      "text": "Kind",
+      "status": "humanApproved"
+    },
+    "web.tasks.column.schedule": {
+      "text": "Schedule",
+      "status": "humanApproved"
+    },
+    "web.tasks.column.nextRun": {
+      "text": "Next run",
+      "status": "humanApproved"
+    },
+    "web.tasks.column.lastRun": {
+      "text": "Last run",
+      "status": "humanApproved"
+    },
+    "web.task.isEnabled": {
+      "text": "Enabled: it runs on its schedule.",
+      "status": "humanApproved"
+    },
+    "web.tasks.disabled": {
+      "text": "disabled",
+      "status": "humanApproved"
+    },
+    "web.task.isDisabled": {
+      "text": "Disabled: it does not run on its schedule, but can be run now.",
+      "status": "humanApproved"
+    },
+    "web.tasks.noRun": {
+      "text": "not run yet",
+      "status": "humanApproved"
+    },
+    "web.tasks.none": {
+      "text": "No tasks yet. A task is made with the feature that needs it, such as a federation provider read from a discovery aggregate.",
+      "status": "humanApproved"
+    },
+    "web.task.heading": {
+      "text": "Scheduled task",
+      "status": "humanApproved"
+    },
+    "web.task.backToTasks": {
+      "text": "All tasks",
+      "status": "humanApproved"
+    },
+    "web.task.kind": {
+      "text": "Kind",
+      "status": "humanApproved"
+    },
+    "web.task.parameters": {
+      "text": "Parameters",
+      "status": "humanApproved"
+    },
+    "web.task.owner": {
+      "text": "Kept for the identity provider",
+      "status": "humanApproved"
+    },
+    "web.task.noNextRun": {
+      "text": "None: the task is disabled.",
+      "status": "humanApproved"
+    },
+    "web.task.changeHeading": {
+      "text": "Schedule and time limit",
+      "status": "humanApproved"
+    },
+    "web.task.schedule": {
+      "text": "Schedule (minute hour day month weekday)",
+      "status": "humanApproved"
+    },
+    "web.task.scheduleHelp": {
+      "text": "Read in the server's time zone, {zone}. For example: 0 */6 * * * is every six hours, 30 2 * * * is daily at 02:30, 0 7 * * mon is Mondays at 07:00.",
+      "status": "humanApproved"
+    },
+    "web.task.timeLimitMinutes": {
+      "text": "Time limit (minutes)",
+      "status": "humanApproved"
+    },
+    "web.task.save": {
+      "text": "Save",
+      "status": "humanApproved"
+    },
+    "web.task.enable": {
+      "text": "Enable",
+      "status": "humanApproved"
+    },
+    "web.task.disable": {
+      "text": "Disable",
+      "status": "humanApproved"
+    },
+    "web.task.runNow": {
+      "text": "Run now",
+      "status": "humanApproved"
+    },
+    "web.task.done.saved": {
+      "text": "Saved.",
+      "status": "humanApproved"
+    },
+    "web.task.done.enable": {
+      "text": "Enabled.",
+      "status": "humanApproved"
+    },
+    "web.task.done.disable": {
+      "text": "Disabled: it no longer runs on its schedule.",
+      "status": "humanApproved"
+    },
+    "web.task.done.run": {
+      "text": "Run requested. The scheduler starts it when it next checks in.",
+      "status": "humanApproved"
+    },
+    "web.task.problem": {
+      "text": "Not done: {reason}",
+      "status": "humanApproved"
+    },
+    "web.task.problem.minutes": {
+      "text": "the time limit is a whole number of minutes",
+      "status": "humanApproved"
+    },
+    "web.task.runs": {
+      "text": "Runs",
+      "status": "humanApproved"
+    },
+    "web.task.noRuns": {
+      "text": "No runs yet.",
+      "status": "humanApproved"
+    },
+    "web.task.run.number": {
+      "text": "Run",
+      "status": "humanApproved"
+    },
+    "web.task.run.state": {
+      "text": "Outcome",
+      "status": "humanApproved"
+    },
+    "web.task.run.requestedBy": {
+      "text": "Asked for by",
+      "status": "humanApproved"
+    },
+    "web.task.run.bySchedule": {
+      "text": "the schedule",
+      "status": "humanApproved"
+    },
+    "web.task.run.requested": {
+      "text": "Asked for",
+      "status": "humanApproved"
+    },
+    "web.task.run.started": {
+      "text": "Started",
+      "status": "humanApproved"
+    },
+    "web.task.run.finished": {
+      "text": "Finished",
+      "status": "humanApproved"
+    },
+    "web.task.run.summary": {
+      "text": "Summary",
+      "status": "humanApproved"
+    },
+    "web.task.run.output": {
+      "text": "Output of run {number}",
+      "status": "humanApproved"
+    },
+    "web.task.state.requested": {
+      "text": "requested",
+      "status": "humanApproved"
+    },
+    "web.task.state.running": {
+      "text": "running",
+      "status": "humanApproved"
+    },
+    "web.task.state.succeeded": {
+      "text": "succeeded",
+      "status": "humanApproved"
+    },
+    "web.task.state.failed": {
+      "text": "failed",
+      "status": "humanApproved"
+    },
+    "web.task.state.stopped": {
+      "text": "stopped",
+      "status": "humanApproved"
+    },
+    "web.task.state.skipped": {
+      "text": "skipped",
+      "status": "humanApproved"
+    },
+    "web.signIn.search.label": {
+      "text": "Find your institution",
+      "status": "humanApproved"
+    },
+    "web.signIn.search.hint": {
+      "text": "Type part of its name, its web domain or its entity ID.",
+      "status": "humanApproved"
+    },
+    "web.signIn.search.submit": {
+      "text": "Search",
+      "status": "humanApproved"
+    },
+    "web.signIn.search.notLoaded": {
+      "text": "The list of institutions has not been loaded yet. Try again later, or ask the site's administrator.",
+      "status": "humanApproved"
+    },
+    "web.signIn.search.noMatch": {
+      "text": "No institution matches ‘{query}’.",
+      "status": "humanApproved"
+    },
+    "web.signIn.search.more": {
+      "text": "More institutions match than the first {count} shown; type more of the name to narrow them.",
+      "status": "humanApproved"
     }
   }
 }

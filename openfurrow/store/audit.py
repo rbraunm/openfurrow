@@ -34,7 +34,7 @@ class AuditEvent(BaseModel):
 
 def record(session: Session, actor: Actor, action: str, scope: str, detail: dict) -> None:
   session.add(AuditEventRow(
-    at=now(), actorKind=actor.kind.value, actorName=actor.userName, surface=actor.surface, action=action,
+    at=now(), actorKind=actor.kind.value, actorName=actor.name, surface=actor.surface, action=action,
     scope=scope, detailJSON=json.dumps(detail, sort_keys=True, default=str),
   ))
   session.flush()

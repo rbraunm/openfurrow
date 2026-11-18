@@ -21,6 +21,7 @@ from typing import Any
 from urllib.parse import urlsplit
 
 from carnelian import federation as federationAttributes
+from carnelian.aggregate import fetchAggregate
 from carnelian.cas import CASServer
 from carnelian.der import publicKeyFromCertificate
 from carnelian.federation import Federation, scopedIdentifier, serviceProviderMetadata
@@ -184,12 +185,42 @@ subjectAttributeNames = {SubjectAttribute.subjectID: federationAttributes.subjec
                          SubjectAttribute.eduPersonPrincipalName: federationAttributes.eduPersonPrincipalName}
 
 
+def _certificate(certificate: str, setting: str) -> str:
+  try:
+    publicKeyFromCertificate(certificate)
+  except ValueError as error:
+    raise ValueError(f"{setting} is not a PEM certificate Carnelian can read: {error}") from None
+  return certificate
+
+
+class DiscoveryAggregate(BaseModel):
+  """A federation's signed aggregate of every member (eduGAIN's, say), read by the provider's refresh task to offer
+  all of its institutions."""
+
+  model_config = ConfigDict(extra="forbid")
+
+  url: str
+  signingCertificate: str
+
+  @field_validator("url")
+  @classmethod
+  def secure(cls, value: str) -> str:
+    return _secureURL(value)
+
+  @field_validator("signingCertificate")
+  @classmethod
+  def aCertificate(cls, certificate: str) -> str:
+    return _certificate(certificate, "the discovery aggregate's signingCertificate")
+
+
 class FederationSettings(_SAMLKeys):
-  """A research and education federation (decision 0040): its MDQ service and key, and the institutions offered."""
+  """A research and education federation (decision 0040): its MDQ service and key, and the institutions offered --
+  those named in `institutions`, or every one its discovery aggregate offers."""
 
   mdqURL: str
   signingCertificate: str
-  institutions: list[str]
+  institutions: list[str] = []
+  discoveryAggregate: DiscoveryAggregate | None = None
   entityID: str
   returnURL: str
   subjectAttribute: SubjectAttribute
@@ -208,21 +239,20 @@ class FederationSettings(_SAMLKeys):
   def secure(cls, value: str) -> str:
     return _secureURL(value)
 
-  @field_validator("institutions")
-  @classmethod
-  def someInstitution(cls, institutions: list[str]) -> list[str]:
-    if not institutions or len(set(institutions)) != len(institutions):
-      raise ValueError("name one or more institutions (their entity IDs), each once")
-    return institutions
-
   @field_validator("signingCertificate")
   @classmethod
   def aCertificate(cls, certificate: str) -> str:
-    try:
-      publicKeyFromCertificate(certificate)
-    except ValueError as error:
-      raise ValueError(f"signingCertificate is not a PEM certificate Carnelian can read: {error}") from None
-    return certificate
+    return _certificate(certificate, "signingCertificate")
+
+  @model_validator(mode="after")
+  def institutionsOrAggregate(self) -> FederationSettings:
+    if self.discoveryAggregate is not None:
+      if self.institutions:
+        raise ValueError("the institutions offered are those named in institutions or those of the discoveryAggregate, "
+                         "not both")
+    elif not self.institutions or len(set(self.institutions)) != len(self.institutions):
+      raise ValueError("name one or more institutions (their entity IDs), each once, or a discoveryAggregate")
+    return self
 
 
 class CASSettings(_SignOutSettings):
@@ -495,15 +525,58 @@ def _single(identity, attribute: str | None) -> str | None:
 
 
 def institution(settings: FederationSettings, entityID: str):
-  """An institution offered here, its metadata fetched from the federation and checked."""
-  if entityID not in settings.institutions:
-    raise IdentityError(f"'{entityID}' is not an institution offered here")
+  """An institution's metadata, fetched from the federation by MDQ and checked; whether it is offered here is the
+  caller's to check first."""
   federation = _providers.get("federation", settings, lambda: Federation("the federation", settings.mdqURL, settings.signingCertificate,
                                                            Fetcher(_context(settings))))
   try:
     return federation.institution(entityID)
   except SAMLRefused as error:
     raise ProviderFailure(f"the institution {entityID} cannot be used: {error}") from None
+
+
+aggregateTimeoutSeconds = 10 * 60
+
+
+@dataclass(frozen=True)
+class DiscoveredInstitution:
+  """What finding an institution needs: its names by language, its scopes and who registered it; never its keys."""
+
+  entityID: str
+  displayNames: dict[str, str]
+  scopes: tuple[str, ...]
+  registrationAuthority: str | None
+
+
+@dataclass(frozen=True)
+class Discovery:
+  """A federation's aggregate as read: the institutions it offers for discovery, how many it hides from discovery,
+  the entities left out with the reason, and until when it holds (seconds since the epoch)."""
+
+  validUntil: float
+  institutions: tuple[DiscoveredInstitution, ...]
+  hidden: int
+  skipped: tuple[tuple[str, str], ...]
+
+
+def fetchDiscovery(name: str, settings: FederationSettings) -> Discovery:
+  """The federation's discovery aggregate fetched, its signature checked over the whole document, and read."""
+  source = settings.discoveryAggregate
+  if source is None:
+    raise IdentityError(f"the federation provider '{name}' has no discoveryAggregate")
+  fetcher = Fetcher(_context(settings), timeoutSeconds=aggregateTimeoutSeconds)
+  try:
+    aggregate = fetchAggregate(source.url, source.signingCertificate, fetcher, name)
+  except SAMLRefused as error:
+    raise ProviderFailure(str(error)) from None
+  offered = [found for found in aggregate.institutions.values() if not found.hiddenFromDiscovery]
+  return Discovery(
+    validUntil=aggregate.validUntil,
+    institutions=tuple(DiscoveredInstitution(found.entityID, dict(found.displayNames), tuple(found.scopes),
+                                             found.registrationAuthority)
+                       for found in sorted(offered, key=lambda found: found.entityID)),
+    hidden=len(aggregate.institutions) - len(offered), skipped=tuple(aggregate.skipped),
+  )
 
 
 def federationServiceProvider(settings: FederationSettings, chosen, replays: ReplayStore) -> ServiceProvider:

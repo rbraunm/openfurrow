@@ -39,6 +39,7 @@ from openfurrow.workspace import (
   NotPermitted,
   ObservationImportError,
   StoreError,
+  TaskError,
   Workspace,
   sourceLocale,
 )
@@ -59,7 +60,7 @@ def main(argv: list[str] | None = None) -> int:
   except (
     StoreError, ExchangeError, ObservationImportError, AnalysisError, MessageError,
     ValidationError, OSError, json.JSONDecodeError, WeatherFileError, SettingError, ScopeError, IdentityError,
-    NotPermitted,
+    NotPermitted, TaskError,
   ) as error:
     print(f"error: {error}", file=sys.stderr)
     return 1
@@ -296,6 +297,43 @@ def _buildParser() -> argparse.ArgumentParser:
   auditParser.add_argument("--limit", type=int, default=50)
   auditParser.set_defaults(handler=_commandAudit)
 
+  schedulerParser = sub.add_parser("scheduler", help="run the scheduler beside the web server (decision 0041)")
+  schedulerParser.add_argument("database")
+  schedulerParser.add_argument("--poll-seconds", dest="pollSeconds", type=float, default=2.0,
+                               help="how often it looks for due tasks and requested runs (default 2)")
+  schedulerParser.set_defaults(handler=_commandScheduler)
+
+  taskParser = sub.add_parser("task", help="scheduled tasks: list, show, change, enable, disable, run, runs")
+  taskSub = taskParser.add_subparsers(dest="taskCommand", required=True)
+  taskList = taskSub.add_parser("list", help="every task, its schedule, next run and last outcome")
+  taskList.add_argument("database")
+  taskList.set_defaults(handler=_commandTaskList)
+  taskShow = taskSub.add_parser("show", help="one task in full")
+  taskShow.add_argument("database")
+  taskShow.add_argument("name")
+  taskShow.set_defaults(handler=_commandTaskShow)
+  taskSet = taskSub.add_parser("set", help="change a task's schedule or time limit")
+  taskSet.add_argument("database")
+  taskSet.add_argument("name")
+  taskSet.add_argument("--schedule", help="a five-field cron expression, read in the setting tasks.timeZone")
+  taskSet.add_argument("--time-limit", dest="timeLimit", help="how long a run may take: 90s, 15m or 2h")
+  taskSet.set_defaults(handler=_commandTaskSet)
+  for name, enabled in (("enable", True), ("disable", False)):
+    toggle = taskSub.add_parser(name, help=f"{name} a task's schedule")
+    toggle.add_argument("database")
+    toggle.add_argument("name")
+    toggle.set_defaults(handler=_commandTaskEnabled, enabled=enabled)
+  taskRun = taskSub.add_parser("run", help="request a run now; a running scheduler starts it")
+  taskRun.add_argument("database")
+  taskRun.add_argument("name")
+  taskRun.set_defaults(handler=_commandTaskRun)
+  taskRuns = taskSub.add_parser("runs", help="a task's runs, newest first")
+  taskRuns.add_argument("database")
+  taskRuns.add_argument("name")
+  taskRuns.add_argument("--limit", type=int, default=20)
+  taskRuns.add_argument("--output", action="store_true", help="print each run's output too")
+  taskRuns.set_defaults(handler=_commandTaskRuns)
+
   serveParser = sub.add_parser("serve", help="run the HTTP service over a trial database")
   serveParser.add_argument("database")
   serveParser.add_argument("--config", help="path to a project config file (see examples/openfurrow.yaml)")
@@ -522,6 +560,95 @@ def _commandAudit(args) -> int:
   for event in _operator(args.database).auditEvents(args.scope, args.limit):
     who = event.actorName or event.actorKind
     print(f"{event.at}\t{who}\t{event.surface}\t{event.action}\t{event.scope}\t{json.dumps(event.detail, sort_keys=True)}")
+  return 0
+
+
+def _commandScheduler(args) -> int:
+  from openfurrow.tasks.scheduler import Scheduler
+  scheduler = Scheduler(args.database, pollSeconds=args.pollSeconds)
+  print(f"Scheduler running on {scheduler.host} (process {scheduler.processID}); Ctrl+C to stop", flush=True)
+  scheduler.run()
+  print("Scheduler stopped", flush=True)
+  return 0
+
+
+_durationUnits = {"s": 1, "m": 60, "h": 3600}
+
+
+def _seconds(text: str) -> int:
+  if len(text) < 2 or text[-1] not in _durationUnits or not text[:-1].isascii() or not text[:-1].isdigit():
+    raise TaskError(f"'{text}' is not a duration: a whole number with s, m or h, such as 90s, 15m or 2h")
+  return int(text[:-1]) * _durationUnits[text[-1]]
+
+
+def _when(moment) -> str:
+  return "-" if moment is None else moment.isoformat(timespec="seconds")
+
+
+def _taskLine(task) -> str:
+  last = task.lastRun
+  outcome = "-" if last is None else f"{last.state.value} {_when(last.finishedAt or last.requestedAt)}"
+  return (f"{task.name}\t{task.kind}\t{task.schedule}\t{'enabled' if task.enabled else 'disabled'}\t"
+          f"next {_when(task.nextRunAt)}\tlast {outcome}")
+
+
+def _commandTaskList(args) -> int:
+  tasks = _operator(args.database).tasks()
+  if not tasks:
+    print("(no tasks)")
+  for task in tasks:
+    print(_taskLine(task))
+  return 0
+
+
+def _commandTaskShow(args) -> int:
+  workspace = _operator(args.database)
+  task = workspace.task(args.name)
+  heartbeat = workspace.schedulerHeartbeat()
+  print(f"Task: {task.name}")
+  print(f"Kind: {task.kind}  parameters {json.dumps(task.parameters, sort_keys=True)}")
+  print(f"Schedule: {task.schedule} ({task.timeZone}), {'enabled' if task.enabled else 'disabled'}")
+  print(f"Next run: {_when(task.nextRunAt)}")
+  print(f"Time limit: {task.timeLimitSeconds} seconds")
+  if task.ownerProvider is not None:
+    print(f"Kept for the identity provider '{task.ownerProvider}'")
+  if task.lastRun is not None:
+    print(f"Last run: {task.lastRun.runID} {task.lastRun.state.value} {_when(task.lastRun.finishedAt)} "
+          f"{task.lastRun.summary or ''}".rstrip())
+  print("Scheduler: never checked in" if heartbeat is None else
+        f"Scheduler: last checked in {_when(heartbeat.lastSeenAt)} from {heartbeat.host} (process {heartbeat.processID})")
+  return 0
+
+
+def _commandTaskSet(args) -> int:
+  limit = None if args.timeLimit is None else _seconds(args.timeLimit)
+  task = _operator(args.database).setTask(args.name, args.schedule, limit)
+  print(f"Task '{task.name}': {task.schedule} ({task.timeZone}), time limit {task.timeLimitSeconds} seconds, "
+        f"next run {_when(task.nextRunAt)}")
+  return 0
+
+
+def _commandTaskEnabled(args) -> int:
+  task = _operator(args.database).setTaskEnabled(args.name, args.enabled)
+  print(f"{'Enabled' if args.enabled else 'Disabled'} '{task.name}'; next run {_when(task.nextRunAt)}")
+  return 0
+
+
+def _commandTaskRun(args) -> int:
+  runID = _operator(args.database).runTaskNow(args.name)
+  print(f"Requested run {runID} of '{args.name}'")
+  return 0
+
+
+def _commandTaskRuns(args) -> int:
+  runs = _operator(args.database).taskRuns(args.name, args.limit)
+  if not runs:
+    print("(no runs)")
+  for run in runs:
+    print(f"{run.runID}\t{run.state.value}\t{run.requestedBy}\trequested {_when(run.requestedAt)}\t"
+          f"started {_when(run.startedAt)}\tfinished {_when(run.finishedAt)}\t{run.summary or ''}")
+    if args.output and run.output:
+      print(run.output.rstrip("\n"))
   return 0
 
 

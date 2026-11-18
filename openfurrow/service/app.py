@@ -48,6 +48,7 @@ from openfurrow.workspace import (
   ExchangeError,
   ObservationImportError,
   StoreError,
+  TaskError,
   Workspace,
 )
 
@@ -112,6 +113,10 @@ def _registerErrorHandlers(application: Flask) -> None:
 
   @application.errorhandler(IdentityError)
   def identityFailure(error: IdentityError) -> Response:
+    return _error(str(error), 400)
+
+  @application.errorhandler(TaskError)
+  def taskFailure(error: TaskError) -> Response:
     return _error(str(error), 400)
 
   @application.errorhandler(ScopeError)

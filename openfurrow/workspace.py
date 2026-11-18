@@ -154,6 +154,7 @@ from openfurrow.identity.providers import (
   federationServiceProvider as _federationServiceProvider,
   fromCAS as _fromCAS,
   fromDirectory as _fromDirectory,
+  fetchDiscovery as _fetchDiscovery,
   fromFederation as _fromFederation,
   institution as _institution,
   fromOpenIDConnect as _fromOpenIDConnect,
@@ -179,6 +180,25 @@ from openfurrow.store.providers import (
   takePending as _takePending,
 )
 from openfurrow.store.provisioning import ProvisioningStore
+from openfurrow.store.discovery import (
+  discoveryList as _discoveryList,
+  isDiscovered as _isDiscovered,
+  replaceDiscovery as _replaceDiscovery,
+  searchDiscovery as _searchDiscovery,
+)
+from openfurrow.store.tasks import (
+  createTask as _createTask,
+  heartbeat as _schedulerHeartbeat,
+  listTasks as _listTasks,
+  requestRun as _requestRun,
+  rescheduleAll as _rescheduleAll,
+  runs as _taskRuns,
+  setEnabled as _setTaskEnabled,
+  setSchedule as _setSchedule,
+  setTimeLimit as _setTimeLimit,
+  task as _taskNamed,
+)
+from openfurrow.tasks.model import SchedulerHeartbeat, Task, TaskError, TaskRun
 
 _redirectKinds = (ProviderKind.openIDConnect, ProviderKind.saml, ProviderKind.samlFederation, ProviderKind.cas)
 from openfurrow.store.hierarchy import (
@@ -227,6 +247,7 @@ __all__ = [
   "RoundTripCheck",
   "SignOutOutcome",
   "StoreError",
+  "TaskError",
   "Workspace",
   "availableLocales",
   "sourceLocale",
@@ -242,6 +263,36 @@ def _jsonSetting(setting: EffectiveSetting | None) -> dict | None:
 
 class NotPermitted(PermissionError):
   """The actor does not hold the permission an operation needs where it acts; not bad input, so no form catches it."""
+
+
+institutionSearchLimit = 50
+
+
+def federationRefreshTaskName(providerName: str) -> str:
+  return f"federationRefresh-{providerName}"
+
+
+def _utcNow() -> datetime.datetime:
+  return datetime.datetime.now(datetime.UTC)
+
+
+@dataclasses.dataclass(frozen=True)
+class InstitutionChoices:
+  """What a federation's choose-institution page shows: whether it searches a stored list, whether that list is loaded
+  yet, the institutions to offer, and whether more matched than are shown."""
+
+  searchable: bool
+  loaded: bool
+  institutions: list[tuple[str, str]]
+  more: bool
+
+
+@dataclasses.dataclass(frozen=True)
+class DiscoveryOutcome:
+  offered: int
+  hidden: int
+  skipped: list[tuple[str, str]]
+  validUntil: datetime.datetime
 
 
 @dataclasses.dataclass(frozen=True)
@@ -453,6 +504,8 @@ class Workspace:
       after = {setting.key: setting for setting in _effectiveSettings(session, scope)}[key]
       if key == "identity.signInMode" and after.value is SignInMode.accounts:
         self._requireAnAdministrator(session)
+      if key == "tasks.timeZone":
+        _rescheduleAll(session, _utcNow())
       self._audit(session, "setting.set", scope, {"key": key, "before": _jsonSetting(before), "after": _jsonSetting(after)})
 
   def clearSetting(self, scope: str, key: str) -> None:
@@ -461,6 +514,8 @@ class Workspace:
       after = {setting.key: setting for setting in _effectiveSettings(session, scope)}[key]
       if key == "identity.signInMode" and after.value is SignInMode.accounts:
         self._requireAnAdministrator(session)
+      if key == "tasks.timeZone":
+        _rescheduleAll(session, _utcNow())
       self._audit(session, "setting.clear", scope, {"key": key, "after": _jsonSetting(after)})
 
   def effectiveSettings(self, scope: str) -> list[EffectiveSetting]:
@@ -750,9 +805,16 @@ class Workspace:
   # ---- identity providers (decision 0040) ------------------------------------
 
   def addProvider(self, provider: Provider) -> None:
+    """Add a provider; a federation read from a discovery aggregate gets its refresh task, which reads it at once."""
     with self._acting(Permission.manageAccess, "server") as session:
       _addProvider(session, provider)
       self._audit(session, "provider.add", "server", {"provider": provider.name, "kind": provider.kind.value})
+      if provider.kind is ProviderKind.samlFederation and provider.settings.discoveryAggregate is not None:
+        name, at = federationRefreshTaskName(provider.name), _utcNow()
+        _createTask(session, name, "federationRefresh", {"provider": provider.name}, at, ownerProvider=provider.name)
+        runID = _requestRun(session, name, self.actor.label, at)
+        self._audit(session, "task.create", "server", {"task": name, "kind": "federationRefresh",
+                                                       "ownerProvider": provider.name, "runID": runID})
 
   def providers(self) -> list[Provider]:
     with self._acting(Permission.manageAccess, "server") as session:
@@ -787,12 +849,44 @@ class Workspace:
       raise IdentityError(f"'{name}' is not a provider to sign in with here")
     return provider
 
-  def federationInstitutions(self, name: str, locale: str) -> list[tuple[str, str]]:
-    """The institutions a federation provider offers, as (entity ID, display name in the locale), by name."""
+  def federationChoices(self, name: str, locale: str, query: str) -> InstitutionChoices:
+    """The institutions a federation provider offers, as (entity ID, display name in the locale): every configured
+    one, by name; or, from a discovery aggregate, those the query finds in the stored list, at most
+    `institutionSearchLimit`."""
     with _sessionScope(self._engine) as session:
       provider = self._enabledProvider(session, name, (ProviderKind.samlFederation,))
-    found = [_institution(provider.settings, entityID) for entityID in provider.settings.institutions]
-    return sorted(((chosen.entityID, chosen.displayName(locale)) for chosen in found), key=lambda pair: pair[1].casefold())
+      if provider.settings.discoveryAggregate is not None:
+        if _discoveryList(session, name) is None:
+          return InstitutionChoices(searchable=True, loaded=False, institutions=[], more=False)
+        found = _searchDiscovery(session, name, query, locale, institutionSearchLimit)
+        return InstitutionChoices(searchable=True, loaded=True, institutions=found.institutions, more=found.more)
+    chosen = [_institution(provider.settings, entityID) for entityID in provider.settings.institutions]
+    return InstitutionChoices(searchable=False, loaded=True, more=False, institutions=sorted(
+      ((one.entityID, one.displayName(locale)) for one in chosen), key=lambda pair: pair[1].casefold()))
+
+  def _requireOffered(self, session, provider: Provider, entityID: str) -> None:
+    if provider.settings.discoveryAggregate is not None:
+      offered = _isDiscovered(session, provider.name, entityID)
+    else:
+      offered = entityID in provider.settings.institutions
+    if not offered:
+      raise IdentityError(f"'{entityID}' is not an institution offered here")
+
+  def refreshFederationDiscovery(self, name: str) -> DiscoveryOutcome:
+    """Read a federation provider's discovery aggregate and, once it has verified, replace its stored list with it."""
+    with self._acting(Permission.manageAccess, "server") as session:
+      provider = _providerNamed(session, name)
+    if provider.kind is not ProviderKind.samlFederation:
+      raise IdentityError(f"'{name}' is not a federation provider")
+    discovery = _fetchDiscovery(name, provider.settings)
+    with self._acting(Permission.manageAccess, "server") as session:
+      _replaceDiscovery(session, name, discovery, _utcNow().replace(tzinfo=None))
+      outcome = DiscoveryOutcome(offered=len(discovery.institutions), hidden=discovery.hidden,
+                                 skipped=list(discovery.skipped),
+                                 validUntil=datetime.datetime.fromtimestamp(discovery.validUntil, datetime.UTC))
+      self._audit(session, "provider.discovery", "server", {"provider": name, "offered": outcome.offered,
+                                                            "hidden": outcome.hidden, "skipped": len(outcome.skipped)})
+      return outcome
 
   def samlMetadata(self, name: str) -> bytes:
     """The metadata a SAML identity provider, or a federation, registers for this service."""
@@ -808,6 +902,8 @@ class Workspace:
       provider = self._enabledProvider(session, name, _redirectKinds)
       if (institution is not None) != (provider.kind is ProviderKind.samlFederation):
         raise IdentityError("an institution is chosen for a federation, and only for one")
+      if institution is not None:
+        self._requireOffered(session, provider, institution)
       if provider.kind is ProviderKind.openIDConnect:
         address, pending = _relyingParty(provider.settings).beginSignIn()
       elif provider.kind is ProviderKind.cas:
@@ -903,6 +999,62 @@ class Workspace:
       _record(session, Actor(kind=ActorKind.everyone, surface="provisioning"), "provision", "server",
               {"provider": name, "method": method, "path": path, "status": response.status})
       return response
+
+  # ---- scheduled tasks (decision 0041) ---------------------------------------
+
+  def createTask(self, name: str, kind: str, parameters: dict) -> Task:
+    """Configure a task of a kind, with the kind's default schedule and time limit, enabled."""
+    with self._acting(Permission.manageTasks, "server") as session:
+      _createTask(session, name, kind, parameters, _utcNow())
+      self._audit(session, "task.create", "server", {"task": name, "kind": kind, "parameters": parameters})
+      return _taskNamed(session, name)
+
+  def tasks(self) -> list[Task]:
+    with self._acting(Permission.manageTasks, "server") as session:
+      return _listTasks(session)
+
+  def task(self, name: str) -> Task:
+    with self._acting(Permission.manageTasks, "server") as session:
+      return _taskNamed(session, name)
+
+  def setTask(self, name: str, schedule: str | None = None, timeLimitSeconds: int | None = None) -> Task:
+    """Change a task's schedule, its time limit, or both."""
+    if schedule is None and timeLimitSeconds is None:
+      raise TaskError("name a schedule, a time limit or both to change")
+    with self._acting(Permission.manageTasks, "server") as session:
+      before = _taskNamed(session, name)
+      if schedule is not None:
+        _setSchedule(session, name, schedule, _utcNow())
+      if timeLimitSeconds is not None:
+        _setTimeLimit(session, name, timeLimitSeconds)
+      after = _taskNamed(session, name)
+      self._audit(session, "task.set", "server", {
+        "task": name, "before": {"schedule": before.schedule, "timeLimitSeconds": before.timeLimitSeconds},
+        "after": {"schedule": after.schedule, "timeLimitSeconds": after.timeLimitSeconds}})
+      return after
+
+  def setTaskEnabled(self, name: str, enabled: bool) -> Task:
+    with self._acting(Permission.manageTasks, "server") as session:
+      _setTaskEnabled(session, name, enabled, _utcNow())
+      self._audit(session, "task.enable", "server", {"task": name, "enabled": enabled})
+      return _taskNamed(session, name)
+
+  def runTaskNow(self, name: str) -> int:
+    """Request a run of a task at once, recorded as asked for by this actor; the scheduler starts it."""
+    with self._acting(Permission.manageTasks, "server") as session:
+      runID = _requestRun(session, name, self.actor.label, _utcNow())
+      self._audit(session, "task.run", "server", {"task": name, "runID": runID})
+      return runID
+
+  def taskRuns(self, name: str, limit: int = 50) -> list[TaskRun]:
+    """A task's runs, newest first, with their output."""
+    with self._acting(Permission.manageTasks, "server") as session:
+      return _taskRuns(session, name, limit)
+
+  def schedulerHeartbeat(self) -> SchedulerHeartbeat | None:
+    """When a scheduler last checked in; None when none ever has."""
+    with self._acting(Permission.manageTasks, "server") as session:
+      return _schedulerHeartbeat(session)
 
   # ---- layout -------------------------------------------------------------
 

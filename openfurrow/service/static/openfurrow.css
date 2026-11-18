@@ -355,6 +355,10 @@ fieldset.format label { display: block; padding: 0.15rem 0; font-size: 0.95rem; 
 .trial-form input.number { width: 10rem; }
 .help { font-size: 0.82rem; color: var(--furrow); }
 
+/* Scheduled tasks ---------------------------------------------------------- */
+
+.run-output { max-height: 24rem; overflow: auto; white-space: pre-wrap; font-size: 0.8rem; }
+
 /* Printing ----------------------------------------------------------------- */
 
 @media print {

@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}{{ task.name }} - {{ t.text('web.tasks.heading') }} - {{ t.text('web.app.name') }}{% endblock %}
+{% block content %}
+{% set localeArgument = locale if locale != 'en-US' else none %}
+<p class="back"><a href="{{ url_for('web.tasks', locale=localeArgument) }}">{{ ('&rarr;' if direction == 'rtl' else '&larr;') | safe }} {{ t.text('web.task.backToTasks') }}</a></p>
+
+<div class="page-head">
+  <h1>{{ t.text('web.task.heading') }}</h1>
+  <p class="code trial-code">{{ task.name }}</p>
+</div>
+{% if problem %}<div class="error" role="alert">{{ problem }}</div>{% endif %}
+{% if notice %}<div class="notice" role="status">{{ notice }}</div>{% endif %}
+{% include "schedulerState.html" %}
+
+<section class="summary" aria-label="{{ t.text('web.task.heading') }}">
+  <dl>
+    <div><dt>{{ t.text('web.task.kind') }}</dt><dd class="code">{{ task.kind }}</dd></div>
+    <div><dt>{{ t.text('web.task.parameters') }}</dt><dd class="code" dir="ltr">{% for key, value in task.parameters | dictsort %}{{ key }} = {{ value }}{% if not loop.last %}; {% endif %}{% endfor %}</dd></div>
+    <div><dt>{{ t.text('web.tasks.column.nextRun') }}</dt><dd>{% if task.nextRunAt %}<span dir="ltr">{{ moment(task.nextRunAt, task.timeZone) }}</span> <span class="code">{{ task.timeZone }}</span>{% else %}{{ t.text('web.task.noNextRun') }}{% endif %}</dd></div>
+    {% if task.ownerProvider %}
+    <div><dt>{{ t.text('web.task.owner') }}</dt><dd class="code">{{ task.ownerProvider }}</dd></div>
+    {% endif %}
+  </dl>
+</section>
+
+<section aria-label="{{ t.text('web.task.changeHeading') }}">
+  <h2>{{ t.text('web.task.changeHeading') }}</h2>
+  <form class="import-form" method="post" action="{{ url_for('web.task', name=task.name, locale=localeArgument) }}">
+    <input type="hidden" name="action" value="save">
+    <div class="field-row">
+      <label class="field-label" for="schedule">{{ t.text('web.task.schedule') }}</label>
+      <input type="text" id="schedule" name="schedule" dir="ltr" value="{{ typed.schedule }}" aria-describedby="scheduleHelp">
+    </div>
+    <p class="intro" id="scheduleHelp">{{ t.text('web.task.scheduleHelp', zone=task.timeZone) }}</p>
+    <div class="field-row">
+      <label class="field-label" for="timeLimitMinutes">{{ t.text('web.task.timeLimitMinutes') }}</label>
+      <input type="text" id="timeLimitMinutes" name="timeLimitMinutes" dir="ltr" inputmode="numeric" value="{{ typed.timeLimitMinutes }}">
+    </div>
+    <div class="form-actions"><button class="button" type="submit">{{ t.text('web.task.save') }}</button></div>
+  </form>
+  <form class="import-form" method="post" action="{{ url_for('web.task', name=task.name, locale=localeArgument) }}">
+    <p>{{ t.text('web.task.isEnabled') if task.enabled else t.text('web.task.isDisabled') }}</p>
+    <input type="hidden" name="action" value="{{ 'disable' if task.enabled else 'enable' }}">
+    <div class="form-actions"><button class="button button-quiet" type="submit">{{ t.text('web.task.disable') if task.enabled else t.text('web.task.enable') }}</button></div>
+  </form>
+  <form class="import-form" method="post" action="{{ url_for('web.task', name=task.name, locale=localeArgument) }}">
+    <input type="hidden" name="action" value="run">
+    <div class="form-actions"><button class="button" type="submit">{{ t.text('web.task.runNow') }}</button></div>
+  </form>
+</section>
+
+<section aria-label="{{ t.text('web.task.runs') }}">
+  <h2>{{ t.text('web.task.runs') }}</h2>
+  {% if runs %}
+  <table class="trials runs">
+    <thead>
+      <tr>
+        <th scope="col" class="num">{{ t.text('web.task.run.number') }}</th>
+        <th scope="col">{{ t.text('web.task.run.state') }}</th>
+        <th scope="col">{{ t.text('web.task.run.requestedBy') }}</th>
+        <th scope="col">{{ t.text('web.task.run.requested') }}</th>
+        <th scope="col">{{ t.text('web.task.run.started') }}</th>
+        <th scope="col">{{ t.text('web.task.run.finished') }}</th>
+        <th scope="col">{{ t.text('web.task.run.summary') }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for run in runs %}
+      <tr>
+        <td class="num code">{{ run.runID }}</td>
+        <td>{{ t.text('web.task.state.' ~ run.state.value) }}</td>
+        <td>{% if run.requestedBy == 'schedule' %}{{ t.text('web.task.run.bySchedule') }}{% else %}<span class="code">{{ run.requestedBy }}</span>{% endif %}</td>
+        <td dir="ltr">{{ moment(run.requestedAt, task.timeZone) }}</td>
+        <td dir="ltr">{{ moment(run.startedAt, task.timeZone) or '-' }}</td>
+        <td dir="ltr">{{ moment(run.finishedAt, task.timeZone) or '-' }}</td>
+        <td dir="auto">{{ run.summary or '' }}</td>
+      </tr>
+      {% if run.output %}
+      <tr>
+        <td colspan="7"><details><summary>{{ t.text('web.task.run.output', number=run.runID) }}</summary><pre class="run-output" dir="ltr">{{ run.output }}</pre></details></td>
+      </tr>
+      {% endif %}
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="notice">{{ t.text('web.task.noRuns') }}</p>
+  {% endif %}
+</section>
+{% endblock %}

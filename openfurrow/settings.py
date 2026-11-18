@@ -14,8 +14,9 @@ from __future__ import annotations
 from dataclasses import dataclass
 from enum import Enum
 from typing import Annotated, Any
+from zoneinfo import ZoneInfo
 
-from pydantic import BaseModel, ConfigDict, Field, TypeAdapter, ValidationError
+from pydantic import AfterValidator, BaseModel, ConfigDict, Field, TypeAdapter, ValidationError
 
 from openfurrow.analysis.meanSeparation import MeanComparison
 from openfurrow.identity.model import SignInMode
@@ -48,6 +49,16 @@ class SettingDefinition:
 
 
 everyScope = frozenset(SettingScope)
+serverOnly = frozenset({SettingScope.server})
+
+
+def _timeZone(name: str) -> str:
+  """An IANA time zone name, as the scheduler reads schedules in (decision 0041)."""
+  try:
+    ZoneInfo(name)
+  except (ValueError, KeyError) as error:
+    raise ValueError(f"'{name}' is not an IANA time zone name such as UTC or Africa/Nairobi ({error})") from None
+  return name
 
 definitions: dict[str, SettingDefinition] = {
   definition.key: definition for definition in (
@@ -59,6 +70,13 @@ definitions: dict[str, SettingDefinition] = {
     SettingDefinition("identity.signInMode", TypeAdapter(SignInMode), SignInMode.open, frozenset({SettingScope.server})),
     SettingDefinition(
       "identity.sessionHours", TypeAdapter(Annotated[int, Field(ge=1, le=720)]), 12, frozenset({SettingScope.server}),
+    ),
+    SettingDefinition("tasks.timeZone", TypeAdapter(Annotated[str, AfterValidator(_timeZone)]), "UTC", serverOnly),
+    SettingDefinition(
+      "tasks.maximumConcurrentRuns", TypeAdapter(Annotated[int, Field(ge=1, le=64)]), 2, serverOnly,
+    ),
+    SettingDefinition(
+      "tasks.runRetentionDays", TypeAdapter(Annotated[int, Field(ge=1, le=3650)]), 90, serverOnly,
     ),
   )
 }
