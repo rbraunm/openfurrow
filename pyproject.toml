@@ -34,6 +34,7 @@ postgresql = [
 ]
 test = [
   "pytest>=8",
+  "pytest-xdist>=3.6",
   "statsmodels>=0.14",
   "openpyxl>=3.1",
   "pg8000>=1.31",
@@ -68,3 +69,5 @@ testpaths = ["tests"]
 python_files = ["test*.py"]
 python_classes = ["Test*"]
 python_functions = ["test*"]
+# Tests run on every core (pytest-xdist); -n0 runs them in one process.
+addopts = "-n auto"

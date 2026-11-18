@@ -70,6 +70,11 @@ python -m pytest
 python scripts/productSmoke.py
 ```
 
+The suite runs on every processor core (pytest-xdist, `-n auto` in `pyproject.toml`), so
+each test must stand alone: its own store and files, no shared state, no fixed port. Add
+`-n0` to run in one process, for a single test or a debugger. The workflow caches the
+packages it installs, keyed on `constraints.txt` and `pyproject.toml`.
+
 ### The testbed: PostgreSQL and the other fixtures
 
 The store runs on SQLite and on PostgreSQL, and the suite runs on either: `--store

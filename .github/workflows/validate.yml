@@ -30,6 +30,10 @@ jobs:
       - uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python }}
+          cache: pip
+          cache-dependency-path: |
+            constraints.txt
+            pyproject.toml
       - name: Install the project with its test and service extras
         run: python -m pip install --constraint constraints.txt --editable ".[test,service]"
       - name: Record the installed versions
@@ -53,6 +57,10 @@ jobs:
       - uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python }}
+          cache: pip
+          cache-dependency-path: |
+            constraints.txt
+            pyproject.toml
       - name: Start the testbed's PostgreSQL with a password made for this run
         run: |
           password=$(python -c "import secrets; print(secrets.token_hex(16))")
@@ -83,6 +91,10 @@ jobs:
       - uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python }}
+          cache: pip
+          cache-dependency-path: |
+            constraints.txt
+            pyproject.toml
       - name: Install the project with its test and service extras
         run: python -m pip install --constraint constraints.txt --editable ".[test,service]"
       - name: Check out Carnelian's testbed at the installed release
