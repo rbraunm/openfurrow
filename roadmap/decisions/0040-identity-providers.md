@@ -14,7 +14,7 @@ would make differently is a provider setting with the strict choice as its defau
 ## Decision
 
 - **Identity providers are configured in the store**, each with a name, a kind
-  (`openIDConnect`, `saml`, `ldap` or `scim`), its settings and an enabled flag, managed on
+  (`openIDConnect`, `saml`, `samlFederation`, `cas`, `ldap` or `scim`), its settings and an enabled flag, managed on
   the command line by the operator. A provider's secret (an OpenID Connect client secret, an
   LDAP service password) is never stored: its settings name an environment variable, read
   when the secret is needed, and a missing one is an error. A SCIM provider's bearer token
@@ -45,6 +45,10 @@ would make differently is a provider setting with the strict choice as its defau
   it. The service's own metadata, for the federation to register, is at
   `/signin/with/<provider>/metadata`. Searching every institution of eduGAIN (about 6,600
   identity providers, a 95 MB signed file) is left until a deployment needs it.
+- **CAS** (Apereo's protocol 3.0; owner, 2026-11-17: many universities in France, Spain and
+  Latin America sign in through it) is a provider kind of its own, `cas`: the person is the
+  CAS user name, and the display name, e-mail and groups are the attributes the CAS server
+  releases, named in the settings.
 - **SCIM provisioning** answers at `/scim/<provider>/v2`. A provisioned user is an account
   (user name, display name, primary e-mail, active), a provisioned group a mirrored group.
   Deleting a user deactivates the account rather than removing it, so its history in the

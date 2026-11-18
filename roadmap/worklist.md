@@ -225,7 +225,9 @@ measure), `owner` (the owner's call), `done`.
   - a provider's discovery and keys are fetched at each sign-in; cache them once it matters;
   - research federations offer a configured list of institutions; choosing among all of
     eduGAIN needs its 95 MB aggregate read as a stream;
-  - CAS (Apereo), used by many French, Spanish and Latin American universities: next.
+  - research federations and CAS are tested against the testbed's own federation and
+    Apereo CAS, and Carnelian checks InCommon's live metadata; neither has met a partner
+    university's real identity provider yet.
 - **GOV-4** `build` **Test fixtures and dataset**: every sign-in provider and both
   databases, reprovisionable for development and one-time for the workflow, one dataset
   for all.

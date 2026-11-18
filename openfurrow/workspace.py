@@ -39,6 +39,7 @@ import tempfile
 from contextlib import contextmanager
 from pathlib import Path
 
+from carnelian.cas import CASRefused, Pending as CASPending
 from carnelian.ldap import DirectoryRefused
 from carnelian.oidc import Pending as OpenIDConnectPending, SignInRefused
 from carnelian.saml import Pending as SAMLPending, SAMLRefused
@@ -143,9 +144,11 @@ from openfurrow.identity.providers import (
   Provider,
   ProviderFailure,
   ProviderKind,
+  casServer as _casServer,
   directory as _directory,
   federationMetadata as _federationMetadata,
   federationServiceProvider as _federationServiceProvider,
+  fromCAS as _fromCAS,
   fromDirectory as _fromDirectory,
   fromFederation as _fromFederation,
   institution as _institution,
@@ -168,7 +171,7 @@ from openfurrow.store.providers import (
 )
 from openfurrow.store.provisioning import ProvisioningStore
 
-_redirectKinds = (ProviderKind.openIDConnect, ProviderKind.saml, ProviderKind.samlFederation)
+_redirectKinds = (ProviderKind.openIDConnect, ProviderKind.saml, ProviderKind.samlFederation, ProviderKind.cas)
 from openfurrow.store.hierarchy import (
   addPlace as _addPlace,
   deletePlace as _deletePlace,
@@ -657,6 +660,9 @@ class Workspace:
         address, pending = _relyingParty(provider.settings).beginSignIn()
         state = {"state": pending.state, "nonce": pending.nonce, "codeVerifier": pending.codeVerifier,
                  "startedAt": pending.startedAt}
+      elif provider.kind is ProviderKind.cas:
+        address, pending = _casServer(provider.settings).beginSignIn()
+        state = {"state": pending.state, "startedAt": pending.startedAt}
       else:
         serviceProvider = (_serviceProvider(provider.settings) if provider.kind is ProviderKind.saml else
                            _federationServiceProvider(provider.settings, _institution(provider.settings, institution)))
@@ -675,6 +681,9 @@ class Workspace:
         if provider.kind is ProviderKind.openIDConnect:
           identity = _fromOpenIDConnect(_relyingParty(provider.settings).finishSignIn(
             OpenIDConnectPending(**state["protocol"]), answer))
+        elif provider.kind is ProviderKind.cas:
+          identity = _fromCAS(provider.settings, _casServer(provider.settings).finishSignIn(
+            CASPending(**state["protocol"]), answer))
         else:
           if "SAMLResponse" not in answer:
             raise IdentityError("the provider's answer has no SAMLResponse")
@@ -685,7 +694,7 @@ class Workspace:
             chosen = _institution(provider.settings, state["institution"])
             identity = _fromFederation(provider.settings, chosen, _federationServiceProvider(
               provider.settings, chosen).finishSignIn(SAMLPending(**state["protocol"]), answer["SAMLResponse"]))
-      except (SignInRefused, SAMLRefused) as error:
+      except (SignInRefused, SAMLRefused, CASRefused) as error:
         self._refusedSignIn(session, name, surface, str(error))
         raise ProviderFailure(f"{name} refused the sign-in: {error}") from None
       account, token = self._providerSession(session, provider, identity, surface)

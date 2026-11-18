@@ -384,3 +384,56 @@ def testSigningInThroughAFederation(testbed, location, userName):
     assert answered.status_code == 200, answered.get_data(as_text=True)[:500]
   made = [entry for entry in operator.accounts() if entry.email == expected["email"]]
   assert [entry.userName for entry in made] == [expected["email"]]
+
+
+# ---- CAS (the testbed's Apereo CAS) ----------------------------------------------
+
+class _CASLogin(html.parser.HTMLParser):
+  def __init__(self):
+    super().__init__()
+    self.action, self.fields = None, {}
+
+  def handle_starttag(self, tag, attributes):
+    attributes = dict(attributes)
+    if tag == "form" and attributes.get("id") == "fm1":
+      self.action = attributes.get("action")
+    if tag == "input" and attributes.get("type") == "hidden" and attributes.get("name"):
+      self.fields[attributes["name"]] = attributes.get("value", "")
+
+
+def atCAS(address, userName, secret, context):
+  """What the person does in the browser: the query CAS sends back, or None when it refuses."""
+  opener = urllib.request.build_opener(urllib.request.HTTPSHandler(context=context),
+                                       urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar()), _Stop())
+  form = _CASLogin()
+  with opener.open(address, timeout=30) as response:
+    form.feed(response.read().decode("utf-8"))
+  target = urllib.parse.urljoin(address, form.action) if form.action else address
+  data = urllib.parse.urlencode({**form.fields, "username": userName, "password": secret, "_eventId": "submit"}).encode()
+  try:
+    with opener.open(urllib.request.Request(target, data=data, method="POST"), timeout=30):
+      return None
+  except urllib.error.HTTPError as redirect:
+    if redirect.code not in (301, 302, 303):
+      return None
+    return dict(urllib.parse.parse_qsl(urllib.parse.urlsplit(redirect.url).query))
+
+
+@pytest.mark.parametrize("userName", ["jose", "\u0645\u0631\u064a\u0645"])
+def testSigningInThroughCAS(testbed, location, userName):
+  settings = testbed["cas"]
+  operator = Workspace.open(location)
+  operator.addProvider(Provider.of("university", "cas", {
+    "serverURL": settings["serverURL"], "returnURL": settings["serviceURL"], "groupsAttribute": "memberOf",
+    "certificateAuthority": testbed["certificateAuthority"], "newAccounts": "create", "groups": "mirror"}))
+  client = createApp(location).test_client()
+  started = client.get("/signin/with/university?next=/account")
+  assert started.status_code == 302 and started.headers["Location"].startswith(settings["serverURL"] + "/login?")
+  expected = account(testbed, userName)
+  query = atCAS(started.headers["Location"], userName, expected["password"], secureContext(testbed["certificateAuthority"]))
+  answered = client.get("/signin/with/university/return", query_string=query)
+  assert answered.status_code == 200, answered.get_data(as_text=True)[:500]
+  assert client.get("/account").status_code == 200
+  made = {entry.userName: entry for entry in operator.accounts()}[userName]
+  assert (made.email, made.displayName) == (expected["email"], f"{expected['firstName']} {expected['lastName']}")
+  assert mirroredOf(operator, userName, "university/") == expectedGroups("university", expected["groups"])

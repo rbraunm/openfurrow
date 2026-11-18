@@ -16,6 +16,7 @@ from enum import Enum
 from urllib.parse import urlsplit
 
 from carnelian import federation as federationAttributes
+from carnelian.cas import CASServer
 from carnelian.der import publicKeyFromCertificate
 from carnelian.federation import Federation, scopedIdentifier, serviceProviderMetadata
 from carnelian.fetching import Fetcher, HTTPFailure, secureContext
@@ -35,6 +36,7 @@ class ProviderKind(str, Enum):
   ldap = "ldap"
   scim = "scim"
   samlFederation = "samlFederation"
+  cas = "cas"
 
 
 class NewAccounts(str, Enum):
@@ -150,6 +152,21 @@ class FederationSettings(_SignInSettings):
     return certificate
 
 
+class CASSettings(_SignInSettings):
+  """An Apereo CAS server (protocol 3.0); the attributes are those the server releases to this service."""
+
+  serverURL: str
+  returnURL: str
+  displayNameAttribute: str | None = "displayName"
+  emailAttribute: str | None = "mail"
+  groupsAttribute: str | None = None
+
+  @field_validator("serverURL", "returnURL")
+  @classmethod
+  def secure(cls, value: str) -> str:
+    return _secureURL(value)
+
+
 class LDAPSettings(_SignInSettings):
   host: str
   port: int = 636
@@ -180,6 +197,7 @@ settingsModels: dict[ProviderKind, type[BaseModel]] = {
   ProviderKind.ldap: LDAPSettings,
   ProviderKind.scim: SCIMSettings,
   ProviderKind.samlFederation: FederationSettings,
+  ProviderKind.cas: CASSettings,
 }
 
 
@@ -189,7 +207,7 @@ class Provider(BaseModel):
   name: str
   kind: ProviderKind
   enabled: bool = True
-  settings: OpenIDConnectSettings | SAMLSettings | LDAPSettings | SCIMSettings | FederationSettings
+  settings: OpenIDConnectSettings | SAMLSettings | LDAPSettings | SCIMSettings | FederationSettings | CASSettings
 
   @field_validator("name")
   @classmethod
@@ -324,3 +342,15 @@ def federationMetadata(settings: FederationSettings) -> bytes:
   return serviceProviderMetadata(settings.entityID, settings.returnURL, {"en": "OpenFurrow"}, settings.informationURL,
                                  settings.privacyStatementURL, settings.organizationName, settings.technicalContact,
                                  settings.securityContact)
+
+
+def casServer(settings: CASSettings) -> CASServer:
+  return CASServer(settings.serverURL, settings.returnURL, Fetcher(_context(settings)))
+
+
+def fromCAS(settings: CASSettings, identity) -> ProvidedIdentity:
+  return ProvidedIdentity(
+    subject=foldedUserName(identity.userName), userName=identity.userName,
+    displayName=_single(identity, settings.displayNameAttribute), email=_single(identity, settings.emailAttribute),
+    groups=identity.attributes.get(settings.groupsAttribute, ()) if settings.groupsAttribute else (),
+  )
