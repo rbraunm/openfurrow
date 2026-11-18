@@ -7,6 +7,7 @@ annotated-types==0.8.0
 asn1crypto==1.5.1
 blinker==1.9.0
 build==1.6.1
+carnelian==0.1.0
 click==8.5.1
 colorama==0.4.6
 et_xmlfile==2.0.0

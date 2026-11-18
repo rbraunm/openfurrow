@@ -15,8 +15,8 @@ dependencies = [
   "sqlalchemy>=2",
   "numpy>=1.26",
   "pyyaml>=6",
-  # Sign-in (decisions 0039, 0040); pinned to a commit until Carnelian is published as a package.
-  "carnelian @ git+https://github.com/rbraunm/carnelian@fe0a3d42604fe4f8b5b939cf58249098cbd6b4eb",
+  # Sign-in (decisions 0039, 0040).
+  "carnelian>=0.1,<0.2",
 ]
 
 [project.optional-dependencies]

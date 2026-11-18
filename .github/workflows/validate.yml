@@ -68,7 +68,7 @@ jobs:
         if: always()
         run: docker compose -f testbed/compose.yaml down --volumes
 
-  # Signing in through real identity providers: Carnelian's testbed, at the commit OpenFurrow pins,
+  # Signing in through real identity providers: Carnelian's testbed, at the release OpenFurrow installs,
   # prepared and started for this run only.
   providers:
     name: providers (python ${{ matrix.python }})
@@ -85,12 +85,11 @@ jobs:
           python-version: ${{ matrix.python }}
       - name: Install the project with its test and service extras
         run: python -m pip install --constraint constraints.txt --editable ".[test,service]"
-      - name: Check out Carnelian's testbed at the pinned commit
+      - name: Check out Carnelian's testbed at the installed release
         run: |
-          commit=$(python -c "import re, tomllib; dependencies = tomllib.load(open('pyproject.toml', 'rb'))['project']['dependencies']; print(next(re.search(r'@([0-9a-f]{40})$', entry).group(1) for entry in dependencies if entry.startswith('carnelian')))")
-          git clone --quiet https://github.com/rbraunm/carnelian "$RUNNER_TEMP/carnelian"
-          git -C "$RUNNER_TEMP/carnelian" checkout --quiet "$commit"
-          python -m pip install "$RUNNER_TEMP/carnelian[test]"
+          version=$(python -c "import importlib.metadata; print(importlib.metadata.version('carnelian'))")
+          git clone --quiet --branch "v$version" https://github.com/rbraunm/carnelian "$RUNNER_TEMP/carnelian"
+          python -m pip install --constraint constraints.txt "$RUNNER_TEMP/carnelian[test]"
       - name: Prepare and start the identity providers
         working-directory: ${{ runner.temp }}/carnelian
         run: |

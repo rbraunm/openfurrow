@@ -220,7 +220,6 @@ measure), `owner` (the owner's call), `done`.
   the directory on the sign-in page, SCIM provisioning at `/scim/<provider>/v2`, tested
   against the testbed's Keycloak and Samba in the workflow's `providers` job. Not yet:
   - a check against a live Entra ID tenant, which needs a tenant and a public HTTPS address;
-  - Carnelian published as a package (OpenFurrow pins a commit of its repository);
   - provider pages on the web (with GOV-6) and signing out at the provider;
   - a provider's discovery and keys are fetched at each sign-in; cache them once it matters;
   - research federations offer a configured list of institutions; choosing among all of

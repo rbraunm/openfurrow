@@ -92,7 +92,7 @@ The identity providers (Keycloak for OpenID Connect and SAML, a Samba Active Dir
 LDAP) are [Carnelian](https://github.com/rbraunm/carnelian)'s testbed: its
 `testbed/README.md` says how to prepare and start them. The sign-in tests run against them when given the
 `testbed.json` it writes, and the directory tests also with `--directory`; the workflow's
-`providers` job does that for one run, at the Carnelian commit `pyproject.toml` pins.
+`providers` job does that for one run, at the tag of the Carnelian release installed.
 
 ```bash
 python -m pytest tests/testProviders.py "--testbed=<carnelian>/testbed/generated/testbed.json" --directory
