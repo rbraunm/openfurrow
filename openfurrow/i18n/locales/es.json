@@ -1885,6 +1885,10 @@
       "text": "Iniciar sesión",
       "status": "machineDraft"
     },
+    "web.signIn.institution": {
+      "text": "Elija su institución",
+      "status": "machineDraft"
+    },
     "web.signIn.password": {
       "text": "Contraseña",
       "status": "machineDraft"

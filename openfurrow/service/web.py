@@ -236,11 +236,22 @@ def createWebBlueprint(workspace: Workspace, config: OpenFurrowConfig | None = N
       return _withSession(redirect(_target()), token)
     return _signInPage(translator)
 
+  @blueprint.get("/signin/with/<name>/metadata")
+  def providerMetadata(name: str) -> Response:
+    """The service provider's metadata, for a federation to register (decision 0040)."""
+    return Response(workspace.federationMetadata(name), mimetype="application/samlmetadata+xml")
+
   @blueprint.get("/signin/with/<name>")
   def providerStart(name: str) -> Response:
-    """Send the browser to a provider's own sign-in (decision 0040)."""
+    """Send the browser to a provider's own sign-in; a federation first asks which institution (decision 0040)."""
+    institution = request.args.get("institution")
     try:
-      address, key = workspace.beginProviderSignIn(name, _target())
+      if institution is None and dict(workspace.signInProviders()).get(name) is ProviderKind.samlFederation:
+        translator = _translator()
+        return Response(render_template("chooseInstitution.html", name=name, next=_target(),
+                                        institutions=workspace.federationInstitutions(name, translator.locale),
+                                        **_localeContext(translator)))
+      address, key = workspace.beginProviderSignIn(name, _target(), institution)
     except IdentityError as error:
       return _signInPage(_translator(), _translator().text("web.signIn.refused", reason=str(error)), status=401)
     response = redirect(address)

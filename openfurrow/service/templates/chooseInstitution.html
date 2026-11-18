@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}{{ t.text('web.signIn.institution') }} - {{ t.text('web.app.name') }}{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>{{ t.text('web.signIn.institution') }}</h1>
+</div>
+<ul class="provider-list">
+  {% for entityID, displayName in institutions %}
+  <li><a class="button" href="{{ url_for('web.providerStart', name=name, institution=entityID, next=next) }}">{{ displayName }}</a></li>
+  {% endfor %}
+</ul>
+{% endblock %}

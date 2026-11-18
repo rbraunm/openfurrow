@@ -8,6 +8,7 @@ import json
 import urllib.error
 import urllib.parse
 import urllib.request
+from pathlib import Path
 
 import pytest
 from carnelian.fetching import secureContext
@@ -337,3 +338,49 @@ def testSigningInThroughTheDirectory(testbed, location, directory, userName):
   operator = Workspace.open(location)
   groups = {segment for path in expected["groups"] for segment in path.strip("/").split("/")}
   assert mirroredOf(operator, userName, "ad/") == sorted(f"ad/{group}" for group in groups)
+
+
+# ---- a research federation (the testbed's, vouching for its Keycloak) -----------
+
+def federationSettings(testbed, **overrides):
+  settings, saml = testbed["federation"], testbed["saml"]
+  return {"mdqURL": settings["mdqURL"], "signingCertificate": Path(settings["signingCertificate"]).read_text(encoding="ascii"),
+          "institutions": [settings["institution"]], "entityID": saml["entities"]["response"], "returnURL": saml["consumerURL"],
+          "subjectAttribute": "subjectID", "userNameAttribute": "email", "emailAttribute": "email",
+          "organizationName": "Example Station", "informationURL": "https://openfurrow.example.org/about",
+          "privacyStatementURL": "https://openfurrow.example.org/privacy", "technicalContact": "it@example.org",
+          "certificateAuthority": testbed["certificateAuthority"], "newAccounts": "create", **overrides}
+
+
+@pytest.mark.parametrize("overrides, why", [
+  ({"institutions": []}, "one or more institutions"),
+  ({"signingCertificate": "not a certificate"}, "not a PEM certificate"),
+  ({"mdqURL": "http://mdq.example.org"}, "must be an https address"),
+  ({"subjectAttribute": "nameID"}, "subjectAttribute"),
+])
+def testFederationSettingsAreChecked(testbed, overrides, why):
+  with pytest.raises(ValidationError, match=why):
+    Provider.of("fed", "samlFederation", federationSettings(testbed, **overrides))
+
+
+@pytest.mark.parametrize("userName", ["ana", "\u0645\u0631\u064a\u0645"])
+def testSigningInThroughAFederation(testbed, location, userName):
+  operator = Workspace.open(location)
+  operator.addProvider(Provider.of("fed", "samlFederation", federationSettings(testbed)))
+  client = createApp(location).test_client()
+  assert b"OpenFurrow" in client.get("/signin/with/fed/metadata").data
+  assert "/signin/with/fed" in client.get("/signin").get_data(as_text=True)
+  chooser = client.get("/signin/with/fed?locale=ar").get_data(as_text=True)
+  assert "\u062c\u0627\u0645\u0639\u0629 \u0643\u0627\u0631\u0646\u064a\u0644\u064a\u0627\u0646" in chooser
+  refused = client.get("/signin/with/fed", query_string={"institution": "https://elsewhere.example.edu/idp"})
+  assert refused.status_code == 401 and "is not an institution offered here" in refused.get_data(as_text=True)
+  expected = account(testbed, userName)
+  for attempt in range(2):
+    started = client.get("/signin/with/fed", query_string={"institution": testbed["federation"]["institution"]})
+    assert started.status_code == 302
+    _, fields = atKeycloak(started.headers["Location"], userName, expected["password"],
+                           secureContext(testbed["certificateAuthority"]))
+    answered = client.post("/signin/with/fed/return", data=fields)
+    assert answered.status_code == 200, answered.get_data(as_text=True)[:500]
+  made = [entry for entry in operator.accounts() if entry.email == expected["email"]]
+  assert [entry.userName for entry in made] == [expected["email"]]

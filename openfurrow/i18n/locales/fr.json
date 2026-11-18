@@ -1885,6 +1885,10 @@
       "text": "Se connecter",
       "status": "machineDraft"
     },
+    "web.signIn.institution": {
+      "text": "Choisissez votre établissement",
+      "status": "machineDraft"
+    },
     "web.signIn.password": {
       "text": "Mot de passe",
       "status": "machineDraft"

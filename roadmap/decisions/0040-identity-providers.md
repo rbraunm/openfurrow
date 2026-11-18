@@ -34,6 +34,17 @@ would make differently is a provider setting with the strict choice as its defau
   provider, their membership set at each sign-in and by provisioning and nowhere else.
   Roles are given to them like any group, so the organization maps its groups to roles in
   one place.
+- **Research and education federations** (owner, 2026-11-17: university partners in the
+  target regions sign in through them -- InCommon, the national federations, eduGAIN) are a
+  provider kind of their own, `samlFederation`. Its settings name the federation's MDQ
+  service and signing certificate and the institutions offered here, by entity ID; the
+  sign-in page asks which one, in the person's language. Each institution's metadata is
+  fetched from the federation and checked against its key and expiry. A person is named by a
+  scoped identifier (subject-id, pairwise-id or eduPersonPrincipalName, as the settings
+  choose), and an institution may only vouch for the scopes its federation registered for
+  it. The service's own metadata, for the federation to register, is at
+  `/signin/with/<provider>/metadata`. Searching every institution of eduGAIN (about 6,600
+  identity providers, a 95 MB signed file) is left until a deployment needs it.
 - **SCIM provisioning** answers at `/scim/<provider>/v2`. A provisioned user is an account
   (user name, display name, primary e-mail, active), a provisioned group a mirrored group.
   Deleting a user deactivates the account rather than removing it, so its history in the

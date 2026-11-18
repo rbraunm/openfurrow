@@ -15,6 +15,9 @@ from dataclasses import dataclass
 from enum import Enum
 from urllib.parse import urlsplit
 
+from carnelian import federation as federationAttributes
+from carnelian.der import publicKeyFromCertificate
+from carnelian.federation import Federation, scopedIdentifier, serviceProviderMetadata
 from carnelian.fetching import Fetcher, HTTPFailure, secureContext
 from carnelian.ldap import Directory
 from carnelian.oidc import RelyingParty, SignInRefused, discover
@@ -31,6 +34,7 @@ class ProviderKind(str, Enum):
   saml = "saml"
   ldap = "ldap"
   scim = "scim"
+  samlFederation = "samlFederation"
 
 
 class NewAccounts(str, Enum):
@@ -92,6 +96,60 @@ class SAMLSettings(_SignInSettings):
     return _secureURL(value)
 
 
+class SubjectAttribute(str, Enum):
+  """Which scoped identifier names a person (the SAML Subject Identifier profile, or eduPersonPrincipalName)."""
+
+  subjectID = "subjectID"
+  pairwiseID = "pairwiseID"
+  eduPersonPrincipalName = "eduPersonPrincipalName"
+
+
+subjectAttributeNames = {SubjectAttribute.subjectID: federationAttributes.subjectID,
+                         SubjectAttribute.pairwiseID: federationAttributes.pairwiseID,
+                         SubjectAttribute.eduPersonPrincipalName: federationAttributes.eduPersonPrincipalName}
+
+
+class FederationSettings(_SignInSettings):
+  """A research and education federation (decision 0040): its MDQ service and key, and the institutions offered."""
+
+  mdqURL: str
+  signingCertificate: str
+  institutions: list[str]
+  entityID: str
+  returnURL: str
+  subjectAttribute: SubjectAttribute
+  userNameAttribute: str = federationAttributes.eduPersonPrincipalName
+  displayNameAttribute: str = federationAttributes.displayName
+  emailAttribute: str = federationAttributes.mail
+  groupsAttribute: str | None = None
+  organizationName: str
+  informationURL: str
+  privacyStatementURL: str
+  technicalContact: str
+  securityContact: str | None = None
+
+  @field_validator("mdqURL", "returnURL", "informationURL", "privacyStatementURL")
+  @classmethod
+  def secure(cls, value: str) -> str:
+    return _secureURL(value)
+
+  @field_validator("institutions")
+  @classmethod
+  def someInstitution(cls, institutions: list[str]) -> list[str]:
+    if not institutions or len(set(institutions)) != len(institutions):
+      raise ValueError("name one or more institutions (their entity IDs), each once")
+    return institutions
+
+  @field_validator("signingCertificate")
+  @classmethod
+  def aCertificate(cls, certificate: str) -> str:
+    try:
+      publicKeyFromCertificate(certificate)
+    except ValueError as error:
+      raise ValueError(f"signingCertificate is not a PEM certificate Carnelian can read: {error}") from None
+    return certificate
+
+
 class LDAPSettings(_SignInSettings):
   host: str
   port: int = 636
@@ -121,6 +179,7 @@ settingsModels: dict[ProviderKind, type[BaseModel]] = {
   ProviderKind.saml: SAMLSettings,
   ProviderKind.ldap: LDAPSettings,
   ProviderKind.scim: SCIMSettings,
+  ProviderKind.samlFederation: FederationSettings,
 }
 
 
@@ -130,7 +189,7 @@ class Provider(BaseModel):
   name: str
   kind: ProviderKind
   enabled: bool = True
-  settings: OpenIDConnectSettings | SAMLSettings | LDAPSettings | SCIMSettings
+  settings: OpenIDConnectSettings | SAMLSettings | LDAPSettings | SCIMSettings | FederationSettings
 
   @field_validator("name")
   @classmethod
@@ -212,18 +271,9 @@ def fromSAML(settings: SAMLSettings, identity) -> ProvidedIdentity:
   if identity.nameIDFormat == "urn:oasis:names:tc:SAML:2.0:nameid-format:transient":
     raise ProviderFailure("the provider names people by a transient NameID, which changes at every sign-in; "
                           "configure it to send a persistent one")
-
-  def one(attribute: str | None) -> str | None:
-    if attribute is None:
-      return None
-    values = identity.attributes.get(attribute, ())
-    if len(values) > 1:
-      raise ProviderFailure(f"the provider sent {len(values)} values of {attribute}")
-    return values[0] if values else None
-
   return ProvidedIdentity(
-    subject=identity.nameID, userName=one(settings.userNameAttribute) or identity.nameID,
-    displayName=one(settings.displayNameAttribute), email=one(settings.emailAttribute),
+    subject=identity.nameID, userName=_single(identity, settings.userNameAttribute) or identity.nameID,
+    displayName=_single(identity, settings.displayNameAttribute), email=_single(identity, settings.emailAttribute),
     groups=tuple(identity.attributes.get(settings.groupsAttribute, ())) if settings.groupsAttribute else (),
   )
 
@@ -231,3 +281,46 @@ def fromSAML(settings: SAMLSettings, identity) -> ProvidedIdentity:
 def fromDirectory(identity) -> ProvidedIdentity:
   return ProvidedIdentity(subject=foldedUserName(identity.userName), userName=identity.userName,
                           displayName=identity.displayName, email=identity.email, groups=identity.groups)
+
+
+def _single(identity, attribute: str | None) -> str | None:
+  if attribute is None:
+    return None
+  values = identity.attributes.get(attribute, ())
+  if len(values) > 1:
+    raise ProviderFailure(f"the provider sent {len(values)} values of {attribute}")
+  return values[0] if values else None
+
+
+def institution(settings: FederationSettings, entityID: str):
+  """An institution offered here, its metadata fetched from the federation and checked."""
+  if entityID not in settings.institutions:
+    raise IdentityError(f"'{entityID}' is not an institution offered here")
+  try:
+    return Federation("the federation", settings.mdqURL, settings.signingCertificate,
+                      Fetcher(_context(settings))).institution(entityID)
+  except (HTTPFailure, SAMLRefused) as error:
+    raise ProviderFailure(f"the institution {entityID} cannot be used: {error}") from None
+
+
+def federationServiceProvider(settings: FederationSettings, chosen) -> ServiceProvider:
+  return ServiceProvider(settings.entityID, settings.returnURL, chosen.identityProvider)
+
+
+def fromFederation(settings: FederationSettings, chosen, identity) -> ProvidedIdentity:
+  try:
+    subject = scopedIdentifier(identity, chosen, subjectAttributeNames[settings.subjectAttribute])
+  except SAMLRefused as error:
+    raise ProviderFailure(str(error)) from None
+  return ProvidedIdentity(
+    subject=subject, userName=_single(identity, settings.userNameAttribute),
+    displayName=_single(identity, settings.displayNameAttribute), email=_single(identity, settings.emailAttribute),
+    groups=tuple(identity.attributes.get(settings.groupsAttribute, ())) if settings.groupsAttribute else (),
+  )
+
+
+def federationMetadata(settings: FederationSettings) -> bytes:
+  """What the federation registers for this service: its entity ID, return address, names and contacts."""
+  return serviceProviderMetadata(settings.entityID, settings.returnURL, {"en": "OpenFurrow"}, settings.informationURL,
+                                 settings.privacyStatementURL, settings.organizationName, settings.technicalContact,
+                                 settings.securityContact)

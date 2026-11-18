@@ -21,7 +21,7 @@ from openfurrow.workspace import IdentityError, Workspace
 
 sessionCookie = "openfurrowSession"
 pendingCookie = "openfurrowPending"
-_open = {"health", "web.static", "web.signIn", "web.providerStart", "web.providerReturn"}
+_open = {"health", "web.static", "web.signIn", "web.providerStart", "web.providerReturn", "web.providerMetadata"}
 # A provider's answer arrives from the provider's site (SAML by POST); its signature is its proof, not its origin.
 _crossSite = {"web.providerReturn"}
 

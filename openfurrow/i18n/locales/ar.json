@@ -1885,6 +1885,10 @@
       "text": "تسجيل الدخول",
       "status": "machineDraft"
     },
+    "web.signIn.institution": {
+      "text": "اختر مؤسستك",
+      "status": "machineDraft"
+    },
     "web.signIn.password": {
       "text": "كلمة المرور",
       "status": "machineDraft"

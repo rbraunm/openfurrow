@@ -222,7 +222,10 @@ measure), `owner` (the owner's call), `done`.
   - a check against a live Entra ID tenant, which needs a tenant and a public HTTPS address;
   - Carnelian published as a package (OpenFurrow pins a commit of its repository);
   - provider pages on the web (with GOV-6) and signing out at the provider;
-  - a provider's discovery and keys are fetched at each sign-in; cache them once it matters.
+  - a provider's discovery and keys are fetched at each sign-in; cache them once it matters;
+  - research federations offer a configured list of institutions; choosing among all of
+    eduGAIN needs its 95 MB aggregate read as a stream;
+  - CAS (Apereo), used by many French, Spanish and Latin American universities: next.
 - **GOV-4** `build` **Test fixtures and dataset**: every sign-in provider and both
   databases, reprovisionable for development and one-time for the workflow, one dataset
   for all.

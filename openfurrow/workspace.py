@@ -144,7 +144,11 @@ from openfurrow.identity.providers import (
   ProviderFailure,
   ProviderKind,
   directory as _directory,
+  federationMetadata as _federationMetadata,
+  federationServiceProvider as _federationServiceProvider,
   fromDirectory as _fromDirectory,
+  fromFederation as _fromFederation,
+  institution as _institution,
   fromOpenIDConnect as _fromOpenIDConnect,
   fromSAML as _fromSAML,
   relyingParty as _relyingParty,
@@ -163,6 +167,8 @@ from openfurrow.store.providers import (
   takePending as _takePending,
 )
 from openfurrow.store.provisioning import ProvisioningStore
+
+_redirectKinds = (ProviderKind.openIDConnect, ProviderKind.saml, ProviderKind.samlFederation)
 from openfurrow.store.hierarchy import (
   addPlace as _addPlace,
   deletePlace as _deletePlace,
@@ -628,18 +634,35 @@ class Workspace:
       raise IdentityError(f"'{name}' is not a provider to sign in with here")
     return provider
 
-  def beginProviderSignIn(self, name: str, next: str) -> tuple[str, str]:
+  def federationInstitutions(self, name: str, locale: str) -> list[tuple[str, str]]:
+    """The institutions a federation provider offers, as (entity ID, display name in the locale), by name."""
+    with _sessionScope(self._engine) as session:
+      provider = self._enabledProvider(session, name, (ProviderKind.samlFederation,))
+    found = [_institution(provider.settings, entityID) for entityID in provider.settings.institutions]
+    return sorted(((chosen.entityID, chosen.displayName(locale)) for chosen in found), key=lambda pair: pair[1].casefold())
+
+  def federationMetadata(self, name: str) -> bytes:
+    """The metadata a federation registers for this service."""
+    with _sessionScope(self._engine) as session:
+      provider = self._enabledProvider(session, name, (ProviderKind.samlFederation,))
+    return _federationMetadata(provider.settings)
+
+  def beginProviderSignIn(self, name: str, next: str, institution: str | None = None) -> tuple[str, str]:
     """Where to send the browser for a provider's sign-in, and the key its pending-sign-in cookie carries."""
     with _sessionScope(self._engine) as session:
-      provider = self._enabledProvider(session, name, (ProviderKind.openIDConnect, ProviderKind.saml))
+      provider = self._enabledProvider(session, name, _redirectKinds)
+      if (institution is not None) != (provider.kind is ProviderKind.samlFederation):
+        raise IdentityError("an institution is chosen for a federation, and only for one")
       if provider.kind is ProviderKind.openIDConnect:
         address, pending = _relyingParty(provider.settings).beginSignIn()
         state = {"state": pending.state, "nonce": pending.nonce, "codeVerifier": pending.codeVerifier,
                  "startedAt": pending.startedAt}
       else:
-        address, pending = _serviceProvider(provider.settings).beginSignIn()
+        serviceProvider = (_serviceProvider(provider.settings) if provider.kind is ProviderKind.saml else
+                           _federationServiceProvider(provider.settings, _institution(provider.settings, institution)))
+        address, pending = serviceProvider.beginSignIn()
         state = {"requestID": pending.requestID, "startedAt": pending.startedAt}
-      key = _startPending(session, name, {"protocol": state, "next": next})
+      key = _startPending(session, name, {"protocol": state, "next": next, "institution": institution})
       return address, key
 
   def finishProviderSignIn(self, key: str, answer: dict[str, str], surface: str) -> tuple[Account, str, str]:
@@ -647,7 +670,7 @@ class Workspace:
     with _sessionScope(self._engine) as session:
       name, state = _takePending(session, key)
       session.commit()
-      provider = self._enabledProvider(session, name, (ProviderKind.openIDConnect, ProviderKind.saml))
+      provider = self._enabledProvider(session, name, _redirectKinds)
       try:
         if provider.kind is ProviderKind.openIDConnect:
           identity = _fromOpenIDConnect(_relyingParty(provider.settings).finishSignIn(
@@ -655,8 +678,13 @@ class Workspace:
         else:
           if "SAMLResponse" not in answer:
             raise IdentityError("the provider's answer has no SAMLResponse")
-          identity = _fromSAML(provider.settings, _serviceProvider(provider.settings).finishSignIn(
-            SAMLPending(**state["protocol"]), answer["SAMLResponse"]))
+          if provider.kind is ProviderKind.saml:
+            identity = _fromSAML(provider.settings, _serviceProvider(provider.settings).finishSignIn(
+              SAMLPending(**state["protocol"]), answer["SAMLResponse"]))
+          else:
+            chosen = _institution(provider.settings, state["institution"])
+            identity = _fromFederation(provider.settings, chosen, _federationServiceProvider(
+              provider.settings, chosen).finishSignIn(SAMLPending(**state["protocol"]), answer["SAMLResponse"]))
       except (SignInRefused, SAMLRefused) as error:
         self._refusedSignIn(session, name, surface, str(error))
         raise ProviderFailure(f"{name} refused the sign-in: {error}") from None

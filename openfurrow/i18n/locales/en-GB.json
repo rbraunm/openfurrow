@@ -2064,6 +2064,10 @@
     "web.signIn.continue": {
       "text": "You are signed in. Continue",
       "status": "humanApproved"
+    },
+    "web.signIn.institution": {
+      "text": "Choose your institution",
+      "status": "humanApproved"
     }
   }
 }
