@@ -34,6 +34,7 @@ validated `TrialPackage`, and the surface reads the JSON.
 
 from __future__ import annotations
 
+import dataclasses
 import datetime
 import tempfile
 from contextlib import contextmanager
@@ -658,17 +659,14 @@ class Workspace:
         raise IdentityError("an institution is chosen for a federation, and only for one")
       if provider.kind is ProviderKind.openIDConnect:
         address, pending = _relyingParty(provider.settings).beginSignIn()
-        state = {"state": pending.state, "nonce": pending.nonce, "codeVerifier": pending.codeVerifier,
-                 "startedAt": pending.startedAt}
       elif provider.kind is ProviderKind.cas:
         address, pending = _casServer(provider.settings).beginSignIn()
-        state = {"state": pending.state, "startedAt": pending.startedAt}
       else:
         serviceProvider = (_serviceProvider(provider.settings) if provider.kind is ProviderKind.saml else
                            _federationServiceProvider(provider.settings, _institution(provider.settings, institution)))
         address, pending = serviceProvider.beginSignIn()
-        state = {"requestID": pending.requestID, "startedAt": pending.startedAt}
-      key = _startPending(session, name, {"protocol": state, "next": next, "institution": institution})
+      key = _startPending(session, name, {"protocol": dataclasses.asdict(pending), "next": next,
+                                          "institution": institution})
       return address, key
 
   def finishProviderSignIn(self, key: str, answer: dict[str, str], surface: str) -> tuple[Account, str, str]:
