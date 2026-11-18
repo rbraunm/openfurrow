@@ -30,3 +30,23 @@ def testAnOperatorSetsUpAccountsRolesAndSignInAndTheAuditSaysSo(newStore, capsys
     ("operator", "cli", "setting.set"), ("operator", "cli", "role.assign"), ("operator", "cli", "account.create"),
   ]
   assert '"after": {"source": "server", "value": "accounts"}' in lines[0][5]
+
+
+def testAnOperatorConfiguresProviders(newStore, capsys, monkeypatch, tmp_path):
+  database = newStore("cli")
+  run(capsys, monkeypatch, ["init", database])
+  settings = tmp_path / "entra.json"
+  settings.write_text('{"baseURL": "https://openfurrow.example.org/scim/entra/v2", "groups": "mirror"}', encoding="utf-8")
+  assert run(capsys, monkeypatch, ["provider", "add", database, "entra", "scim", str(settings)])[0] == 0
+  bad = tmp_path / "bad.json"
+  bad.write_text('{"issuer": "http://idp.example.org"}', encoding="utf-8")
+  code, _, error = run(capsys, monkeypatch, ["provider", "add", database, "idp", "openIDConnect", str(bad)])
+  assert code == 1 and "must be an https address" in error
+  code, token, _ = run(capsys, monkeypatch, ["provider", "token", database, "entra"])
+  assert code == 0 and len(token.strip()) == 43
+  assert run(capsys, monkeypatch, ["provider", "disable", database, "entra"])[0] == 0
+  assert run(capsys, monkeypatch, ["provider", "list", database])[1] == "entra\tscim\tdisabled\n"
+  run(capsys, monkeypatch, ["account", "add", database, "ana", "Ana", "--no-password"])
+  code, _, error = run(capsys, monkeypatch, ["provider", "link", database, "entra", "subject-1", "nobody"])
+  assert code == 1 and "no account 'nobody'" in error
+  assert run(capsys, monkeypatch, ["provider", "link", database, "entra", "subject-1", "ana"])[0] == 0

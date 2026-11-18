@@ -2048,6 +2048,22 @@
     "web.locale.draftNotice": {
       "text": "This translation is an unreviewed machine draft; wording may be imprecise.",
       "status": "source"
+    },
+    "web.signIn.with": {
+      "text": "Sign in with {provider}",
+      "status": "source"
+    },
+    "web.signIn.provider": {
+      "text": "Sign in through",
+      "status": "source"
+    },
+    "web.signIn.thisSite": {
+      "text": "This site's own account",
+      "status": "source"
+    },
+    "web.signIn.continue": {
+      "text": "You are signed in. Continue",
+      "status": "source"
     }
   }
 }

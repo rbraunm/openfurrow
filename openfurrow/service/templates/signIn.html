@@ -7,7 +7,23 @@
 {% if problem %}
 <div class="error" role="alert">{{ problem }}</div>
 {% endif %}
+{% if redirectProviders %}
+<ul class="provider-list">
+  {% for name in redirectProviders %}
+  <li><a class="button" href="{{ url_for('web.providerStart', name=name, next=next) }}">{{ t.text('web.signIn.with', provider=name) }}</a></li>
+  {% endfor %}
+</ul>
+{% endif %}
 <form class="import-form" method="post" action="{{ url_for('web.signIn', next=next, locale=locale if locale != 'en-US' else none) }}">
+  {% if directories %}
+  <div class="field-row">
+    <label class="field-label" for="provider">{{ t.text('web.signIn.provider') }}</label>
+    <select id="provider" name="provider">
+      <option value="">{{ t.text('web.signIn.thisSite') }}</option>
+      {% for name in directories %}<option value="{{ name }}">{{ name }}</option>{% endfor %}
+    </select>
+  </div>
+  {% endif %}
   <div class="field-row">
     <label class="field-label" for="userName">{{ t.text('web.signIn.userName') }}</label>
     <input type="text" id="userName" name="userName" dir="ltr" autocomplete="username" value="{{ userName }}" autofocus>

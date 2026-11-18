@@ -38,7 +38,7 @@ from sqlalchemy import ForeignKey, Text, event, inspect, select
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, relationship
 
-storeVersion = 16
+storeVersion = 17
 
 
 class StoreError(RuntimeError):
@@ -115,6 +115,8 @@ class AccountGroupRow(Base):
 
   groupID: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
   name: Mapped[str] = mapped_column(unique=True)
+  # A mirrored group belongs to its identity provider, which alone sets its members (decision 0040).
+  providerName: Mapped[str | None] = mapped_column(ForeignKey("identityProvider.providerName", ondelete="CASCADE"))
 
 
 class GroupMemberRow(Base):
@@ -157,6 +159,54 @@ class AuthTokenRow(Base):
   name: Mapped[str | None]
   createdAt: Mapped[datetime.datetime]
   expiresAt: Mapped[datetime.datetime | None]
+
+
+class IdentityProviderRow(Base):
+  """A configured identity provider (decision 0040); its settings are JSON, its secrets are not stored."""
+
+  __tablename__ = "identityProvider"
+
+  providerName: Mapped[str] = mapped_column(primary_key=True)
+  kind: Mapped[str]
+  settingsJSON: Mapped[str] = mapped_column(Text)
+  enabled: Mapped[bool]
+  tokenHash: Mapped[str | None]
+
+
+class ExternalIdentityRow(Base):
+  """An account's identity at one provider, by the provider's own stable subject."""
+
+  __tablename__ = "externalIdentity"
+
+  providerName: Mapped[str] = mapped_column(ForeignKey("identityProvider.providerName", ondelete="CASCADE"),
+                                            primary_key=True)
+  subject: Mapped[str] = mapped_column(primary_key=True)
+  accountID: Mapped[int] = mapped_column(ForeignKey("account.accountID", ondelete="CASCADE"))
+
+
+class ProvisionedResourceRow(Base):
+  """A user or group a provider keeps here by SCIM: its SCIM document and the account or group it is."""
+
+  __tablename__ = "provisionedResource"
+
+  providerName: Mapped[str] = mapped_column(ForeignKey("identityProvider.providerName", ondelete="CASCADE"),
+                                            primary_key=True)
+  resourceType: Mapped[str] = mapped_column(primary_key=True)
+  resourceID: Mapped[str] = mapped_column(primary_key=True)
+  accountID: Mapped[int | None] = mapped_column(ForeignKey("account.accountID", ondelete="CASCADE"))
+  groupID: Mapped[int | None] = mapped_column(ForeignKey("accountGroup.groupID", ondelete="CASCADE"))
+  documentJSON: Mapped[str] = mapped_column(Text)
+
+
+class PendingSignInRow(Base):
+  """A sign-in sent to a provider and not yet back; found by the SHA-256 of its browser cookie, used once."""
+
+  __tablename__ = "pendingSignIn"
+
+  keyHash: Mapped[str] = mapped_column(primary_key=True)
+  providerName: Mapped[str] = mapped_column(ForeignKey("identityProvider.providerName", ondelete="CASCADE"))
+  stateJSON: Mapped[str] = mapped_column(Text)
+  expiresAt: Mapped[datetime.datetime]
 
 
 class AuditEventRow(Base):

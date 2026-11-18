@@ -88,6 +88,16 @@ databases), and fails at once if it is not set. The fixtures are defined once, i
 OPENFURROW_TEST_POSTGRES=postgresql+pg8000://openfurrow:<password>@<host>:5432/openfurrow python -m pytest --store postgresql
 ```
 
+The identity providers (Keycloak for OpenID Connect and SAML, a Samba Active Directory for
+LDAP) are [Carnelian](https://github.com/rbraunm/carnelian)'s testbed: its
+`testbed/README.md` says how to prepare and start them. The sign-in tests run against them when given the
+`testbed.json` it writes, and the directory tests also with `--directory`; the workflow's
+`providers` job does that for one run, at the Carnelian commit `pyproject.toml` pins.
+
+```bash
+python -m pytest tests/testProviders.py "--testbed=<carnelian>/testbed/generated/testbed.json" --directory
+```
+
 ## Oracles: every reported number is validated
 
 OpenFurrow never presents an unvalidated statistic as a fact. Each analysis result is

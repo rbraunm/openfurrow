@@ -30,6 +30,7 @@ from openfurrow.schema.hierarchy import HierarchyLevel
 from openfurrow.settings import SettingError
 from openfurrow.store.hierarchy import ScopeError
 from openfurrow.identity import Actor, IdentityError, Permission, RoleAssignment, RoleDefinition
+from openfurrow.identity.providers import Provider, ProviderKind
 from openfurrow.importers.weatherCsv import WeatherFileError
 from openfurrow.workspace import (
   AnalysisError,
@@ -238,6 +239,33 @@ def _buildParser() -> argparse.ArgumentParser:
   groupList.add_argument("database")
   groupList.set_defaults(handler=_commandGroupList)
 
+  providerParser = sub.add_parser("provider", help="identity providers: sign-in and provisioning (decision 0040)")
+  providerSub = providerParser.add_subparsers(dest="providerCommand", required=True)
+  providerAdd = providerSub.add_parser("add", help="add a provider from a JSON file of its settings")
+  providerAdd.add_argument("database")
+  providerAdd.add_argument("name")
+  providerAdd.add_argument("kind", choices=[kind.value for kind in ProviderKind])
+  providerAdd.add_argument("settingsFile")
+  providerAdd.set_defaults(handler=_commandProviderAdd)
+  providerList = providerSub.add_parser("list", help="list the providers")
+  providerList.add_argument("database")
+  providerList.set_defaults(handler=_commandProviderList)
+  for name, enabled in (("enable", True), ("disable", False)):
+    toggle = providerSub.add_parser(name, help=f"{name} a provider")
+    toggle.add_argument("database")
+    toggle.add_argument("name")
+    toggle.set_defaults(handler=_commandProviderEnabled, enabled=enabled)
+  providerToken = providerSub.add_parser("token", help="a new bearer token for a SCIM provider, shown once")
+  providerToken.add_argument("database")
+  providerToken.add_argument("name")
+  providerToken.set_defaults(handler=_commandProviderToken)
+  providerLink = providerSub.add_parser("link", help="link a provider's identity (its subject) to an account")
+  providerLink.add_argument("database")
+  providerLink.add_argument("name")
+  providerLink.add_argument("subject")
+  providerLink.add_argument("userName")
+  providerLink.set_defaults(handler=_commandProviderLink)
+
   roleParser = sub.add_parser("role", help="define roles and give them at a scope")
   roleSub = roleParser.add_subparsers(dest="roleCommand", required=True)
   roleList = roleSub.add_parser("list", help="the roles and their permissions")
@@ -411,6 +439,36 @@ def _commandAccountList(args) -> int:
 def _commandAccountActive(args) -> int:
   _operator(args.database).setAccountActive(args.userName, args.active)
   print(f"{'Activated' if args.active else 'Deactivated'} '{args.userName}'")
+  return 0
+
+
+def _commandProviderAdd(args) -> int:
+  settings = json.loads(Path(args.settingsFile).read_text(encoding="utf-8"))
+  _operator(args.database).addProvider(Provider.of(args.name, args.kind, settings))
+  print(f"Added {args.kind} provider '{args.name}'")
+  return 0
+
+
+def _commandProviderList(args) -> int:
+  for provider in _operator(args.database).providers():
+    print(f"{provider.name}\t{provider.kind.value}\t{'enabled' if provider.enabled else 'disabled'}")
+  return 0
+
+
+def _commandProviderEnabled(args) -> int:
+  _operator(args.database).setProviderEnabled(args.name, args.enabled)
+  print(f"{'Enabled' if args.enabled else 'Disabled'} '{args.name}'")
+  return 0
+
+
+def _commandProviderToken(args) -> int:
+  print(_operator(args.database).issueProvisioningToken(args.name))
+  return 0
+
+
+def _commandProviderLink(args) -> int:
+  _operator(args.database).linkIdentity(args.name, args.subject, args.userName)
+  print(f"Linked {args.name} identity '{args.subject}' to '{args.userName}'")
   return 0
 
 

@@ -2,8 +2,10 @@
 """Shared test fixtures."""
 
 import copy
+import json
 import os
 import secrets
+from pathlib import Path
 
 import pytest
 
@@ -17,6 +19,9 @@ def pytest_addoption(parser):
     "--store", choices=("sqlite", "postgresql"), default="sqlite",
     help=f"the database every store test runs on; postgresql takes its server from {postgresVariable}",
   )
+  parser.addoption("--testbed", help="Carnelian's testbed.json (rbraunm/carnelian testbed/prepare.py); "
+                                     "the sign-in tests run against its identity providers")
+  parser.addoption("--directory", action="store_true", help="the Carnelian testbed's Samba directory is running too")
 
 
 def pytest_configure(config):
@@ -24,6 +29,14 @@ def pytest_configure(config):
     raise pytest.UsageError(
       f"--store postgresql needs {postgresVariable}, a postgresql+pg8000:// URL of a role that may create databases"
     )
+
+
+@pytest.fixture(scope="session")
+def testbed(request):
+  path = request.config.getoption("--testbed")
+  if path is None:
+    pytest.skip("identity provider test: run with --testbed=<Carnelian's testbed.json> against a running testbed")
+  return json.loads(Path(path).read_text(encoding="utf-8"))
 
 
 @pytest.fixture

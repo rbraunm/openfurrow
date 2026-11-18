@@ -119,6 +119,8 @@ def groupRow(session: Session, name: str) -> AccountGroupRow:
 
 def setMembership(session: Session, groupName: str, userName: str, member: bool) -> None:
   group, account = groupRow(session, groupName), accountRow(session, userName)
+  if group.providerName is not None:
+    raise IdentityError(f"group '{groupName}' is mirrored from {group.providerName}, which alone sets its members")
   existing = session.get(GroupMemberRow, (group.groupID, account.accountID))
   if member and existing is None:
     session.add(GroupMemberRow(groupID=group.groupID, accountID=account.accountID))

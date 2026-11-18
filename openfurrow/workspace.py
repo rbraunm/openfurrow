@@ -39,6 +39,10 @@ import tempfile
 from contextlib import contextmanager
 from pathlib import Path
 
+from carnelian.ldap import DirectoryRefused
+from carnelian.oidc import Pending as OpenIDConnectPending, SignInRefused
+from carnelian.saml import Pending as SAMLPending, SAMLRefused
+from carnelian.scim import SCIMService
 from pydantic import BaseModel, ConfigDict
 
 from openfurrow.analysis import (
@@ -133,6 +137,31 @@ from openfurrow.store.identity import (
   setPassword as _setPassword,
   signIn as _signIn,
 )
+from openfurrow.identity.providers import (
+  ProvidedIdentity,
+  Provider,
+  ProviderFailure,
+  ProviderKind,
+  directory as _directory,
+  fromDirectory as _fromDirectory,
+  fromOpenIDConnect as _fromOpenIDConnect,
+  fromSAML as _fromSAML,
+  relyingParty as _relyingParty,
+  serviceProvider as _serviceProvider,
+)
+from openfurrow.store.providers import (
+  addProvider as _addProvider,
+  completeSignIn as _completeSignIn,
+  issueProvisioningToken as _issueProvisioningToken,
+  linkIdentity as _linkIdentity,
+  listProviders as _listProviders,
+  provider as _providerNamed,
+  provisioningTokenMatches as _provisioningTokenMatches,
+  setProviderEnabled as _setProviderEnabled,
+  startPending as _startPending,
+  takePending as _takePending,
+)
+from openfurrow.store.provisioning import ProvisioningStore
 from openfurrow.store.hierarchy import (
   addPlace as _addPlace,
   deletePlace as _deletePlace,
@@ -557,6 +586,133 @@ class Workspace:
       return None
     with _sessionScope(self._engine) as session:
       return next(a for a in _listAccounts(session) if a.accountID == self.actor.accountID)
+
+  # ---- identity providers (decision 0040) ------------------------------------
+
+  def addProvider(self, provider: Provider) -> None:
+    with self._acting(Permission.manageAccess, "server") as session:
+      _addProvider(session, provider)
+      self._audit(session, "provider.add", "server", {"provider": provider.name, "kind": provider.kind.value})
+
+  def providers(self) -> list[Provider]:
+    with self._acting(Permission.manageAccess, "server") as session:
+      return _listProviders(session)
+
+  def setProviderEnabled(self, name: str, enabled: bool) -> None:
+    with self._acting(Permission.manageAccess, "server") as session:
+      _setProviderEnabled(session, name, enabled)
+      self._audit(session, "provider.enable", "server", {"provider": name, "enabled": enabled})
+
+  def issueProvisioningToken(self, name: str) -> str:
+    """A new bearer token for a SCIM provider, replacing the old one; shown once."""
+    with self._acting(Permission.manageAccess, "server") as session:
+      token = _issueProvisioningToken(session, name)
+      self._audit(session, "provider.token", "server", {"provider": name})
+      return token
+
+  def linkIdentity(self, name: str, subject: str, userName: str) -> None:
+    with self._acting(Permission.manageAccess, "server") as session:
+      _linkIdentity(session, name, subject, userName)
+      self._audit(session, "provider.link", "server", {"provider": name, "subject": subject, "userName": userName})
+
+  def signInProviders(self) -> list[tuple[str, ProviderKind]]:
+    """The enabled providers a person can sign in with, for the sign-in page."""
+    with _sessionScope(self._engine) as session:
+      return [(provider.name, provider.kind) for provider in _listProviders(session)
+              if provider.enabled and provider.kind is not ProviderKind.scim]
+
+  def _enabledProvider(self, session, name: str, kinds: tuple[ProviderKind, ...]) -> Provider:
+    provider = _providerNamed(session, name)
+    if not provider.enabled or provider.kind not in kinds:
+      raise IdentityError(f"'{name}' is not a provider to sign in with here")
+    return provider
+
+  def beginProviderSignIn(self, name: str, next: str) -> tuple[str, str]:
+    """Where to send the browser for a provider's sign-in, and the key its pending-sign-in cookie carries."""
+    with _sessionScope(self._engine) as session:
+      provider = self._enabledProvider(session, name, (ProviderKind.openIDConnect, ProviderKind.saml))
+      if provider.kind is ProviderKind.openIDConnect:
+        address, pending = _relyingParty(provider.settings).beginSignIn()
+        state = {"state": pending.state, "nonce": pending.nonce, "codeVerifier": pending.codeVerifier,
+                 "startedAt": pending.startedAt}
+      else:
+        address, pending = _serviceProvider(provider.settings).beginSignIn()
+        state = {"requestID": pending.requestID, "startedAt": pending.startedAt}
+      key = _startPending(session, name, {"protocol": state, "next": next})
+      return address, key
+
+  def finishProviderSignIn(self, key: str, answer: dict[str, str], surface: str) -> tuple[Account, str, str]:
+    """The provider's answer checked: the account, a new session token, and where the person was going."""
+    with _sessionScope(self._engine) as session:
+      name, state = _takePending(session, key)
+      session.commit()
+      provider = self._enabledProvider(session, name, (ProviderKind.openIDConnect, ProviderKind.saml))
+      try:
+        if provider.kind is ProviderKind.openIDConnect:
+          identity = _fromOpenIDConnect(_relyingParty(provider.settings).finishSignIn(
+            OpenIDConnectPending(**state["protocol"]), answer))
+        else:
+          if "SAMLResponse" not in answer:
+            raise IdentityError("the provider's answer has no SAMLResponse")
+          identity = _fromSAML(provider.settings, _serviceProvider(provider.settings).finishSignIn(
+            SAMLPending(**state["protocol"]), answer["SAMLResponse"]))
+      except (SignInRefused, SAMLRefused) as error:
+        self._refusedSignIn(session, name, surface, str(error))
+        raise ProviderFailure(f"{name} refused the sign-in: {error}") from None
+      account, token = self._providerSession(session, provider, identity, surface)
+      return account, token, state["next"]
+
+  def signInWithDirectory(self, name: str, userName: str, password: str, surface: str) -> tuple[Account, str]:
+    with _sessionScope(self._engine) as session:
+      provider = self._enabledProvider(session, name, (ProviderKind.ldap,))
+      try:
+        identity = _fromDirectory(_directory(provider.settings).signIn(userName, password))
+      except DirectoryRefused as error:
+        self._refusedSignIn(session, name, surface, str(error), userName.strip().lower())
+        raise IdentityError(str(error)) from None
+      return self._providerSession(session, provider, identity, surface)
+
+  def _refusedSignIn(self, session, name: str, surface: str, why: str, userName: str | None = None) -> None:
+    detail = {"provider": name, "why": why}
+    if userName is not None:
+      detail["userName"] = userName
+    _record(session, Actor.everyone(surface), "signIn.refused", "server", detail)
+    session.commit()
+
+  def _providerSession(self, session, provider: Provider, identity: ProvidedIdentity, surface: str) -> tuple[Account, str]:
+    try:
+      account = _completeSignIn(session, provider, identity)
+    except IdentityError as error:
+      session.rollback()
+      self._refusedSignIn(session, provider.name, surface, str(error), identity.userName)
+      raise
+    hours = {s.key: s.value for s in _effectiveSettings(session, "server")}["identity.sessionHours"]
+    token = _issueToken(session, account.userName, "session", datetime.timedelta(hours=hours), None)
+    _record(session, Actor(kind=ActorKind.account, accountID=account.accountID, userName=account.userName,
+                           surface=surface), "signIn", "server", {"provider": provider.name})
+    return account, token
+
+  def handleProvisioning(self, name: str, method: str, path: str, query: str, headers: dict[str, str], body: bytes):
+    """One SCIM request from a provider, answered by Carnelian over this store, in one transaction."""
+    with _sessionScope(self._engine) as session:
+      try:
+        provider = _providerNamed(session, name)
+      except IdentityError:
+        raise NotFoundError(f"no provisioning at '{name}'") from None
+      if provider.kind is not ProviderKind.scim or not provider.enabled:
+        raise NotFoundError(f"no provisioning at '{name}'")
+      service = SCIMService(ProvisioningStore(session, provider), provider.settings.baseURL,
+                            lambda token: _provisioningTokenMatches(session, name, token))
+      response = service.handle(method, path, query, headers, body)
+      if response.status >= 400:
+        session.rollback()
+        if response.status != 401:
+          _record(session, Actor(kind=ActorKind.everyone, surface="provisioning"), "provision.refused", "server",
+                  {"provider": name, "method": method, "path": path, "status": response.status})
+        return response
+      _record(session, Actor(kind=ActorKind.everyone, surface="provisioning"), "provision", "server",
+              {"provider": name, "method": method, "path": path, "status": response.status})
+      return response
 
   # ---- layout -------------------------------------------------------------
 

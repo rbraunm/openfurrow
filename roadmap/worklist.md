@@ -215,9 +215,14 @@ measure), `owner` (the owner's call), `done`.
   Carnelian, under MIT (decision 0039). Done there, each tested against its specification's
   vectors and a real provider (Keycloak, Samba Active Directory, Entra's documented SCIM
   requests): signature verification, JOSE, the OpenID Connect relying party, the SAML 2.0
-  service provider, the LDAP client and the SCIM 2.0 service provider. Next: wiring them into
-  OpenFurrow's accounts and groups. Not yet: a check against a live Entra ID tenant, which
-  needs a tenant and a public HTTPS address.
+  service provider, the LDAP client and the SCIM 2.0 service provider. Wired into OpenFurrow
+  as decision 0040: providers on the command line, sign-in through OpenID Connect, SAML and
+  the directory on the sign-in page, SCIM provisioning at `/scim/<provider>/v2`, tested
+  against the testbed's Keycloak and Samba in the workflow's `providers` job. Not yet:
+  - a check against a live Entra ID tenant, which needs a tenant and a public HTTPS address;
+  - Carnelian published as a package (OpenFurrow pins a commit of its repository);
+  - provider pages on the web (with GOV-6) and signing out at the provider;
+  - a provider's discovery and keys are fetched at each sign-in; cache them once it matters.
 - **GOV-4** `build` **Test fixtures and dataset**: every sign-in provider and both
   databases, reprovisionable for development and one-time for the workflow, one dataset
   for all.

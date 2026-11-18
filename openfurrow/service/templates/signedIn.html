@@ -1,0 +1,6 @@
+{% extends "base.html" %}
+{% block head %}<meta http-equiv="refresh" content="0; url={{ target }}">{% endblock %}
+{% block title %}{{ t.text('web.signIn.heading') }} - {{ t.text('web.app.name') }}{% endblock %}
+{% block content %}
+<p><a href="{{ target }}">{{ t.text('web.signIn.continue') }}</a></p>
+{% endblock %}

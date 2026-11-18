@@ -20,7 +20,10 @@ from openfurrow.identity.model import Actor, SignInMode
 from openfurrow.workspace import IdentityError, Workspace
 
 sessionCookie = "openfurrowSession"
-_open = {"health", "web.static", "web.signIn"}
+pendingCookie = "openfurrowPending"
+_open = {"health", "web.static", "web.signIn", "web.providerStart", "web.providerReturn"}
+# A provider's answer arrives from the provider's site (SAML by POST); its signature is its proof, not its origin.
+_crossSite = {"web.providerReturn"}
 
 
 class RequestWorkspace:
@@ -46,6 +49,9 @@ def installSignIn(application: Flask, base: Workspace, secureCookies: bool) -> N
     surface = "api" if request.path.startswith("/api/") else "web"
     g.signInMode = base.signInMode()
     g.signedIn = None
+    if request.endpoint == "provisioning":
+      g.workspace = base
+      return None
     if g.signInMode is SignInMode.open:
       g.workspace = base.actingAs(Actor.everyone(surface))
       return None
@@ -63,7 +69,7 @@ def installSignIn(application: Flask, base: Workspace, secureCookies: bool) -> N
         return Response(f'{{"error": "{error}"}}', 401, mimetype="application/json", headers={"WWW-Authenticate": "Bearer"})
       g.workspace = base.actingAs(actor)
       return None
-    if request.method not in ("GET", "HEAD", "OPTIONS") and not _sameSite():
+    if request.method not in ("GET", "HEAD", "OPTIONS") and request.endpoint not in _crossSite and not _sameSite():
       return Response("refused: a change must come from this site's own pages", 403)
     if request.endpoint in _open:
       g.workspace = base.actingAs(Actor.everyone(surface))

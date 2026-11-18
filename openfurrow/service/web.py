@@ -49,7 +49,8 @@ from openfurrow.service.trialForm import FormProblem, emptyForm, formFromRequest
 from openfurrow.schema import AssessmentDataType, Observation, RandomizationMethod, TrialPackage
 from openfurrow.schema.document import isOutOfRange
 from openfurrow.version import schemaVersion
-from openfurrow.service.signIn import sessionCookie
+from openfurrow.identity.providers import ProviderKind
+from openfurrow.service.signIn import pendingCookie, sessionCookie
 from openfurrow.workspace import IdentityError, ObservationImportError, StoreError, Workspace
 from pydantic import ValidationError
 
@@ -199,27 +200,73 @@ def createWebBlueprint(workspace: Workspace, config: OpenFurrowConfig | None = N
       ), status=400)
     return redirect(_localized(url_for("web.trial", trialCode=package.trial.trialCode), translator))
 
-  @blueprint.route("/signin", methods=["GET", "POST"])
-  def signIn() -> Response:
-    """Sign in with a user name and password (decision 0036)."""
-    translator = _translator()
+  def _target() -> str:
     target = request.args.get("next") or url_for("web.index")
     if not target.startswith("/") or target.startswith("//"):
-      target = url_for("web.index")
-    context = {"problem": None, "userName": "", "next": target}
+      return url_for("web.index")
+    return target
+
+  def _withSession(response: Response, token: str) -> Response:
+    hours = {s.key: s.value for s in workspace.effectiveSettings("server")}["identity.sessionHours"]
+    response.set_cookie(sessionCookie, token, max_age=hours * 3600, httponly=True, samesite="Strict",
+                        secure=current_app.config["openfurrowSecureCookies"])
+    return response
+
+  def _signInPage(translator, problem: str | None = None, userName: str = "", status: int = 200) -> Response:
+    providers = workspace.signInProviders()
+    context = {"problem": problem, "userName": userName, "next": _target(),
+               "redirectProviders": [name for name, kind in providers if kind is not ProviderKind.ldap],
+               "directories": [name for name, kind in providers if kind is ProviderKind.ldap]}
+    return Response(render_template("signIn.html", **context, **_localeContext(translator)), status=status)
+
+  @blueprint.route("/signin", methods=["GET", "POST"])
+  def signIn() -> Response:
+    """Sign in with a user name and password, this site's own or a directory's (decisions 0036, 0040)."""
+    translator = _translator()
     if request.method == "POST":
-      context["userName"] = request.form.get("userName", "")
+      userName, password = request.form.get("userName", ""), request.form.get("password", "")
+      directory = request.form.get("provider", "")
       try:
-        _, token = workspace.signIn(context["userName"], request.form.get("password", ""), "web")
+        if directory:
+          _, token = workspace.signInWithDirectory(directory, userName, password, "web")
+        else:
+          _, token = workspace.signIn(userName, password, "web")
       except IdentityError as error:
-        context["problem"] = translator.text("web.signIn.refused", reason=str(error))
-        return Response(render_template("signIn.html", **context, **_localeContext(translator)), status=401)
-      response = redirect(target)
-      hours = {s.key: s.value for s in workspace.effectiveSettings("server")}["identity.sessionHours"]
-      response.set_cookie(sessionCookie, token, max_age=hours * 3600, httponly=True, samesite="Strict",
-                          secure=current_app.config["openfurrowSecureCookies"])
+        return _signInPage(translator, translator.text("web.signIn.refused", reason=str(error)), userName, 401)
+      return _withSession(redirect(_target()), token)
+    return _signInPage(translator)
+
+  @blueprint.get("/signin/with/<name>")
+  def providerStart(name: str) -> Response:
+    """Send the browser to a provider's own sign-in (decision 0040)."""
+    try:
+      address, key = workspace.beginProviderSignIn(name, _target())
+    except IdentityError as error:
+      return _signInPage(_translator(), _translator().text("web.signIn.refused", reason=str(error)), status=401)
+    response = redirect(address)
+    secure = current_app.config["openfurrowSecureCookies"]
+    # SAML answers by a cross-site POST, which only a SameSite=None cookie goes with, and browsers take None only when Secure.
+    response.set_cookie(pendingCookie, key, max_age=600, httponly=True, secure=secure,
+                        samesite="None" if secure else "Lax", path="/signin/with")
+    return response
+
+  @blueprint.route("/signin/with/<name>/return", methods=["GET", "POST"])
+  def providerReturn(name: str) -> Response:
+    """The provider's answer; on success a page of this site moves the browser on, so the Strict session cookie travels."""
+    translator = _translator()
+    key = request.cookies.get(pendingCookie)
+    try:
+      if not key:
+        raise IdentityError("this browser has no sign-in waiting; start again")
+      answer = dict(request.form.items()) if request.method == "POST" else dict(request.args.items())
+      _, token, target = workspace.finishProviderSignIn(key, answer, "web")
+    except IdentityError as error:
+      response = _signInPage(translator, translator.text("web.signIn.refused", reason=str(error)), status=401)
+      response.delete_cookie(pendingCookie, path="/signin/with")
       return response
-    return Response(render_template("signIn.html", **context, **_localeContext(translator)))
+    response = Response(render_template("signedIn.html", target=target, **_localeContext(translator)))
+    response.delete_cookie(pendingCookie, path="/signin/with")
+    return _withSession(response, token)
 
   @blueprint.post("/signout")
   def signOut() -> Response:

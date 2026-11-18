@@ -1877,12 +1877,20 @@
       "text": "Imprimir",
       "status": "machineDraft"
     },
+    "web.signIn.continue": {
+      "text": "Ha iniciado sesión. Continuar",
+      "status": "machineDraft"
+    },
     "web.signIn.heading": {
       "text": "Iniciar sesión",
       "status": "machineDraft"
     },
     "web.signIn.password": {
       "text": "Contraseña",
+      "status": "machineDraft"
+    },
+    "web.signIn.provider": {
+      "text": "Iniciar sesión mediante",
       "status": "machineDraft"
     },
     "web.signIn.refused": {
@@ -1893,8 +1901,16 @@
       "text": "Entrar",
       "status": "machineDraft"
     },
+    "web.signIn.thisSite": {
+      "text": "La cuenta propia de este sitio",
+      "status": "machineDraft"
+    },
     "web.signIn.userName": {
       "text": "Nombre de usuario",
+      "status": "machineDraft"
+    },
+    "web.signIn.with": {
+      "text": "Iniciar sesión con {provider}",
       "status": "machineDraft"
     },
     "web.signOut": {

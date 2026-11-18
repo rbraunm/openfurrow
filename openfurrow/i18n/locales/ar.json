@@ -1877,12 +1877,20 @@
       "text": "طباعة",
       "status": "machineDraft"
     },
+    "web.signIn.continue": {
+      "text": "تم تسجيل دخولك. متابعة",
+      "status": "machineDraft"
+    },
     "web.signIn.heading": {
       "text": "تسجيل الدخول",
       "status": "machineDraft"
     },
     "web.signIn.password": {
       "text": "كلمة المرور",
+      "status": "machineDraft"
+    },
+    "web.signIn.provider": {
+      "text": "تسجيل الدخول من خلال",
       "status": "machineDraft"
     },
     "web.signIn.refused": {
@@ -1893,8 +1901,16 @@
       "text": "دخول",
       "status": "machineDraft"
     },
+    "web.signIn.thisSite": {
+      "text": "حساب هذا الموقع نفسه",
+      "status": "machineDraft"
+    },
     "web.signIn.userName": {
       "text": "اسم المستخدم",
+      "status": "machineDraft"
+    },
+    "web.signIn.with": {
+      "text": "تسجيل الدخول عبر {provider}",
       "status": "machineDraft"
     },
     "web.signOut": {

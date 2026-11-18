@@ -68,11 +68,53 @@ jobs:
         if: always()
         run: docker compose -f testbed/compose.yaml down --volumes
 
+  # Signing in through real identity providers: Carnelian's testbed, at the commit OpenFurrow pins,
+  # prepared and started for this run only.
+  providers:
+    name: providers (python ${{ matrix.python }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.13", "3.14"]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Install the project with its test and service extras
+        run: python -m pip install --constraint constraints.txt --editable ".[test,service]"
+      - name: Check out Carnelian's testbed at the pinned commit
+        run: |
+          commit=$(python -c "import re, tomllib; dependencies = tomllib.load(open('pyproject.toml', 'rb'))['project']['dependencies']; print(next(re.search(r'@([0-9a-f]{40})$', entry).group(1) for entry in dependencies if entry.startswith('carnelian')))")
+          git clone --quiet https://github.com/rbraunm/carnelian "$RUNNER_TEMP/carnelian"
+          git -C "$RUNNER_TEMP/carnelian" checkout --quiet "$commit"
+          python -m pip install "$RUNNER_TEMP/carnelian[test]"
+      - name: Prepare and start the identity providers
+        working-directory: ${{ runner.temp }}/carnelian
+        run: |
+          secret=$(python -c "import secrets; print(secrets.token_hex(24))")
+          echo "::add-mask::$secret"
+          CARNELIAN_TESTBED_SECRET=$secret python testbed/prepare.py --host localhost
+          docker compose --file testbed/compose.yaml --env-file testbed/generated/keycloak.env --profile directory up --detach --build
+          python testbed/prepare.py --host localhost --wait --directory
+      - name: Run the sign-in tests against them
+        run: python -m pytest tests/testProviders.py "--testbed=$RUNNER_TEMP/carnelian/testbed/generated/testbed.json" --directory
+      - name: Show the providers' logs
+        if: failure()
+        working-directory: ${{ runner.temp }}/carnelian
+        run: docker compose --file testbed/compose.yaml --env-file testbed/generated/keycloak.env --profile directory logs --no-color --tail 80
+      - name: Throw the testbed away
+        if: always()
+        working-directory: ${{ runner.temp }}/carnelian
+        run: docker compose --file testbed/compose.yaml --env-file testbed/generated/keycloak.env --profile directory down --volumes
+
   # The one check main requires: its name stays the same when the matrix changes.
   validated:
     name: validated
     if: always()
-    needs: [test, postgresql]
+    needs: [test, postgresql, providers]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -80,4 +122,5 @@ jobs:
         env:
           testResult: ${{ needs.test.result }}
           postgresqlResult: ${{ needs.postgresql.result }}
-        run: test "$testResult" = "success" && test "$postgresqlResult" = "success"
+          providersResult: ${{ needs.providers.result }}
+        run: test "$testResult" = "success" && test "$postgresqlResult" = "success" && test "$providersResult" = "success"

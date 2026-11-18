@@ -35,6 +35,7 @@ from openfurrow.i18n import MessageError, availableLocales, sourceLocale
 from openfurrow.interop.fieldbook import fieldBookImportProfile
 from openfurrow.schema import TrialPackage
 from openfurrow.identity.model import Actor
+from openfurrow.service.providerRoutes import installProvisioning
 from openfurrow.service.signIn import RequestWorkspace, installSignIn
 from openfurrow.service.web import createWebBlueprint
 from openfurrow.store import NotFoundError, TrialExistsError
@@ -67,6 +68,7 @@ def createApp(databasePath: str, config: OpenFurrowConfig | None = None) -> Flas
   base = Workspace.open(databasePath, Actor.operator("service"))
   workspace = RequestWorkspace()
   installSignIn(application, base, settings.service.tls.enabled)
+  installProvisioning(application, base)
 
   _registerErrorHandlers(application)
   _registerRoutes(application, workspace, settings)
