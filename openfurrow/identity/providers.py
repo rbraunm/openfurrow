@@ -21,7 +21,7 @@ from carnelian.oidc import RelyingParty, SignInRefused, discover
 from carnelian.saml import SAMLRefused, ServiceProvider, identityProviderFromMetadata
 from pydantic import BaseModel, ConfigDict, field_validator, model_validator
 
-from openfurrow.identity.model import IdentityError
+from openfurrow.identity.model import IdentityError, foldedUserName
 
 providerNamePattern = re.compile(r"^[a-z][a-z0-9-]{1,31}$")
 
@@ -229,5 +229,5 @@ def fromSAML(settings: SAMLSettings, identity) -> ProvidedIdentity:
 
 
 def fromDirectory(identity) -> ProvidedIdentity:
-  return ProvidedIdentity(subject=identity.userName.lower(), userName=identity.userName,
+  return ProvidedIdentity(subject=foldedUserName(identity.userName), userName=identity.userName,
                           displayName=identity.displayName, email=identity.email, groups=identity.groups)

@@ -12,6 +12,7 @@ the store directly and so hold every permission too).
 from __future__ import annotations
 
 import re
+import unicodedata
 from enum import Enum
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
@@ -75,16 +76,36 @@ class Actor(BaseModel):
     return self.userName if self.kind is ActorKind.account else self.kind.value
 
 
-userNamePattern = re.compile(r"^[a-z0-9][a-z0-9._@-]{1,63}$")
 roleCodePattern = re.compile(r"^[a-z][A-Za-z0-9]{1,39}$")
+userNamePunctuation = frozenset("._@-")
+# Scripts written together in one language count as one, so a Japanese or Korean name is not "mixed".
+_scriptFamilies = {"HIRAGANA": "JAPANESE", "KATAKANA": "JAPANESE", "KATAKANA-HIRAGANA": "JAPANESE", "HANGUL": "KOREAN"}
+
+
+def foldedUserName(text: str) -> str:
+  """A user name as compared: compatibility-normalized (NFKC) and case-folded, the same however it was typed."""
+  return unicodedata.normalize("NFKC", unicodedata.normalize("NFKC", text.strip()).casefold())
+
+
+def _script(character: str) -> str:
+  word = unicodedata.name(character, "UNKNOWN").split()[0]
+  return _scriptFamilies.get(word, word)
 
 
 def normalizedUserName(userName: str) -> str:
-  name = userName.strip().lower()
-  if not userNamePattern.match(name):
-    raise IdentityError(
-      f"'{userName}' is not a user name: 2 to 64 of letters, digits, '.', '_', '@' and '-', starting with a letter or digit"
-    )
+  """The canonical user name, or IdentityError: letters of any script, combining marks, digits and '._@-'."""
+  name = foldedUserName(userName)
+  rule = ("2 to 64 of letters, digits, '.', '_', '@' and '-', starting with a letter or digit, "
+          "the part before any '@' in one script")
+  if not 2 <= len(name) <= 64 or unicodedata.category(name[0])[0] not in "LN":
+    raise IdentityError(f"'{userName}' is not a user name: {rule}")
+  for character in name:
+    category = unicodedata.category(character)
+    if not (category[0] in "LM" or category == "Nd" or character in userNamePunctuation):
+      raise IdentityError(f"'{userName}' is not a user name: {character!r} is not allowed; {rule}")
+  scripts = {_script(character) for character in name.partition("@")[0] if unicodedata.category(character)[0] == "L"}
+  if len(scripts) > 1 and scripts not in ({"CJK", "JAPANESE"}, {"CJK", "KOREAN"}):
+    raise IdentityError(f"'{userName}' is not a user name: it mixes the scripts {', '.join(sorted(scripts))}; {rule}")
   return name
 
 

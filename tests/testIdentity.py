@@ -2,6 +2,7 @@
 """Accounts, roles, permissions and the audit log in the facade (decisions 0036 to 0038)."""
 
 import hashlib
+import re
 
 import pytest
 
@@ -138,3 +139,46 @@ def testEveryChangeIsAuditedWithWhoAndWhatChanged(store):
   assert (first.action, first.actorKind, first.surface) == ("place.add", ActorKind.operator.value, "library")
   with pytest.raises(NotPermitted, match="ana may not viewAudit at server"):
     ana.auditEvents()
+
+
+@pytest.mark.parametrize("typed, stored", [
+  ("Ana", "ana"),
+  ("jos\u00e9", "jos\u00e9"),
+  ("jose\u0301", "jos\u00e9"),
+  ("\uff21\uff4e\uff41", "ana"),
+  ("STRASSE", "strasse"),
+  ("stra\u00dfe", "strasse"),
+  ("\u0645\u0631\u064a\u0645", "\u0645\u0631\u064a\u0645"),
+  ("\u0645\u0631\u064a\u0645@Example.org", "\u0645\u0631\u064a\u0645@example.org"),
+  ("\u0646\u06cc\u0645\u0627", "\u0646\u06cc\u0645\u0627"),
+  ("\u738b\u4f1f", "\u738b\u4f1f"),
+  ("\u039f\u03b4\u03c5\u03c3\u03c3\u03ad\u03b1\u03c2", "\u03bf\u03b4\u03c5\u03c3\u03c3\u03ad\u03b1\u03c3"),
+  ("\u3084\u307e\u3060\u592a\u90ce", "\u3084\u307e\u3060\u592a\u90ce"),
+  ("\u0905\u092e\u093f\u0924", "\u0905\u092e\u093f\u0924"),
+])
+def testUserNamesInEveryScriptAreKeptInOneForm(newStore, typed, stored):
+  operator = Workspace.create(newStore("names"))
+  assert operator.createAccount(typed, "Someone").userName == stored
+
+
+@pytest.mark.parametrize("typed, why", [
+  ("a", "2 to 64"),
+  ("-ana", "starting with a letter or digit"),
+  ("ana smith", "' ' is not allowed"),
+  ("ana\u200cb", "'\\u200c' is not allowed"),
+  ("\u0430na", "mixes the scripts CYRILLIC, LATIN"),
+  ("ana\U0001f600", "is not allowed"),
+])
+def testUserNamesThatCouldMisleadAreRefused(newStore, typed, why):
+  operator = Workspace.create(newStore("names"))
+  with pytest.raises(IdentityError, match=re.escape(why)):
+    operator.createAccount(typed, "Someone")
+
+
+def testTheSameNameTypedTwoWaysIsOneAccount(newStore):
+  operator = Workspace.create(newStore("names"))
+  operator.createAccount("jos\u00e9", "Jos\u00e9", None, password)
+  with pytest.raises(IdentityError, match="already exists"):
+    operator.createAccount("JOSE\u0301", "Jos\u00e9 again")
+  account, _ = operator.signIn("Jos\u00e9", password, "web")
+  assert account.userName == "jos\u00e9"

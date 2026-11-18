@@ -112,6 +112,7 @@ from openfurrow.identity.model import (
   RoleAssignment,
   RoleDefinition,
   SignInMode,
+  foldedUserName as _foldedUserName,
 )
 from openfurrow.schema.hierarchy import HierarchyLevel, Place
 from openfurrow.settings import EffectiveSetting
@@ -473,7 +474,7 @@ class Workspace:
       return _listAccounts(session)
 
   def _selfOrManager(self, session, userName: str) -> None:
-    if self.actor.kind is ActorKind.account and self.actor.userName == userName.strip().lower():
+    if self.actor.kind is ActorKind.account and self.actor.userName == _foldedUserName(userName):
       return
     self._require(session, Permission.manageAccess, "server")
 
@@ -551,7 +552,7 @@ class Workspace:
       try:
         account = _signIn(session, userName, password)
       except IdentityError:
-        _record(session, Actor.everyone(surface), "signIn.refused", "server", {"userName": userName.strip().lower()})
+        _record(session, Actor.everyone(surface), "signIn.refused", "server", {"userName": _foldedUserName(userName)})
         session.commit()
         raise
       token = _issueToken(session, account.userName, "session", datetime.timedelta(hours=hours), None)
@@ -668,7 +669,7 @@ class Workspace:
       try:
         identity = _fromDirectory(_directory(provider.settings).signIn(userName, password))
       except DirectoryRefused as error:
-        self._refusedSignIn(session, name, surface, str(error), userName.strip().lower())
+        self._refusedSignIn(session, name, surface, str(error), _foldedUserName(userName))
         raise IdentityError(str(error)) from None
       return self._providerSession(session, provider, identity, surface)
 

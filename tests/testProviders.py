@@ -263,7 +263,7 @@ def mirroredOf(operator, userName, prefix):
   return sorted(group.name for group in operator.groups() if userName in group.members and group.name.startswith(prefix))
 
 
-@pytest.mark.parametrize("userName", ["ana", "layla", "wei"])
+@pytest.mark.parametrize("userName", ["ana", "layla", "wei", "\u0645\u0631\u064a\u0645"])
 def testSigningInThroughKeycloakByOpenIDConnect(testbed, location, monkeypatch, userName):
   settings = testbed["openIDConnect"]
   monkeypatch.setenv("OPENFURROW_TEST_SECRET", settings["clientSecret"])
@@ -323,16 +323,17 @@ def directory(request, testbed, location, monkeypatch):
   return createApp(location).test_client()
 
 
-def testSigningInThroughTheDirectory(testbed, location, directory):
-  expected = account(testbed, "jose")
+@pytest.mark.parametrize("userName", ["jose", "\u0645\u0631\u064a\u0645"])
+def testSigningInThroughTheDirectory(testbed, location, directory, userName):
+  expected = account(testbed, userName)
   page = directory.get("/signin").get_data(as_text=True)
   assert '<option value="ad">ad</option>' in page
-  refused = directory.post("/signin", data={"provider": "ad", "userName": "jose", "password": "wrong"},
+  refused = directory.post("/signin", data={"provider": "ad", "userName": userName, "password": "wrong"},
                            headers={"Origin": "http://localhost"})
   assert refused.status_code == 401 and "the user name or the password is wrong" in refused.get_data(as_text=True)
-  signed = directory.post("/signin?next=/account", data={"provider": "ad", "userName": "jose", "password": expected["password"]},
+  signed = directory.post("/signin?next=/account", data={"provider": "ad", "userName": userName, "password": expected["password"]},
                           headers={"Origin": "http://localhost"})
   assert signed.status_code == 302 and signed.headers["Location"] == "/account"
   operator = Workspace.open(location)
   groups = {segment for path in expected["groups"] for segment in path.strip("/").split("/")}
-  assert mirroredOf(operator, "jose", "ad/") == sorted(f"ad/{group}" for group in groups)
+  assert mirroredOf(operator, userName, "ad/") == sorted(f"ad/{group}" for group in groups)

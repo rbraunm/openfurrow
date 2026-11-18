@@ -17,8 +17,16 @@ project's licence never limits where it runs.
   - `accounts`: every web request belongs to a signed-in account and every API request to
     a bearer token. Switching to it is refused until an active account is administrator at
     the server, so the store cannot lock itself out.
-- **Accounts** have a lower-case user name, a display name, an optional e-mail, a
-  preferred language, and an active flag. Local passwords are 12 to 256 characters,
+- **Accounts** have a user name, a display name, an optional e-mail, a preferred language,
+  and an active flag.
+- **User names are in any script** (owner, 2026-11-17), since identity providers in the
+  target regions send Arabic, Persian, Chinese or accented ones. A user name is kept in one
+  form whatever way it was typed: compatibility-normalized (NFKC) and case-folded, so
+  `José` typed composed or decomposed, `Ａｎａ` in full width and `ANA` are the names they
+  look like. It holds 2 to 64 letters, combining marks, digits, `.`, `_`, `@` and `-`,
+  starts with a letter or digit, and the part before any `@` is in one script (Japanese
+  and Korean writing count as one each), so a Cyrillic `а` cannot stand in for a Latin `a`.
+  Spaces, joiners and symbols are refused. Local passwords are 12 to 256 characters,
   hashed with the standard library's scrypt (`scrypt$n$r$p$salt$hash`, n = 2^15).
   Sign-in refusals give one message whatever went wrong, so user names are not revealed,
   and are recorded in the audit log without the password.
