@@ -16,7 +16,7 @@ dependencies = [
   "numpy>=1.26",
   "pyyaml>=6",
   # Sign-in (decisions 0039, 0040).
-  "carnelian[keys]>=0.2",
+  "carnelian[keys]>=0.3",
   # Schedules are read in a time zone (decision 0041); Windows has no zone database of its own for zoneinfo.
   "tzdata>=2024.1; sys_platform == 'win32'",
 ]

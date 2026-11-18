@@ -222,9 +222,6 @@ measure), `owner` (the owner's call), `done`.
   against the testbed's Keycloak and Samba in the workflow's `providers` job. Not yet:
   - a check against a live Entra ID tenant, which needs a tenant and a public HTTPS address;
   - provider pages on the web (with GOV-6);
-  - a research federation's institutions cannot sign a person out here: their SAML
-    LogoutRequests are refused, since which institution sent one is known only after it is
-    checked; this waits on a Carnelian addition that reads the claimed issuer first;
   - a research federation offers every institution of its discovery aggregate (all of
     eduGAIN, refreshed by its scheduled task, GOV-7) or a configured list; signing in through
     an institution found in the aggregate is tested only with the testbed's federation, whose

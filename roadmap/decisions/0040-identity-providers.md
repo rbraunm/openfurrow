@@ -108,8 +108,10 @@ would make differently is a provider setting with the strict choice as its defau
     from the same-site check: the signature, or the ticket, is the proof.
   - SAML single logout in either direction needs the provider's `singleLogoutURL` (this
     site's sign-out address, published in the metadata) and its signing key.
-  - A logout request from an institution of a research federation is refused: which
-    institution sent it cannot be known before it is checked.
+  - A logout request from an institution of a research federation names its institution
+    (Carnelian's `claimedIssuer`, read before the signature); the institution must be one
+    offered here, and the request is then checked against that institution's own keys, so a
+    forged name fails there. It ends the sessions that institution started for that NameID.
   - Every message that may be used only once (a SAML assertion or LogoutRequest, a logout
     token) is claimed in the store, in a transaction of its own, so every process serving
     one database refuses it the second time.

@@ -757,14 +757,50 @@ def testKeycloaksOwnSingleLogoutEndsTheSessionHere(testbed, location):
   elsewhere.finishSignOut(leaving, query=urllib.parse.urlsplit(redirected).query)
 
 
-def testALogoutRequestFromAFederationIsRefusedByName(testbed, location):
+def testAnInstitutionsOwnSingleLogoutEndsTheSessionHere(testbed, location):
+  keyed = testbed["saml"]["keyed"]
+  context = secureContext(testbed["certificateAuthority"])
+  Workspace.open(location).addProvider(Provider.of("fed", "samlFederation", federationSettings(
+    testbed, entityID=keyed["entities"]["logsOutToo"], singleLogoutURL=keyed["singleLogoutURLs"]["logsOutToo"],
+    signingKey=keyPair(keyed, "signing"))))
+  client = createApp(location).test_client()
+  browser = Browser(context)
+  started = client.get("/signin/with/fed", query_string={"institution": testbed["federation"]["institution"]})
+  _, fields = browser.atKeycloak(started.headers["Location"], "jose", account(testbed, "jose")["password"])
+  assert client.post("/signin/with/fed/return", data=fields).status_code == 200 and signedIn(client)
+  identityProvider = identityProviderFromMetadata(Fetcher(context).getBytes(
+    testbed["saml"]["metadataURL"], "application/samlmetadata+xml, application/xml;q=0.9"),
+    testbed["saml"]["identityProviderEntityID"])
+  elsewhere = ServiceProvider(keyed["entities"]["logsOut"], testbed["saml"]["consumerURL"], identityProvider,
+                              signingKey=LocalSigningKey(Path(keyed["signingKey"]).read_bytes(),
+                                                         Path(keyed["signingCertificate"]).read_bytes()),
+                              singleLogoutURL=keyed["singleLogoutURLs"]["logsOut"])
+  address, begun = elsewhere.beginSignIn()
+  _, fields = browser.atKeycloak(address, "jose", account(testbed, "jose")["password"])
+  identity = elsewhere.finishSignIn(begun, fields["SAMLResponse"])
+  address, leaving = elsewhere.beginSignOut(identity.nameID, identity.nameIDFormat, identity.sessionIndex)
+  redirected, page = browser.open(address)
+  assert redirected is not None and redirected.startswith(keyed["singleLogoutURLs"]["logsOutToo"] + "?"), page
+  answered = client.get("/signin/with/fed/signout?" + urllib.parse.urlsplit(redirected).query)
+  assert answered.status_code == 302, auditOf(location, "signOut.fromProvider.refused")
+  assert "SAMLResponse=" in answered.headers["Location"]
+  assert not signedIn(client)
+  assert auditOf(location, "signOut.fromProvider") == [{"provider": "fed", "how": "saml", "sessionsEnded": 1}]
+  redirected, page = browser.open(answered.headers["Location"])
+  elsewhere.finishSignOut(leaving, query=urllib.parse.urlsplit(redirected).query)
+
+
+def testALogoutRequestNamingAnInstitutionNotOfferedIsRefused(testbed, location):
   keyed = testbed["saml"]["keyed"]
   Workspace.open(location).addProvider(Provider.of("fed", "samlFederation", federationSettings(
     testbed, signingKey=keyPair(keyed, "signing"), singleLogoutURL="https://openfurrow.example.org/signin/with/fed/signout")))
-  refused = createApp(location).test_client().get("/signin/with/fed/signout?SAMLRequest=anything")
-  assert refused.status_code == 400
-  assert "logout requests from a federation&#39;s institutions are refused" in refused.get_data(as_text=True)
-  assert "federation" in auditOf(location, "signOut.fromProvider.refused")[0]["why"]
+  request = ('<samlp:LogoutRequest xmlns:samlp="urn:oasis:names:tc:SAML:2.0:protocol" '
+             'xmlns:saml="urn:oasis:names:tc:SAML:2.0:assertion" ID="_x" Version="2.0" IssueInstant="2026-01-01T00:00:00Z">'
+             '<saml:Issuer>https://elsewhere.example.edu/idp</saml:Issuer><saml:NameID>jose</saml:NameID></samlp:LogoutRequest>')
+  posted = base64.b64encode(request.encode()).decode()
+  refused = createApp(location).test_client().post("/signin/with/fed/signout", data={"SAMLRequest": posted})
+  assert refused.status_code == 400 and "is not an institution offered here" in refused.get_data(as_text=True)
+  assert "not an institution offered here" in auditOf(location, "signOut.fromProvider.refused")[0]["why"]
 
 
 def testAServiceProviderIsMadeForEachUseWithTheReplaysOfItsStore(testbed, newStore):

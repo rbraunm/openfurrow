@@ -45,7 +45,7 @@ from pathlib import Path
 from carnelian.cas import CASRefused, Pending as CASPending, readLogoutRequest as _readCASLogout
 from carnelian.ldap import DirectoryRefused
 from carnelian.oidc import Pending as OpenIDConnectPending, SignInRefused
-from carnelian.saml import Pending as SAMLPending, SAMLRefused
+from carnelian.saml import Pending as SAMLPending, SAMLRefused, claimedIssuer as _claimedIssuer
 from carnelian.scim import SCIMService
 from pydantic import BaseModel, ConfigDict
 
@@ -766,18 +766,22 @@ class Workspace:
     any) ended here, and the address of the signed answer to send the browser to."""
     with _sessionScope(self._engine) as session:
       provider = self._enabledProvider(session, name, (ProviderKind.saml, ProviderKind.samlFederation))
-      if provider.kind is ProviderKind.samlFederation:
-        why = (f"{name} is a federation: which institution sent a logout request cannot be checked before reading it, "
-               "so logout requests from a federation's institutions are refused")
-        self._refusedSignOutFromProvider(session, name, "saml", why, surface)
-        raise ProviderFailure(why)
-      serviceProvider = self._samlServiceProvider(provider, None)
       try:
+        institution = None
+        if provider.kind is ProviderKind.samlFederation:
+          # Only chooses whose keys check the request: an institution's name forged here fails at its own keys.
+          institution = _claimedIssuer("SAMLRequest", query=query, posted=samlRequest)
+          self._requireOffered(session, provider, institution)
+        serviceProvider = self._samlServiceProvider(provider, institution)
         asked = serviceProvider.readSignOutRequest(query=query, samlRequest=samlRequest, relayState=relayState)
-      except SAMLRefused as error:
+      except (SAMLRefused, IdentityError) as error:
         self._refusedSignOutFromProvider(session, name, "saml", str(error), surface)
         raise ProviderFailure(f"{name}'s logout request is refused: {error}") from None
-      ended = _endProviderSessions(session, name, subject=asked.nameID, sessionIDs=asked.sessionIndexes or None)
+      if institution is None:
+        ended = _endProviderSessions(session, name, subject=asked.nameID, sessionIDs=asked.sessionIndexes or None)
+      else:
+        ended = _endProviderSessions(session, name, sessionIDs=asked.sessionIndexes or None,
+                                     detail={"institution": institution, "nameID": asked.nameID})
       self._signedOutByProvider(session, name, "saml", ended, surface)
       session.commit()
       return serviceProvider.answerSignOut(asked)

@@ -128,17 +128,20 @@ def providerSessionOf(session: Session, token: str) -> ProviderSession | None:
 
 
 def endProviderSessions(session: Session, providerName: str, subject: str | None = None,
-                        sessionIDs: tuple[str, ...] | None = None) -> int:
-  """End the sessions here that came from a provider's sessions: those of a subject, those with given session IDs, or
-  both; how many ended. The tokens themselves are deleted, and their provider sessions with them."""
-  if subject is None and not sessionIDs:
-    raise IdentityError("ending a provider's sessions needs a subject or session IDs")
-  query = select(ProviderSessionRow.tokenHash).where(ProviderSessionRow.providerName == providerName)
+                        sessionIDs: tuple[str, ...] | None = None, detail: dict[str, str] | None = None) -> int:
+  """End the sessions here that came from a provider's sessions: those of a subject, those with given session IDs,
+  those whose sign-out detail holds every given value (a federation's institution and NameID), or a combination; how
+  many ended. The tokens themselves are deleted, and their provider sessions with them."""
+  if subject is None and not sessionIDs and not detail:
+    raise IdentityError("ending a provider's sessions needs a subject, session IDs or sign-out detail")
+  query = select(ProviderSessionRow.tokenHash, ProviderSessionRow.detailJSON).where(
+    ProviderSessionRow.providerName == providerName)
   if subject is not None:
     query = query.where(ProviderSessionRow.subject == subject)
   if sessionIDs:
     query = query.where(ProviderSessionRow.sessionID.in_(sessionIDs))
-  hashes = session.execute(query).scalars().all()
+  hashes = [tokenHash for tokenHash, detailJSON in session.execute(query).all()
+            if not detail or all(json.loads(detailJSON).get(key) == value for key, value in detail.items())]
   if hashes:
     session.execute(delete(AuthTokenRow).where(AuthTokenRow.tokenHash.in_(hashes)))
     session.flush()
