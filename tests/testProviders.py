@@ -12,13 +12,15 @@ from pathlib import Path
 
 import pytest
 from carnelian.fetching import secureContext
+from carnelian.oidc import Identity
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
 from openfurrow import Workspace
 from openfurrow.identity import RoleAssignment
 from openfurrow.identity.model import IdentityError
-from openfurrow.identity.providers import ProvidedIdentity, Provider
+from openfurrow.identity.providers import (ProvidedIdentity, Provider, ProviderFailure, _ProviderCache, fromOpenIDConnect,
+                                          providerRefreshSeconds)
 from openfurrow.service import createApp
 from openfurrow.store.database import createDatabase
 from openfurrow.store.providers import completeSignIn
@@ -62,6 +64,49 @@ def testProviderSettingsAreChecked(name, kind, settings, why):
 def testALoopbackReturnAddressMayBePlainHTTP():
   provider = Provider.of("idp", "openIDConnect", oidcSettings(returnURL="http://127.0.0.1:53682/callback"))
   assert provider.settings.returnURL == "http://127.0.0.1:53682/callback"
+
+
+class Clock:
+  def __init__(self):
+    self.now = 1000.0
+
+  def __call__(self):
+    return self.now
+
+
+def testAProviderIsBuiltOnceAndRebuiltAfterTheRefreshTime():
+  clock, builds = Clock(), []
+  cache = _ProviderCache(clock)
+  settings = Provider.of("idp", "openIDConnect", oidcSettings()).settings
+  build = lambda: builds.append(clock.now) or len(builds)
+  assert [cache.get(settings, build), cache.get(settings, build)] == [1, 1]
+  clock.now += providerRefreshSeconds - 1
+  assert cache.get(settings, build) == 1
+  clock.now += 1
+  assert cache.get(settings, build) == 2 and builds == [1000.0, 1000.0 + providerRefreshSeconds]
+  other = Provider.of("idp", "openIDConnect", oidcSettings(clientID="another")).settings
+  assert cache.get(other, build) == 3
+
+
+def testAFailedBuildIsNotKept():
+  cache, attempts = _ProviderCache(Clock()), []
+  settings = Provider.of("idp", "openIDConnect", oidcSettings()).settings
+
+  def failing():
+    attempts.append(1)
+    raise ProviderFailure("unreachable")
+
+  for _ in range(2):
+    with pytest.raises(ProviderFailure, match="unreachable"):
+      cache.get(settings, failing)
+  assert len(attempts) == 2 and cache.get(settings, lambda: "built") == "built"
+
+
+@pytest.mark.parametrize("verified, kept", [(True, "ana@example.org"), (False, None)])
+def testAnOpenIDConnectEmailIsKeptOnlyWhenVerified(verified, kept):
+  identity = Identity(issuer="https://idp.example.org", subject="s1", userName="ana", email="ana@example.org",
+                      emailVerified=verified, displayName="Ana", groups=(), claims={}, idToken="")
+  assert fromOpenIDConnect(identity).email == kept
 
 
 # ---- linking, by policy -------------------------------------------------------

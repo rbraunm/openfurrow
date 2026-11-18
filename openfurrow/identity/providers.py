@@ -11,8 +11,12 @@ from __future__ import annotations
 
 import os
 import re
+import threading
+import time
+from collections.abc import Callable
 from dataclasses import dataclass
 from enum import Enum
+from typing import Any
 from urllib.parse import urlsplit
 
 from carnelian import federation as federationAttributes
@@ -256,22 +260,56 @@ def _context(settings: _SignInSettings):
   return secureContext(settings.certificateAuthority)
 
 
+providerRefreshSeconds = 60 * 60
+
+
+class _ProviderCache:
+  """Each provider's discovery, metadata and keys, built once and rebuilt after providerRefreshSeconds; a failed build
+  is never kept, so the next sign-in tries again."""
+
+  def __init__(self, clock: Callable[[], float] = time.monotonic) -> None:
+    self._clock = clock
+    self._lock = threading.Lock()
+    self._built: dict[tuple[str, str], tuple[float, Any]] = {}
+
+  def get(self, settings: BaseModel, build: Callable[[], Any]) -> Any:
+    key = (type(settings).__name__, settings.model_dump_json())
+    with self._lock:
+      found = self._built.get(key)
+      if found is not None and self._clock() - found[0] < providerRefreshSeconds:
+        return found[1]
+    value = build()
+    with self._lock:
+      self._built[key] = (self._clock(), value)
+    return value
+
+
+_providers = _ProviderCache()
+
+
 def relyingParty(settings: OpenIDConnectSettings):
-  fetcher = Fetcher(_context(settings))
-  try:
-    provider = discover(settings.issuer, fetcher)
-  except (HTTPFailure, SignInRefused) as error:
-    raise ProviderFailure(f"the provider at {settings.issuer} cannot be used: {error}") from None
-  return RelyingParty(provider, settings.clientID, secret(settings.clientSecretVariable), settings.returnURL, fetcher)
+  def build():
+    fetcher = Fetcher(_context(settings))
+    try:
+      provider = discover(settings.issuer, fetcher)
+    except SignInRefused as error:
+      raise ProviderFailure(f"the provider at {settings.issuer} cannot be used: {error}") from None
+    return RelyingParty(provider, settings.clientID, secret(settings.clientSecretVariable), settings.returnURL, fetcher)
+
+  return _providers.get(settings, build)
 
 
 def serviceProvider(settings: SAMLSettings):
-  try:
-    metadata = Fetcher(_context(settings)).getBytes(settings.metadataURL, "application/samlmetadata+xml, application/xml;q=0.9")
-    identityProvider = identityProviderFromMetadata(metadata, settings.identityProviderEntityID)
-  except (HTTPFailure, SAMLRefused) as error:
-    raise ProviderFailure(f"the metadata at {settings.metadataURL} cannot be used: {error}") from None
-  return ServiceProvider(settings.entityID, settings.returnURL, identityProvider)
+  def build():
+    try:
+      metadata = Fetcher(_context(settings)).getBytes(settings.metadataURL,
+                                                      "application/samlmetadata+xml, application/xml;q=0.9")
+      identityProvider = identityProviderFromMetadata(metadata, settings.identityProviderEntityID)
+    except (HTTPFailure, SAMLRefused) as error:
+      raise ProviderFailure(f"the metadata at {settings.metadataURL} cannot be used: {error}") from None
+    return ServiceProvider(settings.entityID, settings.returnURL, identityProvider)
+
+  return _providers.get(settings, build)
 
 
 def directory(settings: LDAPSettings):
@@ -282,7 +320,7 @@ def directory(settings: LDAPSettings):
 
 def fromOpenIDConnect(identity) -> ProvidedIdentity:
   return ProvidedIdentity(subject=identity.subject, userName=identity.userName, displayName=identity.displayName,
-                          email=identity.email, groups=identity.groups)
+                          email=identity.email if identity.emailVerified else None, groups=identity.groups)
 
 
 def fromSAML(settings: SAMLSettings, identity) -> ProvidedIdentity:
@@ -314,10 +352,11 @@ def institution(settings: FederationSettings, entityID: str):
   """An institution offered here, its metadata fetched from the federation and checked."""
   if entityID not in settings.institutions:
     raise IdentityError(f"'{entityID}' is not an institution offered here")
+  federation = _providers.get(settings, lambda: Federation("the federation", settings.mdqURL, settings.signingCertificate,
+                                                           Fetcher(_context(settings))))
   try:
-    return Federation("the federation", settings.mdqURL, settings.signingCertificate,
-                      Fetcher(_context(settings))).institution(entityID)
-  except (HTTPFailure, SAMLRefused) as error:
+    return federation.institution(entityID)
+  except SAMLRefused as error:
     raise ProviderFailure(f"the institution {entityID} cannot be used: {error}") from None
 
 

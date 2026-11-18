@@ -221,7 +221,6 @@ measure), `owner` (the owner's call), `done`.
   against the testbed's Keycloak and Samba in the workflow's `providers` job. Not yet:
   - a check against a live Entra ID tenant, which needs a tenant and a public HTTPS address;
   - provider pages on the web (with GOV-6) and signing out at the provider;
-  - a provider's discovery and keys are fetched at each sign-in; cache them once it matters;
   - research federations offer a configured list of institutions; choosing among all of
     eduGAIN needs its 95 MB aggregate read as a stream;
   - the lower bounds in `pyproject.toml` are not tested: a validation run on the oldest

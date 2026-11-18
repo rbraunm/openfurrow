@@ -29,6 +29,10 @@ would make differently is a provider setting with the strict choice as its defau
   - `linkByUserName`: the identity is linked to the account with the same user name, for a
     provider trusted with the organization's names -- typically the one that provisions
     them by SCIM.
+- **What a provider says** is taken as it says it, except that an OpenID Connect e-mail
+  address is kept only when the provider marks it verified (`email_verified`).
+- **A provider's discovery document, metadata and keys** are fetched once and reused for an
+  hour in each process; a fetch that fails is not kept, so the next sign-in tries again.
 - **Groups** follow the provider's setting `groups`: `ignore` (the default), or `mirror`:
   the provider's groups become OpenFurrow groups named `<provider>/<group>`, owned by the
   provider, their membership set at each sign-in and by provisioning and nowhere else.
