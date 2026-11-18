@@ -212,8 +212,12 @@ measure), `owner` (the owner's call), `done`.
   and a refused permission there answers with the API's JSON rather than a page.
 - **GOV-3** `build` **The sign-in library**: OpenID Connect, SAML 2.0, LDAP, SCIM 2.0,
   standard library only, verification-only cryptography -- built as its own project,
-  Carnelian, under MIT (decision 0039). Done there: signature verification (RSA PKCS #1
-  v1.5 and PSS, ECDSA on the NIST curves) and key reading from certificates.
+  Carnelian, under MIT (decision 0039). Done there, each tested against its specification's
+  vectors and a real provider (Keycloak, Samba Active Directory, Entra's documented SCIM
+  requests): signature verification, JOSE, the OpenID Connect relying party, the SAML 2.0
+  service provider, the LDAP client and the SCIM 2.0 service provider. Next: wiring them into
+  OpenFurrow's accounts and groups. Not yet: a check against a live Entra ID tenant, which
+  needs a tenant and a public HTTPS address.
 - **GOV-4** `build` **Test fixtures and dataset**: every sign-in provider and both
   databases, reprovisionable for development and one-time for the workflow, one dataset
   for all.
