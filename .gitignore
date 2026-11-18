@@ -8,3 +8,6 @@ dist/
 
 # Local, host-specific Claude notes
 CLAUDE.local.md
+
+# Agent worktrees
+.claude/worktrees/
