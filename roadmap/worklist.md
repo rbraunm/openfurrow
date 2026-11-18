@@ -217,10 +217,14 @@ measure), `owner` (the owner's call), `done`.
   requests): signature verification, JOSE, the OpenID Connect relying party, the SAML 2.0
   service provider, the LDAP client and the SCIM 2.0 service provider. Wired into OpenFurrow
   as decision 0040: providers on the command line, sign-in through OpenID Connect, SAML and
-  the directory on the sign-in page, SCIM provisioning at `/scim/<provider>/v2`, tested
+  the directory on the sign-in page, signing out at either end, SCIM provisioning at
+  `/scim/<provider>/v2`, tested
   against the testbed's Keycloak and Samba in the workflow's `providers` job. Not yet:
   - a check against a live Entra ID tenant, which needs a tenant and a public HTTPS address;
-  - provider pages on the web (with GOV-6) and signing out at the provider;
+  - provider pages on the web (with GOV-6);
+  - a research federation's institutions cannot sign a person out here: their SAML
+    LogoutRequests are refused, since which institution sent one is known only after it is
+    checked; this waits on a Carnelian addition that reads the claimed issuer first;
   - research federations offer a configured list of institutions; choosing among all of
     eduGAIN needs its 95 MB aggregate read as a stream;
   - the lower bounds in `pyproject.toml` are not tested: a validation run on the oldest

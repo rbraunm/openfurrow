@@ -72,13 +72,42 @@ would make differently is a provider setting with the strict choice as its defau
   and its return address is exempt from the same-site check: the signed answer is its proof.
   The session cookie stays SameSite=Strict; after a provider's answer the browser is moved
   on by a page of this site, so the cookie travels from then on.
+- **Signing out** (owner, 2026-11-18): signing out of OpenFurrow ends only OpenFurrow's
+  session, unless the provider's setting `signOutEverywhere` says to sign out there too; and
+  when a provider ends a person's session and tells OpenFurrow, OpenFurrow ends it too.
+  - Each session started through a provider keeps the provider's own name for its session
+    (the OpenID Connect `sid`, the SAML SessionIndex, the CAS service ticket) and what
+    signing out of it needs (the ID token; the NameID, its format and the SessionIndex).
+  - Signing out everywhere ends the session here first, then sends the browser to the
+    provider: OpenID Connect RP-Initiated Logout with the ID token as hint, CAS logout, or a
+    signed SAML LogoutRequest whose answer comes back to `/signin/with/<provider>/signout`,
+    kept like a pending sign-in. The provider sends the person on to the provider's
+    `signedOutURL` when one is set. A provider that cannot sign out leaves the session here
+    ended, and the page says so.
+  - A provider's own sign-outs end the sessions they name here: an OpenID Connect
+    back-channel logout token at `/signin/with/<provider>/backchannel-logout` (with a
+    session ID only that session, and only when its subject matches; with only a subject,
+    every session of that subject from the provider), a SAML LogoutRequest at the provider's
+    sign-out address (that NameID's sessions, only those with the SessionIndexes it names
+    when it names any), and a CAS logout notice posted to the return address (only the
+    session its ticket started, since CAS does not sign these). These addresses are exempt
+    from the same-site check: the signature, or the ticket, is the proof.
+  - SAML single logout in either direction needs the provider's `singleLogoutURL` (this
+    site's sign-out address, published in the metadata) and its signing key.
+  - A logout request from an institution of a research federation is refused: which
+    institution sent it cannot be known before it is checked.
+  - Every message that may be used only once (a SAML assertion or LogoutRequest, a logout
+    token) is claimed in the store, in a transaction of its own, so every process serving
+    one database refuses it the second time.
 - **Everything is audited**: sign-ins, links, accounts and groups made or changed by a
-  provider, with the surface `provisioning` for SCIM.
+  provider, with the surface `provisioning` for SCIM; and every sign-out, here, at the
+  provider, and from the provider with how many sessions it ended.
 
 ## Consequences
 
-- Store version 17: the providers, the links, the provisioned resources and the pending
-  sign-ins.
+- Store version 18: the providers, the links, the provisioned resources, the pending
+  sign-ins, the provider sessions behind session tokens and the claimed message
+  identifiers.
 - OpenFurrow depends on Carnelian as a package from PyPI, with a lower bound only, as the
   Scientific Python packaging guidance has it. The exact version tested is pinned in
   `constraints.txt` like every other dependency, so a new release reaches the validation
