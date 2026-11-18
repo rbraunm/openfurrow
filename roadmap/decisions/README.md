@@ -55,6 +55,7 @@ in `milestones.md`, a finding in `research/`), not turned into busywork ADRs.
 | 0038 | Audit log                             | Accepted          | yes        | Every facade change writes an event in its transaction: when, who, surface, action, scope and what changed before and after; refused sign-ins recorded; never edited by the tool. |
 | 0039 | Sign-in library: Carnelian            | Accepted          | yes        | The sign-in library is its own project, Carnelian, under MIT so others (GPLv2 projects included) can use it; standard library only, verification-only cryptography; OpenFurrow depends on it and stays Apache-2.0. |
 | 0040 | Identity providers                    | Accepted          | yes        | Providers configured in the store, secrets from environment variables; identities linked by the provider's subject; new accounts refused, created or linked by user name as the provider's setting says; groups ignored or mirrored as `<provider>/<group>`; SCIM at `/scim/<provider>/v2`, a deleted user deactivated. |
+| 0041 | Scheduled tasks                       | Accepted          | yes        | Task kinds are code, tasks are configuration (kind, parameters, five-field cron schedule in the server's zone, time limit); a separate `openfurrow scheduler` service starts each run as its own subprocess, claimed in the database so none runs twice; every run recorded with outcome and output; `manageTasks` permission, tasks page and CLI, run now; a missed run runs once. First kind: federationRefresh. |
 
 ## Recorded elsewhere (not ADRs)
 

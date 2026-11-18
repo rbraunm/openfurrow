@@ -233,6 +233,9 @@ measure), `owner` (the owner's call), `done`.
   databases, reprovisionable for development and one-time for the workflow, one dataset
   for all.
 - **GOV-5** `build` **Retention** (F6), with the files as received (REC-16).
+- **GOV-7** `build` **Scheduled tasks** (decision 0041): the scheduler service, task kinds
+  and runs as subprocesses, the tasks page and command line; the first kind refreshes a
+  federation's aggregate so a sign-in can offer every eduGAIN institution.
 
 ## First real user (USR)
 
