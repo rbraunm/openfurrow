@@ -296,7 +296,9 @@ when the Done-when bar is met.
   real server started in a thread answering `/health` on an ephemeral port (a genuine bind,
   which a test client cannot show). Depends: B1.
 - [ ] **B4 -- Cross-OS service install/uninstall** (Phase 2) -- Windows service via
-  PowerShell 5.1, systemd on Linux, launchd on macOS. Depends: B3.
+  PowerShell 5.1, systemd on Linux, launchd on macOS. It installs the scheduler
+  (`openfurrow scheduler`, decision 0041) as a second service beside the web server, on the
+  same store; until then the scheduler is started by hand. Depends: B3.
 - [ ] **B5 -- Auth + session scaffolding** (Phase 2) -- arrives with service mode; ties ADR 0005.
 
 ### Lane D -- Analyst web UI

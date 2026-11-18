@@ -225,8 +225,10 @@ measure), `owner` (the owner's call), `done`.
   - a research federation's institutions cannot sign a person out here: their SAML
     LogoutRequests are refused, since which institution sent one is known only after it is
     checked; this waits on a Carnelian addition that reads the claimed issuer first;
-  - research federations offer a configured list of institutions; choosing among all of
-    eduGAIN needs its 95 MB aggregate read as a stream;
+  - a research federation offers every institution of its discovery aggregate (all of
+    eduGAIN, refreshed by its scheduled task, GOV-7) or a configured list; signing in through
+    an institution found in the aggregate is tested only with the testbed's federation, whose
+    MDQ service is the same path (below);
   - the lower bounds in `pyproject.toml` are not tested: a validation run on the oldest
     allowed versions, with the bounds following SPEC 0 (Python releases for 3 years, core
     dependencies for 2);
@@ -237,9 +239,18 @@ measure), `owner` (the owner's call), `done`.
   databases, reprovisionable for development and one-time for the workflow, one dataset
   for all.
 - **GOV-5** `build` **Retention** (F6), with the files as received (REC-16).
-- **GOV-7** `build` **Scheduled tasks** (decision 0041): the scheduler service, task kinds
-  and runs as subprocesses, the tasks page and command line; the first kind refreshes a
-  federation's aggregate so a sign-in can offer every eduGAIN institution.
+- **GOV-7** `done` **Scheduled tasks.** Built as decision 0041: `openfurrow scheduler`
+  beside the web server, task kinds in code and tasks in the store, each run a subprocess
+  claimed by one conditional update, time limits, crashes and dead schedulers recorded,
+  clean stop on Ctrl+C and SIGTERM; `manageTasks`, the tasks page and `openfurrow task`.
+  The first kind, `federationRefresh`, reads a federation's discovery aggregate so the
+  sign-in page searches every eduGAIN institution (decision 0040), checked against a signed
+  aggregate made in the test and, with `--live`, eduGAIN's own. Not yet:
+  - the scheduler is started by hand; it is installed as a service with the web server by
+    the service install (implementation plan B4, decision 0009), not built yet;
+  - adding and deleting tasks: they are made by their features or through the library;
+  - a run whose scheduler died on another host of a cluster is not detected;
+  - the next kinds: retention (GOV-5), reports and audit summaries.
 
 ## First real user (USR)
 

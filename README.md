@@ -62,6 +62,23 @@ It binds to loopback by default and **has no authentication yet**, so it is a lo
 single-user tool: do not put it on a network. HTTPS is available as configuration
 (`service.tls`) for when that changes.
 
+### The scheduler
+
+Work on a schedule -- such as reading a research federation's list of institutions every
+six hours -- is done by the scheduler, a second process run beside the web server on the
+same store:
+
+```bash
+openfurrow scheduler trials.db     # Ctrl+C stops it; running tasks finish or are recorded stopped
+openfurrow task list trials.db     # the tasks, their schedules, next and last runs
+openfurrow task run trials.db federationRefresh-edugain    # run one now
+```
+
+Without it nothing scheduled happens; the web interface's Tasks page says when it last
+checked in. Schedules are five-field cron expressions read in the setting `tasks.timeZone`
+(UTC by default). Installing the web server and the scheduler as services is not built
+yet; until it is, start both by hand.
+
 ## Worked example
 
 [`examples/yatesOats/`](examples/yatesOats/) runs the whole loop on Yates's 1935 oat

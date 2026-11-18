@@ -46,8 +46,22 @@ would make differently is a provider setting with the strict choice as its defau
   fetched from the federation and checked against its key and expiry. A person is named by a
   scoped identifier (subject-id, pairwise-id or eduPersonPrincipalName, as the settings
   choose), and an institution may only vouch for the scopes its federation registered for
-  it. Searching every institution of eduGAIN (about 6,600
-  identity providers, a 95 MB signed file) is left until a deployment needs it.
+  it.
+- **Every institution of a federation** (owner, 2026-11-18: offer all of eduGAIN, about
+  6,600 identity providers in a 95 MB signed aggregate): instead of naming institutions, a
+  federation provider's settings may name a discovery aggregate, its address and signing
+  certificate (checked like the MDQ one); naming both is refused. Its refresh task (decision
+  0041; every six hours, 15 minutes at most) streams the aggregate through Carnelian, checks
+  its signature over the whole document, and replaces the provider's stored discovery list
+  in one transaction: each institution not hidden from discovery, with its display names
+  per language, its scopes and its registration authority, and the list's fetch time and
+  validity; entities the aggregate's checks leave out are counted and named in the run's
+  output. A refresh that fails keeps the previous list. No key from the aggregate is
+  stored: a sign-in still fetches the chosen institution's metadata by MDQ and checks it as
+  above, and refuses an entity ID that is not in the stored list. The sign-in page searches
+  the list on the server: names in any language, entity IDs and scopes, case and accents
+  ignored, every word of the query matched, at most 50 shown with the names in the
+  person's language; before the first refresh it says the list is not loaded yet.
 - **The service's own SAML keys** (owner, 2026-11-18: encrypted sign-ins supported, as
   federations such as InCommon expect): a SAML or federation provider may name a key that
   signs its requests and keys that decrypt its assertions, each a PEM key and certificate
@@ -105,12 +119,13 @@ would make differently is a provider setting with the strict choice as its defau
 
 ## Consequences
 
-- Store version 18: the providers, the links, the provisioned resources, the pending
-  sign-ins, the provider sessions behind session tokens and the claimed message
-  identifiers.
+- The store keeps the providers, the links, the provisioned resources, the pending
+  sign-ins, the provider sessions behind session tokens, the claimed message identifiers,
+  and each federation's discovery list (store version 19, with decision 0041).
 - OpenFurrow depends on Carnelian as a package from PyPI, with a lower bound only, as the
   Scientific Python packaging guidance has it. The exact version tested is pinned in
   `constraints.txt` like every other dependency, so a new release reaches the validation
   runs only by a deliberate change.
 - Each provider is tested against the testbed's real one (Keycloak, Samba Active Directory)
-  and SCIM against Entra ID's documented requests.
+  and SCIM against Entra ID's documented requests; a discovery aggregate against one signed
+  in the test and served over HTTPS, and with `--live` against eduGAIN's.
