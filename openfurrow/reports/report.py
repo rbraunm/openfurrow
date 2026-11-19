@@ -7,12 +7,15 @@ and the assessments they are taken on (decision 0017) -- then, for
 each numeric assessment, the AOV Means Table -- the analysis-of-variance table, the
 lettered treatment means, the grand mean, the coefficient of variation, and the LSD --
 followed by a reproducibility block (decision 0004): the method, the randomization
-seed, a stable hash of the inputs, and the library versions.
+seed, the missing-plot policy, a stable hash of the inputs, and the library versions.
 
 The report orchestrates the analysis. A per-assessment analysis that cannot be
-performed (a missing cell, a non-numeric assessment) is reported as an explicit
-note in that assessment's section rather than silently skipped or failing the
-whole report -- the reason is surfaced, never hidden.
+performed (a missing plot the policy refuses, a pattern of missing plots that is not
+estimable, a non-numeric assessment) is reported as an explicit note in that
+assessment's section rather than silently skipped or failing the whole report -- the
+reason is surfaced, never hidden. An assessment analysed with missing plots (decision
+0043) says which plots, under which policy, that its means are adjusted, and each pair's
+own standard error; the reproducibility block records how each plot was handled.
 
 Localization (decision 0007): the report is a template, not a wall of text. The
 Markdown structure -- headings, pipes, alignment rows -- lives here; every string a
@@ -51,7 +54,9 @@ from openfurrow.analysis import (
   methodKeyFor,
   separateMeans,
 )
-from openfurrow.analysis.meanSeparation import MeanComparison
+from openfurrow.analysis.anova import AnovaResult
+from openfurrow.analysis.meanSeparation import MeanComparison, commonValue
+from openfurrow.analysis.missingPlots import MissingPlotPolicy, SumsOfSquares
 from openfurrow.analysis.subsamples import missingSubsamples, plotValues
 from openfurrow.analysis.transforms import backTransformInterval, backTransformMean
 from openfurrow.i18n import Translator, sourceLocale, translatorFor
@@ -106,6 +111,7 @@ def buildReportWithCharts(
   meanComparison: MeanComparison = MeanComparison.protectedLSD,
   locale: str = sourceLocale,
   settingsUsed: list | None = None,
+  missingPlots: MissingPlotPolicy = MissingPlotPolicy.refuse,
 ) -> ReportWithCharts:
   """The report with a chart under each table of means; `marker` must not occur in the trial."""
   if not marker.isalnum():
@@ -113,7 +119,9 @@ def buildReportWithCharts(
   charts: list[MeansChart] = []
   token = _chartSink.set((marker, charts))
   try:
-    markdown = buildReport(package, layout, observations, significanceLevel, meanComparison, locale, settingsUsed)
+    markdown = buildReport(
+      package, layout, observations, significanceLevel, meanComparison, locale, settingsUsed, missingPlots,
+    )
   finally:
     _chartSink.reset(token)
   return ReportWithCharts(markdown, marker, charts)
@@ -129,19 +137,36 @@ def _chartLines(chart: MeansChart) -> list[str]:
 
 
 def _meansChart(
-  title: str, axisTitle: str, means: list[tuple[str, float, str | None]], standardError: float,
+  title: str, axisTitle: str, means: list[tuple[str, float, float, str | None]],
   transform: Transform, offset: float, decimals: int, closing: str, translator: Translator,
 ) -> MeansChart:
-  """A chart of means given on the analysed scale, each with one standard error either side."""
+  """A chart of means given on the analysed scale as (label, mean, standard error, letters).
+
+  Each bar has one standard error of its own mean either side; the caption gives the one
+  figure when every mean has the same, and their range when unequal replication gives
+  each its own.
+  """
   bars = []
-  for label, mean, group in means:
+  for label, mean, standardError, group in means:
     low, high = backTransformInterval(transform, mean - standardError, mean + standardError, offset)
     bars.append(ChartBar(label=label, mean=backTransformMean(transform, mean, offset), low=low, high=high, group=group))
-  error = translator.number(standardError, decimals=decimals)
-  whiskers = (
-    translator.text("report.chart.whiskers", error=error) if transform is Transform.none
-    else translator.text("report.chart.whiskersTransformed", error=error, scale=_scaleName(transform, offset, translator))
-  )
+  errors = [standardError for _, _, standardError, _ in means]
+  shared = commonValue(errors)
+  if shared is not None:
+    error = translator.number(shared, decimals=decimals)
+    whiskers = (
+      translator.text("report.chart.whiskers", error=error) if transform is Transform.none
+      else translator.text("report.chart.whiskersTransformed", error=error, scale=_scaleName(transform, offset, translator))
+    )
+  else:
+    low = translator.number(min(errors), decimals=decimals)
+    high = translator.number(max(errors), decimals=decimals)
+    whiskers = (
+      translator.text("report.chart.whiskersEach", low=low, high=high) if transform is Transform.none
+      else translator.text(
+        "report.chart.whiskersEachTransformed", low=low, high=high, scale=_scaleName(transform, offset, translator),
+      )
+    )
   return MeansChart(title=title, axisTitle=axisTitle, caption=f"{whiskers} {closing}", decimals=decimals, bars=bars)
 
 
@@ -153,11 +178,14 @@ def buildReport(
   meanComparison: MeanComparison = MeanComparison.protectedLSD,
   locale: str = sourceLocale,
   settingsUsed: list | None = None,
+  missingPlots: MissingPlotPolicy = MissingPlotPolicy.refuse,
 ) -> str:
   """Build the full Markdown trial report, rendered in `locale`.
 
   `settingsUsed` are the effective settings the analysis ran under (decision 0035), named
   with where each was set; a report built without a store has none to name.
+  `missingPlots` is the policy for a plot without a value (decision 0043); the
+  reproducibility block records it with every missing plot and how it was handled.
   """
   if layout.trialCode != package.trial.trialCode:
     raise AnalysisError(
@@ -176,12 +204,17 @@ def buildReport(
   lines += _weatherSection(package, translator)
   lines += _ratingsSection(package, translator)
   lines += _assessmentsSection(package, translator)
+  withMissingPlots: list[AnovaResult] = []
   for assessment in package.assessments:
-    lines += _assessmentSection(
-      assessment, package, layout, observations, significanceLevel, meanComparison, translator
+    section, result = _assessmentSection(
+      assessment, package, layout, observations, significanceLevel, meanComparison, missingPlots, translator,
     )
+    lines += section
+    if result is not None and result.missingCells:
+      withMissingPlots.append(result)
   lines += _reproducibilitySection(
     package, layout, observations, significanceLevel, meanComparison, translator, settingsUsed or [],
+    missingPlots, withMissingPlots,
   )
   return "\n".join(lines).rstrip() + "\n"
 
@@ -644,8 +677,9 @@ def _quantityText(quantity: Quantity, translator: Translator) -> str:
 
 
 def _assessmentSection(
-  assessment, package, layout, observations, significanceLevel, meanComparison, translator: Translator
-) -> list[str]:
+  assessment, package, layout, observations, significanceLevel, meanComparison, missingPlots, translator: Translator,
+) -> tuple[list[str], AnovaResult | None]:
+  """One assessment's section, and its single-error analysis when there is one."""
   rating = package.ratingFor(assessment.assessmentCode)
   lines = [
     f"## {translator.text('report.heading.assessment', name=rating.name, code=assessment.assessmentCode)}",
@@ -654,30 +688,32 @@ def _assessmentSection(
   if rating.dataType is not AssessmentDataType.numeric:
     lines.append(translator.text("report.assessment.notNumeric", dataType=rating.dataType.value))
     lines.append("")
-    return lines
+    return lines, None
   lines += _subsampleLines(assessment, package, observations, translator)
   if package.design.designType is DesignType.splitPlot:
     return lines + _splitPlotSubsections(
       assessment.assessmentCode, rating, package, layout, observations, significanceLevel, meanComparison, translator,
-    )
+    ), None
   try:
     analyze = analyzeCrd if package.design.designType is DesignType.crd else analyzeRcbd
-    result = analyze(assessment.assessmentCode, package, layout, observations)
+    result = analyze(assessment.assessmentCode, package, layout, observations, missingPlots)
   except AnalysisError as error:
     lines.append(translator.text("report.assessment.notAnalyzed", reason=str(error)))
     lines.append("")
-    return lines
+    return lines, None
 
   unit = f" ({rating.unit})" if rating.unit else ""
 
   lines.append(f"### {translator.text('report.heading.anova')}")
   lines.append("")
   lines += _excludedCheckLines(assessment, package, layout, observations, translator)
+  lines += _missingPlotLines(result, translator)
   if result.transform is not Transform.none:
     lines.append(
       translator.text("report.anova.transformedScale", scale=_scaleName(result.transform, result.transformOffset, translator))
     )
     lines.append("")
+  lines += _sumsOfSquaresLines(result, translator)
   anovaHeader = " | ".join(
     translator.text(key)
     for key in (
@@ -701,13 +737,15 @@ def _assessmentSection(
       f"| {_probabilityCell(row.pValue, translator)} |"
     )
   lines.append("")
-  lines.append(
-    _field(translator, "report.anova.grandMean", f"{translator.number(result.grandMean, decimals=3)}{unit}")
-  )
+  adjusted = bool(result.missingCells)
+  lines.append(_field(
+    translator, "report.anova.adjustedGrandMean" if adjusted else "report.anova.grandMean",
+    f"{translator.number(result.grandMean, decimals=3)}{unit}",
+  ))
   lines.append(
     _field(
       translator,
-      "report.anova.coefficientOfVariation",
+      "report.anova.coefficientOfVariationAdjusted" if adjusted else "report.anova.coefficientOfVariation",
       translator.text(
         "report.value.percent", value=translator.number(result.coefficientOfVariation, decimals=2)
       ),
@@ -721,14 +759,82 @@ def _assessmentSection(
     lines += _factorialSubsections(
       assessment.assessmentCode, rating, package, layout, observations, significanceLevel, meanComparison, translator,
     )
-  lines += _assumptionsSubsection(assessment.assessmentCode, package, layout, observations, significanceLevel, translator)
+  lines += _assumptionsSubsection(
+    assessment.assessmentCode, package, layout, observations, significanceLevel, translator, missingPlots,
+  )
   if package.design.checkArrangement is not CheckArrangement.none:
-    lines += _checksSubsections(assessment, package, layout, observations, significanceLevel, meanComparison, translator)
+    lines += _checksSubsections(
+      assessment, package, layout, observations, significanceLevel, meanComparison, missingPlots, translator,
+    )
+  return lines, result
+
+
+def _missingCellText(cell, designType: DesignType, translator: Translator) -> str:
+  """One missing plot by number, treatment and, in blocks, block."""
+  if designType is DesignType.crd:
+    return translator.text("report.missing.cellNoBlock", plot=str(cell.plotNumber), treatment=cell.treatmentCode)
+  return translator.text(
+    "report.missing.cell", plot=str(cell.plotNumber), treatment=cell.treatmentCode, block=translator.integer(cell.block),
+  )
+
+
+def _missingPlotLines(result: AnovaResult, translator: Translator) -> list[str]:
+  """Which plots had no value and what the analysis did about them (decision 0043)."""
+  if not result.missingCells:
+    return []
+  plots = ", ".join(_missingCellText(cell, result.designType, translator) for cell in result.missingCells)
+  if result.missingPlotPolicy is MissingPlotPolicy.leastSquares:
+    return [translator.text("report.missing.leastSquares", plots=plots), ""]
+  estimateHeader = (
+    translator.text("report.missing.column.estimate") if result.transform is Transform.none
+    else translator.text(
+      "report.missing.column.estimateOnScale", scale=_scaleName(result.transform, result.transformOffset, translator),
+    )
+  )
+  lines = [
+    translator.text("report.missing.estimate", plots=plots),
+    "",
+    f"| {translator.text('report.missing.column.plot')} | {translator.text('report.means.column.treatment')} "
+    f"| {translator.text('report.anova.source.block')} | {estimateHeader} |",
+    "|---|---|---:|---:|",
+    *(
+      f"| {cell.plotNumber} | {cell.treatmentCode} | {translator.integer(cell.block)} "
+      f"| {translator.number(cell.estimate, decimals=4)} |"
+      for cell in result.missingCells
+    ),
+    "",
+  ]
+  if len(result.missingCells) == 1:
+    lines += [translator.text("report.missing.closedForm"), ""]
+  else:
+    lines += [
+      translator.text(
+        "report.missing.iterated", cycles=translator.integer(result.estimation.cycles),
+        tolerance=f"{result.estimation.tolerance:g}",
+      ),
+      "",
+    ]
   return lines
 
 
+def _sumsOfSquaresLines(result: AnovaResult, translator: Translator) -> list[str]:
+  """Which sums of squares the table holds, when they are not those of a complete table."""
+  if result.sumsOfSquares is SumsOfSquares.balanced:
+    return []
+  if result.sumsOfSquares is SumsOfSquares.completedTable:
+    return [
+      translator.text(
+        "report.anova.completedTable", count=translator.integer(len(result.missingCells)),
+        bias=translator.number(result.estimation.treatmentBias, decimals=4),
+      ),
+      "",
+    ]
+  key = "report.anova.typeIIINoBlocks" if result.designType is DesignType.crd else "report.anova.typeIIIBlocks"
+  return [translator.text(key), ""]
+
+
 def _checksSubsections(
-  assessment, package, layout, observations, significanceLevel, meanComparison, translator: Translator,
+  assessment, package, layout, observations, significanceLevel, meanComparison, missingPlots, translator: Translator,
 ) -> list[str]:
   """The untreated checks beside the plots: their level, and the comparisons the arrangement calls for."""
   code = assessment.assessmentCode
@@ -784,17 +890,19 @@ def _checksSubsections(
     except AnalysisError as error:
       lines += [translator.text("report.assessment.notAnalyzed", reason=str(error)), ""]
   if assessment.efficacy is not None:
-    lines += _efficacySubsection(assessment, package, layout, observations, significanceLevel, meanComparison, translator)
+    lines += _efficacySubsection(
+      assessment, package, layout, observations, significanceLevel, meanComparison, missingPlots, translator,
+    )
   return lines
 
 
 def _efficacySubsection(
-  assessment, package, layout, observations, significanceLevel, meanComparison, translator: Translator,
+  assessment, package, layout, observations, significanceLevel, meanComparison, missingPlots, translator: Translator,
 ) -> list[str]:
   method = translator.text(f"report.checks.efficacyMethod.{assessment.efficacy.method.value}")
   lines = [f"#### {translator.text('report.checks.heading.efficacy', method=method)}", ""]
   try:
-    result = analyzeEfficacy(assessment.assessmentCode, package, layout, observations)
+    result = analyzeEfficacy(assessment.assessmentCode, package, layout, observations, missingPlots)
   except AnalysisError as error:
     return lines + [translator.text("report.assessment.notAnalyzed", reason=str(error)), ""]
   sourceNames = {
@@ -898,7 +1006,7 @@ def _twoFactorMeans(
     meanHeader = translator.text(meanHeaderKey, unit=unit)
     lines += _chartLines(_meansChart(
       translator.text("report.chart.factorMeans", factor=factors[factorCode].name), meanHeader,
-      [(levelNames[group.levelCode], group.mean, group.group) for group in separation.groups], separation.standardError,
+      [(levelNames[group.levelCode], group.mean, separation.standardError, group.group) for group in separation.groups],
       result.transform, result.transformOffset, 3, translator.text("report.chart.letters"), translator,
     ))
   cellMeans = {mean.treatmentCode: mean.mean for mean in result.treatmentMeans}
@@ -996,9 +1104,10 @@ def _anovaTable(table, sourceNames: dict[str, str], translator: Translator) -> l
 
 
 def _assumptionsSubsection(
-  assessmentCode, package, layout, observations, significanceLevel, translator: Translator
+  assessmentCode, package, layout, observations, significanceLevel, translator: Translator,
+  missingPlots: MissingPlotPolicy = MissingPlotPolicy.refuse,
 ) -> list[str]:
-  assumptions = assessAssumptions(assessmentCode, package, layout, observations, significanceLevel)
+  assumptions = assessAssumptions(assessmentCode, package, layout, observations, significanceLevel, missingPlots)
   lines = [
     f"### {translator.text('report.heading.assumptions')}",
     "",
@@ -1059,8 +1168,27 @@ def _diagnosticLine(outcome, translator: Translator) -> str:
   return f"- {line}"
 
 
+def _missingPlotRecord(result: AnovaResult, translator: Translator) -> str:
+  """One assessment's missing plots and how each was handled, for the reproducibility block."""
+  cells = [_missingCellText(cell, result.designType, translator) for cell in result.missingCells]
+  if result.missingPlotPolicy is MissingPlotPolicy.leastSquares:
+    return translator.text(
+      "report.reproducibility.missingLeastSquares", assessment=result.assessmentCode, plots=", ".join(cells),
+    )
+  estimated = ", ".join(
+    translator.text("report.missing.cellEstimated", cell=text, estimate=translator.number(cell.estimate, decimals=4))
+    for text, cell in zip(cells, result.missingCells)
+  )
+  return translator.text(
+    "report.reproducibility.missingEstimate", assessment=result.assessmentCode,
+    cycles=translator.integer(result.estimation.cycles), tolerance=f"{result.estimation.tolerance:g}",
+    bias=translator.number(result.estimation.treatmentBias, decimals=4), plots=estimated,
+  )
+
+
 def _reproducibilitySection(
   package, layout, observations, significanceLevel, meanComparison, translator: Translator, settingsUsed,
+  missingPlots: MissingPlotPolicy, withMissingPlots: list[AnovaResult],
 ) -> list[str]:
   test = translator.text(methodKeyFor(meanComparison))
   methodKey = {
@@ -1095,6 +1223,11 @@ def _reproducibilitySection(
   ]
   if transformed:
     lines.append(_field(translator, "report.reproducibility.transforms", ", ".join(transformed)))
+  # The policy's name is an identifier, shown as recorded in every locale.
+  lines.append(_field(translator, "report.reproducibility.missingPlots", "; ".join(
+    [translator.text("report.reproducibility.missingPolicy", policy=missingPlots.value)]
+    + [_missingPlotRecord(result, translator) for result in withMissingPlots]
+  )))
   if settingsUsed:
     # Keys and values are identifiers, shown as recorded in every locale; where each was set is display.
     lines.append(_field(translator, "report.reproducibility.settings", "; ".join(
@@ -1128,18 +1261,46 @@ def _treatmentMeansLines(
   """The treatment means after an ANOVA: lettered groups, or each against the check by Dunnett.
 
   `meanLabel` names the mean column when it is not a plain mean (percent control), and
-  `heading` is the level of the section heading where it sits.
+  `heading` is the level of the section heading where it sits. After missing plots the
+  means are adjusted means: the table says so and gives each mean's plots and standard
+  error, and where the standard error of a difference depends on the pair, every pair is
+  listed with its own.
   """
   alpha = translator.number(significanceLevel, decimals=2)
   treatmentRow = next(row for row in result.table if row.source == "treatment")
-  meanHeaderKey = (
-    "report.means.column.mean" if result.transform is Transform.none else "report.means.column.meanOriginalScale"
-  )
+  adjusted = bool(result.missingCells)
+  transformed = result.transform is not Transform.none
+  meanHeaderKey = {
+    (False, False): "report.means.column.mean",
+    (False, True): "report.means.column.meanOriginalScale",
+    (True, False): "report.means.column.adjustedMean",
+    (True, True): "report.means.column.adjustedMeanOriginalScale",
+  }[(adjusted, transformed)]
   meanHeader = meanLabel if meanLabel is not None else translator.text(meanHeaderKey, unit=unit)
+  errorHeader = translator.text(
+    "report.means.column.standardErrorAnalysed" if transformed else "report.means.column.standardError"
+  )
+  plotsOf = {mean.treatmentCode: mean.observationCount for mean in result.treatmentMeans}
   lines = [f"{heading} {translator.text('report.heading.treatmentMeans')}", ""]
 
   def shown(mean: float) -> str:
     return translator.number(backTransformMean(result.transform, mean, result.transformOffset), decimals=decimals)
+
+  def figure(value: float) -> str:
+    return translator.number(value, decimals=decimals)
+
+  def meanCells(treatmentCode: str, mean: float, standardError: float) -> str:
+    if not adjusted:
+      return f"| {treatmentCode} | {shown(mean)} "
+    return f"| {treatmentCode} | {shown(mean)} | {translator.integer(plotsOf[treatmentCode])} | {figure(standardError)} "
+
+  meanHeaders = f"| {translator.text('report.means.column.treatment')} | {meanHeader} " + (
+    f"| {translator.text('report.means.column.plots')} | {errorHeader} " if adjusted else ""
+  )
+  meanAlignment = "|---|---:|" + ("---:|---:|" if adjusted else "")
+
+  def differenceByItem(differences: list[float]) -> str:
+    return translator.text("report.value.range", low=figure(min(differences)), high=figure(max(differences)))
 
   if meanComparison is MeanComparison.dunnett:
     try:
@@ -1151,35 +1312,57 @@ def _treatmentMeansLines(
       else "report.means.notSignificant"
     )
     differenceKey = (
-      "report.dunnett.column.difference" if result.transform is Transform.none
-      else "report.dunnett.column.differenceAnalysed"
+      "report.dunnett.column.differenceAnalysed" if transformed else "report.dunnett.column.difference"
     )
+    byTreatment = comparison.criticalDifference is None
+    absent = translator.text("report.value.absent")
     lines += [
       translator.text(
         "report.dunnett.separation", check=comparison.checkCode, alpha=alpha, significance=significance,
         probability=_probabilityStatement(treatmentRow.pValue, translator),
       ),
       "",
-      f"| {translator.text('report.means.column.treatment')} | {meanHeader} "
-      f"| {translator.text(differenceKey, check=comparison.checkCode)} "
-      f"| {translator.text('report.dunnett.column.different', check=comparison.checkCode)} |",
-      "|---|---:|---:|:--:|",
-      f"| {comparison.checkCode} | {shown(comparison.checkMean)} | - | - |",
+      meanHeaders
+      + f"| {translator.text(differenceKey, check=comparison.checkCode)} "
+      + (
+        f"| {translator.text('report.dunnett.column.standardError')} "
+        f"| {translator.text('report.pairs.column.criticalDifference')} " if byTreatment else ""
+      )
+      + f"| {translator.text('report.dunnett.column.different', check=comparison.checkCode)} |",
+      meanAlignment + "---:|" + ("---:|---:|" if byTreatment else "") + ":--:|",
+      meanCells(comparison.checkCode, comparison.checkMean, comparison.checkStandardError)
+      + f"| {absent} " + (f"| {absent} | {absent} " if byTreatment else "") + f"| {absent} |",
       *(
-        f"| {row.treatmentCode} | {shown(row.mean)} | {translator.number(row.difference, decimals=decimals)} "
-        f"| {translator.text('report.dunnett.yes' if row.significant else 'report.dunnett.no')} |"
+        meanCells(row.treatmentCode, row.mean, row.meanStandardError)
+        + f"| {figure(row.difference)} "
+        + (
+          f"| {figure(row.differenceStandardError)} "
+          f"| {translator.number(row.criticalDifference, decimals=decimals + 1)} " if byTreatment else ""
+        )
+        + f"| {translator.text('report.value.yes' if row.significant else 'report.value.no')} |"
         for row in comparison.comparisons
       ),
       "",
-      _field(translator, "report.means.dunnettDifference",
-             translator.number(comparison.criticalDifference, decimals=decimals + 1), alpha=alpha),
-      "",
     ]
-    means = [(comparison.checkCode, comparison.checkMean, None)] + [
-      (row.treatmentCode, row.mean, None) for row in comparison.comparisons
+    if byTreatment:
+      differences = [row.criticalDifference for row in comparison.comparisons]
+      lines.append(_field(
+        translator, "report.means.dunnettDifferenceByTreatment",
+        translator.text(
+          "report.value.range", low=translator.number(min(differences), decimals=decimals + 1),
+          high=translator.number(max(differences), decimals=decimals + 1),
+        ),
+        alpha=alpha,
+      ))
+    else:
+      lines.append(_field(translator, "report.means.dunnettDifference",
+                          translator.number(comparison.criticalDifference, decimals=decimals + 1), alpha=alpha))
+    lines.append("")
+    means = [(comparison.checkCode, comparison.checkMean, comparison.checkStandardError, None)] + [
+      (row.treatmentCode, row.mean, row.meanStandardError, None) for row in comparison.comparisons
     ]
     return lines + _chartLines(_meansChart(
-      translator.text("report.chart.treatmentMeans", mean=meanHeader), meanHeader, means, comparison.standardError,
+      translator.text("report.chart.treatmentMeans", mean=meanHeader), meanHeader, means,
       result.transform, result.transformOffset, decimals,
       translator.text("report.chart.againstCheck", check=comparison.checkCode), translator,
     ))
@@ -1188,30 +1371,64 @@ def _treatmentMeansLines(
   significance = translator.text(
     "report.means.significant" if separation.treatmentSignificant else "report.means.notSignificant"
   )
+  byPair = separation.criticalDifference is None
   lines += [
     translator.text(
       "report.means.separation", method=translator.text(separation.methodKey), alpha=alpha,
       significance=significance, probability=_probabilityStatement(treatmentRow.pValue, translator),
     ),
     "",
-    f"| {translator.text('report.means.column.treatment')} | {meanHeader} | {translator.text('report.means.column.group')} |",
-    "|---|---:|:--:|",
-    *(f"| {group.treatmentCode} | {shown(group.mean)} | {group.group} |" for group in separation.groups),
+    meanHeaders + f"| {translator.text('report.means.column.group')} |",
+    meanAlignment + ":--:|",
+    *(
+      meanCells(group.treatmentCode, group.mean, group.standardError) + f"| {group.group} |"
+      for group in separation.groups
+    ),
     "",
   ]
-  if result.transform is not Transform.none:
+  if transformed:
     lines += [
       translator.text("report.means.backTransformNote", scale=_scaleName(result.transform, result.transformOffset, translator)),
       "",
     ]
-  lines.append(_field(translator, _differenceKey(meanComparison),
-                      translator.number(separation.criticalDifference, decimals=decimals), alpha=alpha))
+  if byPair:
+    lines.append(_field(
+      translator, _differenceKey(meanComparison, byPair=True),
+      differenceByItem([pair.criticalDifference for pair in separation.comparisons]), alpha=alpha,
+    ))
+  else:
+    lines.append(_field(translator, _differenceKey(meanComparison, byPair=False),
+                        figure(separation.criticalDifference), alpha=alpha))
   if meanComparison is MeanComparison.protectedLSD and not separation.treatmentSignificant:
     lines.append(f"- {translator.text('report.means.notSeparated')}")
   lines.append("")
+  if byPair:
+    differenceHeader = translator.text(
+      "report.pairs.column.differenceAnalysed" if transformed else "report.pairs.column.difference"
+    )
+    lines += [
+      f"{heading}# {translator.text('report.heading.pairs')}",
+      "",
+      translator.text("report.pairs.note"),
+      "",
+    ]
+    if meanComparison is MeanComparison.tukeyHSD and result.designType is not DesignType.crd:
+      lines += [translator.text("report.pairs.tukeyKramerInBlocks"), ""]
+    lines += [
+      f"| {translator.text('report.pairs.column.pair')} | {differenceHeader} | {errorHeader} "
+      f"| {translator.text('report.pairs.column.criticalDifference')} | {translator.text('report.pairs.column.different')} |",
+      "|---|---:|---:|---:|:--:|",
+      *(
+        f"| {pair.firstTreatmentCode} - {pair.secondTreatmentCode} | {figure(pair.difference)} "
+        f"| {figure(pair.standardError)} | {figure(pair.criticalDifference)} "
+        f"| {translator.text('report.value.yes' if pair.significant else 'report.value.no')} |"
+        for pair in separation.comparisons
+      ),
+      "",
+    ]
   return lines + _chartLines(_meansChart(
     translator.text("report.chart.treatmentMeans", mean=meanHeader), meanHeader,
-    [(group.treatmentCode, group.mean, group.group) for group in separation.groups], separation.standardError,
+    [(group.treatmentCode, group.mean, group.standardError, group.group) for group in separation.groups],
     result.transform, result.transformOffset, decimals, translator.text("report.chart.letters"), translator,
   ))
 
@@ -1259,10 +1476,10 @@ def _factorMethod(meanComparison: MeanComparison) -> MeanComparison:
   return MeanComparison.protectedLSD if meanComparison is MeanComparison.dunnett else meanComparison
 
 
-def _differenceKey(meanComparison: MeanComparison) -> str:
-  if meanComparison is MeanComparison.tukeyHSD:
-    return "report.means.honestlySignificantDifference"
-  return "report.means.leastSignificantDifference"
+def _differenceKey(meanComparison: MeanComparison, byPair: bool = False) -> str:
+  """The label of the critical difference: the one LSD or HSD, or the range of those that differ by pair."""
+  name = "honestlySignificantDifference" if meanComparison is MeanComparison.tukeyHSD else "leastSignificantDifference"
+  return f"report.means.{name}ByPair" if byPair else f"report.means.{name}"
 
 
 def _scaleName(transform, offset: float, translator: Translator) -> str:

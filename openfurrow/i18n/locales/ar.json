@@ -101,8 +101,16 @@
       "text": "الدراسة",
       "status": "machineDraft"
     },
+    "report.anova.adjustedGrandMean": {
+      "text": "المتوسط العام (لمتوسطات المعاملات المعدَّلة)",
+      "status": "machineDraft"
+    },
     "report.anova.coefficientOfVariation": {
       "text": "معامل الاختلاف",
+      "status": "machineDraft"
+    },
+    "report.anova.coefficientOfVariationAdjusted": {
+      "text": "معامل الاختلاف (على المتوسط العام المعدَّل)",
       "status": "machineDraft"
     },
     "report.anova.column.degreesOfFreedom": {
@@ -129,6 +137,10 @@
       "text": "مج.م",
       "status": "machineDraft"
     },
+    "report.anova.completedTable": {
+      "text": "مجاميع المربعات هي مجاميع الجدول المُكمَّل، وتُنقَص درجات حرية الخطأ والكلي بمقدار {count} لكل منهما. يُنقَص مجموع مربعات المعاملة بمقدار {bias}، وهو التحيز إلى الأعلى الذي تعطيه التقديرات، ويُنقَص الكلي معه. سطر القطاع لا يُصحَّح ولا يُختبر.",
+      "status": "machineDraft"
+    },
     "report.anova.grandMean": {
       "text": "المتوسط العام",
       "status": "machineDraft"
@@ -151,6 +163,14 @@
     },
     "report.anova.transformedScale": {
       "text": "حُلل على مقياس {scale}؛ الجدول والمتوسط العام ومعامل الاختلاف أدناه على ذلك المقياس.",
+      "status": "machineDraft"
+    },
+    "report.anova.typeIIIBlocks": {
+      "text": "مجاميع المربعات من النوع الثالث: القطاع معدَّل للمعاملة والمعاملة معدَّلة للقطاع، فلا يساوي مجموع الأسطر المجموع الكلي.",
+      "status": "machineDraft"
+    },
+    "report.anova.typeIIINoBlocks": {
+      "text": "المعاملات غير متساوية في عدد المكررات. مجموع مربعات المعاملة من النوع الثالث، وهو مع عامل واحد المجموع التتابعي نفسه، فيساوي مجموع الأسطر المجموع الكلي.",
       "status": "machineDraft"
     },
     "report.applications.column.application": {
@@ -341,6 +361,14 @@
       "text": "الأعمدة متوسطات؛ والشعيرات خطأ معياري واحد للمتوسط ({error})، من خطأ التحليل.",
       "status": "machineDraft"
     },
+    "report.chart.whiskersEach": {
+      "text": "الأعمدة متوسطات؛ والشعيرات خطأ معياري واحد لكل متوسط ({low} إلى {high}، لاختلاف عدد قطعها)، من خطأ التحليل.",
+      "status": "machineDraft"
+    },
+    "report.chart.whiskersEachTransformed": {
+      "text": "الأعمدة متوسطات أُعيد تحويلها إلى المقياس الأصلي؛ والشعيرات خطأ معياري واحد لكل متوسط ({low} إلى {high} على مقياس {scale}، لاختلاف عدد قطعها)، أُعيد تحويله، لذا قد لا تكون متماثلة.",
+      "status": "machineDraft"
+    },
     "report.chart.whiskersTransformed": {
       "text": "الأعمدة متوسطات أُعيد تحويلها إلى المقياس الأصلي؛ والشعيرات خطأ معياري واحد ({error} على مقياس {scale})، أُعيد تحويله، لذا قد لا تكون متماثلة.",
       "status": "machineDraft"
@@ -513,16 +541,12 @@
       "text": "مختلف عن {check}",
       "status": "machineDraft"
     },
-    "report.dunnett.no": {
-      "text": "لا",
+    "report.dunnett.column.standardError": {
+      "text": "الخطأ المعياري للفرق",
       "status": "machineDraft"
     },
     "report.dunnett.separation": {
       "text": "كل معاملة مقابل {check} باختبار دانيت ثنائي الطرف (ألفا = {alpha}). تأثير المعاملة {significance} (P {probability}).",
-      "status": "machineDraft"
-    },
-    "report.dunnett.yes": {
-      "text": "نعم",
       "status": "machineDraft"
     },
     "report.factorial.heading": {
@@ -581,6 +605,10 @@
       "text": "التصميم",
       "status": "machineDraft"
     },
+    "report.heading.pairs": {
+      "text": "الفروق بين الأزواج",
+      "status": "machineDraft"
+    },
     "report.heading.planting": {
       "text": "الزراعة",
       "status": "machineDraft"
@@ -629,6 +657,14 @@
       "text": "أُعيد تحويل المتوسطات إلى المقياس الأصلي كتقديرات نقطية (وليست فترات متماثلة)؛ حُسب تحليل التباين وفصل المتوسطات على مقياس {scale}.",
       "status": "machineDraft"
     },
+    "report.means.column.adjustedMean": {
+      "text": "المتوسط المعدَّل{unit}",
+      "status": "machineDraft"
+    },
+    "report.means.column.adjustedMeanOriginalScale": {
+      "text": "المتوسط المعدَّل (المقياس الأصلي){unit}",
+      "status": "machineDraft"
+    },
     "report.means.column.group": {
       "text": "المجموعة",
       "status": "machineDraft"
@@ -641,6 +677,18 @@
       "text": "المتوسط (المقياس الأصلي){unit}",
       "status": "machineDraft"
     },
+    "report.means.column.plots": {
+      "text": "القطع",
+      "status": "machineDraft"
+    },
+    "report.means.column.standardError": {
+      "text": "الخطأ المعياري",
+      "status": "machineDraft"
+    },
+    "report.means.column.standardErrorAnalysed": {
+      "text": "الخطأ المعياري (المقياس المحلَّل)",
+      "status": "machineDraft"
+    },
     "report.means.column.treatment": {
       "text": "المعاملة",
       "status": "machineDraft"
@@ -649,12 +697,24 @@
       "text": "الفرق الحرج (دانيت، ألفا = {alpha})",
       "status": "machineDraft"
     },
+    "report.means.dunnettDifferenceByTreatment": {
+      "text": "الفرق الحرج (دانيت، ألفا = {alpha})، ويختلف باختلاف المعاملة",
+      "status": "machineDraft"
+    },
     "report.means.honestlySignificantDifference": {
       "text": "HSD (ألفا = {alpha})",
       "status": "machineDraft"
     },
+    "report.means.honestlySignificantDifferenceByPair": {
+      "text": "HSD (ألفا = {alpha})، ويختلف باختلاف الزوج",
+      "status": "machineDraft"
+    },
     "report.means.leastSignificantDifference": {
       "text": "أقل فرق معنوي (ألفا = {alpha})",
+      "status": "machineDraft"
+    },
+    "report.means.leastSignificantDifferenceByPair": {
+      "text": "أقل فرق معنوي (ألفا = {alpha})، ويختلف باختلاف الزوج",
       "status": "machineDraft"
     },
     "report.means.notSeparated": {
@@ -687,6 +747,78 @@
     },
     "report.method.tukeyHSD": {
       "text": "اختبار توكي (HSD)",
+      "status": "machineDraft"
+    },
+    "report.method.tukeyKramer": {
+      "text": "توكي-كرامر",
+      "status": "machineDraft"
+    },
+    "report.missing.cell": {
+      "text": "القطعة {plot} (المعاملة {treatment}، القطاع {block})",
+      "status": "machineDraft"
+    },
+    "report.missing.cellEstimated": {
+      "text": "{cell} قُدِّرت بـ {estimate}",
+      "status": "machineDraft"
+    },
+    "report.missing.cellNoBlock": {
+      "text": "القطعة {plot} (المعاملة {treatment})",
+      "status": "machineDraft"
+    },
+    "report.missing.closedForm": {
+      "text": "مع قطعة مفقودة واحدة يكون التقدير بصيغة ييتس المغلقة.",
+      "status": "machineDraft"
+    },
+    "report.missing.column.estimate": {
+      "text": "التقدير",
+      "status": "machineDraft"
+    },
+    "report.missing.column.estimateOnScale": {
+      "text": "التقدير (مقياس {scale})",
+      "status": "machineDraft"
+    },
+    "report.missing.column.plot": {
+      "text": "القطعة",
+      "status": "machineDraft"
+    },
+    "report.missing.estimate": {
+      "text": "القطع المفقودة: {plots}. للحساب فقط، تُعطى كل منها تقدير ييتس، وهو القيمة التي تجعل مجموع مربعات الخطأ أصغر ما يمكن (سياسة القطع المفقودة estimate). التقدير ليس مشاهدة ولا يُخزَّن أبدًا. متوسطات المعاملات أدناه هي متوسطات الجدول المُكمَّل، وهي المتوسطات المعدَّلة.",
+      "status": "machineDraft"
+    },
+    "report.missing.iterated": {
+      "text": "حُصل على التقديرات بتكرار ييتس في {cycles} دورات، حتى لم يتغير أي منها بأكثر من {tolerance} من أكبر قيمة؛ القيم الابتدائية والترتيب ثابتان، فالتقديرات قابلة للإعادة.",
+      "status": "machineDraft"
+    },
+    "report.missing.leastSquares": {
+      "text": "القطع المفقودة: {plots}. تُستبعد، ويُوفَّق النموذج بالمربعات الصغرى على القطع التي لها قيمة (سياسة القطع المفقودة leastSquares). متوسطات المعاملات أدناه متوسطات معدَّلة (متوسطات المربعات الصغرى).",
+      "status": "machineDraft"
+    },
+    "report.pairs.column.criticalDifference": {
+      "text": "الفرق الحرج",
+      "status": "machineDraft"
+    },
+    "report.pairs.column.difference": {
+      "text": "الفرق",
+      "status": "machineDraft"
+    },
+    "report.pairs.column.differenceAnalysed": {
+      "text": "الفرق (المقياس المحلَّل)",
+      "status": "machineDraft"
+    },
+    "report.pairs.column.different": {
+      "text": "مختلفان",
+      "status": "machineDraft"
+    },
+    "report.pairs.column.pair": {
+      "text": "الزوج",
+      "status": "machineDraft"
+    },
+    "report.pairs.note": {
+      "text": "مع القطع المفقودة يعتمد الخطأ المعياري للفرق على الزوج، فلكل زوج فرقه الحرج الخاص.",
+      "status": "machineDraft"
+    },
+    "report.pairs.tukeyKramerInBlocks": {
+      "text": "للمتوسطات المعدَّلة في القطاعات يحافظ اختبار توكي-كرامر على معدل خطئه على وجه التقريب فقط.",
       "status": "machineDraft"
     },
     "report.planting.cropEPPOCode": {
@@ -835,6 +967,22 @@
     },
     "report.reproducibility.methodValue": {
       "text": "تحليل التباين لتصميم القطاعات الكاملة العشوائية؛ {test} (ألفا = {alpha})",
+      "status": "machineDraft"
+    },
+    "report.reproducibility.missingEstimate": {
+      "text": "{assessment}: تقديرات ييتس على المقياس المحلَّل (الدورات {cycles}، التسامح {tolerance})، مجاميع مربعات الجدول المُكمَّل مع إنقاص المعاملة بمقدار {bias}، وكل مقارنة بخطئها المعياري الخاص؛ {plots}",
+      "status": "machineDraft"
+    },
+    "report.reproducibility.missingLeastSquares": {
+      "text": "{assessment}: المربعات الصغرى على القطع الموجودة، مجاميع مربعات من النوع الثالث، متوسطات معدَّلة، وكل مقارنة بخطئها المعياري الخاص؛ المستبعدة: {plots}",
+      "status": "machineDraft"
+    },
+    "report.reproducibility.missingPlots": {
+      "text": "القطع المفقودة",
+      "status": "machineDraft"
+    },
+    "report.reproducibility.missingPolicy": {
+      "text": "السياسة {policy}",
       "status": "machineDraft"
     },
     "report.reproducibility.randomizationMethod": {
@@ -1197,8 +1345,20 @@
       "text": "< {value}",
       "status": "machineDraft"
     },
+    "report.value.no": {
+      "text": "لا",
+      "status": "machineDraft"
+    },
     "report.value.percent": {
       "text": "{value}%",
+      "status": "machineDraft"
+    },
+    "report.value.range": {
+      "text": "{low} إلى {high}",
+      "status": "machineDraft"
+    },
+    "report.value.yes": {
+      "text": "نعم",
       "status": "machineDraft"
     },
     "report.weather.column.date": {

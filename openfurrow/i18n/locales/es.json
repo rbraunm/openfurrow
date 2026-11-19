@@ -101,8 +101,16 @@
       "text": "Estudio",
       "status": "machineDraft"
     },
+    "report.anova.adjustedGrandMean": {
+      "text": "Media general (de las medias de tratamiento ajustadas)",
+      "status": "machineDraft"
+    },
     "report.anova.coefficientOfVariation": {
       "text": "Coeficiente de variación",
+      "status": "machineDraft"
+    },
+    "report.anova.coefficientOfVariationAdjusted": {
+      "text": "Coeficiente de variación (sobre la media general ajustada)",
       "status": "machineDraft"
     },
     "report.anova.column.degreesOfFreedom": {
@@ -129,6 +137,10 @@
       "text": "SC",
       "status": "machineDraft"
     },
+    "report.anova.completedTable": {
+      "text": "Las sumas de cuadrados son las de la tabla completada, y los grados de libertad del error y del total se reducen en {count} cada uno. La suma de cuadrados de tratamiento se reduce en {bias}, el sesgo al alza que le dan las estimaciones, y el total con ella. La línea de bloque no se corrige y no se prueba.",
+      "status": "machineDraft"
+    },
     "report.anova.grandMean": {
       "text": "Media general",
       "status": "machineDraft"
@@ -151,6 +163,14 @@
     },
     "report.anova.transformedScale": {
       "text": "Analizado en la escala {scale}; la tabla, la media general y el CV siguientes están en esa escala.",
+      "status": "machineDraft"
+    },
+    "report.anova.typeIIIBlocks": {
+      "text": "Las sumas de cuadrados son de Tipo III: el bloque se ajusta por el tratamiento y el tratamiento por el bloque, por lo que las líneas no suman el total.",
+      "status": "machineDraft"
+    },
+    "report.anova.typeIIINoBlocks": {
+      "text": "Los tratamientos tienen distinto número de repeticiones. La suma de cuadrados de tratamiento es de Tipo III, que con un solo factor es también la secuencial, por lo que las líneas suman el total.",
       "status": "machineDraft"
     },
     "report.applications.column.application": {
@@ -341,6 +361,14 @@
       "text": "Las barras son medias; los bigotes son un error estándar de la media ({error}), del error del análisis.",
       "status": "machineDraft"
     },
+    "report.chart.whiskersEach": {
+      "text": "Las barras son medias; los bigotes son un error estándar de cada media ({low} a {high}, pues sus parcelas difieren en número), del error del análisis.",
+      "status": "machineDraft"
+    },
+    "report.chart.whiskersEachTransformed": {
+      "text": "Las barras son medias retransformadas a la escala original; los bigotes son un error estándar de cada media ({low} a {high} en la escala {scale}, pues sus parcelas difieren en número), retransformado, por lo que pueden no ser simétricos.",
+      "status": "machineDraft"
+    },
     "report.chart.whiskersTransformed": {
       "text": "Las barras son medias retransformadas a la escala original; los bigotes son un error estándar ({error} en la escala {scale}), retransformado, por lo que pueden no ser simétricos.",
       "status": "machineDraft"
@@ -513,16 +541,12 @@
       "text": "Distinto de {check}",
       "status": "machineDraft"
     },
-    "report.dunnett.no": {
-      "text": "no",
+    "report.dunnett.column.standardError": {
+      "text": "Error estándar de la diferencia",
       "status": "machineDraft"
     },
     "report.dunnett.separation": {
       "text": "Cada tratamiento frente a {check} con la prueba bilateral de Dunnett (alfa = {alpha}). Efecto del tratamiento {significance} (P {probability}).",
-      "status": "machineDraft"
-    },
-    "report.dunnett.yes": {
-      "text": "sí",
       "status": "machineDraft"
     },
     "report.factorial.heading": {
@@ -581,6 +605,10 @@
       "text": "Diseño",
       "status": "machineDraft"
     },
+    "report.heading.pairs": {
+      "text": "Diferencias entre pares",
+      "status": "machineDraft"
+    },
     "report.heading.planting": {
       "text": "Siembra",
       "status": "machineDraft"
@@ -629,6 +657,14 @@
       "text": "Las medias se retrotransforman a la escala original como estimaciones puntuales (no intervalos simétricos); el análisis de varianza y la separación de medias se calcularon en la escala {scale}.",
       "status": "machineDraft"
     },
+    "report.means.column.adjustedMean": {
+      "text": "Media ajustada{unit}",
+      "status": "machineDraft"
+    },
+    "report.means.column.adjustedMeanOriginalScale": {
+      "text": "Media ajustada (escala original){unit}",
+      "status": "machineDraft"
+    },
     "report.means.column.group": {
       "text": "Grupo",
       "status": "machineDraft"
@@ -641,6 +677,18 @@
       "text": "Media (escala original){unit}",
       "status": "machineDraft"
     },
+    "report.means.column.plots": {
+      "text": "Parcelas",
+      "status": "machineDraft"
+    },
+    "report.means.column.standardError": {
+      "text": "Error estándar",
+      "status": "machineDraft"
+    },
+    "report.means.column.standardErrorAnalysed": {
+      "text": "Error estándar (escala analizada)",
+      "status": "machineDraft"
+    },
     "report.means.column.treatment": {
       "text": "Tratamiento",
       "status": "machineDraft"
@@ -649,12 +697,24 @@
       "text": "Diferencia crítica (Dunnett, alfa = {alpha})",
       "status": "machineDraft"
     },
+    "report.means.dunnettDifferenceByTreatment": {
+      "text": "Diferencia crítica (Dunnett, alfa = {alpha}), que difiere según el tratamiento",
+      "status": "machineDraft"
+    },
     "report.means.honestlySignificantDifference": {
       "text": "DHS (alfa = {alpha})",
       "status": "machineDraft"
     },
+    "report.means.honestlySignificantDifferenceByPair": {
+      "text": "DHS (alfa = {alpha}), que difiere según el par",
+      "status": "machineDraft"
+    },
     "report.means.leastSignificantDifference": {
       "text": "DMS (alfa = {alpha})",
+      "status": "machineDraft"
+    },
+    "report.means.leastSignificantDifferenceByPair": {
+      "text": "DMS (alfa = {alpha}), que difiere según el par",
       "status": "machineDraft"
     },
     "report.means.notSeparated": {
@@ -687,6 +747,78 @@
     },
     "report.method.tukeyHSD": {
       "text": "DHS de Tukey",
+      "status": "machineDraft"
+    },
+    "report.method.tukeyKramer": {
+      "text": "Tukey-Kramer",
+      "status": "machineDraft"
+    },
+    "report.missing.cell": {
+      "text": "parcela {plot} (tratamiento {treatment}, bloque {block})",
+      "status": "machineDraft"
+    },
+    "report.missing.cellEstimated": {
+      "text": "{cell} estimada en {estimate}",
+      "status": "machineDraft"
+    },
+    "report.missing.cellNoBlock": {
+      "text": "parcela {plot} (tratamiento {treatment})",
+      "status": "machineDraft"
+    },
+    "report.missing.closedForm": {
+      "text": "Con una sola parcela faltante la estimación es la fórmula cerrada de Yates.",
+      "status": "machineDraft"
+    },
+    "report.missing.column.estimate": {
+      "text": "Estimación",
+      "status": "machineDraft"
+    },
+    "report.missing.column.estimateOnScale": {
+      "text": "Estimación (escala {scale})",
+      "status": "machineDraft"
+    },
+    "report.missing.column.plot": {
+      "text": "Parcela",
+      "status": "machineDraft"
+    },
+    "report.missing.estimate": {
+      "text": "Parcelas faltantes: {plots}. Solo para el cálculo, cada una recibe la estimación de Yates, el valor que hace mínima la suma de cuadrados del error (política de parcelas faltantes estimate). Una estimación no es una observación y nunca se guarda. Las medias de tratamiento siguientes son las de la tabla completada, que son las medias ajustadas.",
+      "status": "machineDraft"
+    },
+    "report.missing.iterated": {
+      "text": "Las estimaciones se obtuvieron por la iteración de Yates en {cycles} ciclos, hasta que ninguna cambió en más de {tolerance} del valor mayor; los valores iniciales y el orden son fijos, por lo que las estimaciones son reproducibles.",
+      "status": "machineDraft"
+    },
+    "report.missing.leastSquares": {
+      "text": "Parcelas faltantes: {plots}. Quedan fuera, y el modelo se ajusta por mínimos cuadrados a las parcelas que tienen valor (política de parcelas faltantes leastSquares). Las medias de tratamiento siguientes son medias ajustadas (de mínimos cuadrados).",
+      "status": "machineDraft"
+    },
+    "report.pairs.column.criticalDifference": {
+      "text": "Diferencia crítica",
+      "status": "machineDraft"
+    },
+    "report.pairs.column.difference": {
+      "text": "Diferencia",
+      "status": "machineDraft"
+    },
+    "report.pairs.column.differenceAnalysed": {
+      "text": "Diferencia (escala analizada)",
+      "status": "machineDraft"
+    },
+    "report.pairs.column.different": {
+      "text": "Distintos",
+      "status": "machineDraft"
+    },
+    "report.pairs.column.pair": {
+      "text": "Par",
+      "status": "machineDraft"
+    },
+    "report.pairs.note": {
+      "text": "Con parcelas faltantes el error estándar de una diferencia depende del par, por lo que cada par tiene su propia diferencia crítica.",
+      "status": "machineDraft"
+    },
+    "report.pairs.tukeyKramerInBlocks": {
+      "text": "Para medias ajustadas en bloques la prueba de Tukey-Kramer mantiene su tasa de error solo de forma aproximada.",
       "status": "machineDraft"
     },
     "report.planting.cropEPPOCode": {
@@ -835,6 +967,22 @@
     },
     "report.reproducibility.methodValue": {
       "text": "ANOVA de DBCA; {test} (alfa = {alpha})",
+      "status": "machineDraft"
+    },
+    "report.reproducibility.missingEstimate": {
+      "text": "{assessment}: estimaciones de Yates en la escala analizada (ciclos {cycles}, tolerancia {tolerance}), sumas de cuadrados de la tabla completada con el tratamiento reducido en {bias}, cada comparación con su propio error estándar; {plots}",
+      "status": "machineDraft"
+    },
+    "report.reproducibility.missingLeastSquares": {
+      "text": "{assessment}: mínimos cuadrados sobre las parcelas presentes, sumas de cuadrados de Tipo III, medias ajustadas, cada comparación con su propio error estándar; fuera del ajuste: {plots}",
+      "status": "machineDraft"
+    },
+    "report.reproducibility.missingPlots": {
+      "text": "Parcelas faltantes",
+      "status": "machineDraft"
+    },
+    "report.reproducibility.missingPolicy": {
+      "text": "política {policy}",
       "status": "machineDraft"
     },
     "report.reproducibility.randomizationMethod": {
@@ -1197,8 +1345,20 @@
       "text": "< {value}",
       "status": "machineDraft"
     },
+    "report.value.no": {
+      "text": "no",
+      "status": "machineDraft"
+    },
     "report.value.percent": {
       "text": "{value}%",
+      "status": "machineDraft"
+    },
+    "report.value.range": {
+      "text": "{low} a {high}",
+      "status": "machineDraft"
+    },
+    "report.value.yes": {
+      "text": "sí",
       "status": "machineDraft"
     },
     "report.weather.column.date": {

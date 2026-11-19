@@ -101,8 +101,16 @@
       "text": "Étude",
       "status": "machineDraft"
     },
+    "report.anova.adjustedGrandMean": {
+      "text": "Moyenne générale (des moyennes ajustées des traitements)",
+      "status": "machineDraft"
+    },
     "report.anova.coefficientOfVariation": {
       "text": "Coefficient de variation",
+      "status": "machineDraft"
+    },
+    "report.anova.coefficientOfVariationAdjusted": {
+      "text": "Coefficient de variation (sur la moyenne générale ajustée)",
       "status": "machineDraft"
     },
     "report.anova.column.degreesOfFreedom": {
@@ -129,6 +137,10 @@
       "text": "SC",
       "status": "machineDraft"
     },
+    "report.anova.completedTable": {
+      "text": "Les sommes des carrés sont celles du tableau complété, et les degrés de liberté de l'erreur et du total sont réduits de {count} chacun. La somme des carrés du traitement est réduite de {bias}, le biais à la hausse que lui donnent les estimations, et le total avec elle. La ligne du bloc n'est pas corrigée et n'est pas testée.",
+      "status": "machineDraft"
+    },
     "report.anova.grandMean": {
       "text": "Moyenne générale",
       "status": "machineDraft"
@@ -151,6 +163,14 @@
     },
     "report.anova.transformedScale": {
       "text": "Analysé sur l'échelle {scale}; le tableau, la moyenne générale et le CV ci-dessous sont sur cette échelle.",
+      "status": "machineDraft"
+    },
+    "report.anova.typeIIIBlocks": {
+      "text": "Les sommes des carrés sont de type III: le bloc est ajusté pour le traitement et le traitement pour le bloc, donc les lignes ne s'additionnent pas au total.",
+      "status": "machineDraft"
+    },
+    "report.anova.typeIIINoBlocks": {
+      "text": "Les traitements n'ont pas le même nombre de répétitions. La somme des carrés du traitement est de type III, qui avec un seul facteur est aussi la somme séquentielle, donc les lignes s'additionnent au total.",
       "status": "machineDraft"
     },
     "report.applications.column.application": {
@@ -341,6 +361,14 @@
       "text": "Les barres sont les moyennes; les moustaches valent une erreur type de la moyenne ({error}), tirée de l'erreur de l'analyse.",
       "status": "machineDraft"
     },
+    "report.chart.whiskersEach": {
+      "text": "Les barres sont les moyennes; les moustaches valent une erreur type de chaque moyenne ({low} à {high}, leurs parcelles différant en nombre), tirée de l'erreur de l'analyse.",
+      "status": "machineDraft"
+    },
+    "report.chart.whiskersEachTransformed": {
+      "text": "Les barres sont les moyennes retransformées à l'échelle d'origine; les moustaches valent une erreur type de chaque moyenne ({low} à {high} sur l'échelle {scale}, leurs parcelles différant en nombre), retransformée, donc pas forcément symétrique.",
+      "status": "machineDraft"
+    },
     "report.chart.whiskersTransformed": {
       "text": "Les barres sont les moyennes retransformées à l'échelle d'origine; les moustaches valent une erreur type ({error} sur l'échelle {scale}), retransformée, donc pas forcément symétrique.",
       "status": "machineDraft"
@@ -513,16 +541,12 @@
       "text": "Différent de {check}",
       "status": "machineDraft"
     },
-    "report.dunnett.no": {
-      "text": "non",
+    "report.dunnett.column.standardError": {
+      "text": "Erreur type de l'écart",
       "status": "machineDraft"
     },
     "report.dunnett.separation": {
       "text": "Chaque traitement face à {check} par le test bilatéral de Dunnett (alpha = {alpha}). Effet traitement {significance} (P {probability}).",
-      "status": "machineDraft"
-    },
-    "report.dunnett.yes": {
-      "text": "oui",
       "status": "machineDraft"
     },
     "report.factorial.heading": {
@@ -581,6 +605,10 @@
       "text": "Dispositif",
       "status": "machineDraft"
     },
+    "report.heading.pairs": {
+      "text": "Écarts entre paires",
+      "status": "machineDraft"
+    },
     "report.heading.planting": {
       "text": "Implantation",
       "status": "machineDraft"
@@ -629,6 +657,14 @@
       "text": "Les moyennes sont rétro-transformées vers l'échelle d'origine comme estimations ponctuelles (et non des intervalles symétriques); l'analyse de variance et la séparation des moyennes ont été calculées sur l'échelle {scale}.",
       "status": "machineDraft"
     },
+    "report.means.column.adjustedMean": {
+      "text": "Moyenne ajustée{unit}",
+      "status": "machineDraft"
+    },
+    "report.means.column.adjustedMeanOriginalScale": {
+      "text": "Moyenne ajustée (échelle d'origine){unit}",
+      "status": "machineDraft"
+    },
     "report.means.column.group": {
       "text": "Groupe",
       "status": "machineDraft"
@@ -641,6 +677,18 @@
       "text": "Moyenne (échelle d'origine){unit}",
       "status": "machineDraft"
     },
+    "report.means.column.plots": {
+      "text": "Parcelles",
+      "status": "machineDraft"
+    },
+    "report.means.column.standardError": {
+      "text": "Erreur type",
+      "status": "machineDraft"
+    },
+    "report.means.column.standardErrorAnalysed": {
+      "text": "Erreur type (échelle analysée)",
+      "status": "machineDraft"
+    },
     "report.means.column.treatment": {
       "text": "Traitement",
       "status": "machineDraft"
@@ -649,12 +697,24 @@
       "text": "Écart critique (Dunnett, alpha = {alpha})",
       "status": "machineDraft"
     },
+    "report.means.dunnettDifferenceByTreatment": {
+      "text": "Écart critique (Dunnett, alpha = {alpha}), qui diffère selon le traitement",
+      "status": "machineDraft"
+    },
     "report.means.honestlySignificantDifference": {
       "text": "HSD (alpha = {alpha})",
       "status": "machineDraft"
     },
+    "report.means.honestlySignificantDifferenceByPair": {
+      "text": "HSD (alpha = {alpha}), qui diffère selon la paire",
+      "status": "machineDraft"
+    },
     "report.means.leastSignificantDifference": {
       "text": "PPDS (alpha = {alpha})",
+      "status": "machineDraft"
+    },
+    "report.means.leastSignificantDifferenceByPair": {
+      "text": "PPDS (alpha = {alpha}), qui diffère selon la paire",
       "status": "machineDraft"
     },
     "report.means.notSeparated": {
@@ -687,6 +747,78 @@
     },
     "report.method.tukeyHSD": {
       "text": "HSD de Tukey",
+      "status": "machineDraft"
+    },
+    "report.method.tukeyKramer": {
+      "text": "Tukey-Kramer",
+      "status": "machineDraft"
+    },
+    "report.missing.cell": {
+      "text": "parcelle {plot} (traitement {treatment}, bloc {block})",
+      "status": "machineDraft"
+    },
+    "report.missing.cellEstimated": {
+      "text": "{cell} estimée à {estimate}",
+      "status": "machineDraft"
+    },
+    "report.missing.cellNoBlock": {
+      "text": "parcelle {plot} (traitement {treatment})",
+      "status": "machineDraft"
+    },
+    "report.missing.closedForm": {
+      "text": "Avec une seule parcelle manquante, l'estimation est la formule fermée de Yates.",
+      "status": "machineDraft"
+    },
+    "report.missing.column.estimate": {
+      "text": "Estimation",
+      "status": "machineDraft"
+    },
+    "report.missing.column.estimateOnScale": {
+      "text": "Estimation (échelle {scale})",
+      "status": "machineDraft"
+    },
+    "report.missing.column.plot": {
+      "text": "Parcelle",
+      "status": "machineDraft"
+    },
+    "report.missing.estimate": {
+      "text": "Parcelles manquantes: {plots}. Pour le calcul seulement, chacune reçoit l'estimation de Yates, la valeur qui rend minimale la somme des carrés de l'erreur (politique des parcelles manquantes estimate). Une estimation n'est pas une observation et n'est jamais enregistrée. Les moyennes des traitements ci-dessous sont celles du tableau complété, qui sont les moyennes ajustées.",
+      "status": "machineDraft"
+    },
+    "report.missing.iterated": {
+      "text": "Les estimations ont été obtenues par l'itération de Yates en {cycles} cycles, jusqu'à ce qu'aucune ne bouge de plus de {tolerance} de la plus grande valeur; les valeurs de départ et l'ordre sont fixes, donc les estimations sont reproductibles.",
+      "status": "machineDraft"
+    },
+    "report.missing.leastSquares": {
+      "text": "Parcelles manquantes: {plots}. Elles sont laissées de côté, et le modèle est ajusté par les moindres carrés aux parcelles qui ont une valeur (politique des parcelles manquantes leastSquares). Les moyennes des traitements ci-dessous sont des moyennes ajustées (des moindres carrés).",
+      "status": "machineDraft"
+    },
+    "report.pairs.column.criticalDifference": {
+      "text": "Écart critique",
+      "status": "machineDraft"
+    },
+    "report.pairs.column.difference": {
+      "text": "Écart",
+      "status": "machineDraft"
+    },
+    "report.pairs.column.differenceAnalysed": {
+      "text": "Écart (échelle analysée)",
+      "status": "machineDraft"
+    },
+    "report.pairs.column.different": {
+      "text": "Différents",
+      "status": "machineDraft"
+    },
+    "report.pairs.column.pair": {
+      "text": "Paire",
+      "status": "machineDraft"
+    },
+    "report.pairs.note": {
+      "text": "Avec des parcelles manquantes, l'erreur type d'un écart dépend de la paire, donc chaque paire a son propre écart critique.",
+      "status": "machineDraft"
+    },
+    "report.pairs.tukeyKramerInBlocks": {
+      "text": "Pour des moyennes ajustées en blocs, le test de Tukey-Kramer ne tient son taux d'erreur qu'approximativement.",
       "status": "machineDraft"
     },
     "report.planting.cropEPPOCode": {
@@ -835,6 +967,22 @@
     },
     "report.reproducibility.methodValue": {
       "text": "ANOVA en blocs complets randomisés; {test} (alpha = {alpha})",
+      "status": "machineDraft"
+    },
+    "report.reproducibility.missingEstimate": {
+      "text": "{assessment}: estimations de Yates sur l'échelle analysée (cycles {cycles}, tolérance {tolerance}), sommes des carrés du tableau complété avec le traitement réduit de {bias}, chaque comparaison sur sa propre erreur type; {plots}",
+      "status": "machineDraft"
+    },
+    "report.reproducibility.missingLeastSquares": {
+      "text": "{assessment}: moindres carrés sur les parcelles présentes, sommes des carrés de type III, moyennes ajustées, chaque comparaison sur sa propre erreur type; laissées de côté: {plots}",
+      "status": "machineDraft"
+    },
+    "report.reproducibility.missingPlots": {
+      "text": "Parcelles manquantes",
+      "status": "machineDraft"
+    },
+    "report.reproducibility.missingPolicy": {
+      "text": "politique {policy}",
       "status": "machineDraft"
     },
     "report.reproducibility.randomizationMethod": {
@@ -1197,8 +1345,20 @@
       "text": "< {value}",
       "status": "machineDraft"
     },
+    "report.value.no": {
+      "text": "non",
+      "status": "machineDraft"
+    },
     "report.value.percent": {
       "text": "{value}%",
+      "status": "machineDraft"
+    },
+    "report.value.range": {
+      "text": "{low} à {high}",
+      "status": "machineDraft"
+    },
+    "report.value.yes": {
+      "text": "oui",
       "status": "machineDraft"
     },
     "report.weather.column.date": {

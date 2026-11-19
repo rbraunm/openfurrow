@@ -59,6 +59,7 @@ from openfurrow.analysis import (
   FactorialResult,
   MeanComparison,
   MeanSeparation,
+  MissingPlotPolicy,
   SplitPlotResult,
   analyzeCrd as _analyzeCrd,
   compareWithControl as _compareWithControl,
@@ -291,6 +292,16 @@ def federationRefreshTaskName(providerName: str) -> str:
 
 def _utcNow() -> datetime.datetime:
   return datetime.datetime.now(datetime.UTC)
+
+
+@dataclasses.dataclass(frozen=True)
+class AnalysisSettings:
+  """The settings a trial's analyses run under (decision 0035), and every effective setting with where it was set."""
+
+  significanceLevel: float
+  meanComparison: MeanComparison
+  missingPlots: MissingPlotPolicy
+  effective: list[EffectiveSetting]
 
 
 @dataclasses.dataclass(frozen=True)
@@ -555,10 +566,13 @@ class Workspace:
         "otherwise nobody could sign in to manage the store"
       )
 
-  def _analysisSettings(self, trialCode: str) -> tuple[float, MeanComparison, list[EffectiveSetting]]:
+  def _analysisSettings(self, trialCode: str) -> AnalysisSettings:
     effective = [setting for setting in self.effectiveSettings(f"trial:{trialCode}") if setting.key.startswith("analysis.")]
     values = {setting.key: setting.value for setting in effective}
-    return values["analysis.significanceLevel"], values["analysis.meanComparison"], effective
+    return AnalysisSettings(
+      significanceLevel=values["analysis.significanceLevel"], meanComparison=values["analysis.meanComparison"],
+      missingPlots=values["analysis.missingPlots"], effective=effective,
+    )
 
 
   # ---- accounts, groups and roles (decisions 0036, 0037) -------------------
@@ -1204,29 +1218,38 @@ class Workspace:
   # ---- analysis -----------------------------------------------------------
 
   def analyze(self, trialCode: str, assessmentCode: str) -> AnovaResult | SplitPlotResult:
-    """Run the ANOVA the trial's design calls for, for one numeric assessment."""
+    """Run the ANOVA the trial's design calls for, for one numeric assessment, by the trial's settings.
+
+    A plot without a value is handled as the trial's `analysis.missingPlots` says
+    (decision 0043); the result records the policy and every missing plot.
+    """
+    missingPlots = self._analysisSettings(trialCode).missingPlots
     package, layout, observations = self._loadContext(trialCode)
     if package.design.designType is DesignType.splitPlot:
       return _analyzeSplitPlot(assessmentCode, package, layout, observations)
     if package.design.designType is DesignType.crd:
-      return _analyzeCrd(assessmentCode, package, layout, observations)
-    return _analyzeRcbd(assessmentCode, package, layout, observations)
+      return _analyzeCrd(assessmentCode, package, layout, observations, missingPlots)
+    return _analyzeRcbd(assessmentCode, package, layout, observations, missingPlots)
 
   def separateFactorMeans(self, trialCode: str, assessmentCode: str, factor: str) -> FactorSeparation:
     """Separate the level means of one factor of a split plot or a two-factor RCBD, by the trial's settings."""
-    significanceLevel, meanComparison, _ = self._analysisSettings(trialCode)
+    settings = self._analysisSettings(trialCode)
     result = self.analyze(trialCode, assessmentCode)
     if isinstance(result, SplitPlotResult):
-      return _separateFactorMeans(result, factor, significanceLevel=significanceLevel, meanComparison=meanComparison)
+      return _separateFactorMeans(
+        result, factor, significanceLevel=settings.significanceLevel, meanComparison=settings.meanComparison,
+      )
     package, layout, observations = self._loadContext(trialCode)
     if not package.factors:
       raise AnalysisError(f"trial '{trialCode}' has no factors to separate")
     factorial = _analyzeFactorialRcbd(assessmentCode, package, layout, observations)
-    return _separateFactorialMeans(factorial, factor, significanceLevel=significanceLevel, meanComparison=meanComparison)
+    return _separateFactorialMeans(
+      factorial, factor, significanceLevel=settings.significanceLevel, meanComparison=settings.meanComparison,
+    )
 
   def compareWithControl(self, trialCode: str, assessmentCode: str) -> DunnettResult:
     """Dunnett's two-sided test of every treatment against the untreated check (decision 0029)."""
-    significanceLevel, _, _ = self._analysisSettings(trialCode)
+    significanceLevel = self._analysisSettings(trialCode).significanceLevel
     result = self.analyze(trialCode, assessmentCode)
     if isinstance(result, (SplitPlotResult, FactorialResult)):
       raise AnalysisError(f"trial '{trialCode}' compares factor levels, not treatments against a check")
@@ -1239,19 +1262,21 @@ class Workspace:
 
   def separateMeans(self, trialCode: str, assessmentCode: str) -> MeanSeparation:
     """Separate treatment means for one assessment, by the trial's settings."""
-    significanceLevel, meanComparison, _ = self._analysisSettings(trialCode)
+    settings = self._analysisSettings(trialCode)
     result = self.analyze(trialCode, assessmentCode)
     if isinstance(result, SplitPlotResult):
       raise AnalysisError(
         f"trial '{trialCode}' is a split plot; its means are separated for each factor (separateFactorMeans)"
       )
-    return _separateMeans(result, significanceLevel=significanceLevel, meanComparison=meanComparison)
+    return _separateMeans(result, significanceLevel=settings.significanceLevel, meanComparison=settings.meanComparison)
 
   def assessAssumptions(self, trialCode: str, assessmentCode: str) -> Assumptions:
     """Compute the report-only ANOVA assumption diagnostics for one assessment."""
-    significanceLevel, _, _ = self._analysisSettings(trialCode)
+    settings = self._analysisSettings(trialCode)
     package, layout, observations = self._loadContext(trialCode)
-    return _assessAssumptions(assessmentCode, package, layout, observations, significanceLevel)
+    return _assessAssumptions(
+      assessmentCode, package, layout, observations, settings.significanceLevel, settings.missingPlots,
+    )
 
   # ---- reporting ----------------------------------------------------------
 
@@ -1261,20 +1286,22 @@ class Workspace:
     `locale` is a display choice only: it selects the message catalog and number
     formatting. It does not touch the stored data, the exchange, or the content hash.
     """
-    significanceLevel, meanComparison, effective = self._analysisSettings(trialCode)
+    settings = self._analysisSettings(trialCode)
     package, layout, observations = self._loadContext(trialCode)
     return _buildReport(
       package, layout, observations,
-      significanceLevel=significanceLevel, meanComparison=meanComparison, locale=locale, settingsUsed=effective,
+      significanceLevel=settings.significanceLevel, meanComparison=settings.meanComparison, locale=locale,
+      settingsUsed=settings.effective, missingPlots=settings.missingPlots,
     )
 
   def buildReportWithCharts(self, trialCode: str, marker: str, locale: str = sourceLocale) -> ReportWithCharts:
     """The report with a marker line where each chart of means goes, and the charts (decision 0032)."""
-    significanceLevel, meanComparison, effective = self._analysisSettings(trialCode)
+    settings = self._analysisSettings(trialCode)
     package, layout, observations = self._loadContext(trialCode)
     return _buildReportWithCharts(
       package, layout, observations, marker,
-      significanceLevel=significanceLevel, meanComparison=meanComparison, locale=locale, settingsUsed=effective,
+      significanceLevel=settings.significanceLevel, meanComparison=settings.meanComparison, locale=locale,
+      settingsUsed=settings.effective, missingPlots=settings.missingPlots,
     )
 
   # ---- exchange, hashing, verification ------------------------------------

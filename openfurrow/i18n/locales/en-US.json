@@ -825,12 +825,64 @@
       "text": "The untreated check ({check}) is left out of this analysis; its mean as recorded is {mean}.",
       "status": "source"
     },
+    "report.missing.cell": {
+      "text": "plot {plot} (treatment {treatment}, block {block})",
+      "status": "source"
+    },
+    "report.missing.cellNoBlock": {
+      "text": "plot {plot} (treatment {treatment})",
+      "status": "source"
+    },
+    "report.missing.cellEstimated": {
+      "text": "{cell} estimated as {estimate}",
+      "status": "source"
+    },
+    "report.missing.leastSquares": {
+      "text": "Missing plots: {plots}. They are left out, and the model is fitted by least squares to the plots that have a value (missing-plot policy leastSquares). The treatment means below are adjusted (least-squares) means.",
+      "status": "source"
+    },
+    "report.missing.estimate": {
+      "text": "Missing plots: {plots}. For the arithmetic only, each is given Yates' estimate, the value that makes the error sum of squares smallest (missing-plot policy estimate). An estimate is not an observation and is never stored. The treatment means below are those of the completed table, which are the adjusted means.",
+      "status": "source"
+    },
+    "report.missing.column.plot": {
+      "text": "Plot",
+      "status": "source"
+    },
+    "report.missing.column.estimate": {
+      "text": "Estimate",
+      "status": "source"
+    },
+    "report.missing.column.estimateOnScale": {
+      "text": "Estimate ({scale} scale)",
+      "status": "source"
+    },
+    "report.missing.closedForm": {
+      "text": "With one missing plot the estimate is Yates' closed form.",
+      "status": "source"
+    },
+    "report.missing.iterated": {
+      "text": "The estimates were reached by Yates' iteration in {cycles} cycles, stopping when none moved by more than {tolerance} of the largest value; the starting values and the order are fixed, so the estimates are reproducible.",
+      "status": "source"
+    },
     "report.heading.anova": {
       "text": "Analysis of variance",
       "status": "source"
     },
     "report.anova.transformedScale": {
       "text": "Analyzed on the {scale} scale; the table, grand mean, and CV below are on that scale.",
+      "status": "source"
+    },
+    "report.anova.typeIIIBlocks": {
+      "text": "Sums of squares are Type III: block is adjusted for treatment and treatment for block, so the lines do not add up to the total.",
+      "status": "source"
+    },
+    "report.anova.typeIIINoBlocks": {
+      "text": "The treatments are unequally replicated. The treatment sum of squares is Type III, which with a single factor is also the sequential one, so the lines add up to the total.",
+      "status": "source"
+    },
+    "report.anova.completedTable": {
+      "text": "Sums of squares are those of the completed table, and the degrees of freedom for error and for total are each reduced by {count}. The treatment sum of squares is reduced by {bias}, the upward bias the estimates give it, and the total with it. The block line is not corrected and is not tested.",
       "status": "source"
     },
     "report.anova.column.source": {
@@ -877,8 +929,16 @@
       "text": "Grand mean",
       "status": "source"
     },
+    "report.anova.adjustedGrandMean": {
+      "text": "Grand mean (of the adjusted treatment means)",
+      "status": "source"
+    },
     "report.anova.coefficientOfVariation": {
       "text": "Coefficient of variation",
+      "status": "source"
+    },
+    "report.anova.coefficientOfVariationAdjusted": {
+      "text": "Coefficient of variation (on the adjusted grand mean)",
       "status": "source"
     },
     "report.heading.treatmentMeans": {
@@ -909,6 +969,26 @@
       "text": "Mean (original scale){unit}",
       "status": "source"
     },
+    "report.means.column.adjustedMean": {
+      "text": "Adjusted mean{unit}",
+      "status": "source"
+    },
+    "report.means.column.adjustedMeanOriginalScale": {
+      "text": "Adjusted mean (original scale){unit}",
+      "status": "source"
+    },
+    "report.means.column.plots": {
+      "text": "Plots",
+      "status": "source"
+    },
+    "report.means.column.standardError": {
+      "text": "Standard error",
+      "status": "source"
+    },
+    "report.means.column.standardErrorAnalysed": {
+      "text": "Standard error (analyzed scale)",
+      "status": "source"
+    },
     "report.means.column.group": {
       "text": "Group",
       "status": "source"
@@ -921,8 +1001,44 @@
       "text": "LSD (alpha = {alpha})",
       "status": "source"
     },
+    "report.means.leastSignificantDifferenceByPair": {
+      "text": "LSD (alpha = {alpha}), which differs by pair",
+      "status": "source"
+    },
     "report.means.notSeparated": {
       "text": "Means were not separated: the treatment effect was not significant (protected LSD).",
+      "status": "source"
+    },
+    "report.heading.pairs": {
+      "text": "Differences between pairs",
+      "status": "source"
+    },
+    "report.pairs.note": {
+      "text": "With missing plots the standard error of a difference depends on the pair, so each pair is held to a critical difference of its own.",
+      "status": "source"
+    },
+    "report.pairs.tukeyKramerInBlocks": {
+      "text": "For adjusted means in blocks the Tukey-Kramer test holds its error rate only approximately.",
+      "status": "source"
+    },
+    "report.pairs.column.pair": {
+      "text": "Pair",
+      "status": "source"
+    },
+    "report.pairs.column.difference": {
+      "text": "Difference",
+      "status": "source"
+    },
+    "report.pairs.column.differenceAnalysed": {
+      "text": "Difference (analyzed scale)",
+      "status": "source"
+    },
+    "report.pairs.column.criticalDifference": {
+      "text": "Critical difference",
+      "status": "source"
+    },
+    "report.pairs.column.different": {
+      "text": "Different",
       "status": "source"
     },
     "report.chart.treatmentMeans": {
@@ -939,6 +1055,14 @@
     },
     "report.chart.whiskersTransformed": {
       "text": "Bars are means back-transformed to the original scale; whiskers are one standard error ({error} on the {scale} scale), back-transformed, so they need not be symmetric.",
+      "status": "source"
+    },
+    "report.chart.whiskersEach": {
+      "text": "Bars are means; whiskers are one standard error of each mean ({low} to {high}, as their plots differ in number), from the error of the analysis.",
+      "status": "source"
+    },
+    "report.chart.whiskersEachTransformed": {
+      "text": "Bars are means back-transformed to the original scale; whiskers are one standard error of each mean ({low} to {high} on the {scale} scale, as their plots differ in number), back-transformed, so they need not be symmetric.",
       "status": "source"
     },
     "report.chart.letters": {
@@ -997,6 +1121,10 @@
       "text": "Tukey's HSD",
       "status": "source"
     },
+    "report.method.tukeyKramer": {
+      "text": "Tukey-Kramer",
+      "status": "source"
+    },
     "report.method.dunnett": {
       "text": "Dunnett's test",
       "status": "source"
@@ -1017,20 +1145,24 @@
       "text": "Different from {check}",
       "status": "source"
     },
-    "report.dunnett.yes": {
-      "text": "yes",
-      "status": "source"
-    },
-    "report.dunnett.no": {
-      "text": "no",
+    "report.dunnett.column.standardError": {
+      "text": "Standard error of the difference",
       "status": "source"
     },
     "report.means.dunnettDifference": {
       "text": "Critical difference (Dunnett, alpha = {alpha})",
       "status": "source"
     },
+    "report.means.dunnettDifferenceByTreatment": {
+      "text": "Critical difference (Dunnett, alpha = {alpha}), which differs by treatment",
+      "status": "source"
+    },
     "report.means.honestlySignificantDifference": {
       "text": "HSD (alpha = {alpha})",
+      "status": "source"
+    },
+    "report.means.honestlySignificantDifferenceByPair": {
+      "text": "HSD (alpha = {alpha}), which differs by pair",
       "status": "source"
     },
     "report.reproducibility.seed": {
@@ -1043,6 +1175,22 @@
     },
     "report.reproducibility.transforms": {
       "text": "Transforms",
+      "status": "source"
+    },
+    "report.reproducibility.missingPlots": {
+      "text": "Missing plots",
+      "status": "source"
+    },
+    "report.reproducibility.missingPolicy": {
+      "text": "policy {policy}",
+      "status": "source"
+    },
+    "report.reproducibility.missingLeastSquares": {
+      "text": "{assessment}: least squares on the plots present, Type III sums of squares, adjusted means, each comparison on its own standard error; left out: {plots}",
+      "status": "source"
+    },
+    "report.reproducibility.missingEstimate": {
+      "text": "{assessment}: Yates' estimates on the analyzed scale (cycles {cycles}, tolerance {tolerance}), completed-table sums of squares with treatment reduced by {bias}, each comparison on its own standard error; {plots}",
       "status": "source"
     },
     "report.reproducibility.settings": {
@@ -1111,6 +1259,18 @@
     },
     "report.value.percent": {
       "text": "{value}%",
+      "status": "source"
+    },
+    "report.value.range": {
+      "text": "{low} to {high}",
+      "status": "source"
+    },
+    "report.value.yes": {
+      "text": "yes",
+      "status": "source"
+    },
+    "report.value.no": {
+      "text": "no",
       "status": "source"
     },
     "web.app.name": {
