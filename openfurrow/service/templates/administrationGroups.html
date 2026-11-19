@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}{{ t.text('web.administration.section.groups') }} - {{ t.text('web.administration.heading') }} - {{ t.text('web.app.name') }}{% endblock %}
+{% block content %}
+{% import "administrationParts.html" as parts with context %}
+{% set localeArgument = locale if locale != 'en-US' else none %}
+{{ parts.nav('groups') }}
+<div class="page-head">
+  <h1>{{ t.text('web.administration.section.groups') }}</h1>
+  <p class="count">{{ t.integer(groups | length) }}</p>
+</div>
+<p class="intro">{{ t.text('web.administration.about.groups') }}</p>
+{{ parts.messages() }}
+
+{% if groups %}
+<div class="table-scroll">
+  <table class="trials">
+    <thead>
+      <tr>
+        <th scope="col">{{ t.text('web.administration.groups.name') }}</th>
+        <th scope="col" class="num">{{ t.text('web.administration.groups.members') }}</th>
+        <th scope="col">{{ t.text('web.administration.groups.kept') }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for group in groups %}
+      <tr>
+        <td><a href="{{ url_for('web.administrationGroup', name=group.name, locale=localeArgument) }}" dir="auto">{{ group.name }}</a></td>
+        <td class="num code">{{ t.integer(group.members | length) }}</td>
+        <td>{% if group.providerName %}{{ t.text('web.administration.groups.mirroredFrom', provider=group.providerName) }}{% else %}{{ t.text('web.administration.groups.keptHere') }}{% endif %}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<p class="notice">{{ t.text('web.administration.groups.none') }}</p>
+{% endif %}
+
+<section aria-labelledby="addGroup">
+  <h2 id="addGroup">{{ t.text('web.administration.groups.add') }}</h2>
+  <form class="import-form administration-form" method="post" action="{{ url_for('web.administrationGroups', locale=localeArgument) }}">
+    <div class="field-row">
+      <label class="field-label" for="name">{{ t.text('web.administration.groups.name') }}</label>
+      <input type="text" id="name" name="name" dir="auto" autocomplete="off" value="{{ typed.name }}">
+    </div>
+    <div class="form-actions"><button class="button" type="submit">{{ t.text('web.administration.groups.add') }}</button></div>
+  </form>
+</section>
+{% endblock %}

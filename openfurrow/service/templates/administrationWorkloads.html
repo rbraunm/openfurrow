@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}{{ t.text('web.administration.section.workloads') }} - {{ t.text('web.administration.heading') }} - {{ t.text('web.app.name') }}{% endblock %}
+{% block content %}
+{% import "administrationParts.html" as parts with context %}
+{% set localeArgument = locale if locale != 'en-US' else none %}
+{{ parts.nav('workloads') }}
+<div class="page-head">
+  <h1>{{ t.text('web.administration.section.workloads') }}</h1>
+  <p class="count">{{ t.integer(rules | length) }}</p>
+</div>
+<p class="intro">{{ t.text('web.administration.about.workloads') }}</p>
+{{ parts.messages() }}
+{% if audience %}
+<p class="notice">{{ t.text('web.administration.workloads.audience', audience=audience) }}</p>
+{% else %}
+<p class="warning">{{ t.text('web.administration.workloads.noAudience') }} <a href="{{ url_for('web.administrationSettings', locale=localeArgument) }}">{{ t.text('web.administration.section.settings') }}</a></p>
+{% endif %}
+
+{% if rules %}
+<div class="table-scroll">
+  <table class="trials">
+    <thead>
+      <tr>
+        <th scope="col">{{ t.text('web.administration.workloads.name') }}</th>
+        <th scope="col">{{ t.text('web.administration.workloads.issuer') }}</th>
+        <th scope="col">{{ t.text('web.administration.workloads.claims') }}</th>
+        <th scope="col">{{ t.text('web.administration.column.state') }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for rule in rules %}
+      <tr>
+        <td class="code"><a href="{{ url_for('web.administrationWorkload', name=rule.name, locale=localeArgument) }}">{{ rule.name }}</a></td>
+        <td class="code" dir="ltr">{{ rule.issuer }}</td>
+        <td class="code" dir="ltr">{% for claim, value in rule.claims | dictsort %}{{ claim }}={{ value }}{% if not loop.last %}<br>{% endif %}{% endfor %}</td>
+        <td>{{ t.text('web.administration.enabled') if rule.enabled else t.text('web.administration.disabled') }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<p class="notice">{{ t.text('web.administration.workloads.none') }}</p>
+{% endif %}
+
+<section aria-labelledby="addWorkload">
+  <h2 id="addWorkload">{{ t.text('web.administration.workloads.add') }}</h2>
+  <form class="import-form administration-form" method="post" action="{{ url_for('web.administrationWorkloads', locale=localeArgument) }}">
+    <div class="field-row">
+      <label class="field-label" for="name">{{ t.text('web.administration.workloads.name') }}</label>
+      <input type="text" id="name" name="name" dir="ltr" autocomplete="off" value="{{ typed.name }}" aria-describedby="nameHelp">
+      <p class="help" id="nameHelp">{{ t.text('web.administration.providers.nameHelp') }}</p>
+    </div>
+    <div class="field-row">
+      <label class="field-label" for="issuer">{{ t.text('web.administration.workloads.issuer') }}</label>
+      <input type="text" id="issuer" name="issuer" dir="ltr" autocomplete="off" value="{{ typed.issuer }}" aria-describedby="issuerHelp">
+      <p class="help" id="issuerHelp">{{ t.text('web.administration.workloads.issuerHelp', named=namedIssuers) }}</p>
+    </div>
+    <div class="field-row">
+      <label class="field-label" for="claims">{{ t.text('web.administration.workloads.claims') }}</label>
+      <textarea id="claims" name="claims" rows="4" dir="ltr" aria-describedby="claimsHelp">{{ typed.claims }}</textarea>
+      <p class="help" id="claimsHelp">{{ t.text('web.administration.workloads.claimsHelp') }}</p>
+    </div>
+    <div class="field-row">
+      <label class="field-label" for="certificateAuthority">{{ t.text('web.administration.workloads.certificateAuthority') }}</label>
+      <input type="text" id="certificateAuthority" name="certificateAuthority" dir="ltr" autocomplete="off" value="{{ typed.certificateAuthority }}" aria-describedby="certificateAuthorityHelp">
+      <p class="help" id="certificateAuthorityHelp">{{ t.text('web.administration.provider.help.certificateAuthority') }}</p>
+    </div>
+    <div class="form-actions"><button class="button" type="submit">{{ t.text('web.administration.workloads.add') }}</button></div>
+  </form>
+</section>
+{% endblock %}

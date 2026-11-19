@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}{{ rule.name }} - {{ t.text('web.administration.section.workloads') }} - {{ t.text('web.app.name') }}{% endblock %}
+{% block content %}
+{% import "administrationParts.html" as parts with context %}
+{% set localeArgument = locale if locale != 'en-US' else none %}
+{% set here = url_for('web.administrationWorkload', name=rule.name, locale=localeArgument) %}
+{{ parts.nav('workloads') }}
+{{ parts.back(url_for('web.administrationWorkloads', locale=localeArgument), t.text('web.administration.workloads.all')) }}
+<div class="page-head">
+  <h1>{{ t.text('web.administration.workload.heading') }}</h1>
+  <p class="code trial-code">{{ rule.name }}</p>
+</div>
+{{ parts.messages() }}
+
+<section class="summary" aria-label="{{ t.text('web.administration.workload.heading') }}">
+  <dl>
+    <div><dt>{{ t.text('web.administration.workloads.issuer') }}</dt><dd class="code" dir="ltr">{{ rule.issuer }}</dd></div>
+    <div><dt>{{ t.text('web.administration.workloads.claims') }}</dt><dd class="code" dir="ltr">{% for claim, value in rule.claims | dictsort %}{{ claim }}={{ value }}{% if not loop.last %}<br>{% endif %}{% endfor %}</dd></div>
+    <div><dt>{{ t.text('web.administration.workloads.certificateAuthority') }}</dt><dd>{% if rule.certificateAuthority %}<span class="code" dir="ltr">{{ rule.certificateAuthority }}</span>{% else %}{{ t.text('web.administration.detail.none') }}{% endif %}</dd></div>
+    <div><dt>{{ t.text('web.administration.workload.added') }}</dt><dd><span dir="ltr">{{ added }}</span> <span class="code">UTC</span></dd></div>
+    <div><dt>{{ t.text('web.administration.column.state') }}</dt><dd>{{ t.text('web.administration.enabled') if rule.enabled else t.text('web.administration.disabled') }}</dd></div>
+  </dl>
+</section>
+<p class="intro">{{ t.text('web.administration.workload.fixed') }}</p>
+
+<section aria-labelledby="workloadEnabled">
+  <h2 id="workloadEnabled">{{ t.text('web.administration.workload.enabledHeading') }}</h2>
+  <form class="import-form administration-form" method="post" action="{{ here }}">
+    <p>{{ t.text('web.administration.workload.isEnabled') if rule.enabled else t.text('web.administration.workload.isDisabled') }}</p>
+    <input type="hidden" name="action" value="{{ 'disable' if rule.enabled else 'enable' }}">
+    <div class="form-actions"><button class="button button-quiet" type="submit">{{ t.text('web.task.disable') if rule.enabled else t.text('web.task.enable') }}</button></div>
+  </form>
+</section>
+
+<section aria-labelledby="workloadRoles">
+  <h2 id="workloadRoles">{{ t.text('web.administration.workload.rolesHeading') }}</h2>
+  {{ parts.assignmentTable(assignments, here, false, 'rule') }}
+  <h3>{{ t.text('web.administration.assignments.giveHeading') }}</h3>
+  {{ parts.assignmentForm(here, roleChoices, scopeChoices, typed, none) }}
+</section>
+
+<section class="manage" aria-labelledby="workloadRemove">
+  <h2 id="workloadRemove">{{ t.text('web.administration.workload.removeHeading') }}</h2>
+  <p><a class="delete-link" href="{{ url_for('web.administrationWorkloadRemove', name=rule.name, locale=localeArgument) }}">{{ t.text('web.administration.workload.remove') }}</a></p>
+</section>
+{% endblock %}

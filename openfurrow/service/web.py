@@ -23,7 +23,8 @@ The pages: list trials; add a trial (the trial form, or the canonical package JS
 a trial with its field layout; enter values; import observations from a CSV or an .xlsx
 workbook through a preview and an explicit column mapping (decision 0031); read the
 report; check reproducibility; delete a trial; and the scheduled tasks with their runs
-(decision 0041).
+(decision 0041). The administration area is `openfurrow.service.administration`, and the
+pages a refusal answers with are `openfurrow.service.refusalPages`.
 """
 
 from __future__ import annotations
@@ -54,6 +55,8 @@ from openfurrow.schema.document import isOutOfRange
 from openfurrow.version import schemaVersion
 from openfurrow.identity.model import Permission, SignInMode
 from openfurrow.identity.providers import ProviderKind
+from openfurrow.service.administration import registerAdministration
+from openfurrow.service.refusalPages import registerRefusalPages
 from openfurrow.service.signIn import pendingCookie, sessionCookie
 from openfurrow.workspace import IdentityError, ObservationImportError, StoreError, TaskError, Workspace
 from pydantic import ValidationError
@@ -407,6 +410,9 @@ def createWebBlueprint(workspace: Workspace, config: OpenFurrowConfig | None = N
       return {"heartbeatAge": None, "schedulerLate": True}
     age = max(0, int((datetime.datetime.now(datetime.UTC) - heartbeat.lastSeenAt).total_seconds()))
     return {"heartbeatAge": age, "schedulerLate": age > schedulerLateSeconds}
+
+  registerRefusalPages(blueprint, _translator, _localeContext)
+  registerAdministration(blueprint, workspace, _translator, _localeContext, _localized, _moment, _levelName)
 
   @blueprint.get("/tasks")
   def tasks() -> Response:

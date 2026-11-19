@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}{{ t.text('web.administration.section.audit') }} - {{ t.text('web.administration.heading') }} - {{ t.text('web.app.name') }}{% endblock %}
+{% block content %}
+{% import "administrationParts.html" as parts with context %}
+{% set localeArgument = locale if locale != 'en-US' else none %}
+{{ parts.nav('audit') }}
+<div class="page-head">
+  <h1>{{ t.text('web.administration.section.audit') }}</h1>
+</div>
+<p class="intro">{{ t.text('web.administration.about.audit') }}</p>
+{{ parts.messages() }}
+
+<form class="administration-form" method="get" action="{{ url_for('web.administrationAudit') }}" aria-label="{{ t.text('web.administration.audit.filterHeading') }}">
+  {% if localeArgument %}<input type="hidden" name="locale" value="{{ locale }}">{% endif %}
+  <fieldset class="format">
+    <legend>{{ t.text('web.administration.audit.filterHeading') }}</legend>
+    <div class="administration-inline">
+      <div>
+        <label class="field-label" for="auditScope">{{ t.text('web.administration.audit.scope') }}</label>
+        {{ parts.scopeSelect('auditScope', scopeChoices, scope, false) }}
+      </div>
+      <div>
+        <label class="field-label" for="actor">{{ t.text('web.administration.audit.actor') }}</label>
+        <input type="text" id="actor" name="actor" dir="auto" autocomplete="off" value="{{ typed.actor }}" aria-describedby="actorHelp">
+      </div>
+      <div>
+        <label class="field-label" for="action">{{ t.text('web.administration.audit.action') }}</label>
+        <input type="text" id="action" name="action" dir="ltr" autocomplete="off" value="{{ typed.action }}" aria-describedby="actionHelp">
+      </div>
+      <div>
+        <label class="field-label" for="since">{{ t.text('web.administration.audit.since') }}</label>
+        <input type="date" id="since" name="since" dir="ltr" value="{{ typed.since }}" aria-describedby="dateHelp">
+      </div>
+      <div>
+        <label class="field-label" for="until">{{ t.text('web.administration.audit.until') }}</label>
+        <input type="date" id="until" name="until" dir="ltr" value="{{ typed.until }}" aria-describedby="dateHelp">
+      </div>
+    </div>
+    <p class="help" id="actorHelp">{{ t.text('web.administration.audit.actorHelp') }}</p>
+    <p class="help" id="actionHelp">{{ t.text('web.administration.audit.actionHelp') }}</p>
+    <p class="help" id="dateHelp">{{ t.text('web.administration.audit.dateHelp') }}</p>
+    <div class="form-actions administration-inline">
+      <button class="button" type="submit">{{ t.text('web.administration.audit.filter') }}</button>
+      {% if filtered %}<a href="{{ allAddress }}">{{ t.text('web.administration.audit.clearFilters') }}</a>{% endif %}
+    </div>
+  </fieldset>
+</form>
+
+{% if events %}
+<div class="table-scroll">
+  <table class="trials audit">
+    <thead>
+      <tr>
+        <th scope="col">{{ t.text('web.administration.audit.column.when') }}</th>
+        <th scope="col">{{ t.text('web.administration.audit.column.who') }}</th>
+        <th scope="col">{{ t.text('web.administration.audit.column.surface') }}</th>
+        <th scope="col">{{ t.text('web.administration.audit.column.action') }}</th>
+        <th scope="col">{{ t.text('web.administration.audit.column.where') }}</th>
+        <th scope="col">{{ t.text('web.administration.audit.column.detail') }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in events %}
+      <tr id="event-{{ row.event.eventID }}">
+        <td dir="ltr">{{ row.when }}</td>
+        <td>{% if row.event.actorName %}<span class="code" dir="auto">{{ row.event.actorName }}</span> <span class="help">{{ row.actorKind }}</span>{% else %}{{ row.actorKind }}{% endif %}</td>
+        <td class="code">{{ row.event.surface }}</td>
+        <td class="code" dir="ltr">{{ row.event.action }}</td>
+        <td dir="auto">{{ row.where }}</td>
+        <td>{{ parts.detail(row.event.detail) }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<p class="notice">{{ t.text('web.administration.audit.none') }}</p>
+{% endif %}
+
+<nav class="pager" aria-label="{{ t.text('web.administration.audit.pages') }}">
+  {% if not isFirstPage %}<a href="{{ newestAddress }}">{{ t.text('web.administration.audit.newest') }}</a>{% endif %}
+  {% if olderAddress %}<a href="{{ olderAddress }}">{{ t.text('web.administration.audit.older') }}</a>{% endif %}
+</nav>
+{% endblock %}

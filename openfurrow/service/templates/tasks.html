@@ -2,6 +2,8 @@
 {% block title %}{{ t.text('web.tasks.heading') }} - {{ t.text('web.app.name') }}{% endblock %}
 {% block content %}
 {% set localeArgument = locale if locale != 'en-US' else none %}
+{% import "administrationParts.html" as parts with context %}
+{{ parts.nav('tasks') }}
 <div class="page-head">
   <h1>{{ t.text('web.tasks.heading') }}</h1>
 </div>
@@ -9,6 +11,7 @@
 {% include "schedulerState.html" %}
 
 {% if tasks %}
+<div class="table-scroll">
 <table class="trials tasks">
   <thead>
     <tr>
@@ -31,7 +34,9 @@
     {% endfor %}
   </tbody>
 </table>
+</div>
 {% else %}
 <p class="notice">{{ t.text('web.tasks.none') }}</p>
 {% endif %}
+<p class="form-actions"><a class="button" href="{{ url_for('web.administrationTaskKinds', locale=localeArgument) }}">{{ t.text('web.administration.tasks.add') }}</a></p>
 {% endblock %}

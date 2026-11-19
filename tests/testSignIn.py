@@ -64,8 +64,11 @@ def testAViewerCannotChangeWhatTheyCanSee(location):
   client = signedIn(location, "viewer")
   assert client.get("/trials/ESV-2025-01").status_code == 200
   response = client.post("/places", data={"parent": "", "code": "x", "name": "X"}, headers=origin)
-  assert response.status_code == 403
-  assert "viewer may not manageStructure at server" in response.get_data(as_text=True)
+  page = response.get_data(as_text=True)
+  assert response.status_code == 403 and response.mimetype == "text/html"
+  assert "Not permitted" in page and "Manage places and hierarchy levels" in page
+  assert '<span class="code">manageStructure</span>' in page and "The whole server" in page and ">viewer</dd>" in page
+  assert "x" not in [place.path for place in Workspace.open(location).places()]
 
 
 def testSigningOutEndsTheSession(location):

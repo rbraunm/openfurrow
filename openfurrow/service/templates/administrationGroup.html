@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block title %}{{ group.name }} - {{ t.text('web.administration.section.groups') }} - {{ t.text('web.app.name') }}{% endblock %}
+{% block content %}
+{% import "administrationParts.html" as parts with context %}
+{% set localeArgument = locale if locale != 'en-US' else none %}
+{% set here = url_for('web.administrationGroup', name=group.name, locale=localeArgument) %}
+{{ parts.nav('groups') }}
+{{ parts.back(url_for('web.administrationGroups', locale=localeArgument), t.text('web.administration.groups.all')) }}
+<div class="page-head">
+  <h1>{{ t.text('web.administration.group.heading') }}</h1>
+  <p class="code trial-code" dir="auto">{{ group.name }}</p>
+</div>
+{{ parts.messages() }}
+{% if group.providerName %}
+<p class="notice">{{ t.text('web.administration.group.mirrored', provider=group.providerName) }}</p>
+{% endif %}
+
+<section aria-labelledby="groupMembers">
+  <h2 id="groupMembers">{{ t.text('web.administration.groups.members') }}</h2>
+  {% if group.members %}
+  <div class="table-scroll">
+    <table class="trials">
+      <thead>
+        <tr>
+          <th scope="col">{{ t.text('web.administration.accounts.userName') }}</th>
+          {% if not group.providerName %}<th scope="col"><span class="visually-hidden">{{ t.text('web.administration.column.change') }}</span></th>{% endif %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for userName in group.members %}
+        <tr>
+          <td class="code"><a href="{{ url_for('web.administrationAccount', userName=userName, locale=localeArgument) }}" dir="auto">{{ userName }}</a></td>
+          {% if not group.providerName %}
+          <td class="row-action">
+            <form method="post" action="{{ here }}">
+              <input type="hidden" name="action" value="leave">
+              <input type="hidden" name="userName" value="{{ userName }}">
+              <button class="button button-quiet" type="submit" aria-label="{{ t.text('web.administration.groups.removeNamed', userName=userName, group=group.name) }}">{{ t.text('web.administration.groups.remove') }}</button>
+            </form>
+          </td>
+          {% endif %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p class="notice">{{ t.text('web.administration.group.noMembers') }}</p>
+  {% endif %}
+  {% if not group.providerName and addable %}
+  <form class="import-form administration-form" method="post" action="{{ here }}">
+    <input type="hidden" name="action" value="join">
+    <div class="field-row">
+      <label class="field-label" for="userName">{{ t.text('web.administration.group.account') }}</label>
+      <select id="userName" name="userName">
+        {% for account in addable %}<option value="{{ account.userName }}">{{ account.userName }} ({{ account.displayName }})</option>{% endfor %}
+      </select>
+    </div>
+    <div class="form-actions"><button class="button" type="submit">{{ t.text('web.administration.groups.addMember') }}</button></div>
+  </form>
+  {% endif %}
+</section>
+
+<section aria-labelledby="groupRoles">
+  <h2 id="groupRoles">{{ t.text('web.administration.group.rolesHeading') }}</h2>
+  {{ parts.assignmentTable(assignments, here, false, 'group') }}
+  <h3>{{ t.text('web.administration.assignments.giveHeading') }}</h3>
+  {{ parts.assignmentForm(here, roleChoices, scopeChoices, typed, none) }}
+</section>
+
+{% if not group.providerName %}
+<section class="manage" aria-labelledby="groupDelete">
+  <h2 id="groupDelete">{{ t.text('web.administration.group.deleteHeading') }}</h2>
+  <p><a class="delete-link" href="{{ url_for('web.administrationGroupDelete', name=group.name, locale=localeArgument) }}">{{ t.text('web.administration.group.delete') }}</a></p>
+</section>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,168 @@
+{% macro nav(current) %}
+<nav class="administration-nav" aria-label="{{ t.text('web.administration.heading') }}">
+  <ul>
+    {% for section, endpoint in administrationSections %}
+    <li><a href="{{ url_for(endpoint, locale=locale if locale != 'en-US' else none) }}"{% if section == current %} aria-current="page"{% endif %}>{{ t.text('web.administration.section.' ~ section) }}</a></li>
+    {% endfor %}
+  </ul>
+</nav>
+{% endmacro %}
+
+{% macro messages() %}
+{% if problems %}
+<div class="error" role="alert">
+  <p>{{ t.text('web.administration.notDone') }}</p>
+  <ul>
+    {% for problem in problems %}<li dir="auto">{{ problem }}</li>{% endfor %}
+  </ul>
+</div>
+{% endif %}
+{% if notice %}<div class="notice" role="status">{{ notice }}</div>{% endif %}
+{% endmacro %}
+
+{% macro back(address, label) %}
+<p class="back"><a href="{{ address }}">{{ ('&rarr;' if direction == 'rtl' else '&larr;') | safe }} {{ label }}</a></p>
+{% endmacro %}
+
+{% macro scopeSelect(fieldID, choices, selected, withBlank) %}
+<select id="{{ fieldID }}" name="scope">
+  {% if withBlank %}<option value="">{{ t.text('web.administration.choose') }}</option>{% endif %}
+  {% for choice in choices %}
+  <option value="{{ choice.scope }}"{% if choice.scope == selected %} selected{% endif %}>{{ ('&nbsp;&nbsp;' * choice.depth) | safe }}{{ choice.label }}</option>
+  {% endfor %}
+</select>
+{% endmacro %}
+
+{% macro assignmentTable(assignments, formAction, showHolder, takeBackFrom) %}
+{% if assignments %}
+<div class="table-scroll">
+  <table class="trials">
+    <thead>
+      <tr>
+        <th scope="col">{{ t.text('web.administration.assignments.column.role') }}</th>
+        {% if showHolder %}<th scope="col">{{ t.text('web.administration.assignments.column.holder') }}</th>{% endif %}
+        <th scope="col">{{ t.text('web.administration.assignments.column.scope') }}</th>
+        {% if formAction %}<th scope="col"><span class="visually-hidden">{{ t.text('web.administration.column.change') }}</span></th>{% endif %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in assignments %}
+      <tr>
+        <td>{{ row.roleName }} <span class="code">{{ row.roleCode }}</span></td>
+        {% if showHolder %}<td>{{ t.text('web.administration.holder.' ~ row.holderKind) }} <span class="code" dir="auto">{{ row.holderName }}</span></td>{% endif %}
+        <td dir="auto">{{ row.scopeName }}</td>
+        {% if formAction %}
+        <td class="row-action">
+          {% if takeBackFrom is none or row.holderKind == takeBackFrom %}
+          <form method="post" action="{{ formAction }}">
+            <input type="hidden" name="action" value="takeBack">
+            <input type="hidden" name="roleCode" value="{{ row.roleCode }}">
+            <input type="hidden" name="scope" value="{{ row.scope }}">
+            {% if takeBackFrom is none %}<input type="hidden" name="holder" value="{{ row.holderKind }}:{{ row.holderName }}">{% endif %}
+            <button class="button button-quiet" type="submit" aria-label="{{ t.text('web.administration.assignments.takeBackNamed', role=row.roleCode, scope=row.scopeName) }}">{{ t.text('web.administration.assignments.takeBack') }}</button>
+          </form>
+          {% endif %}
+        </td>
+        {% endif %}
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<p class="notice">{{ t.text('web.administration.assignments.none') }}</p>
+{% endif %}
+{% endmacro %}
+
+{% macro assignmentForm(formAction, roleChoices, scopeChoices, typed, holders) %}
+<form class="import-form administration-form" method="post" action="{{ formAction }}">
+  <input type="hidden" name="action" value="give">
+  {% if holders %}
+  <div class="field-row">
+    <label class="field-label" for="giveHolder">{{ t.text('web.administration.assignments.holder') }}</label>
+    <select id="giveHolder" name="holder">
+      <option value="">{{ t.text('web.administration.choose') }}</option>
+      {% for kind, names in holders.items() %}
+      {% if names %}
+      <optgroup label="{{ t.text('web.administration.holders.' ~ kind) }}">
+        {% for name in names %}<option value="{{ kind }}:{{ name }}"{% if typed.holder == kind ~ ':' ~ name %} selected{% endif %}>{{ name }}</option>{% endfor %}
+      </optgroup>
+      {% endif %}
+      {% endfor %}
+    </select>
+  </div>
+  {% endif %}
+  <div class="field-row">
+    <label class="field-label" for="giveRole">{{ t.text('web.administration.assignments.role') }}</label>
+    <select id="giveRole" name="roleCode">
+      <option value="">{{ t.text('web.administration.choose') }}</option>
+      {% for code, name in roleChoices %}<option value="{{ code }}"{% if code == typed.roleCode %} selected{% endif %}>{{ name }} ({{ code }})</option>{% endfor %}
+    </select>
+  </div>
+  <div class="field-row">
+    <label class="field-label" for="giveScope">{{ t.text('web.administration.assignments.scope') }}</label>
+    {{ scopeSelect('giveScope', scopeChoices, typed.scope, true) }}
+  </div>
+  <div class="form-actions"><button class="button" type="submit">{{ t.text('web.administration.assignments.give') }}</button></div>
+</form>
+{% endmacro %}
+
+{% macro detail(value) %}
+{%- if value is mapping -%}
+{%- if value -%}
+<dl class="detail">
+  {% for key, inner in value | dictsort %}<div><dt class="code">{{ key }}</dt><dd>{{ detail(inner) }}</dd></div>{% endfor %}
+</dl>
+{%- else -%}{{ t.text('web.administration.detail.none') }}{%- endif -%}
+{%- elif value is sequence and value is not string -%}
+{%- if value -%}
+<ul class="detail-list">
+  {% for inner in value %}<li>{{ detail(inner) }}</li>{% endfor %}
+</ul>
+{%- else -%}{{ t.text('web.administration.detail.none') }}{%- endif -%}
+{%- elif value is none -%}{{ t.text('web.administration.detail.none') }}
+{%- elif value is sameas true -%}{{ t.text('web.administration.detail.yes') }}
+{%- elif value is sameas false -%}{{ t.text('web.administration.detail.no') }}
+{%- else -%}<span dir="auto">{{ value }}</span>
+{%- endif -%}
+{% endmacro %}
+
+{% macro modelFields(items, typed, helpOf) %}
+{% for item in items %}
+{% if item.rows is defined %}
+<fieldset class="format">
+  <legend class="code">{{ item.setting }}</legend>
+  {% if helpOf %}<p class="help">{{ helpOf(item.setting) }}</p>{% endif %}
+  {% if item.repeated %}<input type="hidden" name="{{ item.name }}.rows" value="{{ item.rows | length }}">{% endif %}
+  {% for row in item.rows %}
+  {% if item.repeated %}
+  <div class="administration-row" role="group" aria-label="{{ item.setting }} {{ loop.index }}">{{ modelFields(row, typed, helpOf) }}</div>
+  {% else %}
+  {{ modelFields(row, typed, helpOf) }}
+  {% endif %}
+  {% endfor %}
+  {% if item.repeated %}<button class="button button-quiet" type="submit" name="more" value="{{ item.name }}">{{ t.text('web.administration.form.anotherRow') }}</button>{% endif %}
+</fieldset>
+{% else %}
+{% set fieldID = 'field-' ~ item.name %}
+{% set described = (' aria-describedby="' ~ fieldID ~ '-help"') if helpOf else '' %}
+<div class="field-row">
+  {% if item.kind.value == 'flag' %}
+  <label class="choice" for="{{ fieldID }}"><input type="checkbox" id="{{ fieldID }}" name="{{ item.name }}" value="yes"{% if typed[item.name] == 'yes' %} checked{% endif %}{{ described | safe }}> <span class="code">{{ item.setting }}</span></label>
+  {% else %}
+  <label class="field-label" for="{{ fieldID }}"><span class="code">{{ item.setting }}</span>{% if item.optional %} ({{ t.text('web.administration.form.optional') }}){% endif %}</label>
+  {% if item.kind.value == 'choice' %}
+  <select id="{{ fieldID }}" name="{{ item.name }}"{{ described | safe }}>
+    {% for choice in item.choices %}<option value="{{ choice }}"{% if typed[item.name] == choice %} selected{% endif %}>{{ choice }}</option>{% endfor %}
+  </select>
+  {% elif item.kind.value in ('longText', 'lines', 'json') %}
+  <textarea id="{{ fieldID }}" name="{{ item.name }}" rows="5" dir="ltr"{{ described | safe }}>{{ typed[item.name] }}</textarea>
+  {% else %}
+  <input type="text" id="{{ fieldID }}" name="{{ item.name }}" dir="{{ 'ltr' if item.kind.value in ('integer', 'number') else 'auto' }}" value="{{ typed[item.name] }}"{% if item.kind.value == 'integer' %} inputmode="numeric"{% elif item.kind.value == 'number' %} inputmode="decimal"{% endif %}{{ described | safe }}>
+  {% endif %}
+  {% endif %}
+  {% if helpOf %}<p class="help" id="{{ fieldID }}-help">{{ helpOf(item.setting) }}</p>{% endif %}
+</div>
+{% endif %}
+{% endfor %}
+{% endmacro %}

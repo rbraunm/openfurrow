@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}{{ t.text('web.notFound.heading') }} - {{ t.text('web.app.name') }}{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>{{ t.text('web.notFound.heading') }}</h1>
+</div>
+<div class="error" role="alert">{{ t.text('web.notFound.intro') }}</div>
+{% if detail %}
+<p class="intro" dir="auto">{{ detail }}</p>
+{% endif %}
+<p><a href="{{ url_for('web.index', locale=locale if locale != 'en-US' else none) }}">{{ t.text('web.nav.trials') }}</a></p>
+{% endblock %}

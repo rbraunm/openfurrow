@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}{{ role.roleCode }} - {{ t.text('web.administration.section.roles') }} - {{ t.text('web.app.name') }}{% endblock %}
+{% block content %}
+{% import "administrationParts.html" as parts with context %}
+{% set localeArgument = locale if locale != 'en-US' else none %}
+{% set here = url_for('web.administrationRole', roleCode=role.roleCode, locale=localeArgument) %}
+{{ parts.nav('roles') }}
+{{ parts.back(url_for('web.administrationRoles', locale=localeArgument), t.text('web.administration.roles.all')) }}
+<div class="page-head">
+  <h1>{{ t.text('web.administration.role.heading') }}</h1>
+  <p class="code trial-code">{{ role.roleCode }}</p>
+</div>
+{{ parts.messages() }}
+
+<section aria-labelledby="changeRole">
+  <h2 id="changeRole">{{ t.text('web.administration.role.changeHeading') }}</h2>
+  <form class="import-form administration-form" method="post" action="{{ here }}">
+    <input type="hidden" name="action" value="save">
+    {% include "administrationRoleFields.html" %}
+    <div class="form-actions"><button class="button" type="submit">{{ t.text('web.administration.save') }}</button></div>
+  </form>
+</section>
+
+<section aria-labelledby="roleHolders">
+  <h2 id="roleHolders">{{ t.text('web.administration.role.holdersHeading') }}</h2>
+  {{ parts.assignmentTable(assignments, none, true, none) }}
+</section>
+
+<section class="manage" aria-labelledby="deleteRole">
+  <h2 id="deleteRole">{{ t.text('web.administration.role.deleteHeading') }}</h2>
+  <form class="import-form administration-form" method="post" action="{{ here }}">
+    <input type="hidden" name="action" value="delete">
+    <p>{{ t.text('web.administration.role.deleteIntro') }}</p>
+    <label class="choice" for="confirmDelete"><input type="checkbox" id="confirmDelete" name="confirm" value="yes"> {{ t.text('web.administration.role.deleteConfirm') }}</label>
+    <div class="form-actions"><button class="button button-danger" type="submit">{{ t.text('web.administration.role.delete') }}</button></div>
+  </form>
+</section>
+{% endblock %}

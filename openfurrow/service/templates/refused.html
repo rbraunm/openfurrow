@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}{{ t.text('web.refused.heading') }} - {{ t.text('web.app.name') }}{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>{{ t.text('web.refused.heading') }}</h1>
+</div>
+<div class="error" role="alert">{{ t.text('web.refused.intro') }}</div>
+<section class="summary" aria-label="{{ t.text('web.refused.heading') }}">
+  <dl>
+    <div><dt>{{ t.text('web.refused.permission') }}</dt><dd>{{ t.text('web.administration.permission.' ~ permission) }} <span class="code">{{ permission }}</span></dd></div>
+    <div><dt>{{ t.text('web.refused.where') }}</dt><dd dir="auto">{% if scopeKind == 'server' %}{{ t.text('web.administration.scope.named.server') }}{% else %}{{ t.text('web.administration.scope.named.' ~ scopeKind, name=scopeName) }}{% endif %}</dd></div>
+    {% if signedIn %}<div><dt>{{ t.text('web.refused.who') }}</dt><dd class="code" dir="auto">{{ signedIn.userName }}</dd></div>{% endif %}
+  </dl>
+</section>
+<p class="intro">{{ t.text('web.refused.whatNext') }}</p>
+<p><a href="{{ url_for('web.index', locale=locale if locale != 'en-US' else none) }}">{{ t.text('web.nav.trials') }}</a></p>
+{% endblock %}

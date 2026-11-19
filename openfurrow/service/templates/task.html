@@ -2,6 +2,8 @@
 {% block title %}{{ task.name }} - {{ t.text('web.tasks.heading') }} - {{ t.text('web.app.name') }}{% endblock %}
 {% block content %}
 {% set localeArgument = locale if locale != 'en-US' else none %}
+{% import "administrationParts.html" as parts with context %}
+{{ parts.nav('tasks') }}
 <p class="back"><a href="{{ url_for('web.tasks', locale=localeArgument) }}">{{ ('&rarr;' if direction == 'rtl' else '&larr;') | safe }} {{ t.text('web.task.backToTasks') }}</a></p>
 
 <div class="page-head">
@@ -52,6 +54,7 @@
 <section aria-label="{{ t.text('web.task.runs') }}">
   <h2>{{ t.text('web.task.runs') }}</h2>
   {% if runs %}
+  <div class="table-scroll">
   <table class="trials runs">
     <thead>
       <tr>
@@ -83,8 +86,18 @@
       {% endfor %}
     </tbody>
   </table>
+  </div>
   {% else %}
   <p class="notice">{{ t.text('web.task.noRuns') }}</p>
+  {% endif %}
+</section>
+
+<section class="manage" aria-labelledby="deleteTask">
+  <h2 id="deleteTask">{{ t.text('web.administration.tasks.deleteHeading') }}</h2>
+  {% if task.ownerProvider %}
+  <p class="intro">{{ t.text('web.administration.confirm.task.kept', provider=task.ownerProvider) }}</p>
+  {% else %}
+  <p><a class="delete-link" href="{{ url_for('web.administrationTaskDelete', name=task.name, locale=localeArgument) }}">{{ t.text('web.administration.tasks.delete') }}</a></p>
   {% endif %}
 </section>
 {% endblock %}

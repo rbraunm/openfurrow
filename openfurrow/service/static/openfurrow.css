@@ -99,7 +99,7 @@ a:hover { color: var(--accent); }
 .brand-name { font-family: var(--serif); font-size: 1.2rem; font-weight: 600; letter-spacing: 0.01em; }
 .brand-tagline { font-size: 0.72rem; color: var(--furrow); letter-spacing: 0.02em; }
 
-.masthead-nav { display: flex; align-items: center; gap: 1.1rem; }
+.masthead-nav { display: flex; align-items: center; gap: 0.4rem 1.1rem; flex-wrap: wrap; }
 .masthead-nav a { text-decoration: none; font-size: 0.92rem; }
 .nav-action {
   border: 1px solid var(--line); border-radius: var(--radius);
@@ -354,6 +354,59 @@ fieldset.format label { display: block; padding: 0.15rem 0; font-size: 0.95rem; 
 .layout-source label.choice { flex-direction: row; align-items: center; gap: 0.45rem; }
 .trial-form input.number { width: 10rem; }
 .help { font-size: 0.82rem; color: var(--furrow); }
+
+/* Administration ----------------------------------------------------------- */
+
+h3 { font-family: var(--serif); font-weight: 600; font-size: 1.05rem; margin: 1.3rem 0 0.4rem; }
+.administration-nav ul {
+  list-style: none; margin: 0 0 1.6rem; padding: 0 0 0.7rem;
+  display: flex; flex-wrap: wrap; gap: 0.3rem 0.5rem; border-block-end: 1px solid var(--line);
+}
+.administration-nav a {
+  display: inline-block; padding: 0.25rem 0.65rem; font-size: 0.92rem; text-decoration: none;
+  border: 1px solid transparent; border-radius: var(--radius);
+}
+.administration-nav a:hover { border-color: var(--line); }
+.administration-nav a[aria-current="page"] { border-color: var(--accent); color: var(--ink); font-weight: 600; }
+.administration-sections {
+  list-style: none; padding: 0; margin-block: 1.2rem;
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr)); gap: 0.8rem;
+}
+.administration-sections li {
+  display: flex; flex-direction: column; gap: 0.25rem; padding: 0.8rem 1rem;
+  border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel);
+}
+.administration-form input[type="text"], .administration-form input[type="password"], .administration-form input[type="date"],
+.administration-form select, .administration-form textarea { font: inherit; max-width: 100%; }
+.administration-form input[type="text"], .administration-form input[type="password"] { width: 100%; max-width: 28rem; }
+.administration-form textarea { font-family: var(--mono); font-size: 0.85rem; }
+.administration-form label.choice { display: flex; align-items: baseline; gap: 0.45rem; margin-block: 0.3rem; }
+.administration-form .help { margin: 0.2rem 0 0; max-width: var(--measure); }
+.administration-inline { display: flex; flex-wrap: wrap; align-items: end; gap: 0.6rem 1rem; }
+.administration-inline > div { min-width: 0; max-width: 100%; }
+.administration-form fieldset { min-width: 0; }
+.administration-inline input[type="text"] { width: 12rem; }
+.administration-card {
+  border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel);
+  padding: 0.9rem 1.1rem; margin-block: 0.9rem; max-width: 48rem;
+}
+.administration-card h2 { margin-block-start: 0; font-size: 1.05rem; overflow-wrap: anywhere; }
+.administration-card form { margin-block-start: 0.7rem; }
+.administration-row { border-block-start: 1px dashed var(--line); padding-block: 0.4rem; }
+.detail { margin: 0; }
+.detail > div { display: flex; flex-wrap: wrap; gap: 0.1rem 0.6rem; }
+.detail dt { color: var(--furrow); font-size: 0.82rem; }
+.detail dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+.detail-list { margin: 0; padding-inline-start: 1.1rem; }
+.secret { display: block; margin-block-start: 0.4rem; overflow-wrap: anywhere; user-select: all; }
+.pager { display: flex; flex-wrap: wrap; gap: 1.4rem; margin-block: 1rem; }
+table.trials td form { margin: 0; }
+/* A column heading only a screen reader hears is positioned, and so is clipped by the box its table scrolls in only
+   when that box is what it is positioned against; otherwise it widens the page on a phone. */
+.table-scroll { position: relative; }
+.summary dl > div { min-width: 0; }
+.summary dd { overflow-wrap: anywhere; }
+table.audit td { vertical-align: top; font-size: 0.9rem; }
 
 /* Scheduled tasks ---------------------------------------------------------- */
 

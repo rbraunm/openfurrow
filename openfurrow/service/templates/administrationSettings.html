@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}{{ t.text('web.administration.section.settings') }} - {{ t.text('web.administration.heading') }} - {{ t.text('web.app.name') }}{% endblock %}
+{% block content %}
+{% import "administrationParts.html" as parts with context %}
+{% set localeArgument = locale if locale != 'en-US' else none %}
+{% set here = url_for('web.administrationSettings', scope=scope, locale=localeArgument) %}
+{{ parts.nav('settings') }}
+<div class="page-head">
+  <h1>{{ t.text('web.administration.section.settings') }}</h1>
+  <p class="trial-code" dir="auto">{{ scopeName }}</p>
+</div>
+<p class="intro">{{ t.text('web.administration.about.settings') }}</p>
+{{ parts.messages() }}
+
+<form class="administration-form administration-inline" method="get" action="{{ url_for('web.administrationSettings') }}">
+  {% if localeArgument %}<input type="hidden" name="locale" value="{{ locale }}">{% endif %}
+  <div>
+    <label class="field-label" for="settingsScope">{{ t.text('web.administration.settings.scope') }}</label>
+    {{ parts.scopeSelect('settingsScope', scopeChoices, scope, false) }}
+  </div>
+  <button class="button button-quiet" type="submit">{{ t.text('web.administration.settings.show') }}</button>
+</form>
+{% if not mayChange %}
+<p class="notice">{{ t.text('web.administration.settings.readOnly') }}</p>
+{% endif %}
+
+{% for row in rows %}
+<article class="administration-card" aria-labelledby="setting-{{ loop.index }}">
+  <h2 class="code" id="setting-{{ loop.index }}" dir="ltr">{{ row.key }}</h2>
+  <p class="help">{{ t.text('web.administration.setting.' ~ row.key) }}</p>
+  <dl class="detail">
+    <div><dt>{{ t.text('web.administration.settings.value') }}</dt><dd>{% if row.value %}<span class="code" dir="ltr">{{ row.value }}</span>{% else %}{{ t.text('web.administration.detail.none') }}{% endif %}</dd></div>
+    <div><dt>{{ t.text('web.administration.settings.source') }}</dt><dd dir="auto">{{ row.source }}</dd></div>
+  </dl>
+  {% if row.ownPage %}
+  <p><a href="{{ url_for('web.administrationSignInMode', locale=localeArgument) }}">{{ t.text('web.administration.settings.changeOnItsPage') }}</a></p>
+  {% elif not row.settable %}
+  <p class="help">{{ t.text('web.administration.settings.notAtThisScope') }}</p>
+  {% elif mayChange %}
+  <form class="administration-form administration-inline" method="post" action="{{ here }}">
+    <input type="hidden" name="action" value="set">
+    <input type="hidden" name="key" value="{{ row.key }}">
+    <div>
+      <label class="field-label" for="value-{{ loop.index }}">{{ t.text('web.administration.settings.newValue', scope=scopeName) }}</label>
+      {% if row.choices %}
+      <select id="value-{{ loop.index }}" name="value">
+        {% for choice in row.choices %}<option value="{{ choice }}"{% if choice == row.typed %} selected{% endif %}>{{ choice }}</option>{% endfor %}
+      </select>
+      {% else %}
+      <input type="text" id="value-{{ loop.index }}" name="value" dir="ltr" autocomplete="off" value="{{ row.typed }}"{% if row.number %} inputmode="decimal"{% endif %}>
+      {% endif %}
+    </div>
+    <button class="button" type="submit" aria-label="{{ t.text('web.administration.settings.setNamed', setting=row.key) }}">{{ t.text('web.administration.settings.set') }}</button>
+  </form>
+  {% if row.setHere %}
+  <form class="administration-form" method="post" action="{{ here }}">
+    <input type="hidden" name="action" value="clear">
+    <input type="hidden" name="key" value="{{ row.key }}">
+    <div class="form-actions"><button class="button button-quiet" type="submit" aria-label="{{ t.text('web.administration.settings.clearNamed', setting=row.key) }}">{{ t.text('web.administration.settings.clear') }}</button></div>
+  </form>
+  {% endif %}
+  {% endif %}
+</article>
+{% endfor %}
+{% endblock %}

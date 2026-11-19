@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+{% block title %}{{ account.userName }} - {{ t.text('web.administration.section.accounts') }} - {{ t.text('web.app.name') }}{% endblock %}
+{% block content %}
+{% import "administrationParts.html" as parts with context %}
+{% set localeArgument = locale if locale != 'en-US' else none %}
+{% set here = url_for('web.administrationAccount', userName=account.userName, locale=localeArgument) %}
+{{ parts.nav('accounts') }}
+{{ parts.back(url_for('web.administrationAccounts', locale=localeArgument), t.text('web.administration.accounts.all')) }}
+<div class="page-head">
+  <h1>{{ t.text('web.administration.account.heading') }}</h1>
+  <p class="code trial-code" dir="auto">{{ account.userName }}</p>
+</div>
+{{ parts.messages() }}
+
+<section class="summary" aria-label="{{ t.text('web.administration.account.heading') }}">
+  <dl>
+    <div><dt>{{ t.text('web.administration.accounts.displayName') }}</dt><dd dir="auto">{{ account.displayName }}</dd></div>
+    <div><dt>{{ t.text('web.administration.accounts.email') }}</dt><dd dir="ltr">{{ account.email or t.text('web.administration.detail.none') }}</dd></div>
+    <div><dt>{{ t.text('web.administration.account.language') }}</dt><dd>{{ account.locale or t.text('web.administration.detail.none') }}</dd></div>
+    <div><dt>{{ t.text('web.administration.column.state') }}</dt><dd>{{ t.text('web.administration.accounts.active') if account.active else t.text('web.administration.accounts.inactive') }}</dd></div>
+  </dl>
+</section>
+
+<section aria-labelledby="accountPassword">
+  <h2 id="accountPassword">{{ t.text('web.administration.account.passwordHeading') }}</h2>
+  <form class="import-form administration-form" method="post" action="{{ here }}">
+    <input type="hidden" name="action" value="password">
+    <div class="field-row">
+      <label class="field-label" for="newPassword">{{ t.text('web.account.newPassword') }}</label>
+      <input type="password" id="newPassword" name="newPassword" autocomplete="new-password">
+    </div>
+    <div class="form-actions"><button class="button" type="submit">{{ t.text('web.administration.account.setPassword') }}</button></div>
+  </form>
+</section>
+
+<section aria-labelledby="accountActive">
+  <h2 id="accountActive">{{ t.text('web.administration.account.activeHeading') }}</h2>
+  <form class="import-form administration-form" method="post" action="{{ here }}">
+    {% if account.active %}
+    <input type="hidden" name="action" value="deactivate">
+    <p>{{ t.text('web.administration.account.deactivateIntro') }}</p>
+    <label class="choice" for="confirmDeactivate"><input type="checkbox" id="confirmDeactivate" name="confirm" value="yes"> {{ t.text('web.administration.account.deactivateConfirm') }}</label>
+    <div class="form-actions"><button class="button button-danger" type="submit">{{ t.text('web.administration.account.deactivate') }}</button></div>
+    {% else %}
+    <input type="hidden" name="action" value="activate">
+    <p>{{ t.text('web.administration.account.reactivateIntro') }}</p>
+    <div class="form-actions"><button class="button" type="submit">{{ t.text('web.administration.account.reactivate') }}</button></div>
+    {% endif %}
+  </form>
+</section>
+
+<section aria-labelledby="accountIdentities">
+  <h2 id="accountIdentities">{{ t.text('web.administration.account.identitiesHeading') }}</h2>
+  <p class="intro">{{ t.text('web.administration.account.identitiesIntro') }}</p>
+  {% if identities %}
+  <div class="table-scroll">
+    <table class="trials">
+      <thead>
+        <tr>
+          <th scope="col">{{ t.text('web.administration.account.provider') }}</th>
+          <th scope="col">{{ t.text('web.administration.account.subject') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for identity in identities %}
+        <tr>
+          <td class="code"><a href="{{ url_for('web.administrationProvider', name=identity.providerName, locale=localeArgument) }}">{{ identity.providerName }}</a></td>
+          <td class="code" dir="auto">{{ identity.subject }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p class="notice">{{ t.text('web.administration.account.noIdentities') }}</p>
+  {% endif %}
+  {% if providers %}
+  <form class="import-form administration-form" method="post" action="{{ here }}">
+    <input type="hidden" name="action" value="link">
+    <div class="field-row">
+      <label class="field-label" for="provider">{{ t.text('web.administration.account.provider') }}</label>
+      <select id="provider" name="provider">
+        {% for provider in providers %}<option value="{{ provider.name }}"{% if provider.name == typed.provider %} selected{% endif %}>{{ provider.name }}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="field-row">
+      <label class="field-label" for="subject">{{ t.text('web.administration.account.subject') }}</label>
+      <input type="text" id="subject" name="subject" dir="auto" autocomplete="off" value="{{ typed.subject }}" aria-describedby="subjectHelp">
+      <p class="help" id="subjectHelp">{{ t.text('web.administration.account.subjectHelp') }}</p>
+    </div>
+    <div class="form-actions"><button class="button" type="submit">{{ t.text('web.administration.account.link') }}</button></div>
+  </form>
+  {% endif %}
+</section>
+
+<section aria-labelledby="accountGroups">
+  <h2 id="accountGroups">{{ t.text('web.administration.section.groups') }}</h2>
+  {% if memberOf %}
+  <div class="table-scroll">
+    <table class="trials">
+      <thead>
+        <tr>
+          <th scope="col">{{ t.text('web.administration.groups.name') }}</th>
+          <th scope="col"><span class="visually-hidden">{{ t.text('web.administration.column.change') }}</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for group in memberOf %}
+        <tr>
+          <td><a href="{{ url_for('web.administrationGroup', name=group.name, locale=localeArgument) }}" dir="auto">{{ group.name }}</a></td>
+          <td class="row-action">
+            {% if group.providerName %}
+            {{ t.text('web.administration.groups.mirroredFrom', provider=group.providerName) }}
+            {% else %}
+            <form method="post" action="{{ here }}">
+              <input type="hidden" name="action" value="leave">
+              <input type="hidden" name="group" value="{{ group.name }}">
+              <button class="button button-quiet" type="submit" aria-label="{{ t.text('web.administration.groups.removeNamed', userName=account.userName, group=group.name) }}">{{ t.text('web.administration.groups.remove') }}</button>
+            </form>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p class="notice">{{ t.text('web.administration.account.noGroups') }}</p>
+  {% endif %}
+  {% if joinable %}
+  <form class="import-form administration-form" method="post" action="{{ here }}">
+    <input type="hidden" name="action" value="join">
+    <div class="field-row">
+      <label class="field-label" for="group">{{ t.text('web.administration.account.joinGroup') }}</label>
+      <select id="group" name="group">
+        {% for group in joinable %}<option value="{{ group.name }}">{{ group.name }}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="form-actions"><button class="button" type="submit">{{ t.text('web.administration.groups.addMember') }}</button></div>
+  </form>
+  {% endif %}
+</section>
+
+<section aria-labelledby="accountRoles">
+  <h2 id="accountRoles">{{ t.text('web.administration.account.rolesHeading') }}</h2>
+  <p class="intro">{{ t.text('web.administration.account.rolesIntro') }}</p>
+  {{ parts.assignmentTable(assignments, here, true, 'user') }}
+  <h3>{{ t.text('web.administration.assignments.giveHeading') }}</h3>
+  {{ parts.assignmentForm(here, roleChoices, scopeChoices, typed, none) }}
+</section>
+{% endblock %}

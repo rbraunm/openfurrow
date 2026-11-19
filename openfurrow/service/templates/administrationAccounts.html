@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}{{ t.text('web.administration.section.accounts') }} - {{ t.text('web.administration.heading') }} - {{ t.text('web.app.name') }}{% endblock %}
+{% block content %}
+{% import "administrationParts.html" as parts with context %}
+{% set localeArgument = locale if locale != 'en-US' else none %}
+{{ parts.nav('accounts') }}
+<div class="page-head">
+  <h1>{{ t.text('web.administration.section.accounts') }}</h1>
+  <p class="count">{{ t.integer(accounts | length) }}</p>
+</div>
+<p class="intro">{{ t.text('web.administration.about.accounts') }}</p>
+{{ parts.messages() }}
+
+{% if accounts %}
+<div class="table-scroll">
+  <table class="trials">
+    <thead>
+      <tr>
+        <th scope="col">{{ t.text('web.administration.accounts.userName') }}</th>
+        <th scope="col">{{ t.text('web.administration.accounts.displayName') }}</th>
+        <th scope="col">{{ t.text('web.administration.accounts.email') }}</th>
+        <th scope="col">{{ t.text('web.administration.column.state') }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for account in accounts %}
+      <tr>
+        <td class="code"><a href="{{ url_for('web.administrationAccount', userName=account.userName, locale=localeArgument) }}" dir="auto">{{ account.userName }}</a></td>
+        <td dir="auto">{{ account.displayName }}</td>
+        <td dir="ltr">{{ account.email or '' }}</td>
+        <td>{{ t.text('web.administration.accounts.active') if account.active else t.text('web.administration.accounts.inactive') }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<p class="notice">{{ t.text('web.administration.accounts.none') }}</p>
+{% endif %}
+
+<section aria-labelledby="addAccount">
+  <h2 id="addAccount">{{ t.text('web.administration.accounts.add') }}</h2>
+  <form class="import-form administration-form" method="post" action="{{ url_for('web.administrationAccounts', locale=localeArgument) }}">
+    <div class="field-row">
+      <label class="field-label" for="userName">{{ t.text('web.administration.accounts.userName') }}</label>
+      <input type="text" id="userName" name="userName" dir="auto" autocomplete="off" value="{{ typed.userName }}" aria-describedby="userNameHelp">
+      <p class="help" id="userNameHelp">{{ t.text('web.administration.accounts.userNameHelp') }}</p>
+    </div>
+    <div class="field-row">
+      <label class="field-label" for="displayName">{{ t.text('web.administration.accounts.displayName') }}</label>
+      <input type="text" id="displayName" name="displayName" dir="auto" autocomplete="off" value="{{ typed.displayName }}">
+    </div>
+    <div class="field-row">
+      <label class="field-label" for="email">{{ t.text('web.administration.accounts.emailOptional') }}</label>
+      <input type="text" id="email" name="email" dir="ltr" inputmode="email" autocomplete="off" value="{{ typed.email }}">
+    </div>
+    <div class="field-row">
+      <label class="field-label" for="password">{{ t.text('web.administration.accounts.password') }}</label>
+      <input type="password" id="password" name="password" autocomplete="new-password" aria-describedby="passwordHelp">
+      <p class="help" id="passwordHelp">{{ t.text('web.administration.accounts.passwordHelp') }}</p>
+    </div>
+    <div class="form-actions"><button class="button" type="submit">{{ t.text('web.administration.accounts.add') }}</button></div>
+  </form>
+</section>
+{% endblock %}

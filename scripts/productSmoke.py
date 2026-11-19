@@ -159,6 +159,8 @@ def main():
       require(trialCode in fetch(f"{baseURL}/"), f"the trial list does not show {trialCode}")
       fetch(f"{baseURL}/static/openfurrow.css")
       require(originalHash in fetch(f"{baseURL}/trials/{trialCode}/report"), "the report page does not show the content hash")
+      require("analysis.significanceLevel" in fetch(f"{baseURL}/administration/settings"),
+              "the administration area's settings page does not list the settings")
     finally:
       service.terminate()
       service.wait(timeout=serviceStopTimeoutSeconds)

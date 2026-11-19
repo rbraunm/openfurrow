@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}{{ t.text('web.administration.section.providers') }} - {{ t.text('web.administration.heading') }} - {{ t.text('web.app.name') }}{% endblock %}
+{% block content %}
+{% import "administrationParts.html" as parts with context %}
+{% set localeArgument = locale if locale != 'en-US' else none %}
+{{ parts.nav('providers') }}
+<div class="page-head">
+  <h1>{{ t.text('web.administration.section.providers') }}</h1>
+  <p class="count">{{ t.integer(providers | length) }}</p>
+</div>
+<p class="intro">{{ t.text('web.administration.about.providers') }}</p>
+{{ parts.messages() }}
+
+{% if providers %}
+<div class="table-scroll">
+  <table class="trials">
+    <thead>
+      <tr>
+        <th scope="col">{{ t.text('web.administration.providers.name') }}</th>
+        <th scope="col">{{ t.text('web.administration.providers.kind') }}</th>
+        <th scope="col">{{ t.text('web.administration.column.state') }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for provider in providers %}
+      <tr>
+        <td class="code"><a href="{{ url_for('web.administrationProvider', name=provider.name, locale=localeArgument) }}">{{ provider.name }}</a></td>
+        <td>{{ t.text('web.administration.provider.kind.' ~ provider.kind.value) }}</td>
+        <td>{{ t.text('web.administration.enabled') if provider.enabled else t.text('web.administration.disabled') }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<p class="notice">{{ t.text('web.administration.providers.none') }}</p>
+{% endif %}
+
+<section aria-labelledby="addProvider">
+  <h2 id="addProvider">{{ t.text('web.administration.providers.add') }}</h2>
+  <p class="intro">{{ t.text('web.administration.providers.addIntro') }}</p>
+  <ul class="administration-sections">
+    {% for kind in kinds %}
+    <li>
+      <a href="{{ url_for('web.administrationProviderAdd', kind=kind, locale=localeArgument) }}">{{ t.text('web.administration.provider.kind.' ~ kind) }}</a>
+      <span class="help">{{ t.text('web.administration.provider.about.' ~ kind) }}</span>
+    </li>
+    {% endfor %}
+  </ul>
+</section>
+{% endblock %}

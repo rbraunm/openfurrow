@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}{{ t.text('web.administration.tasks.add') }} - {{ t.text('web.tasks.heading') }} - {{ t.text('web.app.name') }}{% endblock %}
+{% block content %}
+{% import "administrationParts.html" as parts with context %}
+{% set localeArgument = locale if locale != 'en-US' else none %}
+{{ parts.nav('tasks') }}
+{{ parts.back(url_for('web.tasks', locale=localeArgument), t.text('web.task.backToTasks')) }}
+<div class="page-head">
+  <h1>{{ t.text('web.administration.tasks.add') }}</h1>
+</div>
+<p class="intro">{{ t.text('web.administration.tasks.kindsIntro') }}</p>
+{{ parts.messages() }}
+
+<div class="table-scroll">
+  <table class="trials">
+    <thead>
+      <tr>
+        <th scope="col">{{ t.text('web.tasks.column.kind') }}</th>
+        <th scope="col">{{ t.text('web.administration.tasks.defaultSchedule') }}</th>
+        <th scope="col">{{ t.text('web.administration.tasks.parameters') }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for kind in kinds %}
+      <tr>
+        <td class="code"><a href="{{ url_for('web.administrationTaskAdd', kind=kind.name, locale=localeArgument) }}">{{ kind.name }}</a></td>
+        <td class="code" dir="ltr">{{ kind.defaultSchedule }}</td>
+        <td class="code" dir="ltr">{{ kind.parameters.model_fields | join(', ') }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

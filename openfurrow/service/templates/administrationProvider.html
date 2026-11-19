@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}{{ provider.name }} - {{ t.text('web.administration.section.providers') }} - {{ t.text('web.app.name') }}{% endblock %}
+{% block content %}
+{% import "administrationParts.html" as parts with context %}
+{% set localeArgument = locale if locale != 'en-US' else none %}
+{% set here = url_for('web.administrationProvider', name=provider.name, locale=localeArgument) %}
+{{ parts.nav('providers') }}
+{{ parts.back(url_for('web.administrationProviders', locale=localeArgument), t.text('web.administration.providers.all')) }}
+<div class="page-head">
+  <h1>{{ t.text('web.administration.provider.heading') }}</h1>
+  <p class="code trial-code">{{ provider.name }}</p>
+</div>
+{{ parts.messages() }}
+{% if newToken %}
+<div class="notice" role="status">{{ t.text('web.administration.provider.tokenShownOnce') }} <code class="code secret" dir="ltr">{{ newToken }}</code></div>
+{% endif %}
+
+<section class="summary" aria-label="{{ t.text('web.administration.provider.heading') }}">
+  <dl>
+    <div><dt>{{ t.text('web.administration.providers.kind') }}</dt><dd>{{ t.text('web.administration.provider.kind.' ~ provider.kind.value) }}</dd></div>
+    <div><dt>{{ t.text('web.administration.column.state') }}</dt><dd>{{ t.text('web.administration.enabled') if provider.enabled else t.text('web.administration.disabled') }}</dd></div>
+  </dl>
+</section>
+
+<section aria-labelledby="providerEnabled">
+  <h2 id="providerEnabled">{{ t.text('web.administration.provider.enabledHeading') }}</h2>
+  <form class="import-form administration-form" method="post" action="{{ here }}">
+    <p>{{ t.text('web.administration.provider.isEnabled') if provider.enabled else t.text('web.administration.provider.isDisabled') }}</p>
+    <input type="hidden" name="action" value="{{ 'disable' if provider.enabled else 'enable' }}">
+    <div class="form-actions"><button class="button button-quiet" type="submit">{{ t.text('web.task.disable') if provider.enabled else t.text('web.task.enable') }}</button></div>
+  </form>
+</section>
+
+{% if toRegister %}
+<section aria-labelledby="providerRegister">
+  <h2 id="providerRegister">{{ t.text('web.administration.provider.registerHeading') }}</h2>
+  <p class="intro">{{ t.text('web.administration.provider.registerIntro') }}</p>
+  <dl class="detail">
+    {% for fact, value in toRegister %}
+    <div>
+      <dt>{{ t.text('web.administration.provider.register.' ~ fact) }}</dt>
+      <dd>{% if value is none %}{{ t.text('web.administration.detail.none') }}{% elif fact == 'metadata' and provider.enabled %}<a class="code" dir="ltr" href="{{ value }}">{{ value }}</a>{% else %}<span class="code" dir="ltr">{{ value }}</span>{% endif %}</dd>
+    </div>
+    {% endfor %}
+  </dl>
+</section>
+{% endif %}
+
+{% if isSCIM %}
+<section aria-labelledby="providerToken">
+  <h2 id="providerToken">{{ t.text('web.administration.provider.tokenHeading') }}</h2>
+  <p class="intro">{{ t.text('web.administration.provider.tokenIntro') }}</p>
+  <form class="import-form administration-form" method="post" action="{{ here }}">
+    <input type="hidden" name="action" value="token">
+    <div class="form-actions"><button class="button" type="submit">{{ t.text('web.administration.provider.issueToken') }}</button></div>
+  </form>
+</section>
+{% endif %}
+
+<section aria-labelledby="providerSettings">
+  <h2 id="providerSettings">{{ t.text('web.administration.provider.settingsHeading') }}</h2>
+  <p class="intro">{{ t.text('web.administration.provider.settingsIntro') }}</p>
+  {{ parts.detail(settings) }}
+</section>
+{% endblock %}

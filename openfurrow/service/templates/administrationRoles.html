@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}{{ t.text('web.administration.section.roles') }} - {{ t.text('web.administration.heading') }} - {{ t.text('web.app.name') }}{% endblock %}
+{% block content %}
+{% import "administrationParts.html" as parts with context %}
+{% set localeArgument = locale if locale != 'en-US' else none %}
+{{ parts.nav('roles') }}
+<div class="page-head">
+  <h1>{{ t.text('web.administration.section.roles') }}</h1>
+</div>
+<p class="intro">{{ t.text('web.administration.about.roles') }}</p>
+{{ parts.messages() }}
+
+<div class="table-scroll">
+  <table class="trials">
+    <thead>
+      <tr>
+        <th scope="col">{{ t.text('web.administration.roles.role') }}</th>
+        <th scope="col">{{ t.text('web.administration.roles.kind') }}</th>
+        <th scope="col">{{ t.text('web.administration.roles.permissions') }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in roles %}
+      <tr>
+        <td>
+          {% if row.role.builtIn %}<span dir="auto">{{ row.name }}</span>{% else %}<a href="{{ url_for('web.administrationRole', roleCode=row.role.roleCode, locale=localeArgument) }}" dir="auto">{{ row.name }}</a>{% endif %}
+          <span class="code">{{ row.role.roleCode }}</span>
+        </td>
+        <td>{{ t.text('web.administration.roles.builtIn') if row.role.builtIn else t.text('web.administration.roles.custom') }}</td>
+        <td>
+          <ul class="detail-list">
+            {% for permission in permissions %}{% if permission in row.role.permissions %}<li>{{ t.text('web.administration.permission.' ~ permission.value) }}</li>{% endif %}{% endfor %}
+          </ul>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<section aria-labelledby="defineRole">
+  <h2 id="defineRole">{{ t.text('web.administration.roles.define') }}</h2>
+  <form class="import-form administration-form" method="post" action="{{ url_for('web.administrationRoles', locale=localeArgument) }}">
+    <div class="field-row">
+      <label class="field-label" for="roleCode">{{ t.text('web.administration.roles.code') }}</label>
+      <input type="text" id="roleCode" name="roleCode" dir="ltr" autocomplete="off" value="{{ typed.roleCode }}" aria-describedby="roleCodeHelp">
+      <p class="help" id="roleCodeHelp">{{ t.text('web.administration.roles.codeHelp') }}</p>
+    </div>
+    {% include "administrationRoleFields.html" %}
+    <div class="form-actions"><button class="button" type="submit">{{ t.text('web.administration.roles.define') }}</button></div>
+  </form>
+</section>
+{% endblock %}

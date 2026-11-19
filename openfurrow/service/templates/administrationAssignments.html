@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}{{ t.text('web.administration.section.assignments') }} - {{ t.text('web.administration.heading') }} - {{ t.text('web.app.name') }}{% endblock %}
+{% block content %}
+{% import "administrationParts.html" as parts with context %}
+{% set localeArgument = locale if locale != 'en-US' else none %}
+{% set here = url_for('web.administrationAssignments', locale=localeArgument) %}
+{{ parts.nav('assignments') }}
+<div class="page-head">
+  <h1>{{ t.text('web.administration.section.assignments') }}</h1>
+  <p class="count">{{ t.integer(assignments | length) }}</p>
+</div>
+<p class="intro">{{ t.text('web.administration.about.assignments') }}</p>
+{{ parts.messages() }}
+
+{{ parts.assignmentTable(assignments, here, true, none) }}
+
+<section aria-labelledby="giveRoleHeading">
+  <h2 id="giveRoleHeading">{{ t.text('web.administration.assignments.giveHeading') }}</h2>
+  {{ parts.assignmentForm(here, roleChoices, scopeChoices, typed, holders) }}
+</section>
+{% endblock %}

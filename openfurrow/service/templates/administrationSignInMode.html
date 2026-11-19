@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}{{ t.text('web.administration.section.signInMode') }} - {{ t.text('web.administration.heading') }} - {{ t.text('web.app.name') }}{% endblock %}
+{% block content %}
+{% import "administrationParts.html" as parts with context %}
+{% set localeArgument = locale if locale != 'en-US' else none %}
+{{ parts.nav('signInMode') }}
+<div class="page-head">
+  <h1>{{ t.text('web.administration.section.signInMode') }}</h1>
+</div>
+<p class="intro">{{ t.text('web.administration.about.signInMode') }}</p>
+{{ parts.messages() }}
+
+<p><strong>{{ t.text('web.administration.signInMode.current', mode=t.text('web.administration.signInMode.name.' ~ mode)) }}</strong></p>
+
+<form class="import-form administration-form" method="post" action="{{ url_for('web.administrationSignInMode', locale=localeArgument) }}">
+  <fieldset class="format">
+    <legend>{{ t.text('web.administration.signInMode.choose') }}</legend>
+    {% for option in modes %}
+    <label class="choice" for="mode-{{ option }}"><input type="radio" id="mode-{{ option }}" name="mode" value="{{ option }}"{% if option == typed %} checked{% endif %} aria-describedby="mode-{{ option }}-help"> {{ t.text('web.administration.signInMode.name.' ~ option) }}</label>
+    <p class="help" id="mode-{{ option }}-help">{{ t.text('web.administration.signInMode.about.' ~ option) }}</p>
+    {% endfor %}
+  </fieldset>
+  <label class="choice" for="confirmOpen"><input type="checkbox" id="confirmOpen" name="confirm" value="yes"> {{ t.text('web.administration.signInMode.confirmOpen') }}</label>
+  <div class="form-actions"><button class="button" type="submit">{{ t.text('web.administration.save') }}</button></div>
+</form>
+{% endblock %}

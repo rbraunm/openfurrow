@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}{{ t.text('web.administration.tasks.add') }} - {{ t.text('web.tasks.heading') }} - {{ t.text('web.app.name') }}{% endblock %}
+{% block content %}
+{% import "administrationParts.html" as parts with context %}
+{% set localeArgument = locale if locale != 'en-US' else none %}
+{{ parts.nav('tasks') }}
+{{ parts.back(url_for('web.administrationTaskKinds', locale=localeArgument), t.text('web.administration.tasks.allKinds')) }}
+<div class="page-head">
+  <h1>{{ t.text('web.administration.tasks.add') }}</h1>
+  <p class="code trial-code">{{ kind.name }}</p>
+</div>
+<p class="intro">{{ t.text('web.administration.tasks.addIntro', schedule=kind.defaultSchedule, minutes=t.integer(kind.defaultTimeLimitSeconds // 60)) }}</p>
+{{ parts.messages() }}
+
+<form class="import-form administration-form" method="post" action="{{ url_for('web.administrationTaskAdd', kind=kind.name, locale=localeArgument) }}">
+  <button class="visually-hidden" type="submit" tabindex="-1" aria-hidden="true"></button>
+  <div class="field-row">
+    <label class="field-label" for="name">{{ t.text('web.tasks.column.name') }}</label>
+    <input type="text" id="name" name="name" dir="ltr" autocomplete="off" value="{{ name }}" aria-describedby="nameHelp">
+    <p class="help" id="nameHelp">{{ t.text('web.administration.tasks.nameHelp') }}</p>
+  </div>
+  {% if items %}
+  <fieldset class="format">
+    <legend>{{ t.text('web.task.parameters') }}</legend>
+    {{ parts.modelFields(items, typed, helpOf) }}
+  </fieldset>
+  {% endif %}
+  <div class="form-actions"><button class="button" type="submit">{{ t.text('web.administration.tasks.add') }}</button></div>
+</form>
+{% endblock %}

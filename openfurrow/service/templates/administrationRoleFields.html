@@ -1,0 +1,10 @@
+<div class="field-row">
+  <label class="field-label" for="name">{{ t.text('web.administration.roles.name') }}</label>
+  <input type="text" id="name" name="name" dir="auto" autocomplete="off" value="{{ typed.name }}">
+</div>
+<fieldset class="format">
+  <legend>{{ t.text('web.administration.roles.permissions') }}</legend>
+  {% for permission in permissions %}
+  <label class="choice" for="permission-{{ permission.value }}"><input type="checkbox" id="permission-{{ permission.value }}" name="permissions" value="{{ permission.value }}"{% if permission.value in typed.permissions %} checked{% endif %}> {{ t.text('web.administration.permission.' ~ permission.value) }}</label>
+  {% endfor %}
+</fieldset>

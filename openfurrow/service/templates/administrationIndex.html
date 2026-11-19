@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}{{ t.text('web.administration.heading') }} - {{ t.text('web.app.name') }}{% endblock %}
+{% block content %}
+{% import "administrationParts.html" as parts with context %}
+{{ parts.nav(none) }}
+<div class="page-head">
+  <h1>{{ t.text('web.administration.heading') }}</h1>
+</div>
+<p class="intro">{{ t.text('web.administration.intro') }}</p>
+<ul class="administration-sections">
+  {% for section, endpoint in administrationSections %}
+  <li>
+    <a href="{{ url_for(endpoint, locale=locale if locale != 'en-US' else none) }}">{{ t.text('web.administration.section.' ~ section) }}</a>
+    <span class="help">{{ t.text('web.administration.about.' ~ section) }}</span>
+  </li>
+  {% endfor %}
+</ul>
+{% endblock %}

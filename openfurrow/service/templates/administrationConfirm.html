@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}{{ heading }} - {{ t.text('web.administration.heading') }} - {{ t.text('web.app.name') }}{% endblock %}
+{% block content %}
+{% import "administrationParts.html" as parts with context %}
+{{ parts.nav(section) }}
+{{ parts.back(cancelAddress, t.text('web.administration.confirm.back')) }}
+<div class="page-head">
+  <h1>{{ heading }}</h1>
+  <p class="code trial-code" dir="auto">{{ subject }}</p>
+</div>
+{{ parts.messages() }}
+
+{% if blocked %}
+<p class="notice">{{ blocked }}</p>
+<p><a class="cancel" href="{{ cancelAddress }}">{{ t.text('web.administration.confirm.back') }}</a></p>
+{% else %}
+<div class="error" role="alert">{{ warning }}</div>
+{% if assignments is not none %}
+<h2>{{ t.text('web.administration.confirm.rolesLost') }}</h2>
+{{ parts.assignmentTable(assignments, none, false, none) }}
+{% endif %}
+<form class="delete-form" method="post" action="{{ formAction }}">
+  <button class="button button-danger" type="submit">{{ confirmLabel }}</button>
+  <a class="cancel" href="{{ cancelAddress }}">{{ t.text('web.delete.cancel') }}</a>
+</form>
+{% endif %}
+{% endblock %}
