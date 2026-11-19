@@ -20,7 +20,8 @@ given directly to that trust, as PyPI does.
 - **A trusted workload is a rule** in the store: a name (formed like a provider's), the
   issuer, and the claims a token must carry, each with the exact value required.
   - The issuer is `githubActions`, `gitlab` (GitLab.com), or the https address of any
-    OpenID Connect issuer as its tokens name it, without a trailing slash. An issuer with a
+    OpenID Connect issuer exactly as its tokens name it (a slash at its end, as Entra ID's
+    and Auth0's have, is part of the name). An issuer with a
     certificate authority of its own names that authority's file, as a provider does.
   - A rule requires at least one claim. A claim's required value is text, compared exactly
     with what the token carries. The issuer, the audience and the times are checked for

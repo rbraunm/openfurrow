@@ -67,8 +67,9 @@ def loopbackCertificates(directory: Path) -> tuple[Path, Path, Path]:
 
 
 class StandInIssuer:
-  """Issuers at https://127.0.0.1:<port>/<realm>; the realm 'noLogout' names no end_session_endpoint, and the
-  discovery document of the realm 'misnamed' names another issuer. `fetched` lists the paths asked for."""
+  """Issuers at https://127.0.0.1:<port>/<realm>; the realm 'noLogout' names no end_session_endpoint, the
+  discovery document of the realm 'misnamed' names another issuer, and the realm 'slashed' is named with a slash
+  at its end, as Entra ID's and Auth0's issuers are. `fetched` lists the paths asked for."""
 
   def __init__(self, directory: Path) -> None:
     self.certificateAuthority, certificate, key = loopbackCertificates(directory)
@@ -131,11 +132,11 @@ class StandInIssuer:
     self._thread.start()
 
   def issuer(self, realm: str) -> str:
-    return f"https://127.0.0.1:{self.port}/{realm}"
+    return f"https://127.0.0.1:{self.port}/{realm}" + ("/" if realm == "slashed" else "")
 
   def discovery(self, realm: str) -> dict:
-    base = self.issuer(realm)
-    named = self.issuer("another") if realm == "misnamed" else base
+    base = self.issuer(realm).removesuffix("/")
+    named = self.issuer("another") if realm == "misnamed" else self.issuer(realm)
     document = {"issuer": named, "authorization_endpoint": f"{base}/authorize", "token_endpoint": f"{base}/token",
                 "jwks_uri": f"{base}/jwks", "id_token_signing_alg_values_supported": ["RS256"],
                 "backchannel_logout_supported": True, "backchannel_logout_session_supported": True}

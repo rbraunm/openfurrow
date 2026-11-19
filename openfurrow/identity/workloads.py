@@ -60,7 +60,7 @@ def _isIssuerAddress(issuer: str) -> bool:
   try:
     parts = urlsplit(issuer)
     return (parts.scheme == "https" and bool(parts.hostname) and parts.port != 0 and parts.username is None
-            and not parts.query and not parts.fragment and not issuer.endswith("/"))
+            and not parts.query and not parts.fragment and "?" not in issuer and "#" not in issuer)
   except ValueError:
     return False
 
@@ -92,7 +92,7 @@ class WorkloadRule(BaseModel):
   def issuerIsAnAddress(cls, issuer: str) -> str:
     if not _isIssuerAddress(issuer):
       raise ValueError(f"'{issuer}' is not an issuer: {' or '.join(namedIssuers)}, or the https address of an OpenID "
-                       "Connect issuer as its tokens name it, without a trailing slash")
+                       "Connect issuer exactly as its tokens name it")
     return issuer
 
   @field_validator("claims", mode="before")

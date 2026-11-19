@@ -126,6 +126,18 @@ def testAnAcceptedTokenActsWithItsRulesRolesAtTheirScopesAndNowhereElse(location
     workload.addWorkloadRule("another", standIn.issuer("ci"), {"repository_id": "605918342"})
 
 
+def testAnIssuerNamedWithASlashAtItsEndIsThatExactIssuer(location, standIn, client):
+  operator = trust(location, standIn, realm="slashed")
+  assert operator.workloadRule("nightly")[0].issuer == standIn.issuer("slashed") and standIn.issuer("slashed").endswith("/slashed/")
+  token = standIn.workloadToken("slashed", audience, job)
+  assert claimsOf(token)["iss"] == standIn.issuer("slashed")
+  listed = client.get("/api/trials", headers=bearer(token))
+  assert listed.status_code == 200 and trialCodes(listed) == ["ESV-2025-01"]
+  assert standIn.fetched[0] == "/slashed/.well-known/openid-configuration"
+  elsewhere = client.get("/api/trials", headers=bearer(standIn.workloadToken("ci", audience, job)))
+  assert elsewhere.status_code == 401 and errorOf(elsewhere) == issuerNotTrusted
+
+
 def testAWorkloadHasNoAccountNoAPITokenAndNoWebSignIn(location, standIn, client):
   operator = trust(location, standIn, roles=(("administrator", "server"),))
   token = standIn.workloadToken("ci", audience, job)
@@ -318,7 +330,7 @@ def testAVerifierIsMadeOnceForEachRuleAndAudience(standIn):
 
 @pytest.mark.parametrize("name, issuer, claims, why", [
   ("nightly", "http://ci.example.org", {"repository_id": "7"}, "'http://ci.example.org' is not an issuer"),
-  ("nightly", "https://ci.example.org/", {"repository_id": "7"}, "'https://ci.example.org/' is not an issuer"),
+  ("nightly", "https://ci.example.org/#top", {"repository_id": "7"}, "is not an issuer"),
   ("nightly", "https://ci.example.org?realm=x", {"repository_id": "7"}, "is not an issuer"),
   ("Nightly", "https://ci.example.org", {"repository_id": "7"}, "'Nightly' is not a workload rule name"),
   ("nightly", "https://ci.example.org", {}, "a rule requires at least one claim"),
