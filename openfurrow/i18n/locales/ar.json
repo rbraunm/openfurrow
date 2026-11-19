@@ -1465,6 +1465,1414 @@
       "text": "إنشاء التجربة",
       "status": "machineDraft"
     },
+    "web.administration.about.accounts": {
+      "text": "الأشخاص الذين يسجّلون الدخول هنا: إضافة حساب، تعيين كلمة مرور، تعطيل حساب، ربطه بمزوّد هوية.",
+      "status": "machineDraft"
+    },
+    "web.administration.about.assignments": {
+      "text": "كل دور ممنوح: لحساب أو مجموعة أو قاعدة حمل عمل، على الخادم أو في مكان أو تجربة. يسري الدور حيث مُنح وما دونه.",
+      "status": "machineDraft"
+    },
+    "web.administration.about.audit": {
+      "text": "كل تغيير، ومن أجراه، ومن أين، وما الذي غيّره، الأحدث أولًا.",
+      "status": "machineDraft"
+    },
+    "web.administration.about.groups": {
+      "text": "حسابات مجمّعة ليُمنح الدور لها كلها دفعة واحدة. المجموعة المنسوخة عن مزوّد هوية لا يغيّرها إلا ذلك المزوّد.",
+      "status": "machineDraft"
+    },
+    "web.administration.about.providers": {
+      "text": "أين يسجّل الأشخاص دخولهم خارج هذا الموقع، وما الذي يزوّد الحسابات: OpenID Connect و SAML واتحادات البحث و CAS و LDAP و SCIM.",
+      "status": "machineDraft"
+    },
+    "web.administration.about.roles": {
+      "text": "مجموعات مسمّاة من الصلاحيات. خمسة منها مدمجة؛ عرّف أدوارك من الصلاحيات نفسها.",
+      "status": "machineDraft"
+    },
+    "web.administration.about.settings": {
+      "text": "قيمة كل إعداد على الخادم أو في مكان أو تجربة، ومصدر تلك القيمة. تُطبَّق أقرب قيمة: التجربة، ثم أماكنها من الأقرب إلى الأبعد، ثم الخادم، ثم القيمة الافتراضية.",
+      "status": "machineDraft"
+    },
+    "web.administration.about.signInMode": {
+      "text": "هل يحق لكل من يصل إلى الخادم فعل كل شيء، أم يسجّل كل شخص دخوله ويحمل الأدوار الممنوحة له.",
+      "status": "machineDraft"
+    },
+    "web.administration.about.tasks": {
+      "text": "العمل الذي ينفّذه المُجدوِل وفق جدول: عرض التشغيلات، تغيير جدول، تشغيل مهمة الآن، إضافة مهمة أو حذفها.",
+      "status": "machineDraft"
+    },
+    "web.administration.about.workloads": {
+      "text": "قواعد تتيح لمهمة CI أو سحابية استدعاء الواجهة البرمجية برمز منصّتها القصير الأجل بدلًا من رمز مخزَّن.",
+      "status": "machineDraft"
+    },
+    "web.administration.account.activeHeading": {
+      "text": "نشط أم معطّل",
+      "status": "machineDraft"
+    },
+    "web.administration.account.deactivate": {
+      "text": "تعطيل",
+      "status": "machineDraft"
+    },
+    "web.administration.account.deactivateConfirm": {
+      "text": "نعم، عطّل هذا الحساب",
+      "status": "machineDraft"
+    },
+    "web.administration.account.deactivateIntro": {
+      "text": "الحساب المعطّل لا يستطيع تسجيل الدخول، وتنتهي جلساته ورموز الواجهة البرمجية الخاصة به فورًا. يبقى سجلّه في سجل التدقيق.",
+      "status": "machineDraft"
+    },
+    "web.administration.account.heading": {
+      "text": "حساب",
+      "status": "machineDraft"
+    },
+    "web.administration.account.identitiesHeading": {
+      "text": "الهويات المرتبطة",
+      "status": "machineDraft"
+    },
+    "web.administration.account.identitiesIntro": {
+      "text": "الهوية التي يعرف بها كل مزوّد هذا الشخص. تسجيل الدخول عبر مزوّد يصل إلى هذا الحساب من خلال الربط.",
+      "status": "machineDraft"
+    },
+    "web.administration.account.joinGroup": {
+      "text": "إضافة إلى المجموعة",
+      "status": "machineDraft"
+    },
+    "web.administration.account.language": {
+      "text": "اللغة المفضّلة",
+      "status": "machineDraft"
+    },
+    "web.administration.account.link": {
+      "text": "ربط الهوية",
+      "status": "machineDraft"
+    },
+    "web.administration.account.noGroups": {
+      "text": "ليس في أي مجموعة.",
+      "status": "machineDraft"
+    },
+    "web.administration.account.noIdentities": {
+      "text": "لا توجد هوية مزوّد مرتبطة.",
+      "status": "machineDraft"
+    },
+    "web.administration.account.passwordHeading": {
+      "text": "كلمة المرور",
+      "status": "machineDraft"
+    },
+    "web.administration.account.provider": {
+      "text": "مزوّد الهوية",
+      "status": "machineDraft"
+    },
+    "web.administration.account.reactivate": {
+      "text": "إعادة التفعيل",
+      "status": "machineDraft"
+    },
+    "web.administration.account.reactivateIntro": {
+      "text": "هذا الحساب معطّل: لا يستطيع تسجيل الدخول.",
+      "status": "machineDraft"
+    },
+    "web.administration.account.rolesHeading": {
+      "text": "الأدوار",
+      "status": "machineDraft"
+    },
+    "web.administration.account.rolesIntro": {
+      "text": "الأدوار الممنوحة لهذا الحساب، وتلك التي يحملها عبر مجموعاته، وتُغيَّر في صفحة المجموعة.",
+      "status": "machineDraft"
+    },
+    "web.administration.account.setPassword": {
+      "text": "تعيين كلمة المرور",
+      "status": "machineDraft"
+    },
+    "web.administration.account.subject": {
+      "text": "معرّف الشخص لدى المزوّد",
+      "status": "machineDraft"
+    },
+    "web.administration.account.subjectHelp": {
+      "text": "المعرّف الثابت الخاص بالمزوّد: قيمة sub في OpenID Connect، أو NameID الدائم في SAML، أو اسم المستخدم في الدليل.",
+      "status": "machineDraft"
+    },
+    "web.administration.accounts.active": {
+      "text": "نشط",
+      "status": "machineDraft"
+    },
+    "web.administration.accounts.add": {
+      "text": "إضافة حساب",
+      "status": "machineDraft"
+    },
+    "web.administration.accounts.all": {
+      "text": "كل الحسابات",
+      "status": "machineDraft"
+    },
+    "web.administration.accounts.displayName": {
+      "text": "الاسم المعروض",
+      "status": "machineDraft"
+    },
+    "web.administration.accounts.email": {
+      "text": "البريد الإلكتروني",
+      "status": "machineDraft"
+    },
+    "web.administration.accounts.emailOptional": {
+      "text": "البريد الإلكتروني (اختياري)",
+      "status": "machineDraft"
+    },
+    "web.administration.accounts.inactive": {
+      "text": "معطّل",
+      "status": "machineDraft"
+    },
+    "web.administration.accounts.none": {
+      "text": "لا توجد حسابات بعد.",
+      "status": "machineDraft"
+    },
+    "web.administration.accounts.password": {
+      "text": "كلمة المرور (12 حرفًا أو أكثر؛ اختيارية)",
+      "status": "machineDraft"
+    },
+    "web.administration.accounts.passwordHelp": {
+      "text": "اتركها فارغة لحساب يسجّل الدخول عبر مزوّد هوية فقط.",
+      "status": "machineDraft"
+    },
+    "web.administration.accounts.userName": {
+      "text": "اسم المستخدم",
+      "status": "machineDraft"
+    },
+    "web.administration.accounts.userNameHelp": {
+      "text": "من 2 إلى 64 من الحروف بأي كتابة والأرقام و'.' و'_' و'@' و'-'. يُحفظ بأحرف صغيرة.",
+      "status": "machineDraft"
+    },
+    "web.administration.assignments.chooseHolder": {
+      "text": "اختر من يُمنح له الدور: حساب أو مجموعة أو قاعدة حمل عمل.",
+      "status": "machineDraft"
+    },
+    "web.administration.assignments.column.holder": {
+      "text": "ممنوح لـ",
+      "status": "machineDraft"
+    },
+    "web.administration.assignments.column.role": {
+      "text": "الدور",
+      "status": "machineDraft"
+    },
+    "web.administration.assignments.column.scope": {
+      "text": "أين",
+      "status": "machineDraft"
+    },
+    "web.administration.assignments.give": {
+      "text": "منح الدور",
+      "status": "machineDraft"
+    },
+    "web.administration.assignments.giveHeading": {
+      "text": "منح دور",
+      "status": "machineDraft"
+    },
+    "web.administration.assignments.holder": {
+      "text": "إلى",
+      "status": "machineDraft"
+    },
+    "web.administration.assignments.none": {
+      "text": "لا يوجد دور ممنوح هنا.",
+      "status": "machineDraft"
+    },
+    "web.administration.assignments.role": {
+      "text": "الدور",
+      "status": "machineDraft"
+    },
+    "web.administration.assignments.scope": {
+      "text": "أين يسري (هناك وما دونه)",
+      "status": "machineDraft"
+    },
+    "web.administration.assignments.takeBack": {
+      "text": "سحب",
+      "status": "machineDraft"
+    },
+    "web.administration.assignments.takeBackNamed": {
+      "text": "سحب {role} في: {scope}",
+      "status": "machineDraft"
+    },
+    "web.administration.audit.action": {
+      "text": "الإجراء",
+      "status": "machineDraft"
+    },
+    "web.administration.audit.actionHelp": {
+      "text": "الإجراء: إجراء كامل أو بدايته، مثل role.assign، أو task. لكل إجراءات المهام.",
+      "status": "machineDraft"
+    },
+    "web.administration.audit.actor": {
+      "text": "من",
+      "status": "machineDraft"
+    },
+    "web.administration.audit.actor.account": {
+      "text": "حساب",
+      "status": "machineDraft"
+    },
+    "web.administration.audit.actor.everyone": {
+      "text": "الجميع (النمط المفتوح)",
+      "status": "machineDraft"
+    },
+    "web.administration.audit.actor.operator": {
+      "text": "المشغّل",
+      "status": "machineDraft"
+    },
+    "web.administration.audit.actor.scheduler": {
+      "text": "مهمة مجدولة",
+      "status": "machineDraft"
+    },
+    "web.administration.audit.actor.workload": {
+      "text": "قاعدة حمل عمل",
+      "status": "machineDraft"
+    },
+    "web.administration.audit.actorHelp": {
+      "text": "من: اسم مستخدم أو مهمة أو قاعدة حمل عمل كما تعرضه القائمة تمامًا، أو operator أو everyone.",
+      "status": "machineDraft"
+    },
+    "web.administration.audit.clearFilters": {
+      "text": "عرض كل شيء هنا",
+      "status": "machineDraft"
+    },
+    "web.administration.audit.column.action": {
+      "text": "الإجراء",
+      "status": "machineDraft"
+    },
+    "web.administration.audit.column.detail": {
+      "text": "ما الذي تغيّر",
+      "status": "machineDraft"
+    },
+    "web.administration.audit.column.surface": {
+      "text": "عبر",
+      "status": "machineDraft"
+    },
+    "web.administration.audit.column.when": {
+      "text": "متى (UTC)",
+      "status": "machineDraft"
+    },
+    "web.administration.audit.column.where": {
+      "text": "أين",
+      "status": "machineDraft"
+    },
+    "web.administration.audit.column.who": {
+      "text": "من",
+      "status": "machineDraft"
+    },
+    "web.administration.audit.dateHelp": {
+      "text": "التواريخ أيام بتوقيت UTC، تُكتب سنة-شهر-يوم، مثل 2026-03-31. الأوقات في القائمة بتوقيت UTC.",
+      "status": "machineDraft"
+    },
+    "web.administration.audit.filter": {
+      "text": "عرض",
+      "status": "machineDraft"
+    },
+    "web.administration.audit.filterHeading": {
+      "text": "تضييق القائمة",
+      "status": "machineDraft"
+    },
+    "web.administration.audit.newest": {
+      "text": "الأحدث",
+      "status": "machineDraft"
+    },
+    "web.administration.audit.none": {
+      "text": "لا توجد أحداث مطابقة.",
+      "status": "machineDraft"
+    },
+    "web.administration.audit.notADate": {
+      "text": "{field}: «{typed}» ليس تاريخًا مكتوبًا بصيغة سنة-شهر-يوم.",
+      "status": "machineDraft"
+    },
+    "web.administration.audit.older": {
+      "text": "الأقدم",
+      "status": "machineDraft"
+    },
+    "web.administration.audit.pages": {
+      "text": "صفحات القائمة",
+      "status": "machineDraft"
+    },
+    "web.administration.audit.scope": {
+      "text": "أين",
+      "status": "machineDraft"
+    },
+    "web.administration.audit.since": {
+      "text": "من (تاريخ)",
+      "status": "machineDraft"
+    },
+    "web.administration.audit.until": {
+      "text": "إلى (تاريخ)",
+      "status": "machineDraft"
+    },
+    "web.administration.choose": {
+      "text": "اختر",
+      "status": "machineDraft"
+    },
+    "web.administration.column.change": {
+      "text": "تغيير",
+      "status": "machineDraft"
+    },
+    "web.administration.column.state": {
+      "text": "الحالة",
+      "status": "machineDraft"
+    },
+    "web.administration.confirm.back": {
+      "text": "رجوع",
+      "status": "machineDraft"
+    },
+    "web.administration.confirm.group.button": {
+      "text": "حذف المجموعة",
+      "status": "machineDraft"
+    },
+    "web.administration.confirm.group.heading": {
+      "text": "حذف هذه المجموعة؟",
+      "status": "machineDraft"
+    },
+    "web.administration.confirm.group.warning": {
+      "text": "سيؤدي هذا إلى حذف المجموعة. يبقى أعضاؤها، لكنهم يفقدون كل دور منحته لهم المجموعة. لا يمكن التراجع.",
+      "status": "machineDraft"
+    },
+    "web.administration.confirm.rolesLost": {
+      "text": "الأدوار التي تزول معه",
+      "status": "machineDraft"
+    },
+    "web.administration.confirm.task.button": {
+      "text": "حذف المهمة",
+      "status": "machineDraft"
+    },
+    "web.administration.confirm.task.heading": {
+      "text": "حذف هذه المهمة؟",
+      "status": "machineDraft"
+    },
+    "web.administration.confirm.task.kept": {
+      "text": "هذه المهمة محفوظة لمزوّد الهوية {provider} ولا تُحذف ما دام ذلك المزوّد يستخدمها.",
+      "status": "machineDraft"
+    },
+    "web.administration.confirm.task.warning": {
+      "text": "سيؤدي هذا إلى حذف المهمة وسجل كل تشغيلاتها. لا يمكن التراجع.",
+      "status": "machineDraft"
+    },
+    "web.administration.confirm.workload.button": {
+      "text": "إزالة القاعدة",
+      "status": "machineDraft"
+    },
+    "web.administration.confirm.workload.heading": {
+      "text": "إزالة قاعدة حمل العمل هذه؟",
+      "status": "machineDraft"
+    },
+    "web.administration.confirm.workload.warning": {
+      "text": "سيؤدي هذا إلى إزالة القاعدة وكل دور ممنوح لها. تُرفض بعد ذلك المهام التي كانت تعتمد عليها. لا يمكن التراجع.",
+      "status": "machineDraft"
+    },
+    "web.administration.confirmNeeded": {
+      "text": "ضع علامة في المربع للتأكيد ثم حاول مرة أخرى.",
+      "status": "machineDraft"
+    },
+    "web.administration.detail.no": {
+      "text": "لا",
+      "status": "machineDraft"
+    },
+    "web.administration.detail.none": {
+      "text": "لا شيء",
+      "status": "machineDraft"
+    },
+    "web.administration.detail.yes": {
+      "text": "نعم",
+      "status": "machineDraft"
+    },
+    "web.administration.disabled": {
+      "text": "معطّل",
+      "status": "machineDraft"
+    },
+    "web.administration.done.added": {
+      "text": "تمت الإضافة.",
+      "status": "machineDraft"
+    },
+    "web.administration.done.cleared": {
+      "text": "تم المسح: القيمة تأتي الآن من مستوى أبعد.",
+      "status": "machineDraft"
+    },
+    "web.administration.done.created": {
+      "text": "تم الإنشاء.",
+      "status": "machineDraft"
+    },
+    "web.administration.done.deactivated": {
+      "text": "تم التعطيل: أُنهيت جلساته ورموز الواجهة البرمجية الخاصة به.",
+      "status": "machineDraft"
+    },
+    "web.administration.done.defined": {
+      "text": "تم تعريف الدور.",
+      "status": "machineDraft"
+    },
+    "web.administration.done.deleted": {
+      "text": "تم الحذف.",
+      "status": "machineDraft"
+    },
+    "web.administration.done.disabled": {
+      "text": "تم التعطيل.",
+      "status": "machineDraft"
+    },
+    "web.administration.done.enabled": {
+      "text": "تم التفعيل.",
+      "status": "machineDraft"
+    },
+    "web.administration.done.given": {
+      "text": "تم منح الدور.",
+      "status": "machineDraft"
+    },
+    "web.administration.done.joined": {
+      "text": "تمت الإضافة إلى المجموعة.",
+      "status": "machineDraft"
+    },
+    "web.administration.done.left": {
+      "text": "تمت الإزالة من المجموعة.",
+      "status": "machineDraft"
+    },
+    "web.administration.done.linked": {
+      "text": "تم الربط.",
+      "status": "machineDraft"
+    },
+    "web.administration.done.passwordSet": {
+      "text": "تم تعيين كلمة المرور.",
+      "status": "machineDraft"
+    },
+    "web.administration.done.reactivated": {
+      "text": "تمت إعادة التفعيل.",
+      "status": "machineDraft"
+    },
+    "web.administration.done.removed": {
+      "text": "تمت الإزالة.",
+      "status": "machineDraft"
+    },
+    "web.administration.done.saved": {
+      "text": "تم الحفظ.",
+      "status": "machineDraft"
+    },
+    "web.administration.done.set": {
+      "text": "تم التعيين.",
+      "status": "machineDraft"
+    },
+    "web.administration.done.takenBack": {
+      "text": "تم سحب الدور.",
+      "status": "machineDraft"
+    },
+    "web.administration.enabled": {
+      "text": "مفعّل",
+      "status": "machineDraft"
+    },
+    "web.administration.form.anotherRow": {
+      "text": "واحد آخر",
+      "status": "machineDraft"
+    },
+    "web.administration.form.needsValue": {
+      "text": "{field} يحتاج إلى قيمة.",
+      "status": "machineDraft"
+    },
+    "web.administration.form.notJSON": {
+      "text": "{field} ليس JSON صالحًا.",
+      "status": "machineDraft"
+    },
+    "web.administration.form.optional": {
+      "text": "اختياري",
+      "status": "machineDraft"
+    },
+    "web.administration.group.account": {
+      "text": "الحساب",
+      "status": "machineDraft"
+    },
+    "web.administration.group.delete": {
+      "text": "حذف هذه المجموعة",
+      "status": "machineDraft"
+    },
+    "web.administration.group.deleteHeading": {
+      "text": "حذف",
+      "status": "machineDraft"
+    },
+    "web.administration.group.heading": {
+      "text": "مجموعة",
+      "status": "machineDraft"
+    },
+    "web.administration.group.mirrored": {
+      "text": "هذه المجموعة منسوخة عن مزوّد الهوية {provider}، وهو وحده من يحدّد أعضاءها ويحذفها. تُمنح الأدوار لها هنا كأي مجموعة.",
+      "status": "machineDraft"
+    },
+    "web.administration.group.noMembers": {
+      "text": "لا يوجد أعضاء.",
+      "status": "machineDraft"
+    },
+    "web.administration.group.rolesHeading": {
+      "text": "الأدوار الممنوحة للمجموعة",
+      "status": "machineDraft"
+    },
+    "web.administration.groups.add": {
+      "text": "إضافة مجموعة",
+      "status": "machineDraft"
+    },
+    "web.administration.groups.addMember": {
+      "text": "إضافة إلى المجموعة",
+      "status": "machineDraft"
+    },
+    "web.administration.groups.all": {
+      "text": "كل المجموعات",
+      "status": "machineDraft"
+    },
+    "web.administration.groups.kept": {
+      "text": "تديره",
+      "status": "machineDraft"
+    },
+    "web.administration.groups.keptHere": {
+      "text": "هذا الخادم",
+      "status": "machineDraft"
+    },
+    "web.administration.groups.members": {
+      "text": "الأعضاء",
+      "status": "machineDraft"
+    },
+    "web.administration.groups.mirroredFrom": {
+      "text": "منسوخة عن {provider}",
+      "status": "machineDraft"
+    },
+    "web.administration.groups.name": {
+      "text": "المجموعة",
+      "status": "machineDraft"
+    },
+    "web.administration.groups.none": {
+      "text": "لا توجد مجموعات بعد.",
+      "status": "machineDraft"
+    },
+    "web.administration.groups.remove": {
+      "text": "إزالة",
+      "status": "machineDraft"
+    },
+    "web.administration.groups.removeNamed": {
+      "text": "إزالة {userName} من {group}",
+      "status": "machineDraft"
+    },
+    "web.administration.heading": {
+      "text": "الإدارة",
+      "status": "machineDraft"
+    },
+    "web.administration.holder.group": {
+      "text": "مجموعة",
+      "status": "machineDraft"
+    },
+    "web.administration.holder.rule": {
+      "text": "قاعدة حمل عمل",
+      "status": "machineDraft"
+    },
+    "web.administration.holder.user": {
+      "text": "حساب",
+      "status": "machineDraft"
+    },
+    "web.administration.holders.group": {
+      "text": "المجموعات",
+      "status": "machineDraft"
+    },
+    "web.administration.holders.rule": {
+      "text": "قواعد أحمال العمل",
+      "status": "machineDraft"
+    },
+    "web.administration.holders.user": {
+      "text": "الحسابات",
+      "status": "machineDraft"
+    },
+    "web.administration.index.nothing": {
+      "text": "لا يوجد في قسم الإدارة ما يحق لك استخدامه.",
+      "status": "machineDraft"
+    },
+    "web.administration.intro": {
+      "text": "من يحق له فعل ماذا، وكيف أُعدّ الخادم، وما الذي جرى. يظهر كل قسم لمن يحق لهم استخدامه.",
+      "status": "machineDraft"
+    },
+    "web.administration.notDone": {
+      "text": "لم يُنفَّذ:",
+      "status": "machineDraft"
+    },
+    "web.administration.permission.changeSettings": {
+      "text": "تغيير الإعدادات",
+      "status": "machineDraft"
+    },
+    "web.administration.permission.editDesign": {
+      "text": "تعديل تصميم التجربة",
+      "status": "machineDraft"
+    },
+    "web.administration.permission.editRecord": {
+      "text": "تعديل سجل التجربة",
+      "status": "machineDraft"
+    },
+    "web.administration.permission.enterValues": {
+      "text": "إدخال القيم وتغييرها",
+      "status": "machineDraft"
+    },
+    "web.administration.permission.importValues": {
+      "text": "استيراد القيم من الملفات",
+      "status": "machineDraft"
+    },
+    "web.administration.permission.manageAccess": {
+      "text": "إدارة الحسابات والمجموعات والأدوار ومزوّدي الهوية وقواعد أحمال العمل",
+      "status": "machineDraft"
+    },
+    "web.administration.permission.manageRetention": {
+      "text": "إدارة الاحتفاظ بالبيانات",
+      "status": "machineDraft"
+    },
+    "web.administration.permission.manageStructure": {
+      "text": "إدارة الأماكن ومستويات التسلسل الهرمي",
+      "status": "machineDraft"
+    },
+    "web.administration.permission.manageTasks": {
+      "text": "إدارة المهام المجدولة",
+      "status": "machineDraft"
+    },
+    "web.administration.permission.manageTrials": {
+      "text": "إضافة التجارب ونقلها وحذفها",
+      "status": "machineDraft"
+    },
+    "web.administration.permission.view": {
+      "text": "عرض التجارب والأماكن وإعداداتها",
+      "status": "machineDraft"
+    },
+    "web.administration.permission.viewAudit": {
+      "text": "قراءة سجل التدقيق",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.about.cas": {
+      "text": "تسجيل الدخول عبر خادم Apereo CAS.",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.about.ldap": {
+      "text": "تسجيل الدخول باسم المستخدم وكلمة المرور في دليل، مثل Active Directory.",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.about.openIDConnect": {
+      "text": "تسجيل الدخول عبر مزوّد OpenID Connect، مثل Entra ID أو Keycloak أو Google.",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.about.saml": {
+      "text": "تسجيل الدخول عبر مزوّد هوية SAML 2.0 واحد.",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.about.samlFederation": {
+      "text": "تسجيل الدخول عبر مؤسسات اتحاد للبحث والتعليم، مثل eduGAIN.",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.about.scim": {
+      "text": "ينشئ المزوّد الحسابات والمجموعات هنا ويحدّثها ويعطّلها؛ لا أحد يسجّل الدخول عبره.",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.enabledHeading": {
+      "text": "مفعّل أم معطّل",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.heading": {
+      "text": "مزوّد هوية",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.help.allowCBC": {
+      "text": "قبول التأكيدات المشفَّرة بـ AES-CBC أيضًا، لمزوّد لا يستطيع استخدام AES-GCM.",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.help.baseDN": {
+      "text": "الاسم المميَّز الذي يُبحث تحته عن الأشخاص، مثل dc=example,dc=org.",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.help.baseURL": {
+      "text": "عنوان https الذي يصل منه المزوّد إلى نقطة SCIM في هذا الخادم، بلا شرطة مائلة في آخره، بوضع عنوان الخادم مكان SERVER واسم المزوّد مكان NAME: https://SERVER/scim/NAME/v2",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.help.certificateAuthority": {
+      "text": "ملف PEM على الخادم يحوي مرجع التصديق الموثوق لهذا العنوان، حين لا يكون مما يثق به النظام أصلًا. فارغ: مراجع النظام.",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.help.certificateFile": {
+      "text": "ملف PEM لشهادة المفتاح، على الخادم.",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.help.clientID": {
+      "text": "معرّف العميل الذي أعطاه المزوّد لهذا الخادم.",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.help.clientSecretVariable": {
+      "text": "اسم متغيّر البيئة الذي يحمل سرّ العميل. السرّ نفسه لا يُخزَّن هنا أبدًا.",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.help.decryptionKeys": {
+      "text": "المفاتيح التي تفكّ تشفير التأكيدات المشفَّرة لهذا الخادم. الأول هو الحالي؛ أبقِ مفتاحًا أقدم ما دام المزوّد يشفّر له.",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.help.discoveryAggregate": {
+      "text": "التجميع الموقَّع لكل أعضاء الاتحاد، لعرضهم جميعًا بدلًا من قائمة مؤسسات. تقرؤه مهمة مجدولة كل ست ساعات.",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.help.displayNameAttribute": {
+      "text": "السمة التي تحمل الاسم المعروض للشخص.",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.help.emailAttribute": {
+      "text": "السمة التي تحمل عنوان البريد الإلكتروني للشخص.",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.help.entityID": {
+      "text": "الاسم الذي يُعرف به هذا الخادم لدى المزوّد (معرّف كيان SAML الخاص به)، وهو عادةً عنوانه.",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.help.groups": {
+      "text": "ignore يتجاهل مجموعات المزوّد؛ و mirror ينسخها كمجموعات يتكوّن اسمها من اسم المزوّد ثم «/» ثم اسم المجموعة، ولا يحدّد أعضاءها إلا المزوّد.",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.help.groupsAttribute": {
+      "text": "السمة التي تسرد مجموعات الشخص، حين تكون قيمة groups هي mirror.",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.help.host": {
+      "text": "اسم المضيف لخادم الدليل.",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.help.identityProviderEntityID": {
+      "text": "أي كيان في البيانات الوصفية هو مزوّد الهوية، حين تحوي البيانات الوصفية أكثر من كيان.",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.help.informationURL": {
+      "text": "صفحة عن هذه الخدمة، تُنشر في البيانات الوصفية (https).",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.help.institutions": {
+      "text": "معرّفات الكيانات للمؤسسات المعروضة هنا، واحد في كل سطر. اتركه فارغًا عند تسمية discoveryAggregate.",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.help.issuer": {
+      "text": "عنوان المُصدِر لدى المزوّد (https) كما يسمّيه مستند الاكتشاف الخاص به.",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.help.keyFile": {
+      "text": "ملف PEM للمفتاح الخاص، على الخادم.",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.help.mdqURL": {
+      "text": "عنوان خدمة الاستعلام عن البيانات الوصفية (MDQ) للاتحاد (https).",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.help.metadataURL": {
+      "text": "عنوان بيانات SAML الوصفية لمزوّد الهوية (https).",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.help.newAccounts": {
+      "text": "ما يفعله تسجيل الدخول حين لا تكون هوية المزوّد مرتبطة بأي حساب بعد: refuse يرفضه (ينشئ مدير أو التزويد الحساب أولًا)، و create ينشئ حسابًا مما يقوله المزوّد، و linkByUserName يربطها بالحساب الذي له اسم المستخدم نفسه.",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.help.organizationName": {
+      "text": "اسم مؤسستك، يُنشر في البيانات الوصفية لهذا الخادم.",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.help.passwordVariable": {
+      "text": "اسم متغيّر البيئة الذي يحمل كلمة مرور ملف المفتاح، إن كانت له كلمة مرور.",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.help.port": {
+      "text": "المنفذ: 636 لـ LDAP عبر TLS، و 389 مع startTLS.",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.help.privacyStatementURL": {
+      "text": "بيان الخصوصية لهذه الخدمة، يُنشر في البيانات الوصفية (https).",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.help.returnURL": {
+      "text": "عنوان هذا الخادم الذي يعيد المزوّد الشخص إليه، بوضع عنوان الخادم مكان SERVER واسم المزوّد مكان NAME: https://SERVER/signin/with/NAME/return",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.help.securityContact": {
+      "text": "جهة الاتصال الأمنية المنشورة في البيانات الوصفية، وهي عنوان بريد إلكتروني.",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.help.serverURL": {
+      "text": "عنوان خادم CAS (https).",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.help.serviceName": {
+      "text": "الحساب الذي يبحث به الخادم في الدليل (اسم مميَّز أو اسم المستخدم الأساسي).",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.help.servicePasswordVariable": {
+      "text": "اسم متغيّر البيئة الذي يحمل كلمة مرور ذلك الحساب. كلمة المرور نفسها لا تُخزَّن هنا أبدًا.",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.help.signOutEverywhere": {
+      "text": "تسجيل الخروج هنا يسجّل خروج الشخص لدى المزوّد أيضًا.",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.help.signedOutURL": {
+      "text": "أين يرسل المزوّد الشخص بعد تسجيل الخروج من كل مكان (https). يتطلب signOutEverywhere.",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.help.signingCertificate": {
+      "text": "شهادة PEM التي يوقّع مفتاحها ما يُجلب من ذلك العنوان؛ يُتحقَّق بها من كل ما يُجلب.",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.help.signingKey": {
+      "text": "المفتاح الذي يوقّع طلبات SAML ورسائل تسجيل الخروج لهذا الخادم. لازم لتسجيل الخروج الموحّد.",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.help.singleLogoutURL": {
+      "text": "عنوان هذا الخادم لرسائل تسجيل الخروج من المزوّد، بوضع عنوان الخادم مكان SERVER واسم المزوّد مكان NAME: https://SERVER/signin/with/NAME/signout",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.help.startTLS": {
+      "text": "الاتصال بلا تشفير ثم الانتقال إلى TLS (STARTTLS)، بدلًا من TLS منذ البداية.",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.help.subjectAttribute": {
+      "text": "أي معرّف ذي نطاق يسمّي الشخص: subjectID أو pairwiseID أو eduPersonPrincipalName.",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.help.technicalContact": {
+      "text": "جهة الاتصال التقنية المنشورة في البيانات الوصفية، وهي عنوان بريد إلكتروني.",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.help.url": {
+      "text": "عنوان التجميع (https).",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.help.userAttribute": {
+      "text": "السمة التي يُطابَق بها اسم المستخدم للشخص، مثل sAMAccountName أو uid.",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.help.userNameAttribute": {
+      "text": "السمة التي تحمل اسم المستخدم للشخص.",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.isDisabled": {
+      "text": "معطّل: لا أحد يسجّل الدخول ولا يُزوَّد شيء عبره. تبقى إعداداته وروابطه محفوظة.",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.isEnabled": {
+      "text": "مفعّل: يسجّل الأشخاص دخولهم، أو تُزوَّد حساباتهم، عبره.",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.issueToken": {
+      "text": "إصدار رمز جديد",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.kind.cas": {
+      "text": "CAS",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.kind.ldap": {
+      "text": "دليل LDAP",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.kind.openIDConnect": {
+      "text": "OpenID Connect",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.kind.saml": {
+      "text": "SAML 2.0",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.kind.samlFederation": {
+      "text": "اتحاد بحثي (SAML)",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.kind.scim": {
+      "text": "التزويد عبر SCIM 2.0",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.register.backChannelSignOut": {
+      "text": "يُرسل تسجيل الخروج عبر القناة الخلفية إلى",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.register.entityID": {
+      "text": "معرّف الكيان لهذا الخادم",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.register.metadata": {
+      "text": "بيانات هذا الخادم الوصفية",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.register.provisioningAddress": {
+      "text": "تُرسل طلبات التزويد إلى",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.register.signInAddress": {
+      "text": "تُرسل ردود تسجيل الدخول إلى",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.register.signOutAddress": {
+      "text": "تُرسل رسائل تسجيل الخروج إلى",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.registerHeading": {
+      "text": "ما يُسجَّل لدى المزوّد",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.registerIntro": {
+      "text": "ما يُعطى لمدير المزوّد نفسه. يجب أن تؤدي العناوين إلى هذا الخادم.",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.settingsHeading": {
+      "text": "الإعدادات",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.settingsIntro": {
+      "text": "الإعدادات كما أُضيفت.",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.tokenHeading": {
+      "text": "رمز التزويد",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.tokenIntro": {
+      "text": "رمز الحامل الذي يرسله المزوّد مع كل طلب تزويد. إصدار رمز جديد يحلّ محل القديم فورًا. لا يُحفظ إلا تجزئته، لذا يُعرض مرة واحدة.",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.tokenShownOnce": {
+      "text": "رمز التزويد الجديد، يُعرض هذه المرة فقط؛ انسخه الآن:",
+      "status": "machineDraft"
+    },
+    "web.administration.providers.add": {
+      "text": "إضافة مزوّد",
+      "status": "machineDraft"
+    },
+    "web.administration.providers.addIntro": {
+      "text": "اختر نوع المزوّد. سرّ المزوّد لا يُكتب هنا أبدًا: إعداداته تسمّي متغيّر البيئة الذي يحمله.",
+      "status": "machineDraft"
+    },
+    "web.administration.providers.all": {
+      "text": "كل المزوّدين",
+      "status": "machineDraft"
+    },
+    "web.administration.providers.kind": {
+      "text": "النوع",
+      "status": "machineDraft"
+    },
+    "web.administration.providers.name": {
+      "text": "الاسم",
+      "status": "machineDraft"
+    },
+    "web.administration.providers.nameHelp": {
+      "text": "حرف لاتيني صغير ثم من 1 إلى 31 من الحروف الصغيرة أو الأرقام أو '-'. يصبح جزءًا من العناوين ولا يمكن تغييره.",
+      "status": "machineDraft"
+    },
+    "web.administration.providers.none": {
+      "text": "لا يوجد مزوّدو هوية بعد.",
+      "status": "machineDraft"
+    },
+    "web.administration.role.administrator": {
+      "text": "مدير النظام",
+      "status": "machineDraft"
+    },
+    "web.administration.role.analyst": {
+      "text": "محلّل",
+      "status": "machineDraft"
+    },
+    "web.administration.role.changeHeading": {
+      "text": "الاسم والصلاحيات",
+      "status": "machineDraft"
+    },
+    "web.administration.role.dataCollector": {
+      "text": "جامع بيانات",
+      "status": "machineDraft"
+    },
+    "web.administration.role.delete": {
+      "text": "حذف الدور",
+      "status": "machineDraft"
+    },
+    "web.administration.role.deleteConfirm": {
+      "text": "نعم، احذف هذا الدور",
+      "status": "machineDraft"
+    },
+    "web.administration.role.deleteHeading": {
+      "text": "حذف",
+      "status": "machineDraft"
+    },
+    "web.administration.role.deleteIntro": {
+      "text": "الدور الذي ما زال ممنوحًا لأحد لا يُحذف؛ اسحبه من الجميع أولًا.",
+      "status": "machineDraft"
+    },
+    "web.administration.role.heading": {
+      "text": "دور مخصّص",
+      "status": "machineDraft"
+    },
+    "web.administration.role.holdersHeading": {
+      "text": "من يحمله",
+      "status": "machineDraft"
+    },
+    "web.administration.role.trialManager": {
+      "text": "مدير تجارب",
+      "status": "machineDraft"
+    },
+    "web.administration.role.viewer": {
+      "text": "مشاهد",
+      "status": "machineDraft"
+    },
+    "web.administration.roles.all": {
+      "text": "كل الأدوار",
+      "status": "machineDraft"
+    },
+    "web.administration.roles.builtIn": {
+      "text": "مدمج",
+      "status": "machineDraft"
+    },
+    "web.administration.roles.code": {
+      "text": "رمز الدور",
+      "status": "machineDraft"
+    },
+    "web.administration.roles.codeHelp": {
+      "text": "حرف لاتيني صغير ثم حروف وأرقام، مثل fieldLead. لا يمكن تغييره لاحقًا.",
+      "status": "machineDraft"
+    },
+    "web.administration.roles.custom": {
+      "text": "مخصّص",
+      "status": "machineDraft"
+    },
+    "web.administration.roles.define": {
+      "text": "تعريف دور",
+      "status": "machineDraft"
+    },
+    "web.administration.roles.exists": {
+      "text": "يوجد دور «{code}» بالفعل؛ غيّره في صفحته.",
+      "status": "machineDraft"
+    },
+    "web.administration.roles.kind": {
+      "text": "النوع",
+      "status": "machineDraft"
+    },
+    "web.administration.roles.name": {
+      "text": "الاسم",
+      "status": "machineDraft"
+    },
+    "web.administration.roles.permissions": {
+      "text": "الصلاحيات",
+      "status": "machineDraft"
+    },
+    "web.administration.roles.role": {
+      "text": "الدور",
+      "status": "machineDraft"
+    },
+    "web.administration.save": {
+      "text": "حفظ",
+      "status": "machineDraft"
+    },
+    "web.administration.scope.named.place": {
+      "text": "المكان {name}",
+      "status": "machineDraft"
+    },
+    "web.administration.scope.named.server": {
+      "text": "الخادم كله",
+      "status": "machineDraft"
+    },
+    "web.administration.scope.named.trial": {
+      "text": "التجربة {name}",
+      "status": "machineDraft"
+    },
+    "web.administration.scope.place": {
+      "text": "{level}: {name} ({path})",
+      "status": "machineDraft"
+    },
+    "web.administration.scope.server": {
+      "text": "الخادم كله",
+      "status": "machineDraft"
+    },
+    "web.administration.scope.trial": {
+      "text": "التجربة {code}: {title}",
+      "status": "machineDraft"
+    },
+    "web.administration.section.accounts": {
+      "text": "الحسابات",
+      "status": "machineDraft"
+    },
+    "web.administration.section.assignments": {
+      "text": "إسناد الأدوار",
+      "status": "machineDraft"
+    },
+    "web.administration.section.audit": {
+      "text": "سجل التدقيق",
+      "status": "machineDraft"
+    },
+    "web.administration.section.groups": {
+      "text": "المجموعات",
+      "status": "machineDraft"
+    },
+    "web.administration.section.providers": {
+      "text": "مزوّدو الهوية",
+      "status": "machineDraft"
+    },
+    "web.administration.section.roles": {
+      "text": "الأدوار",
+      "status": "machineDraft"
+    },
+    "web.administration.section.settings": {
+      "text": "الإعدادات",
+      "status": "machineDraft"
+    },
+    "web.administration.section.signInMode": {
+      "text": "نمط تسجيل الدخول",
+      "status": "machineDraft"
+    },
+    "web.administration.section.tasks": {
+      "text": "المهام المجدولة",
+      "status": "machineDraft"
+    },
+    "web.administration.section.workloads": {
+      "text": "أحمال العمل الموثوقة",
+      "status": "machineDraft"
+    },
+    "web.administration.setting.analysis.meanComparison": {
+      "text": "الاختبار الذي يفصل متوسطات المعاملات: protectedLSD (اختبار LSD لفيشر بعد اختبار F معنوي فقط)، أو lsd، أو tukeyHSD، أو dunnett (كل معاملة مقابل الشاهد).",
+      "status": "machineDraft"
+    },
+    "web.administration.setting.analysis.missingPlots": {
+      "text": "ما يفعله التحليل بقطعة بلا قيمة. refuse: يتوقف التحليل ويسمّي القطع الناقصة.",
+      "status": "machineDraft"
+    },
+    "web.administration.setting.analysis.significanceLevel": {
+      "text": "مستوى المعنوية (ألفا) لتحليل التباين ومقارنة المتوسطات: أكبر من 0 وأصغر من 1؛ والمعتاد 0.05.",
+      "status": "machineDraft"
+    },
+    "web.administration.setting.identity.sessionHours": {
+      "text": "عدد الساعات التي يدومها تسجيل الدخول قبل أن يسجّل الشخص دخوله من جديد: من 1 إلى 720.",
+      "status": "machineDraft"
+    },
+    "web.administration.setting.identity.signInMode": {
+      "text": "open: يحق لكل من يصل إلى الخادم فعل كل شيء. accounts: يسجّل كل شخص دخوله ويحمل الأدوار الممنوحة له.",
+      "status": "machineDraft"
+    },
+    "web.administration.setting.identity.workloadAudience": {
+      "text": "الجمهور (audience) الذي يجب أن يسمّيه رمز كل حمل عمل موثوق: الاسم الذي يعرّف به هذا الخادم نفسه، وهو عادةً عنوانه. ما دام غير معيَّن لا يُقبل أي رمز حمل عمل.",
+      "status": "machineDraft"
+    },
+    "web.administration.setting.tasks.maximumConcurrentRuns": {
+      "text": "عدد تشغيلات المهام التي يسمح بها المُجدوِل في آن واحد: من 1 إلى 64.",
+      "status": "machineDraft"
+    },
+    "web.administration.setting.tasks.runRetentionDays": {
+      "text": "عدد الأيام التي تُحفظ فيها سجلات تشغيل المهمة: من 1 إلى 3650.",
+      "status": "machineDraft"
+    },
+    "web.administration.setting.tasks.timeZone": {
+      "text": "المنطقة الزمنية التي تُقرأ بها الجداول، باسم IANA مثل UTC أو Africa/Nairobi.",
+      "status": "machineDraft"
+    },
+    "web.administration.settings.changeOnItsPage": {
+      "text": "غيّره في صفحة نمط تسجيل الدخول",
+      "status": "machineDraft"
+    },
+    "web.administration.settings.clear": {
+      "text": "مسح القيمة المعيّنة هنا",
+      "status": "machineDraft"
+    },
+    "web.administration.settings.clearNamed": {
+      "text": "مسح {setting} هنا",
+      "status": "machineDraft"
+    },
+    "web.administration.settings.newValue": {
+      "text": "القيمة المراد تعيينها في: {scope}",
+      "status": "machineDraft"
+    },
+    "web.administration.settings.notAtThisScope": {
+      "text": "هذا الإعداد يُعيَّن على الخادم فقط.",
+      "status": "machineDraft"
+    },
+    "web.administration.settings.onItsOwnPage": {
+      "text": "نمط تسجيل الدخول يُغيَّر في صفحته الخاصة.",
+      "status": "machineDraft"
+    },
+    "web.administration.settings.readOnly": {
+      "text": "يمكنك قراءة الإعدادات هنا؛ تغييرها يتطلب صلاحية تغيير الإعدادات في هذا الموضع.",
+      "status": "machineDraft"
+    },
+    "web.administration.settings.scope": {
+      "text": "أين",
+      "status": "machineDraft"
+    },
+    "web.administration.settings.set": {
+      "text": "تعيين",
+      "status": "machineDraft"
+    },
+    "web.administration.settings.setNamed": {
+      "text": "تعيين {setting}",
+      "status": "machineDraft"
+    },
+    "web.administration.settings.show": {
+      "text": "عرض",
+      "status": "machineDraft"
+    },
+    "web.administration.settings.source": {
+      "text": "المصدر",
+      "status": "machineDraft"
+    },
+    "web.administration.settings.source.default": {
+      "text": "القيمة الافتراضية",
+      "status": "machineDraft"
+    },
+    "web.administration.settings.value": {
+      "text": "القيمة",
+      "status": "machineDraft"
+    },
+    "web.administration.signInMode.about.accounts": {
+      "text": "يسجّل كل شخص دخوله ويحمل الأدوار الممنوحة له. يتطلب أولًا حسابًا نشطًا له دور مدير النظام على الخادم.",
+      "status": "machineDraft"
+    },
+    "web.administration.signInMode.about.open": {
+      "text": "بلا تسجيل دخول. يحق لكل من يصل إلى الخادم فعل كل شيء. مناسب لشخص واحد على جهازه.",
+      "status": "machineDraft"
+    },
+    "web.administration.signInMode.choose": {
+      "text": "نمط تسجيل الدخول",
+      "status": "machineDraft"
+    },
+    "web.administration.signInMode.confirmOpen": {
+      "text": "نعم، افتح الخادم لكل من يستطيع الوصول إليه (مطلوب فقط عند اختيار «مفتوح»)",
+      "status": "machineDraft"
+    },
+    "web.administration.signInMode.current": {
+      "text": "نمط تسجيل الدخول في الخادم هو: {mode}",
+      "status": "machineDraft"
+    },
+    "web.administration.signInMode.name.accounts": {
+      "text": "حسابات",
+      "status": "machineDraft"
+    },
+    "web.administration.signInMode.name.open": {
+      "text": "مفتوح",
+      "status": "machineDraft"
+    },
+    "web.administration.tasks.add": {
+      "text": "إضافة مهمة",
+      "status": "machineDraft"
+    },
+    "web.administration.tasks.addIntro": {
+      "text": "تبدأ المهمة مفعّلة، بالجدول الافتراضي للنوع ({schedule}) وحدّه الزمني ({minutes} دقيقة)؛ غيّرهما في صفحتها.",
+      "status": "machineDraft"
+    },
+    "web.administration.tasks.allKinds": {
+      "text": "كل الأنواع",
+      "status": "machineDraft"
+    },
+    "web.administration.tasks.defaultSchedule": {
+      "text": "الجدول الافتراضي",
+      "status": "machineDraft"
+    },
+    "web.administration.tasks.delete": {
+      "text": "حذف هذه المهمة",
+      "status": "machineDraft"
+    },
+    "web.administration.tasks.deleteHeading": {
+      "text": "حذف",
+      "status": "machineDraft"
+    },
+    "web.administration.tasks.kindsIntro": {
+      "text": "اختر نوع المهمة. النوع برنامج؛ والمهمة إعداد واحد له، بجدولها الخاص.",
+      "status": "machineDraft"
+    },
+    "web.administration.tasks.nameHelp": {
+      "text": "حرف لاتيني صغير ثم من 1 إلى 63 من الحروف أو الأرقام أو '-'.",
+      "status": "machineDraft"
+    },
+    "web.administration.tasks.parameters": {
+      "text": "المعاملات",
+      "status": "machineDraft"
+    },
+    "web.administration.unknown.account": {
+      "text": "لا يوجد حساب «{name}».",
+      "status": "machineDraft"
+    },
+    "web.administration.unknown.group": {
+      "text": "لا توجد مجموعة «{name}».",
+      "status": "machineDraft"
+    },
+    "web.administration.unknown.provider": {
+      "text": "لا يوجد مزوّد هوية «{name}».",
+      "status": "machineDraft"
+    },
+    "web.administration.unknown.providerKind": {
+      "text": "«{name}» ليس نوعًا من مزوّدي الهوية.",
+      "status": "machineDraft"
+    },
+    "web.administration.unknown.role": {
+      "text": "لا يوجد دور مخصّص «{name}».",
+      "status": "machineDraft"
+    },
+    "web.administration.unknown.scope": {
+      "text": "«{name}» ليس الخادم ولا مكانًا أو تجربة يحق لك رؤيتها.",
+      "status": "machineDraft"
+    },
+    "web.administration.unknown.taskKind": {
+      "text": "«{name}» ليس نوعًا من المهام.",
+      "status": "machineDraft"
+    },
+    "web.administration.unknown.workload": {
+      "text": "لا توجد قاعدة حمل عمل «{name}».",
+      "status": "machineDraft"
+    },
+    "web.administration.workload.added": {
+      "text": "أُضيفت",
+      "status": "machineDraft"
+    },
+    "web.administration.workload.enabledHeading": {
+      "text": "مفعّلة أم معطّلة",
+      "status": "machineDraft"
+    },
+    "web.administration.workload.fixed": {
+      "text": "ما تثق به القاعدة لا يتغيّر. للثقة بشيء آخر، أزل القاعدة وأضف واحدة جديدة.",
+      "status": "machineDraft"
+    },
+    "web.administration.workload.heading": {
+      "text": "قاعدة حمل عمل",
+      "status": "machineDraft"
+    },
+    "web.administration.workload.isDisabled": {
+      "text": "معطّلة: لا تقبل أي رمز. تنتظر أدوارها حتى تُفعَّل من جديد.",
+      "status": "machineDraft"
+    },
+    "web.administration.workload.isEnabled": {
+      "text": "مفعّلة: المهمة التي يطابق رمزها تعمل بأدوار هذه القاعدة.",
+      "status": "machineDraft"
+    },
+    "web.administration.workload.remove": {
+      "text": "إزالة هذه القاعدة",
+      "status": "machineDraft"
+    },
+    "web.administration.workload.removeHeading": {
+      "text": "إزالة",
+      "status": "machineDraft"
+    },
+    "web.administration.workload.rolesHeading": {
+      "text": "الأدوار الممنوحة للقاعدة",
+      "status": "machineDraft"
+    },
+    "web.administration.workloads.add": {
+      "text": "إضافة قاعدة",
+      "status": "machineDraft"
+    },
+    "web.administration.workloads.all": {
+      "text": "كل القواعد",
+      "status": "machineDraft"
+    },
+    "web.administration.workloads.audience": {
+      "text": "يجب أن يسمّي كل رمز حمل عمل الجمهور {audience}.",
+      "status": "machineDraft"
+    },
+    "web.administration.workloads.certificateAuthority": {
+      "text": "ملف مرجع التصديق",
+      "status": "machineDraft"
+    },
+    "web.administration.workloads.claims": {
+      "text": "المطالبات المطلوبة",
+      "status": "machineDraft"
+    },
+    "web.administration.workloads.claimsHelp": {
+      "text": "واحدة في كل سطر، بصيغة claim=value. يجب أن يحمل الرمز كل واحدة بهذه القيمة تمامًا. قاعدة GitHub Actions تحتاج إلى repository_id؛ وقاعدة GitLab.com تحتاج إلى project_id.",
+      "status": "machineDraft"
+    },
+    "web.administration.workloads.issuer": {
+      "text": "المُصدِر",
+      "status": "machineDraft"
+    },
+    "web.administration.workloads.issuerHelp": {
+      "text": "أحد هذه الأسماء: {named}؛ أو عنوان https لمُصدِر OpenID Connect كما تسمّيه رموزه، بلا شرطة مائلة في آخره.",
+      "status": "machineDraft"
+    },
+    "web.administration.workloads.name": {
+      "text": "الاسم",
+      "status": "machineDraft"
+    },
+    "web.administration.workloads.noAudience": {
+      "text": "لا يمكن إضافة قاعدة، ولا يُقبل أي رمز حمل عمل، حتى يُعيَّن إعداد الخادم identity.workloadAudience.",
+      "status": "machineDraft"
+    },
+    "web.administration.workloads.none": {
+      "text": "لا توجد قواعد أحمال عمل بعد.",
+      "status": "machineDraft"
+    },
     "web.app.name": {
       "text": "OpenFurrow",
       "status": "machineDraft"
@@ -1953,6 +3361,14 @@
       "text": "التجارب",
       "status": "machineDraft"
     },
+    "web.notFound.heading": {
+      "text": "غير موجود",
+      "status": "machineDraft"
+    },
+    "web.notFound.intro": {
+      "text": "هذا غير موجود هنا، أو لا يحق لك رؤيته.",
+      "status": "machineDraft"
+    },
     "web.place.label": {
       "text": "{level} التي تنتمي إليها التجربة",
       "status": "machineDraft"
@@ -2019,6 +3435,30 @@
     },
     "web.places.problem": {
       "text": "لم يُضف المكان: {reason}",
+      "status": "machineDraft"
+    },
+    "web.refused.heading": {
+      "text": "غير مسموح",
+      "status": "machineDraft"
+    },
+    "web.refused.intro": {
+      "text": "حسابك لا يحمل هناك الصلاحية اللازمة لهذا، فلم يُنفَّذ شيء.",
+      "status": "machineDraft"
+    },
+    "web.refused.permission": {
+      "text": "الصلاحية المطلوبة",
+      "status": "machineDraft"
+    },
+    "web.refused.whatNext": {
+      "text": "يستطيع من يدير الوصول هنا أن يمنحك دورًا يتضمنها.",
+      "status": "machineDraft"
+    },
+    "web.refused.where": {
+      "text": "أين",
+      "status": "machineDraft"
+    },
+    "web.refused.who": {
+      "text": "تسجيل الدخول باسم",
       "status": "machineDraft"
     },
     "web.report.back": {

@@ -2461,6 +2461,1446 @@
       "text": "skipped",
       "status": "source"
     },
+    "web.administration.heading": {
+      "text": "Administration",
+      "status": "source"
+    },
+    "web.administration.intro": {
+      "text": "Who may do what, how the server is set up, and what has been done. Each section shows to the people who may use it.",
+      "status": "source"
+    },
+    "web.administration.index.nothing": {
+      "text": "Nothing in the administration area is yours to use.",
+      "status": "source"
+    },
+    "web.administration.notDone": {
+      "text": "Not done:",
+      "status": "source"
+    },
+    "web.administration.confirmNeeded": {
+      "text": "Tick the box to confirm, then try again.",
+      "status": "source"
+    },
+    "web.administration.choose": {
+      "text": "Choose",
+      "status": "source"
+    },
+    "web.administration.save": {
+      "text": "Save",
+      "status": "source"
+    },
+    "web.administration.enabled": {
+      "text": "enabled",
+      "status": "source"
+    },
+    "web.administration.disabled": {
+      "text": "disabled",
+      "status": "source"
+    },
+    "web.administration.column.state": {
+      "text": "State",
+      "status": "source"
+    },
+    "web.administration.column.change": {
+      "text": "Change",
+      "status": "source"
+    },
+    "web.administration.detail.none": {
+      "text": "none",
+      "status": "source"
+    },
+    "web.administration.detail.yes": {
+      "text": "yes",
+      "status": "source"
+    },
+    "web.administration.detail.no": {
+      "text": "no",
+      "status": "source"
+    },
+    "web.administration.section.accounts": {
+      "text": "Accounts",
+      "status": "source"
+    },
+    "web.administration.section.groups": {
+      "text": "Groups",
+      "status": "source"
+    },
+    "web.administration.section.roles": {
+      "text": "Roles",
+      "status": "source"
+    },
+    "web.administration.section.assignments": {
+      "text": "Role assignments",
+      "status": "source"
+    },
+    "web.administration.section.settings": {
+      "text": "Settings",
+      "status": "source"
+    },
+    "web.administration.section.signInMode": {
+      "text": "Sign-in mode",
+      "status": "source"
+    },
+    "web.administration.section.providers": {
+      "text": "Identity providers",
+      "status": "source"
+    },
+    "web.administration.section.workloads": {
+      "text": "Trusted workloads",
+      "status": "source"
+    },
+    "web.administration.section.tasks": {
+      "text": "Scheduled tasks",
+      "status": "source"
+    },
+    "web.administration.section.audit": {
+      "text": "Audit log",
+      "status": "source"
+    },
+    "web.administration.about.accounts": {
+      "text": "The people who sign in here: add an account, set a password, deactivate one, link it to an identity provider.",
+      "status": "source"
+    },
+    "web.administration.about.groups": {
+      "text": "Accounts gathered so that a role is given to all of them at once. A group mirrored from an identity provider is that provider's to change.",
+      "status": "source"
+    },
+    "web.administration.about.roles": {
+      "text": "Named sets of permissions. Five are built in; define your own from the same permissions.",
+      "status": "source"
+    },
+    "web.administration.about.assignments": {
+      "text": "Every role given: to an account, a group or a workload rule, at the server, a place or a trial. A role holds where it is given and below.",
+      "status": "source"
+    },
+    "web.administration.about.settings": {
+      "text": "Each setting's value at the server, a place or a trial, and where that value comes from. The nearest value applies: the trial, its places from the innermost out, the server, then the default.",
+      "status": "source"
+    },
+    "web.administration.about.signInMode": {
+      "text": "Whether everyone who reaches the server may do everything, or each person signs in and holds the roles given to them.",
+      "status": "source"
+    },
+    "web.administration.about.providers": {
+      "text": "Where people sign in besides this site, and what provisions accounts: OpenID Connect, SAML, research federations, CAS, LDAP and SCIM.",
+      "status": "source"
+    },
+    "web.administration.about.workloads": {
+      "text": "Rules that let a CI or cloud job call the API with its platform's own short-lived token instead of a stored one.",
+      "status": "source"
+    },
+    "web.administration.about.tasks": {
+      "text": "Work the scheduler does on a schedule: see the runs, change a schedule, run a task now, add or delete one.",
+      "status": "source"
+    },
+    "web.administration.about.audit": {
+      "text": "Every change, who made it, from where and what it changed, newest first.",
+      "status": "source"
+    },
+    "web.administration.done.created": {
+      "text": "Created.",
+      "status": "source"
+    },
+    "web.administration.done.passwordSet": {
+      "text": "The password is set.",
+      "status": "source"
+    },
+    "web.administration.done.deactivated": {
+      "text": "Deactivated: its sessions and API tokens are ended.",
+      "status": "source"
+    },
+    "web.administration.done.reactivated": {
+      "text": "Reactivated.",
+      "status": "source"
+    },
+    "web.administration.done.linked": {
+      "text": "Linked.",
+      "status": "source"
+    },
+    "web.administration.done.joined": {
+      "text": "Added to the group.",
+      "status": "source"
+    },
+    "web.administration.done.left": {
+      "text": "Removed from the group.",
+      "status": "source"
+    },
+    "web.administration.done.deleted": {
+      "text": "Deleted.",
+      "status": "source"
+    },
+    "web.administration.done.defined": {
+      "text": "The role is defined.",
+      "status": "source"
+    },
+    "web.administration.done.saved": {
+      "text": "Saved.",
+      "status": "source"
+    },
+    "web.administration.done.given": {
+      "text": "The role is given.",
+      "status": "source"
+    },
+    "web.administration.done.takenBack": {
+      "text": "The role is taken back.",
+      "status": "source"
+    },
+    "web.administration.done.set": {
+      "text": "Set.",
+      "status": "source"
+    },
+    "web.administration.done.cleared": {
+      "text": "Cleared: the value now comes from further out.",
+      "status": "source"
+    },
+    "web.administration.done.added": {
+      "text": "Added.",
+      "status": "source"
+    },
+    "web.administration.done.enabled": {
+      "text": "Enabled.",
+      "status": "source"
+    },
+    "web.administration.done.disabled": {
+      "text": "Disabled.",
+      "status": "source"
+    },
+    "web.administration.done.removed": {
+      "text": "Removed.",
+      "status": "source"
+    },
+    "web.administration.unknown.account": {
+      "text": "There is no account “{name}”.",
+      "status": "source"
+    },
+    "web.administration.unknown.group": {
+      "text": "There is no group “{name}”.",
+      "status": "source"
+    },
+    "web.administration.unknown.role": {
+      "text": "There is no custom role “{name}”.",
+      "status": "source"
+    },
+    "web.administration.unknown.provider": {
+      "text": "There is no identity provider “{name}”.",
+      "status": "source"
+    },
+    "web.administration.unknown.providerKind": {
+      "text": "“{name}” is not a kind of identity provider.",
+      "status": "source"
+    },
+    "web.administration.unknown.workload": {
+      "text": "There is no workload rule “{name}”.",
+      "status": "source"
+    },
+    "web.administration.unknown.taskKind": {
+      "text": "“{name}” is not a kind of task.",
+      "status": "source"
+    },
+    "web.administration.unknown.scope": {
+      "text": "“{name}” is not the server, a place or a trial you may see.",
+      "status": "source"
+    },
+    "web.administration.scope.server": {
+      "text": "The whole server",
+      "status": "source"
+    },
+    "web.administration.scope.place": {
+      "text": "{level}: {name} ({path})",
+      "status": "source"
+    },
+    "web.administration.scope.trial": {
+      "text": "Trial {code}: {title}",
+      "status": "source"
+    },
+    "web.administration.scope.named.server": {
+      "text": "The whole server",
+      "status": "source"
+    },
+    "web.administration.scope.named.place": {
+      "text": "Place {name}",
+      "status": "source"
+    },
+    "web.administration.scope.named.trial": {
+      "text": "Trial {name}",
+      "status": "source"
+    },
+    "web.administration.holder.user": {
+      "text": "Account",
+      "status": "source"
+    },
+    "web.administration.holder.group": {
+      "text": "Group",
+      "status": "source"
+    },
+    "web.administration.holder.rule": {
+      "text": "Workload rule",
+      "status": "source"
+    },
+    "web.administration.holders.user": {
+      "text": "Accounts",
+      "status": "source"
+    },
+    "web.administration.holders.group": {
+      "text": "Groups",
+      "status": "source"
+    },
+    "web.administration.holders.rule": {
+      "text": "Workload rules",
+      "status": "source"
+    },
+    "web.administration.assignments.column.role": {
+      "text": "Role",
+      "status": "source"
+    },
+    "web.administration.assignments.column.holder": {
+      "text": "Given to",
+      "status": "source"
+    },
+    "web.administration.assignments.column.scope": {
+      "text": "Where",
+      "status": "source"
+    },
+    "web.administration.assignments.none": {
+      "text": "No role is given here.",
+      "status": "source"
+    },
+    "web.administration.assignments.takeBack": {
+      "text": "Take back",
+      "status": "source"
+    },
+    "web.administration.assignments.takeBackNamed": {
+      "text": "Take back {role} at: {scope}",
+      "status": "source"
+    },
+    "web.administration.assignments.giveHeading": {
+      "text": "Give a role",
+      "status": "source"
+    },
+    "web.administration.assignments.give": {
+      "text": "Give the role",
+      "status": "source"
+    },
+    "web.administration.assignments.holder": {
+      "text": "To",
+      "status": "source"
+    },
+    "web.administration.assignments.role": {
+      "text": "Role",
+      "status": "source"
+    },
+    "web.administration.assignments.scope": {
+      "text": "Where it holds (there and below)",
+      "status": "source"
+    },
+    "web.administration.assignments.chooseHolder": {
+      "text": "Choose who the role is given to: an account, a group or a workload rule.",
+      "status": "source"
+    },
+    "web.administration.permission.view": {
+      "text": "See trials, places and their settings",
+      "status": "source"
+    },
+    "web.administration.permission.enterValues": {
+      "text": "Enter and change values",
+      "status": "source"
+    },
+    "web.administration.permission.importValues": {
+      "text": "Import values from files",
+      "status": "source"
+    },
+    "web.administration.permission.editRecord": {
+      "text": "Edit the trial record",
+      "status": "source"
+    },
+    "web.administration.permission.editDesign": {
+      "text": "Edit the trial design",
+      "status": "source"
+    },
+    "web.administration.permission.manageTrials": {
+      "text": "Add, move and delete trials",
+      "status": "source"
+    },
+    "web.administration.permission.changeSettings": {
+      "text": "Change settings",
+      "status": "source"
+    },
+    "web.administration.permission.manageStructure": {
+      "text": "Manage places and hierarchy levels",
+      "status": "source"
+    },
+    "web.administration.permission.manageAccess": {
+      "text": "Manage accounts, groups, roles, identity providers and workload rules",
+      "status": "source"
+    },
+    "web.administration.permission.manageRetention": {
+      "text": "Manage retention",
+      "status": "source"
+    },
+    "web.administration.permission.viewAudit": {
+      "text": "Read the audit log",
+      "status": "source"
+    },
+    "web.administration.permission.manageTasks": {
+      "text": "Manage scheduled tasks",
+      "status": "source"
+    },
+    "web.administration.role.viewer": {
+      "text": "Viewer",
+      "status": "source"
+    },
+    "web.administration.role.dataCollector": {
+      "text": "Data collector",
+      "status": "source"
+    },
+    "web.administration.role.analyst": {
+      "text": "Analyst",
+      "status": "source"
+    },
+    "web.administration.role.trialManager": {
+      "text": "Trial manager",
+      "status": "source"
+    },
+    "web.administration.role.administrator": {
+      "text": "Administrator",
+      "status": "source"
+    },
+    "web.administration.accounts.userName": {
+      "text": "User name",
+      "status": "source"
+    },
+    "web.administration.accounts.userNameHelp": {
+      "text": "2 to 64 letters of any script, digits, '.', '_', '@' and '-'. It is kept in lower case.",
+      "status": "source"
+    },
+    "web.administration.accounts.displayName": {
+      "text": "Display name",
+      "status": "source"
+    },
+    "web.administration.accounts.email": {
+      "text": "E-mail",
+      "status": "source"
+    },
+    "web.administration.accounts.emailOptional": {
+      "text": "E-mail (optional)",
+      "status": "source"
+    },
+    "web.administration.accounts.password": {
+      "text": "Password (12 characters or more; optional)",
+      "status": "source"
+    },
+    "web.administration.accounts.passwordHelp": {
+      "text": "Leave empty for an account that signs in through an identity provider only.",
+      "status": "source"
+    },
+    "web.administration.accounts.active": {
+      "text": "active",
+      "status": "source"
+    },
+    "web.administration.accounts.inactive": {
+      "text": "deactivated",
+      "status": "source"
+    },
+    "web.administration.accounts.none": {
+      "text": "No accounts yet.",
+      "status": "source"
+    },
+    "web.administration.accounts.add": {
+      "text": "Add an account",
+      "status": "source"
+    },
+    "web.administration.accounts.all": {
+      "text": "All accounts",
+      "status": "source"
+    },
+    "web.administration.account.heading": {
+      "text": "Account",
+      "status": "source"
+    },
+    "web.administration.account.language": {
+      "text": "Preferred language",
+      "status": "source"
+    },
+    "web.administration.account.passwordHeading": {
+      "text": "Password",
+      "status": "source"
+    },
+    "web.administration.account.setPassword": {
+      "text": "Set the password",
+      "status": "source"
+    },
+    "web.administration.account.activeHeading": {
+      "text": "Active or deactivated",
+      "status": "source"
+    },
+    "web.administration.account.deactivateIntro": {
+      "text": "A deactivated account cannot sign in, and its sessions and API tokens end at once. Its history in the audit log stays.",
+      "status": "source"
+    },
+    "web.administration.account.deactivateConfirm": {
+      "text": "Yes, deactivate this account",
+      "status": "source"
+    },
+    "web.administration.account.deactivate": {
+      "text": "Deactivate",
+      "status": "source"
+    },
+    "web.administration.account.reactivateIntro": {
+      "text": "This account is deactivated: it cannot sign in.",
+      "status": "source"
+    },
+    "web.administration.account.reactivate": {
+      "text": "Reactivate",
+      "status": "source"
+    },
+    "web.administration.account.identitiesHeading": {
+      "text": "Linked identities",
+      "status": "source"
+    },
+    "web.administration.account.identitiesIntro": {
+      "text": "The identity each provider knows this person by. A sign-in through a provider reaches this account by its link.",
+      "status": "source"
+    },
+    "web.administration.account.provider": {
+      "text": "Identity provider",
+      "status": "source"
+    },
+    "web.administration.account.subject": {
+      "text": "The provider's subject for the person",
+      "status": "source"
+    },
+    "web.administration.account.subjectHelp": {
+      "text": "The provider's own stable identifier: the OpenID Connect sub, the SAML persistent NameID, or the directory user name.",
+      "status": "source"
+    },
+    "web.administration.account.link": {
+      "text": "Link the identity",
+      "status": "source"
+    },
+    "web.administration.account.noIdentities": {
+      "text": "No provider's identity is linked.",
+      "status": "source"
+    },
+    "web.administration.account.noGroups": {
+      "text": "In no group.",
+      "status": "source"
+    },
+    "web.administration.account.joinGroup": {
+      "text": "Add to the group",
+      "status": "source"
+    },
+    "web.administration.account.rolesHeading": {
+      "text": "Roles",
+      "status": "source"
+    },
+    "web.administration.account.rolesIntro": {
+      "text": "The roles given to this account, and those it holds through its groups, which are changed on the group's page.",
+      "status": "source"
+    },
+    "web.administration.groups.name": {
+      "text": "Group",
+      "status": "source"
+    },
+    "web.administration.groups.members": {
+      "text": "Members",
+      "status": "source"
+    },
+    "web.administration.groups.kept": {
+      "text": "Kept by",
+      "status": "source"
+    },
+    "web.administration.groups.keptHere": {
+      "text": "this server",
+      "status": "source"
+    },
+    "web.administration.groups.mirroredFrom": {
+      "text": "mirrored from {provider}",
+      "status": "source"
+    },
+    "web.administration.groups.none": {
+      "text": "No groups yet.",
+      "status": "source"
+    },
+    "web.administration.groups.add": {
+      "text": "Add a group",
+      "status": "source"
+    },
+    "web.administration.groups.all": {
+      "text": "All groups",
+      "status": "source"
+    },
+    "web.administration.groups.addMember": {
+      "text": "Add to the group",
+      "status": "source"
+    },
+    "web.administration.groups.remove": {
+      "text": "Remove",
+      "status": "source"
+    },
+    "web.administration.groups.removeNamed": {
+      "text": "Remove {userName} from {group}",
+      "status": "source"
+    },
+    "web.administration.group.heading": {
+      "text": "Group",
+      "status": "source"
+    },
+    "web.administration.group.mirrored": {
+      "text": "This group is mirrored from the identity provider {provider}, which alone sets its members and removes it. Roles are given to it here like to any group.",
+      "status": "source"
+    },
+    "web.administration.group.noMembers": {
+      "text": "No members.",
+      "status": "source"
+    },
+    "web.administration.group.account": {
+      "text": "Account",
+      "status": "source"
+    },
+    "web.administration.group.rolesHeading": {
+      "text": "Roles given to the group",
+      "status": "source"
+    },
+    "web.administration.group.deleteHeading": {
+      "text": "Delete",
+      "status": "source"
+    },
+    "web.administration.group.delete": {
+      "text": "Delete this group",
+      "status": "source"
+    },
+    "web.administration.roles.role": {
+      "text": "Role",
+      "status": "source"
+    },
+    "web.administration.roles.kind": {
+      "text": "Kind",
+      "status": "source"
+    },
+    "web.administration.roles.permissions": {
+      "text": "Permissions",
+      "status": "source"
+    },
+    "web.administration.roles.builtIn": {
+      "text": "built in",
+      "status": "source"
+    },
+    "web.administration.roles.custom": {
+      "text": "custom",
+      "status": "source"
+    },
+    "web.administration.roles.define": {
+      "text": "Define a role",
+      "status": "source"
+    },
+    "web.administration.roles.code": {
+      "text": "Role code",
+      "status": "source"
+    },
+    "web.administration.roles.codeHelp": {
+      "text": "A lower-case letter, then letters and digits, such as fieldLead. It cannot be changed afterwards.",
+      "status": "source"
+    },
+    "web.administration.roles.name": {
+      "text": "Name",
+      "status": "source"
+    },
+    "web.administration.roles.exists": {
+      "text": "A role “{code}” exists already; change it on its own page.",
+      "status": "source"
+    },
+    "web.administration.roles.all": {
+      "text": "All roles",
+      "status": "source"
+    },
+    "web.administration.role.heading": {
+      "text": "Custom role",
+      "status": "source"
+    },
+    "web.administration.role.changeHeading": {
+      "text": "Name and permissions",
+      "status": "source"
+    },
+    "web.administration.role.holdersHeading": {
+      "text": "Who holds it",
+      "status": "source"
+    },
+    "web.administration.role.deleteHeading": {
+      "text": "Delete",
+      "status": "source"
+    },
+    "web.administration.role.deleteIntro": {
+      "text": "A role still given to someone is not deleted; take it back from everyone first.",
+      "status": "source"
+    },
+    "web.administration.role.deleteConfirm": {
+      "text": "Yes, delete this role",
+      "status": "source"
+    },
+    "web.administration.role.delete": {
+      "text": "Delete the role",
+      "status": "source"
+    },
+    "web.administration.settings.scope": {
+      "text": "Where",
+      "status": "source"
+    },
+    "web.administration.settings.show": {
+      "text": "Show",
+      "status": "source"
+    },
+    "web.administration.settings.readOnly": {
+      "text": "You may read the settings here; changing them needs the permission to change settings at this place.",
+      "status": "source"
+    },
+    "web.administration.settings.value": {
+      "text": "Value",
+      "status": "source"
+    },
+    "web.administration.settings.source": {
+      "text": "Comes from",
+      "status": "source"
+    },
+    "web.administration.settings.source.default": {
+      "text": "the default",
+      "status": "source"
+    },
+    "web.administration.settings.newValue": {
+      "text": "Value to set at: {scope}",
+      "status": "source"
+    },
+    "web.administration.settings.set": {
+      "text": "Set",
+      "status": "source"
+    },
+    "web.administration.settings.setNamed": {
+      "text": "Set {setting}",
+      "status": "source"
+    },
+    "web.administration.settings.clear": {
+      "text": "Clear the value set here",
+      "status": "source"
+    },
+    "web.administration.settings.clearNamed": {
+      "text": "Clear {setting} here",
+      "status": "source"
+    },
+    "web.administration.settings.notAtThisScope": {
+      "text": "This setting is set at the server only.",
+      "status": "source"
+    },
+    "web.administration.settings.changeOnItsPage": {
+      "text": "Change it on the sign-in mode page",
+      "status": "source"
+    },
+    "web.administration.settings.onItsOwnPage": {
+      "text": "The sign-in mode is changed on its own page.",
+      "status": "source"
+    },
+    "web.administration.setting.analysis.significanceLevel": {
+      "text": "The significance level (alpha) of the analysis of variance and the mean comparison: above 0 and below 1; 0.05 by convention.",
+      "status": "source"
+    },
+    "web.administration.setting.analysis.meanComparison": {
+      "text": "The test that separates the treatment means: protectedLSD (Fisher's LSD only after a significant F test), lsd, tukeyHSD, or dunnett (each treatment against the check).",
+      "status": "source"
+    },
+    "web.administration.setting.analysis.missingPlots": {
+      "text": "What an analysis does with a plot that has no value. refuse: the analysis stops and names the missing plots.",
+      "status": "source"
+    },
+    "web.administration.setting.identity.signInMode": {
+      "text": "open: everyone who reaches the server may do everything. accounts: each person signs in and holds the roles given to them.",
+      "status": "source"
+    },
+    "web.administration.setting.identity.sessionHours": {
+      "text": "How many hours a sign-in lasts before the person signs in again: 1 to 720.",
+      "status": "source"
+    },
+    "web.administration.setting.identity.workloadAudience": {
+      "text": "The audience every trusted workload's token must name: this server's own name for itself, usually its address. While it is not set, no workload token is accepted.",
+      "status": "source"
+    },
+    "web.administration.setting.tasks.timeZone": {
+      "text": "The time zone schedules are read in, an IANA name such as UTC or Africa/Nairobi.",
+      "status": "source"
+    },
+    "web.administration.setting.tasks.maximumConcurrentRuns": {
+      "text": "How many task runs the scheduler lets go at once: 1 to 64.",
+      "status": "source"
+    },
+    "web.administration.setting.tasks.runRetentionDays": {
+      "text": "How many days a task's run records are kept: 1 to 3650.",
+      "status": "source"
+    },
+    "web.administration.signInMode.current": {
+      "text": "The server's sign-in mode is: {mode}",
+      "status": "source"
+    },
+    "web.administration.signInMode.choose": {
+      "text": "Sign-in mode",
+      "status": "source"
+    },
+    "web.administration.signInMode.name.open": {
+      "text": "Open",
+      "status": "source"
+    },
+    "web.administration.signInMode.name.accounts": {
+      "text": "Accounts",
+      "status": "source"
+    },
+    "web.administration.signInMode.about.open": {
+      "text": "No sign-in. Everyone who reaches the server may do everything. For one person on their own machine.",
+      "status": "source"
+    },
+    "web.administration.signInMode.about.accounts": {
+      "text": "Every person signs in and holds the roles given to them. It needs an active account that is administrator at the server first.",
+      "status": "source"
+    },
+    "web.administration.signInMode.confirmOpen": {
+      "text": "Yes, open the server to everyone who can reach it (needed only when choosing Open)",
+      "status": "source"
+    },
+    "web.administration.confirm.back": {
+      "text": "Back",
+      "status": "source"
+    },
+    "web.administration.confirm.rolesLost": {
+      "text": "Roles that go with it",
+      "status": "source"
+    },
+    "web.administration.confirm.group.heading": {
+      "text": "Delete this group?",
+      "status": "source"
+    },
+    "web.administration.confirm.group.warning": {
+      "text": "This deletes the group. Its members stay, but they lose every role the group gave them. It cannot be undone.",
+      "status": "source"
+    },
+    "web.administration.confirm.group.button": {
+      "text": "Delete the group",
+      "status": "source"
+    },
+    "web.administration.confirm.workload.heading": {
+      "text": "Remove this workload rule?",
+      "status": "source"
+    },
+    "web.administration.confirm.workload.warning": {
+      "text": "This removes the rule and every role given to it. Jobs that relied on it are refused from then on. It cannot be undone.",
+      "status": "source"
+    },
+    "web.administration.confirm.workload.button": {
+      "text": "Remove the rule",
+      "status": "source"
+    },
+    "web.administration.confirm.task.heading": {
+      "text": "Delete this task?",
+      "status": "source"
+    },
+    "web.administration.confirm.task.warning": {
+      "text": "This deletes the task and the record of all its runs. It cannot be undone.",
+      "status": "source"
+    },
+    "web.administration.confirm.task.button": {
+      "text": "Delete the task",
+      "status": "source"
+    },
+    "web.administration.confirm.task.kept": {
+      "text": "This task is kept for the identity provider {provider} and is not deleted while that provider uses it.",
+      "status": "source"
+    },
+    "web.administration.form.needsValue": {
+      "text": "{field} needs a value.",
+      "status": "source"
+    },
+    "web.administration.form.notJSON": {
+      "text": "{field} is not valid JSON.",
+      "status": "source"
+    },
+    "web.administration.form.anotherRow": {
+      "text": "Another one",
+      "status": "source"
+    },
+    "web.administration.form.optional": {
+      "text": "optional",
+      "status": "source"
+    },
+    "web.refused.heading": {
+      "text": "Not permitted",
+      "status": "source"
+    },
+    "web.refused.intro": {
+      "text": "Your account does not hold the permission this needs there, so nothing was done.",
+      "status": "source"
+    },
+    "web.refused.permission": {
+      "text": "Permission needed",
+      "status": "source"
+    },
+    "web.refused.where": {
+      "text": "Where",
+      "status": "source"
+    },
+    "web.refused.who": {
+      "text": "Signed in as",
+      "status": "source"
+    },
+    "web.refused.whatNext": {
+      "text": "A person who manages access here can give you a role that holds it.",
+      "status": "source"
+    },
+    "web.notFound.heading": {
+      "text": "Not found",
+      "status": "source"
+    },
+    "web.notFound.intro": {
+      "text": "This is not here, or it is not yours to see.",
+      "status": "source"
+    },
+    "web.administration.providers.name": {
+      "text": "Name",
+      "status": "source"
+    },
+    "web.administration.providers.nameHelp": {
+      "text": "A lower-case letter, then 1 to 31 lower-case letters, digits or '-'. It becomes part of addresses and cannot be changed.",
+      "status": "source"
+    },
+    "web.administration.providers.kind": {
+      "text": "Kind",
+      "status": "source"
+    },
+    "web.administration.providers.none": {
+      "text": "No identity providers yet.",
+      "status": "source"
+    },
+    "web.administration.providers.add": {
+      "text": "Add a provider",
+      "status": "source"
+    },
+    "web.administration.providers.addIntro": {
+      "text": "Choose the kind of provider. A provider's secret is never typed here: its settings name the environment variable that holds it.",
+      "status": "source"
+    },
+    "web.administration.providers.all": {
+      "text": "All providers",
+      "status": "source"
+    },
+    "web.administration.provider.kind.openIDConnect": {
+      "text": "OpenID Connect",
+      "status": "source"
+    },
+    "web.administration.provider.kind.saml": {
+      "text": "SAML 2.0",
+      "status": "source"
+    },
+    "web.administration.provider.kind.ldap": {
+      "text": "LDAP directory",
+      "status": "source"
+    },
+    "web.administration.provider.kind.scim": {
+      "text": "SCIM 2.0 provisioning",
+      "status": "source"
+    },
+    "web.administration.provider.kind.samlFederation": {
+      "text": "Research federation (SAML)",
+      "status": "source"
+    },
+    "web.administration.provider.kind.cas": {
+      "text": "CAS",
+      "status": "source"
+    },
+    "web.administration.provider.about.openIDConnect": {
+      "text": "Sign-in through an OpenID Connect provider, such as Entra ID, Keycloak or Google.",
+      "status": "source"
+    },
+    "web.administration.provider.about.saml": {
+      "text": "Sign-in through one SAML 2.0 identity provider.",
+      "status": "source"
+    },
+    "web.administration.provider.about.ldap": {
+      "text": "Sign-in with a directory's user name and password, such as Active Directory.",
+      "status": "source"
+    },
+    "web.administration.provider.about.scim": {
+      "text": "The provider creates, updates and deactivates accounts and groups here; nobody signs in through it.",
+      "status": "source"
+    },
+    "web.administration.provider.about.samlFederation": {
+      "text": "Sign-in through the institutions of a research and education federation, such as eduGAIN.",
+      "status": "source"
+    },
+    "web.administration.provider.about.cas": {
+      "text": "Sign-in through an Apereo CAS server.",
+      "status": "source"
+    },
+    "web.administration.provider.heading": {
+      "text": "Identity provider",
+      "status": "source"
+    },
+    "web.administration.provider.enabledHeading": {
+      "text": "Enabled or disabled",
+      "status": "source"
+    },
+    "web.administration.provider.isEnabled": {
+      "text": "Enabled: people sign in, or are provisioned, through it.",
+      "status": "source"
+    },
+    "web.administration.provider.isDisabled": {
+      "text": "Disabled: nobody signs in, and nothing is provisioned, through it. Its settings and links are kept.",
+      "status": "source"
+    },
+    "web.administration.provider.registerHeading": {
+      "text": "To register at the provider",
+      "status": "source"
+    },
+    "web.administration.provider.registerIntro": {
+      "text": "What the provider's own administrator is given. The addresses must lead to this server.",
+      "status": "source"
+    },
+    "web.administration.provider.register.entityID": {
+      "text": "This server's entity ID",
+      "status": "source"
+    },
+    "web.administration.provider.register.signInAddress": {
+      "text": "Sign-in answers go to",
+      "status": "source"
+    },
+    "web.administration.provider.register.signOutAddress": {
+      "text": "Sign-out messages go to",
+      "status": "source"
+    },
+    "web.administration.provider.register.metadata": {
+      "text": "This server's metadata",
+      "status": "source"
+    },
+    "web.administration.provider.register.backChannelSignOut": {
+      "text": "Back-channel logout goes to",
+      "status": "source"
+    },
+    "web.administration.provider.register.provisioningAddress": {
+      "text": "Provisioning requests go to",
+      "status": "source"
+    },
+    "web.administration.provider.tokenHeading": {
+      "text": "Provisioning token",
+      "status": "source"
+    },
+    "web.administration.provider.tokenIntro": {
+      "text": "The bearer token the provider sends with each provisioning request. Issuing a new one replaces the old one at once. Only its hash is kept, so it is shown once.",
+      "status": "source"
+    },
+    "web.administration.provider.issueToken": {
+      "text": "Issue a new token",
+      "status": "source"
+    },
+    "web.administration.provider.tokenShownOnce": {
+      "text": "The new provisioning token, shown this once; copy it now:",
+      "status": "source"
+    },
+    "web.administration.provider.settingsHeading": {
+      "text": "Settings",
+      "status": "source"
+    },
+    "web.administration.provider.settingsIntro": {
+      "text": "The settings as they were added.",
+      "status": "source"
+    },
+    "web.administration.provider.help.newAccounts": {
+      "text": "What a sign-in does when the provider's identity is linked to no account yet: refuse it (an administrator or provisioning makes the account first), create an account from what the provider says, or linkByUserName to the account with the same user name.",
+      "status": "source"
+    },
+    "web.administration.provider.help.groups": {
+      "text": "ignore the provider's groups, or mirror them as groups named <provider>/<group> whose members only the provider sets.",
+      "status": "source"
+    },
+    "web.administration.provider.help.certificateAuthority": {
+      "text": "A PEM file on the server with the certificate authority to trust for this address, when it is not one the system already trusts. Empty: the system's own.",
+      "status": "source"
+    },
+    "web.administration.provider.help.signOutEverywhere": {
+      "text": "Signing out here also signs the person out at the provider.",
+      "status": "source"
+    },
+    "web.administration.provider.help.signedOutURL": {
+      "text": "Where the provider sends the person after signing out everywhere (https). Needs signOutEverywhere.",
+      "status": "source"
+    },
+    "web.administration.provider.help.issuer": {
+      "text": "The provider's issuer address (https), as its discovery document names it.",
+      "status": "source"
+    },
+    "web.administration.provider.help.clientID": {
+      "text": "The client ID the provider gave this server.",
+      "status": "source"
+    },
+    "web.administration.provider.help.clientSecretVariable": {
+      "text": "The name of the environment variable that holds the client secret. The secret itself is never stored here.",
+      "status": "source"
+    },
+    "web.administration.provider.help.returnURL": {
+      "text": "This server's address the provider sends the person back to: https://<this server>/signin/with/<provider name>/return",
+      "status": "source"
+    },
+    "web.administration.provider.help.signingKey": {
+      "text": "The key that signs this server's SAML requests and logout messages. Needed for single logout.",
+      "status": "source"
+    },
+    "web.administration.provider.help.decryptionKeys": {
+      "text": "The keys that decrypt assertions encrypted to this server. The first is the current one; keep an older one while the provider still encrypts to it.",
+      "status": "source"
+    },
+    "web.administration.provider.help.keyFile": {
+      "text": "The PEM file of the private key, on the server.",
+      "status": "source"
+    },
+    "web.administration.provider.help.certificateFile": {
+      "text": "The PEM file of the key's certificate, on the server.",
+      "status": "source"
+    },
+    "web.administration.provider.help.passwordVariable": {
+      "text": "The name of the environment variable that holds the key file's password, if it has one.",
+      "status": "source"
+    },
+    "web.administration.provider.help.allowCBC": {
+      "text": "Also accept assertions encrypted with AES-CBC, for a provider that cannot use AES-GCM.",
+      "status": "source"
+    },
+    "web.administration.provider.help.singleLogoutURL": {
+      "text": "This server's address for the provider's logout messages: https://<this server>/signin/with/<provider name>/signout",
+      "status": "source"
+    },
+    "web.administration.provider.help.metadataURL": {
+      "text": "The address of the identity provider's SAML metadata (https).",
+      "status": "source"
+    },
+    "web.administration.provider.help.identityProviderEntityID": {
+      "text": "Which entity of the metadata is the identity provider, when the metadata holds more than one.",
+      "status": "source"
+    },
+    "web.administration.provider.help.entityID": {
+      "text": "The name this server goes by at the provider (its SAML entity ID), usually its address.",
+      "status": "source"
+    },
+    "web.administration.provider.help.userNameAttribute": {
+      "text": "The attribute that holds the person's user name.",
+      "status": "source"
+    },
+    "web.administration.provider.help.displayNameAttribute": {
+      "text": "The attribute that holds the person's display name.",
+      "status": "source"
+    },
+    "web.administration.provider.help.emailAttribute": {
+      "text": "The attribute that holds the person's e-mail address.",
+      "status": "source"
+    },
+    "web.administration.provider.help.groupsAttribute": {
+      "text": "The attribute that lists the person's groups, for groups set to mirror.",
+      "status": "source"
+    },
+    "web.administration.provider.help.mdqURL": {
+      "text": "The address of the federation's metadata query (MDQ) service (https).",
+      "status": "source"
+    },
+    "web.administration.provider.help.signingCertificate": {
+      "text": "The PEM certificate whose key signs what is fetched from that address; everything fetched is checked against it.",
+      "status": "source"
+    },
+    "web.administration.provider.help.institutions": {
+      "text": "The entity IDs of the institutions offered here, one to a line. Leave empty when a discoveryAggregate is named.",
+      "status": "source"
+    },
+    "web.administration.provider.help.discoveryAggregate": {
+      "text": "The federation's signed aggregate of all its members, to offer every one of them instead of a list of institutions. A scheduled task reads it every six hours.",
+      "status": "source"
+    },
+    "web.administration.provider.help.url": {
+      "text": "The address of the aggregate (https).",
+      "status": "source"
+    },
+    "web.administration.provider.help.subjectAttribute": {
+      "text": "Which scoped identifier names a person: subjectID, pairwiseID or eduPersonPrincipalName.",
+      "status": "source"
+    },
+    "web.administration.provider.help.organizationName": {
+      "text": "The name of your organization, published in this server's metadata.",
+      "status": "source"
+    },
+    "web.administration.provider.help.informationURL": {
+      "text": "A page about this service, published in the metadata (https).",
+      "status": "source"
+    },
+    "web.administration.provider.help.privacyStatementURL": {
+      "text": "This service's privacy statement, published in the metadata (https).",
+      "status": "source"
+    },
+    "web.administration.provider.help.technicalContact": {
+      "text": "The technical contact published in the metadata, an e-mail address.",
+      "status": "source"
+    },
+    "web.administration.provider.help.securityContact": {
+      "text": "The security contact published in the metadata, an e-mail address.",
+      "status": "source"
+    },
+    "web.administration.provider.help.serverURL": {
+      "text": "The address of the CAS server (https).",
+      "status": "source"
+    },
+    "web.administration.provider.help.host": {
+      "text": "The directory server's host name.",
+      "status": "source"
+    },
+    "web.administration.provider.help.port": {
+      "text": "The port: 636 for LDAP over TLS, 389 with startTLS.",
+      "status": "source"
+    },
+    "web.administration.provider.help.startTLS": {
+      "text": "Connect in the clear and then switch to TLS (STARTTLS), instead of TLS from the start.",
+      "status": "source"
+    },
+    "web.administration.provider.help.baseDN": {
+      "text": "The distinguished name below which people are searched for, such as dc=example,dc=org.",
+      "status": "source"
+    },
+    "web.administration.provider.help.serviceName": {
+      "text": "The account the server searches the directory as (a distinguished name or a user principal name).",
+      "status": "source"
+    },
+    "web.administration.provider.help.servicePasswordVariable": {
+      "text": "The name of the environment variable that holds that account's password. The password itself is never stored here.",
+      "status": "source"
+    },
+    "web.administration.provider.help.userAttribute": {
+      "text": "The attribute a person's user name is matched against, such as sAMAccountName or uid.",
+      "status": "source"
+    },
+    "web.administration.provider.help.baseURL": {
+      "text": "The https address the provider reaches this server's SCIM endpoint at, without a trailing slash: https://<this server>/scim/<provider name>/v2",
+      "status": "source"
+    },
+    "web.administration.workloads.name": {
+      "text": "Name",
+      "status": "source"
+    },
+    "web.administration.workloads.issuer": {
+      "text": "Issuer",
+      "status": "source"
+    },
+    "web.administration.workloads.issuerHelp": {
+      "text": "One of these names: {named}; or the https address of an OpenID Connect issuer as its tokens name it, without a trailing slash.",
+      "status": "source"
+    },
+    "web.administration.workloads.claims": {
+      "text": "Required claims",
+      "status": "source"
+    },
+    "web.administration.workloads.claimsHelp": {
+      "text": "One to a line, as claim=value. A token must carry each with exactly this value. A rule for GitHub Actions needs repository_id; one for GitLab.com needs project_id.",
+      "status": "source"
+    },
+    "web.administration.workloads.certificateAuthority": {
+      "text": "Certificate authority file",
+      "status": "source"
+    },
+    "web.administration.workloads.none": {
+      "text": "No workload rules yet.",
+      "status": "source"
+    },
+    "web.administration.workloads.add": {
+      "text": "Add a rule",
+      "status": "source"
+    },
+    "web.administration.workloads.all": {
+      "text": "All rules",
+      "status": "source"
+    },
+    "web.administration.workloads.audience": {
+      "text": "Every workload token must name the audience {audience}.",
+      "status": "source"
+    },
+    "web.administration.workloads.noAudience": {
+      "text": "No rule can be added, and no workload token is accepted, until the server setting identity.workloadAudience is set.",
+      "status": "source"
+    },
+    "web.administration.workload.heading": {
+      "text": "Workload rule",
+      "status": "source"
+    },
+    "web.administration.workload.added": {
+      "text": "Added",
+      "status": "source"
+    },
+    "web.administration.workload.fixed": {
+      "text": "What a rule trusts does not change. To trust something else, remove the rule and add a new one.",
+      "status": "source"
+    },
+    "web.administration.workload.enabledHeading": {
+      "text": "Enabled or disabled",
+      "status": "source"
+    },
+    "web.administration.workload.isEnabled": {
+      "text": "Enabled: a job whose token matches acts with this rule's roles.",
+      "status": "source"
+    },
+    "web.administration.workload.isDisabled": {
+      "text": "Disabled: it accepts no token. Its roles wait until it is enabled again.",
+      "status": "source"
+    },
+    "web.administration.workload.rolesHeading": {
+      "text": "Roles given to the rule",
+      "status": "source"
+    },
+    "web.administration.workload.removeHeading": {
+      "text": "Remove",
+      "status": "source"
+    },
+    "web.administration.workload.remove": {
+      "text": "Remove this rule",
+      "status": "source"
+    },
+    "web.administration.tasks.add": {
+      "text": "Add a task",
+      "status": "source"
+    },
+    "web.administration.tasks.kindsIntro": {
+      "text": "Choose the kind of task. A kind is code; a task is one configuration of it, with its own schedule.",
+      "status": "source"
+    },
+    "web.administration.tasks.defaultSchedule": {
+      "text": "Default schedule",
+      "status": "source"
+    },
+    "web.administration.tasks.parameters": {
+      "text": "Parameters",
+      "status": "source"
+    },
+    "web.administration.tasks.allKinds": {
+      "text": "All kinds",
+      "status": "source"
+    },
+    "web.administration.tasks.addIntro": {
+      "text": "The task starts enabled, with the kind's default schedule ({schedule}) and time limit ({minutes} minutes); change them on its page.",
+      "status": "source"
+    },
+    "web.administration.tasks.nameHelp": {
+      "text": "A lower-case letter, then 1 to 63 letters, digits or '-'.",
+      "status": "source"
+    },
+    "web.administration.tasks.deleteHeading": {
+      "text": "Delete",
+      "status": "source"
+    },
+    "web.administration.tasks.delete": {
+      "text": "Delete this task",
+      "status": "source"
+    },
+    "web.administration.audit.filterHeading": {
+      "text": "Narrow the list",
+      "status": "source"
+    },
+    "web.administration.audit.scope": {
+      "text": "Where",
+      "status": "source"
+    },
+    "web.administration.audit.actor": {
+      "text": "Who",
+      "status": "source"
+    },
+    "web.administration.audit.actorHelp": {
+      "text": "Who: a user name, a task or a workload rule exactly as the list shows it, or operator or everyone.",
+      "status": "source"
+    },
+    "web.administration.audit.action": {
+      "text": "Action",
+      "status": "source"
+    },
+    "web.administration.audit.actionHelp": {
+      "text": "Action: a whole action or its beginning, such as role.assign, or task. for every task action.",
+      "status": "source"
+    },
+    "web.administration.audit.since": {
+      "text": "From (date)",
+      "status": "source"
+    },
+    "web.administration.audit.until": {
+      "text": "To (date)",
+      "status": "source"
+    },
+    "web.administration.audit.dateHelp": {
+      "text": "Dates are days in UTC, written year-month-day, such as 2026-03-31. Times in the list are UTC.",
+      "status": "source"
+    },
+    "web.administration.audit.filter": {
+      "text": "Show",
+      "status": "source"
+    },
+    "web.administration.audit.clearFilters": {
+      "text": "Show everything here",
+      "status": "source"
+    },
+    "web.administration.audit.none": {
+      "text": "No events match.",
+      "status": "source"
+    },
+    "web.administration.audit.newest": {
+      "text": "Newest",
+      "status": "source"
+    },
+    "web.administration.audit.older": {
+      "text": "Older",
+      "status": "source"
+    },
+    "web.administration.audit.pages": {
+      "text": "Pages of the list",
+      "status": "source"
+    },
+    "web.administration.audit.notADate": {
+      "text": "{field}: “{typed}” is not a date written year-month-day.",
+      "status": "source"
+    },
+    "web.administration.audit.column.when": {
+      "text": "When (UTC)",
+      "status": "source"
+    },
+    "web.administration.audit.column.who": {
+      "text": "Who",
+      "status": "source"
+    },
+    "web.administration.audit.column.surface": {
+      "text": "From",
+      "status": "source"
+    },
+    "web.administration.audit.column.action": {
+      "text": "Action",
+      "status": "source"
+    },
+    "web.administration.audit.column.where": {
+      "text": "Where",
+      "status": "source"
+    },
+    "web.administration.audit.column.detail": {
+      "text": "What changed",
+      "status": "source"
+    },
+    "web.administration.audit.actor.account": {
+      "text": "account",
+      "status": "source"
+    },
+    "web.administration.audit.actor.everyone": {
+      "text": "everyone (open mode)",
+      "status": "source"
+    },
+    "web.administration.audit.actor.operator": {
+      "text": "the operator",
+      "status": "source"
+    },
+    "web.administration.audit.actor.scheduler": {
+      "text": "scheduled task",
+      "status": "source"
+    },
+    "web.administration.audit.actor.workload": {
+      "text": "workload rule",
+      "status": "source"
+    },
     "web.signIn.search.label": {
       "text": "Find your institution",
       "status": "source"

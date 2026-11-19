@@ -1465,6 +1465,1414 @@
       "text": "Crear ensayo",
       "status": "machineDraft"
     },
+    "web.administration.about.accounts": {
+      "text": "Las personas que inician sesión aquí: añadir una cuenta, fijar una contraseña, desactivarla, vincularla a un proveedor de identidad.",
+      "status": "machineDraft"
+    },
+    "web.administration.about.assignments": {
+      "text": "Todos los roles dados: a una cuenta, un grupo o una regla de carga de trabajo, en el servidor, un lugar o un ensayo. Un rol vale donde se da y por debajo.",
+      "status": "machineDraft"
+    },
+    "web.administration.about.audit": {
+      "text": "Cada cambio, quién lo hizo, desde dónde y qué cambió, del más reciente al más antiguo.",
+      "status": "machineDraft"
+    },
+    "web.administration.about.groups": {
+      "text": "Cuentas reunidas para dar un rol a todas a la vez. Un grupo reflejado desde un proveedor de identidad solo lo cambia ese proveedor.",
+      "status": "machineDraft"
+    },
+    "web.administration.about.providers": {
+      "text": "Dónde inician sesión las personas además de este sitio, y qué aprovisiona las cuentas: OpenID Connect, SAML, federaciones de investigación, CAS, LDAP y SCIM.",
+      "status": "machineDraft"
+    },
+    "web.administration.about.roles": {
+      "text": "Conjuntos de permisos con nombre. Cinco vienen incorporados; defina los suyos con los mismos permisos.",
+      "status": "machineDraft"
+    },
+    "web.administration.about.settings": {
+      "text": "El valor de cada ajuste en el servidor, un lugar o un ensayo, y de dónde viene ese valor. Se aplica el más cercano: el ensayo, sus lugares de dentro hacia fuera, el servidor y luego el valor por defecto.",
+      "status": "machineDraft"
+    },
+    "web.administration.about.signInMode": {
+      "text": "Si todo el que llega al servidor puede hacerlo todo, o si cada persona inicia sesión y tiene los roles que se le han dado.",
+      "status": "machineDraft"
+    },
+    "web.administration.about.tasks": {
+      "text": "Trabajo que el planificador hace según un calendario: ver las ejecuciones, cambiar un calendario, ejecutar una tarea ahora, añadir o eliminar una.",
+      "status": "machineDraft"
+    },
+    "web.administration.about.workloads": {
+      "text": "Reglas que permiten a un trabajo de CI o de nube llamar a la API con el token de corta duración de su plataforma en lugar de uno guardado.",
+      "status": "machineDraft"
+    },
+    "web.administration.account.activeHeading": {
+      "text": "Activa o desactivada",
+      "status": "machineDraft"
+    },
+    "web.administration.account.deactivate": {
+      "text": "Desactivar",
+      "status": "machineDraft"
+    },
+    "web.administration.account.deactivateConfirm": {
+      "text": "Sí, desactivar esta cuenta",
+      "status": "machineDraft"
+    },
+    "web.administration.account.deactivateIntro": {
+      "text": "Una cuenta desactivada no puede iniciar sesión, y sus sesiones y tokens de API terminan de inmediato. Su historial en el registro de auditoría se conserva.",
+      "status": "machineDraft"
+    },
+    "web.administration.account.heading": {
+      "text": "Cuenta",
+      "status": "machineDraft"
+    },
+    "web.administration.account.identitiesHeading": {
+      "text": "Identidades vinculadas",
+      "status": "machineDraft"
+    },
+    "web.administration.account.identitiesIntro": {
+      "text": "La identidad con la que cada proveedor conoce a esta persona. Un inicio de sesión mediante un proveedor llega a esta cuenta por su vínculo.",
+      "status": "machineDraft"
+    },
+    "web.administration.account.joinGroup": {
+      "text": "Añadir al grupo",
+      "status": "machineDraft"
+    },
+    "web.administration.account.language": {
+      "text": "Idioma preferido",
+      "status": "machineDraft"
+    },
+    "web.administration.account.link": {
+      "text": "Vincular la identidad",
+      "status": "machineDraft"
+    },
+    "web.administration.account.noGroups": {
+      "text": "En ningún grupo.",
+      "status": "machineDraft"
+    },
+    "web.administration.account.noIdentities": {
+      "text": "No hay ninguna identidad de proveedor vinculada.",
+      "status": "machineDraft"
+    },
+    "web.administration.account.passwordHeading": {
+      "text": "Contraseña",
+      "status": "machineDraft"
+    },
+    "web.administration.account.provider": {
+      "text": "Proveedor de identidad",
+      "status": "machineDraft"
+    },
+    "web.administration.account.reactivate": {
+      "text": "Reactivar",
+      "status": "machineDraft"
+    },
+    "web.administration.account.reactivateIntro": {
+      "text": "Esta cuenta está desactivada: no puede iniciar sesión.",
+      "status": "machineDraft"
+    },
+    "web.administration.account.rolesHeading": {
+      "text": "Roles",
+      "status": "machineDraft"
+    },
+    "web.administration.account.rolesIntro": {
+      "text": "Los roles dados a esta cuenta y los que tiene por sus grupos, que se cambian en la página del grupo.",
+      "status": "machineDraft"
+    },
+    "web.administration.account.setPassword": {
+      "text": "Fijar la contraseña",
+      "status": "machineDraft"
+    },
+    "web.administration.account.subject": {
+      "text": "El sujeto del proveedor para la persona",
+      "status": "machineDraft"
+    },
+    "web.administration.account.subjectHelp": {
+      "text": "El identificador estable propio del proveedor: el sub de OpenID Connect, el NameID persistente de SAML o el nombre de usuario del directorio.",
+      "status": "machineDraft"
+    },
+    "web.administration.accounts.active": {
+      "text": "activa",
+      "status": "machineDraft"
+    },
+    "web.administration.accounts.add": {
+      "text": "Añadir una cuenta",
+      "status": "machineDraft"
+    },
+    "web.administration.accounts.all": {
+      "text": "Todas las cuentas",
+      "status": "machineDraft"
+    },
+    "web.administration.accounts.displayName": {
+      "text": "Nombre para mostrar",
+      "status": "machineDraft"
+    },
+    "web.administration.accounts.email": {
+      "text": "Correo electrónico",
+      "status": "machineDraft"
+    },
+    "web.administration.accounts.emailOptional": {
+      "text": "Correo electrónico (opcional)",
+      "status": "machineDraft"
+    },
+    "web.administration.accounts.inactive": {
+      "text": "desactivada",
+      "status": "machineDraft"
+    },
+    "web.administration.accounts.none": {
+      "text": "Aún no hay cuentas.",
+      "status": "machineDraft"
+    },
+    "web.administration.accounts.password": {
+      "text": "Contraseña (12 caracteres o más; opcional)",
+      "status": "machineDraft"
+    },
+    "web.administration.accounts.passwordHelp": {
+      "text": "Déjela vacía para una cuenta que solo inicia sesión mediante un proveedor de identidad.",
+      "status": "machineDraft"
+    },
+    "web.administration.accounts.userName": {
+      "text": "Nombre de usuario",
+      "status": "machineDraft"
+    },
+    "web.administration.accounts.userNameHelp": {
+      "text": "De 2 a 64 letras de cualquier escritura, dígitos, '.', '_', '@' y '-'. Se guarda en minúsculas.",
+      "status": "machineDraft"
+    },
+    "web.administration.assignments.chooseHolder": {
+      "text": "Elija a quién se da el rol: una cuenta, un grupo o una regla de carga de trabajo.",
+      "status": "machineDraft"
+    },
+    "web.administration.assignments.column.holder": {
+      "text": "Dado a",
+      "status": "machineDraft"
+    },
+    "web.administration.assignments.column.role": {
+      "text": "Rol",
+      "status": "machineDraft"
+    },
+    "web.administration.assignments.column.scope": {
+      "text": "Dónde",
+      "status": "machineDraft"
+    },
+    "web.administration.assignments.give": {
+      "text": "Dar el rol",
+      "status": "machineDraft"
+    },
+    "web.administration.assignments.giveHeading": {
+      "text": "Dar un rol",
+      "status": "machineDraft"
+    },
+    "web.administration.assignments.holder": {
+      "text": "A",
+      "status": "machineDraft"
+    },
+    "web.administration.assignments.none": {
+      "text": "No hay ningún rol dado aquí.",
+      "status": "machineDraft"
+    },
+    "web.administration.assignments.role": {
+      "text": "Rol",
+      "status": "machineDraft"
+    },
+    "web.administration.assignments.scope": {
+      "text": "Dónde vale (allí y por debajo)",
+      "status": "machineDraft"
+    },
+    "web.administration.assignments.takeBack": {
+      "text": "Retirar",
+      "status": "machineDraft"
+    },
+    "web.administration.assignments.takeBackNamed": {
+      "text": "Retirar {role} en: {scope}",
+      "status": "machineDraft"
+    },
+    "web.administration.audit.action": {
+      "text": "Acción",
+      "status": "machineDraft"
+    },
+    "web.administration.audit.actionHelp": {
+      "text": "Acción: una acción completa o su comienzo, como role.assign, o task. para todas las acciones de tareas.",
+      "status": "machineDraft"
+    },
+    "web.administration.audit.actor": {
+      "text": "Quién",
+      "status": "machineDraft"
+    },
+    "web.administration.audit.actor.account": {
+      "text": "cuenta",
+      "status": "machineDraft"
+    },
+    "web.administration.audit.actor.everyone": {
+      "text": "todos (modo abierto)",
+      "status": "machineDraft"
+    },
+    "web.administration.audit.actor.operator": {
+      "text": "el operador",
+      "status": "machineDraft"
+    },
+    "web.administration.audit.actor.scheduler": {
+      "text": "tarea programada",
+      "status": "machineDraft"
+    },
+    "web.administration.audit.actor.workload": {
+      "text": "regla de carga de trabajo",
+      "status": "machineDraft"
+    },
+    "web.administration.audit.actorHelp": {
+      "text": "Quién: un nombre de usuario, una tarea o una regla de carga de trabajo exactamente como lo muestra la lista, u operator o everyone.",
+      "status": "machineDraft"
+    },
+    "web.administration.audit.clearFilters": {
+      "text": "Mostrar todo aquí",
+      "status": "machineDraft"
+    },
+    "web.administration.audit.column.action": {
+      "text": "Acción",
+      "status": "machineDraft"
+    },
+    "web.administration.audit.column.detail": {
+      "text": "Qué cambió",
+      "status": "machineDraft"
+    },
+    "web.administration.audit.column.surface": {
+      "text": "Desde",
+      "status": "machineDraft"
+    },
+    "web.administration.audit.column.when": {
+      "text": "Cuándo (UTC)",
+      "status": "machineDraft"
+    },
+    "web.administration.audit.column.where": {
+      "text": "Dónde",
+      "status": "machineDraft"
+    },
+    "web.administration.audit.column.who": {
+      "text": "Quién",
+      "status": "machineDraft"
+    },
+    "web.administration.audit.dateHelp": {
+      "text": "Las fechas son días en UTC, escritas año-mes-día, como 2026-03-31. Las horas de la lista son UTC.",
+      "status": "machineDraft"
+    },
+    "web.administration.audit.filter": {
+      "text": "Mostrar",
+      "status": "machineDraft"
+    },
+    "web.administration.audit.filterHeading": {
+      "text": "Acotar la lista",
+      "status": "machineDraft"
+    },
+    "web.administration.audit.newest": {
+      "text": "Más recientes",
+      "status": "machineDraft"
+    },
+    "web.administration.audit.none": {
+      "text": "Ningún evento coincide.",
+      "status": "machineDraft"
+    },
+    "web.administration.audit.notADate": {
+      "text": "{field}: «{typed}» no es una fecha escrita año-mes-día.",
+      "status": "machineDraft"
+    },
+    "web.administration.audit.older": {
+      "text": "Más antiguos",
+      "status": "machineDraft"
+    },
+    "web.administration.audit.pages": {
+      "text": "Páginas de la lista",
+      "status": "machineDraft"
+    },
+    "web.administration.audit.scope": {
+      "text": "Dónde",
+      "status": "machineDraft"
+    },
+    "web.administration.audit.since": {
+      "text": "Desde (fecha)",
+      "status": "machineDraft"
+    },
+    "web.administration.audit.until": {
+      "text": "Hasta (fecha)",
+      "status": "machineDraft"
+    },
+    "web.administration.choose": {
+      "text": "Elija",
+      "status": "machineDraft"
+    },
+    "web.administration.column.change": {
+      "text": "Cambiar",
+      "status": "machineDraft"
+    },
+    "web.administration.column.state": {
+      "text": "Estado",
+      "status": "machineDraft"
+    },
+    "web.administration.confirm.back": {
+      "text": "Volver",
+      "status": "machineDraft"
+    },
+    "web.administration.confirm.group.button": {
+      "text": "Eliminar el grupo",
+      "status": "machineDraft"
+    },
+    "web.administration.confirm.group.heading": {
+      "text": "¿Eliminar este grupo?",
+      "status": "machineDraft"
+    },
+    "web.administration.confirm.group.warning": {
+      "text": "Esto elimina el grupo. Sus miembros permanecen, pero pierden todos los roles que el grupo les daba. No se puede deshacer.",
+      "status": "machineDraft"
+    },
+    "web.administration.confirm.rolesLost": {
+      "text": "Roles que se van con él",
+      "status": "machineDraft"
+    },
+    "web.administration.confirm.task.button": {
+      "text": "Eliminar la tarea",
+      "status": "machineDraft"
+    },
+    "web.administration.confirm.task.heading": {
+      "text": "¿Eliminar esta tarea?",
+      "status": "machineDraft"
+    },
+    "web.administration.confirm.task.kept": {
+      "text": "Esta tarea se mantiene para el proveedor de identidad {provider} y no se elimina mientras ese proveedor la use.",
+      "status": "machineDraft"
+    },
+    "web.administration.confirm.task.warning": {
+      "text": "Esto elimina la tarea y el registro de todas sus ejecuciones. No se puede deshacer.",
+      "status": "machineDraft"
+    },
+    "web.administration.confirm.workload.button": {
+      "text": "Quitar la regla",
+      "status": "machineDraft"
+    },
+    "web.administration.confirm.workload.heading": {
+      "text": "¿Quitar esta regla de carga de trabajo?",
+      "status": "machineDraft"
+    },
+    "web.administration.confirm.workload.warning": {
+      "text": "Esto quita la regla y todos los roles que se le han dado. Los trabajos que dependían de ella se rechazan desde entonces. No se puede deshacer.",
+      "status": "machineDraft"
+    },
+    "web.administration.confirmNeeded": {
+      "text": "Marque la casilla para confirmar y vuelva a intentarlo.",
+      "status": "machineDraft"
+    },
+    "web.administration.detail.no": {
+      "text": "no",
+      "status": "machineDraft"
+    },
+    "web.administration.detail.none": {
+      "text": "ninguno",
+      "status": "machineDraft"
+    },
+    "web.administration.detail.yes": {
+      "text": "sí",
+      "status": "machineDraft"
+    },
+    "web.administration.disabled": {
+      "text": "desactivado",
+      "status": "machineDraft"
+    },
+    "web.administration.done.added": {
+      "text": "Añadido.",
+      "status": "machineDraft"
+    },
+    "web.administration.done.cleared": {
+      "text": "Borrado: el valor viene ahora de más afuera.",
+      "status": "machineDraft"
+    },
+    "web.administration.done.created": {
+      "text": "Creado.",
+      "status": "machineDraft"
+    },
+    "web.administration.done.deactivated": {
+      "text": "Desactivada: sus sesiones y tokens de API han terminado.",
+      "status": "machineDraft"
+    },
+    "web.administration.done.defined": {
+      "text": "El rol está definido.",
+      "status": "machineDraft"
+    },
+    "web.administration.done.deleted": {
+      "text": "Eliminado.",
+      "status": "machineDraft"
+    },
+    "web.administration.done.disabled": {
+      "text": "Desactivado.",
+      "status": "machineDraft"
+    },
+    "web.administration.done.enabled": {
+      "text": "Activado.",
+      "status": "machineDraft"
+    },
+    "web.administration.done.given": {
+      "text": "El rol está dado.",
+      "status": "machineDraft"
+    },
+    "web.administration.done.joined": {
+      "text": "Añadida al grupo.",
+      "status": "machineDraft"
+    },
+    "web.administration.done.left": {
+      "text": "Quitada del grupo.",
+      "status": "machineDraft"
+    },
+    "web.administration.done.linked": {
+      "text": "Vinculada.",
+      "status": "machineDraft"
+    },
+    "web.administration.done.passwordSet": {
+      "text": "La contraseña está fijada.",
+      "status": "machineDraft"
+    },
+    "web.administration.done.reactivated": {
+      "text": "Reactivada.",
+      "status": "machineDraft"
+    },
+    "web.administration.done.removed": {
+      "text": "Quitado.",
+      "status": "machineDraft"
+    },
+    "web.administration.done.saved": {
+      "text": "Guardado.",
+      "status": "machineDraft"
+    },
+    "web.administration.done.set": {
+      "text": "Fijado.",
+      "status": "machineDraft"
+    },
+    "web.administration.done.takenBack": {
+      "text": "El rol está retirado.",
+      "status": "machineDraft"
+    },
+    "web.administration.enabled": {
+      "text": "activado",
+      "status": "machineDraft"
+    },
+    "web.administration.form.anotherRow": {
+      "text": "Otro más",
+      "status": "machineDraft"
+    },
+    "web.administration.form.needsValue": {
+      "text": "{field} necesita un valor.",
+      "status": "machineDraft"
+    },
+    "web.administration.form.notJSON": {
+      "text": "{field} no es JSON válido.",
+      "status": "machineDraft"
+    },
+    "web.administration.form.optional": {
+      "text": "opcional",
+      "status": "machineDraft"
+    },
+    "web.administration.group.account": {
+      "text": "Cuenta",
+      "status": "machineDraft"
+    },
+    "web.administration.group.delete": {
+      "text": "Eliminar este grupo",
+      "status": "machineDraft"
+    },
+    "web.administration.group.deleteHeading": {
+      "text": "Eliminar",
+      "status": "machineDraft"
+    },
+    "web.administration.group.heading": {
+      "text": "Grupo",
+      "status": "machineDraft"
+    },
+    "web.administration.group.mirrored": {
+      "text": "Este grupo se refleja desde el proveedor de identidad {provider}, el único que fija sus miembros y lo elimina. Aquí se le dan roles como a cualquier grupo.",
+      "status": "machineDraft"
+    },
+    "web.administration.group.noMembers": {
+      "text": "Sin miembros.",
+      "status": "machineDraft"
+    },
+    "web.administration.group.rolesHeading": {
+      "text": "Roles dados al grupo",
+      "status": "machineDraft"
+    },
+    "web.administration.groups.add": {
+      "text": "Añadir un grupo",
+      "status": "machineDraft"
+    },
+    "web.administration.groups.addMember": {
+      "text": "Añadir al grupo",
+      "status": "machineDraft"
+    },
+    "web.administration.groups.all": {
+      "text": "Todos los grupos",
+      "status": "machineDraft"
+    },
+    "web.administration.groups.kept": {
+      "text": "Lo mantiene",
+      "status": "machineDraft"
+    },
+    "web.administration.groups.keptHere": {
+      "text": "este servidor",
+      "status": "machineDraft"
+    },
+    "web.administration.groups.members": {
+      "text": "Miembros",
+      "status": "machineDraft"
+    },
+    "web.administration.groups.mirroredFrom": {
+      "text": "reflejado desde {provider}",
+      "status": "machineDraft"
+    },
+    "web.administration.groups.name": {
+      "text": "Grupo",
+      "status": "machineDraft"
+    },
+    "web.administration.groups.none": {
+      "text": "Aún no hay grupos.",
+      "status": "machineDraft"
+    },
+    "web.administration.groups.remove": {
+      "text": "Quitar",
+      "status": "machineDraft"
+    },
+    "web.administration.groups.removeNamed": {
+      "text": "Quitar a {userName} de {group}",
+      "status": "machineDraft"
+    },
+    "web.administration.heading": {
+      "text": "Administración",
+      "status": "machineDraft"
+    },
+    "web.administration.holder.group": {
+      "text": "Grupo",
+      "status": "machineDraft"
+    },
+    "web.administration.holder.rule": {
+      "text": "Regla de carga de trabajo",
+      "status": "machineDraft"
+    },
+    "web.administration.holder.user": {
+      "text": "Cuenta",
+      "status": "machineDraft"
+    },
+    "web.administration.holders.group": {
+      "text": "Grupos",
+      "status": "machineDraft"
+    },
+    "web.administration.holders.rule": {
+      "text": "Reglas de carga de trabajo",
+      "status": "machineDraft"
+    },
+    "web.administration.holders.user": {
+      "text": "Cuentas",
+      "status": "machineDraft"
+    },
+    "web.administration.index.nothing": {
+      "text": "No hay nada en el área de administración que usted pueda usar.",
+      "status": "machineDraft"
+    },
+    "web.administration.intro": {
+      "text": "Quién puede hacer qué, cómo está configurado el servidor y qué se ha hecho. Cada sección se muestra a quienes pueden usarla.",
+      "status": "machineDraft"
+    },
+    "web.administration.notDone": {
+      "text": "No se hizo:",
+      "status": "machineDraft"
+    },
+    "web.administration.permission.changeSettings": {
+      "text": "Cambiar ajustes",
+      "status": "machineDraft"
+    },
+    "web.administration.permission.editDesign": {
+      "text": "Editar el diseño del ensayo",
+      "status": "machineDraft"
+    },
+    "web.administration.permission.editRecord": {
+      "text": "Editar el registro del ensayo",
+      "status": "machineDraft"
+    },
+    "web.administration.permission.enterValues": {
+      "text": "Introducir y cambiar valores",
+      "status": "machineDraft"
+    },
+    "web.administration.permission.importValues": {
+      "text": "Importar valores desde archivos",
+      "status": "machineDraft"
+    },
+    "web.administration.permission.manageAccess": {
+      "text": "Gestionar cuentas, grupos, roles, proveedores de identidad y reglas de carga de trabajo",
+      "status": "machineDraft"
+    },
+    "web.administration.permission.manageRetention": {
+      "text": "Gestionar la conservación",
+      "status": "machineDraft"
+    },
+    "web.administration.permission.manageStructure": {
+      "text": "Gestionar lugares y niveles de la jerarquía",
+      "status": "machineDraft"
+    },
+    "web.administration.permission.manageTasks": {
+      "text": "Gestionar las tareas programadas",
+      "status": "machineDraft"
+    },
+    "web.administration.permission.manageTrials": {
+      "text": "Añadir, mover y eliminar ensayos",
+      "status": "machineDraft"
+    },
+    "web.administration.permission.view": {
+      "text": "Ver ensayos, lugares y sus ajustes",
+      "status": "machineDraft"
+    },
+    "web.administration.permission.viewAudit": {
+      "text": "Leer el registro de auditoría",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.about.cas": {
+      "text": "Inicio de sesión mediante un servidor Apereo CAS.",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.about.ldap": {
+      "text": "Inicio de sesión con el nombre de usuario y la contraseña de un directorio, como Active Directory.",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.about.openIDConnect": {
+      "text": "Inicio de sesión mediante un proveedor OpenID Connect, como Entra ID, Keycloak o Google.",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.about.saml": {
+      "text": "Inicio de sesión mediante un proveedor de identidad SAML 2.0.",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.about.samlFederation": {
+      "text": "Inicio de sesión mediante las instituciones de una federación de investigación y educación, como eduGAIN.",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.about.scim": {
+      "text": "El proveedor crea, actualiza y desactiva cuentas y grupos aquí; nadie inicia sesión a través de él.",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.enabledHeading": {
+      "text": "Activado o desactivado",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.heading": {
+      "text": "Proveedor de identidad",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.help.allowCBC": {
+      "text": "Aceptar también aserciones cifradas con AES-CBC, para un proveedor que no puede usar AES-GCM.",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.help.baseDN": {
+      "text": "El nombre distinguido bajo el cual se busca a las personas, como dc=example,dc=org.",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.help.baseURL": {
+      "text": "La dirección https en la que el proveedor alcanza el punto de acceso SCIM de este servidor, sin barra final: https://<este servidor>/scim/<nombre del proveedor>/v2",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.help.certificateAuthority": {
+      "text": "Un archivo PEM en el servidor con la autoridad de certificación en la que confiar para esta dirección, cuando no es una en la que el sistema ya confía. Vacío: las del sistema.",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.help.certificateFile": {
+      "text": "El archivo PEM del certificado de la clave, en el servidor.",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.help.clientID": {
+      "text": "El ID de cliente que el proveedor dio a este servidor.",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.help.clientSecretVariable": {
+      "text": "El nombre de la variable de entorno que contiene el secreto del cliente. El secreto en sí nunca se guarda aquí.",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.help.decryptionKeys": {
+      "text": "Las claves que descifran las aserciones cifradas para este servidor. La primera es la actual; conserve una anterior mientras el proveedor siga cifrando para ella.",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.help.discoveryAggregate": {
+      "text": "El agregado firmado de todos los miembros de la federación, para ofrecerlos todos en lugar de una lista de instituciones. Una tarea programada lo lee cada seis horas.",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.help.displayNameAttribute": {
+      "text": "El atributo que contiene el nombre para mostrar de la persona.",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.help.emailAttribute": {
+      "text": "El atributo que contiene la dirección de correo electrónico de la persona.",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.help.entityID": {
+      "text": "El nombre con el que el proveedor conoce a este servidor (su ID de entidad SAML), normalmente su dirección.",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.help.groups": {
+      "text": "ignore pasa por alto los grupos del proveedor; mirror los refleja como grupos llamados <proveedor>/<grupo> cuyos miembros solo fija el proveedor.",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.help.groupsAttribute": {
+      "text": "El atributo que enumera los grupos de la persona, cuando groups es mirror.",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.help.host": {
+      "text": "El nombre de host del servidor de directorio.",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.help.identityProviderEntityID": {
+      "text": "Qué entidad de los metadatos es el proveedor de identidad, cuando los metadatos contienen más de una.",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.help.informationURL": {
+      "text": "Una página sobre este servicio, publicada en los metadatos (https).",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.help.institutions": {
+      "text": "Los ID de entidad de las instituciones ofrecidas aquí, uno por línea. Déjelo vacío cuando se nombra un discoveryAggregate.",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.help.issuer": {
+      "text": "La dirección del emisor del proveedor (https), tal como la nombra su documento de descubrimiento.",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.help.keyFile": {
+      "text": "El archivo PEM de la clave privada, en el servidor.",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.help.mdqURL": {
+      "text": "La dirección del servicio de consulta de metadatos (MDQ) de la federación (https).",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.help.metadataURL": {
+      "text": "La dirección de los metadatos SAML del proveedor de identidad (https).",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.help.newAccounts": {
+      "text": "Qué hace un inicio de sesión cuando la identidad del proveedor aún no está vinculada a ninguna cuenta: refuse lo rechaza (un administrador o el aprovisionamiento crea antes la cuenta), create crea una cuenta con lo que dice el proveedor, y linkByUserName la vincula a la cuenta con el mismo nombre de usuario.",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.help.organizationName": {
+      "text": "El nombre de su organización, publicado en los metadatos de este servidor.",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.help.passwordVariable": {
+      "text": "El nombre de la variable de entorno que contiene la contraseña del archivo de clave, si la tiene.",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.help.port": {
+      "text": "El puerto: 636 para LDAP sobre TLS, 389 con startTLS.",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.help.privacyStatementURL": {
+      "text": "La declaración de privacidad de este servicio, publicada en los metadatos (https).",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.help.returnURL": {
+      "text": "La dirección de este servidor a la que el proveedor devuelve a la persona: https://<este servidor>/signin/with/<nombre del proveedor>/return",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.help.securityContact": {
+      "text": "El contacto de seguridad publicado en los metadatos, una dirección de correo electrónico.",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.help.serverURL": {
+      "text": "La dirección del servidor CAS (https).",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.help.serviceName": {
+      "text": "La cuenta con la que el servidor busca en el directorio (un nombre distinguido o un nombre principal de usuario).",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.help.servicePasswordVariable": {
+      "text": "El nombre de la variable de entorno que contiene la contraseña de esa cuenta. La contraseña en sí nunca se guarda aquí.",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.help.signOutEverywhere": {
+      "text": "Cerrar sesión aquí también cierra la sesión de la persona en el proveedor.",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.help.signedOutURL": {
+      "text": "Adónde envía el proveedor a la persona tras cerrar sesión en todas partes (https). Requiere signOutEverywhere.",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.help.signingCertificate": {
+      "text": "El certificado PEM cuya clave firma lo que se obtiene de esa dirección; todo lo obtenido se comprueba con él.",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.help.signingKey": {
+      "text": "La clave que firma las solicitudes SAML y los mensajes de cierre de sesión de este servidor. Necesaria para el cierre de sesión único.",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.help.singleLogoutURL": {
+      "text": "La dirección de este servidor para los mensajes de cierre de sesión del proveedor: https://<este servidor>/signin/with/<nombre del proveedor>/signout",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.help.startTLS": {
+      "text": "Conectar sin cifrar y pasar luego a TLS (STARTTLS), en lugar de TLS desde el principio.",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.help.subjectAttribute": {
+      "text": "Qué identificador con ámbito nombra a una persona: subjectID, pairwiseID o eduPersonPrincipalName.",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.help.technicalContact": {
+      "text": "El contacto técnico publicado en los metadatos, una dirección de correo electrónico.",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.help.url": {
+      "text": "La dirección del agregado (https).",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.help.userAttribute": {
+      "text": "El atributo con el que se compara el nombre de usuario de una persona, como sAMAccountName o uid.",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.help.userNameAttribute": {
+      "text": "El atributo que contiene el nombre de usuario de la persona.",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.isDisabled": {
+      "text": "Desactivado: nadie inicia sesión ni se aprovisiona nada a través de él. Sus ajustes y vínculos se conservan.",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.isEnabled": {
+      "text": "Activado: las personas inician sesión, o se aprovisionan, a través de él.",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.issueToken": {
+      "text": "Emitir un token nuevo",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.kind.cas": {
+      "text": "CAS",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.kind.ldap": {
+      "text": "Directorio LDAP",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.kind.openIDConnect": {
+      "text": "OpenID Connect",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.kind.saml": {
+      "text": "SAML 2.0",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.kind.samlFederation": {
+      "text": "Federación de investigación (SAML)",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.kind.scim": {
+      "text": "Aprovisionamiento SCIM 2.0",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.register.backChannelSignOut": {
+      "text": "El cierre de sesión por canal posterior va a",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.register.entityID": {
+      "text": "ID de entidad de este servidor",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.register.metadata": {
+      "text": "Metadatos de este servidor",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.register.provisioningAddress": {
+      "text": "Las solicitudes de aprovisionamiento van a",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.register.signInAddress": {
+      "text": "Las respuestas de inicio de sesión van a",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.register.signOutAddress": {
+      "text": "Los mensajes de cierre de sesión van a",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.registerHeading": {
+      "text": "Para registrar en el proveedor",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.registerIntro": {
+      "text": "Lo que se entrega al administrador del propio proveedor. Las direcciones deben llevar a este servidor.",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.settingsHeading": {
+      "text": "Ajustes",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.settingsIntro": {
+      "text": "Los ajustes tal como se añadieron.",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.tokenHeading": {
+      "text": "Token de aprovisionamiento",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.tokenIntro": {
+      "text": "El token de portador que el proveedor envía con cada solicitud de aprovisionamiento. Emitir uno nuevo sustituye al anterior de inmediato. Solo se guarda su hash, así que se muestra una vez.",
+      "status": "machineDraft"
+    },
+    "web.administration.provider.tokenShownOnce": {
+      "text": "El nuevo token de aprovisionamiento, mostrado solo esta vez; cópielo ahora:",
+      "status": "machineDraft"
+    },
+    "web.administration.providers.add": {
+      "text": "Añadir un proveedor",
+      "status": "machineDraft"
+    },
+    "web.administration.providers.addIntro": {
+      "text": "Elija el tipo de proveedor. El secreto de un proveedor nunca se escribe aquí: sus ajustes nombran la variable de entorno que lo contiene.",
+      "status": "machineDraft"
+    },
+    "web.administration.providers.all": {
+      "text": "Todos los proveedores",
+      "status": "machineDraft"
+    },
+    "web.administration.providers.kind": {
+      "text": "Tipo",
+      "status": "machineDraft"
+    },
+    "web.administration.providers.name": {
+      "text": "Nombre",
+      "status": "machineDraft"
+    },
+    "web.administration.providers.nameHelp": {
+      "text": "Una letra minúscula y luego de 1 a 31 letras minúsculas, dígitos o '-'. Pasa a formar parte de direcciones y no se puede cambiar.",
+      "status": "machineDraft"
+    },
+    "web.administration.providers.none": {
+      "text": "Aún no hay proveedores de identidad.",
+      "status": "machineDraft"
+    },
+    "web.administration.role.administrator": {
+      "text": "Administrador",
+      "status": "machineDraft"
+    },
+    "web.administration.role.analyst": {
+      "text": "Analista",
+      "status": "machineDraft"
+    },
+    "web.administration.role.changeHeading": {
+      "text": "Nombre y permisos",
+      "status": "machineDraft"
+    },
+    "web.administration.role.dataCollector": {
+      "text": "Recolector de datos",
+      "status": "machineDraft"
+    },
+    "web.administration.role.delete": {
+      "text": "Eliminar el rol",
+      "status": "machineDraft"
+    },
+    "web.administration.role.deleteConfirm": {
+      "text": "Sí, eliminar este rol",
+      "status": "machineDraft"
+    },
+    "web.administration.role.deleteHeading": {
+      "text": "Eliminar",
+      "status": "machineDraft"
+    },
+    "web.administration.role.deleteIntro": {
+      "text": "Un rol que aún está dado a alguien no se elimina; retírelo antes a todos.",
+      "status": "machineDraft"
+    },
+    "web.administration.role.heading": {
+      "text": "Rol personalizado",
+      "status": "machineDraft"
+    },
+    "web.administration.role.holdersHeading": {
+      "text": "Quién lo tiene",
+      "status": "machineDraft"
+    },
+    "web.administration.role.trialManager": {
+      "text": "Responsable de ensayos",
+      "status": "machineDraft"
+    },
+    "web.administration.role.viewer": {
+      "text": "Lector",
+      "status": "machineDraft"
+    },
+    "web.administration.roles.all": {
+      "text": "Todos los roles",
+      "status": "machineDraft"
+    },
+    "web.administration.roles.builtIn": {
+      "text": "incorporado",
+      "status": "machineDraft"
+    },
+    "web.administration.roles.code": {
+      "text": "Código del rol",
+      "status": "machineDraft"
+    },
+    "web.administration.roles.codeHelp": {
+      "text": "Una letra minúscula y luego letras y dígitos, como fieldLead. Después no se puede cambiar.",
+      "status": "machineDraft"
+    },
+    "web.administration.roles.custom": {
+      "text": "personalizado",
+      "status": "machineDraft"
+    },
+    "web.administration.roles.define": {
+      "text": "Definir un rol",
+      "status": "machineDraft"
+    },
+    "web.administration.roles.exists": {
+      "text": "Ya existe un rol «{code}»; cámbielo en su propia página.",
+      "status": "machineDraft"
+    },
+    "web.administration.roles.kind": {
+      "text": "Tipo",
+      "status": "machineDraft"
+    },
+    "web.administration.roles.name": {
+      "text": "Nombre",
+      "status": "machineDraft"
+    },
+    "web.administration.roles.permissions": {
+      "text": "Permisos",
+      "status": "machineDraft"
+    },
+    "web.administration.roles.role": {
+      "text": "Rol",
+      "status": "machineDraft"
+    },
+    "web.administration.save": {
+      "text": "Guardar",
+      "status": "machineDraft"
+    },
+    "web.administration.scope.named.place": {
+      "text": "Lugar {name}",
+      "status": "machineDraft"
+    },
+    "web.administration.scope.named.server": {
+      "text": "Todo el servidor",
+      "status": "machineDraft"
+    },
+    "web.administration.scope.named.trial": {
+      "text": "Ensayo {name}",
+      "status": "machineDraft"
+    },
+    "web.administration.scope.place": {
+      "text": "{level}: {name} ({path})",
+      "status": "machineDraft"
+    },
+    "web.administration.scope.server": {
+      "text": "Todo el servidor",
+      "status": "machineDraft"
+    },
+    "web.administration.scope.trial": {
+      "text": "Ensayo {code}: {title}",
+      "status": "machineDraft"
+    },
+    "web.administration.section.accounts": {
+      "text": "Cuentas",
+      "status": "machineDraft"
+    },
+    "web.administration.section.assignments": {
+      "text": "Asignación de roles",
+      "status": "machineDraft"
+    },
+    "web.administration.section.audit": {
+      "text": "Registro de auditoría",
+      "status": "machineDraft"
+    },
+    "web.administration.section.groups": {
+      "text": "Grupos",
+      "status": "machineDraft"
+    },
+    "web.administration.section.providers": {
+      "text": "Proveedores de identidad",
+      "status": "machineDraft"
+    },
+    "web.administration.section.roles": {
+      "text": "Roles",
+      "status": "machineDraft"
+    },
+    "web.administration.section.settings": {
+      "text": "Ajustes",
+      "status": "machineDraft"
+    },
+    "web.administration.section.signInMode": {
+      "text": "Modo de inicio de sesión",
+      "status": "machineDraft"
+    },
+    "web.administration.section.tasks": {
+      "text": "Tareas programadas",
+      "status": "machineDraft"
+    },
+    "web.administration.section.workloads": {
+      "text": "Cargas de trabajo de confianza",
+      "status": "machineDraft"
+    },
+    "web.administration.setting.analysis.meanComparison": {
+      "text": "La prueba que separa las medias de los tratamientos: protectedLSD (la LSD de Fisher solo tras una prueba F significativa), lsd, tukeyHSD o dunnett (cada tratamiento frente al testigo).",
+      "status": "machineDraft"
+    },
+    "web.administration.setting.analysis.missingPlots": {
+      "text": "Qué hace un análisis con una parcela sin valor. refuse: el análisis se detiene y nombra las parcelas que faltan.",
+      "status": "machineDraft"
+    },
+    "web.administration.setting.analysis.significanceLevel": {
+      "text": "El nivel de significación (alfa) del análisis de varianza y de la comparación de medias: mayor que 0 y menor que 1; 0,05 por convención.",
+      "status": "machineDraft"
+    },
+    "web.administration.setting.identity.sessionHours": {
+      "text": "Cuántas horas dura un inicio de sesión antes de que la persona vuelva a iniciarla: de 1 a 720.",
+      "status": "machineDraft"
+    },
+    "web.administration.setting.identity.signInMode": {
+      "text": "open: todo el que llega al servidor puede hacerlo todo. accounts: cada persona inicia sesión y tiene los roles que se le han dado.",
+      "status": "machineDraft"
+    },
+    "web.administration.setting.identity.workloadAudience": {
+      "text": "La audiencia que debe nombrar el token de toda carga de trabajo de confianza: el nombre que este servidor se da a sí mismo, normalmente su dirección. Mientras no esté fijada, no se acepta ningún token de carga de trabajo.",
+      "status": "machineDraft"
+    },
+    "web.administration.setting.tasks.maximumConcurrentRuns": {
+      "text": "Cuántas ejecuciones de tareas deja el planificador en marcha a la vez: de 1 a 64.",
+      "status": "machineDraft"
+    },
+    "web.administration.setting.tasks.runRetentionDays": {
+      "text": "Cuántos días se conservan los registros de ejecución de una tarea: de 1 a 3650.",
+      "status": "machineDraft"
+    },
+    "web.administration.setting.tasks.timeZone": {
+      "text": "La zona horaria en la que se leen los calendarios, un nombre IANA como UTC o Africa/Nairobi.",
+      "status": "machineDraft"
+    },
+    "web.administration.settings.changeOnItsPage": {
+      "text": "Cámbielo en la página del modo de inicio de sesión",
+      "status": "machineDraft"
+    },
+    "web.administration.settings.clear": {
+      "text": "Borrar el valor fijado aquí",
+      "status": "machineDraft"
+    },
+    "web.administration.settings.clearNamed": {
+      "text": "Borrar {setting} aquí",
+      "status": "machineDraft"
+    },
+    "web.administration.settings.newValue": {
+      "text": "Valor que fijar en: {scope}",
+      "status": "machineDraft"
+    },
+    "web.administration.settings.notAtThisScope": {
+      "text": "Este ajuste solo se fija en el servidor.",
+      "status": "machineDraft"
+    },
+    "web.administration.settings.onItsOwnPage": {
+      "text": "El modo de inicio de sesión se cambia en su propia página.",
+      "status": "machineDraft"
+    },
+    "web.administration.settings.readOnly": {
+      "text": "Aquí puede leer los ajustes; cambiarlos requiere el permiso de cambiar ajustes en este lugar.",
+      "status": "machineDraft"
+    },
+    "web.administration.settings.scope": {
+      "text": "Dónde",
+      "status": "machineDraft"
+    },
+    "web.administration.settings.set": {
+      "text": "Fijar",
+      "status": "machineDraft"
+    },
+    "web.administration.settings.setNamed": {
+      "text": "Fijar {setting}",
+      "status": "machineDraft"
+    },
+    "web.administration.settings.show": {
+      "text": "Mostrar",
+      "status": "machineDraft"
+    },
+    "web.administration.settings.source": {
+      "text": "Viene de",
+      "status": "machineDraft"
+    },
+    "web.administration.settings.source.default": {
+      "text": "el valor por defecto",
+      "status": "machineDraft"
+    },
+    "web.administration.settings.value": {
+      "text": "Valor",
+      "status": "machineDraft"
+    },
+    "web.administration.signInMode.about.accounts": {
+      "text": "Cada persona inicia sesión y tiene los roles que se le han dado. Antes requiere una cuenta activa que sea administradora en el servidor.",
+      "status": "machineDraft"
+    },
+    "web.administration.signInMode.about.open": {
+      "text": "Sin inicio de sesión. Todo el que llega al servidor puede hacerlo todo. Para una sola persona en su propio equipo.",
+      "status": "machineDraft"
+    },
+    "web.administration.signInMode.choose": {
+      "text": "Modo de inicio de sesión",
+      "status": "machineDraft"
+    },
+    "web.administration.signInMode.confirmOpen": {
+      "text": "Sí, abrir el servidor a todo el que pueda alcanzarlo (solo hace falta al elegir Abierto)",
+      "status": "machineDraft"
+    },
+    "web.administration.signInMode.current": {
+      "text": "El modo de inicio de sesión del servidor es: {mode}",
+      "status": "machineDraft"
+    },
+    "web.administration.signInMode.name.accounts": {
+      "text": "Cuentas",
+      "status": "machineDraft"
+    },
+    "web.administration.signInMode.name.open": {
+      "text": "Abierto",
+      "status": "machineDraft"
+    },
+    "web.administration.tasks.add": {
+      "text": "Añadir una tarea",
+      "status": "machineDraft"
+    },
+    "web.administration.tasks.addIntro": {
+      "text": "La tarea empieza activada, con el calendario por defecto del tipo ({schedule}) y su límite de tiempo ({minutes} minutos); cámbielos en su página.",
+      "status": "machineDraft"
+    },
+    "web.administration.tasks.allKinds": {
+      "text": "Todos los tipos",
+      "status": "machineDraft"
+    },
+    "web.administration.tasks.defaultSchedule": {
+      "text": "Calendario por defecto",
+      "status": "machineDraft"
+    },
+    "web.administration.tasks.delete": {
+      "text": "Eliminar esta tarea",
+      "status": "machineDraft"
+    },
+    "web.administration.tasks.deleteHeading": {
+      "text": "Eliminar",
+      "status": "machineDraft"
+    },
+    "web.administration.tasks.kindsIntro": {
+      "text": "Elija el tipo de tarea. Un tipo es código; una tarea es una configuración de él, con su propio calendario.",
+      "status": "machineDraft"
+    },
+    "web.administration.tasks.nameHelp": {
+      "text": "Una letra minúscula y luego de 1 a 63 letras, dígitos o '-'.",
+      "status": "machineDraft"
+    },
+    "web.administration.tasks.parameters": {
+      "text": "Parámetros",
+      "status": "machineDraft"
+    },
+    "web.administration.unknown.account": {
+      "text": "No hay ninguna cuenta «{name}».",
+      "status": "machineDraft"
+    },
+    "web.administration.unknown.group": {
+      "text": "No hay ningún grupo «{name}».",
+      "status": "machineDraft"
+    },
+    "web.administration.unknown.provider": {
+      "text": "No hay ningún proveedor de identidad «{name}».",
+      "status": "machineDraft"
+    },
+    "web.administration.unknown.providerKind": {
+      "text": "«{name}» no es un tipo de proveedor de identidad.",
+      "status": "machineDraft"
+    },
+    "web.administration.unknown.role": {
+      "text": "No hay ningún rol personalizado «{name}».",
+      "status": "machineDraft"
+    },
+    "web.administration.unknown.scope": {
+      "text": "«{name}» no es el servidor ni un lugar o ensayo que usted pueda ver.",
+      "status": "machineDraft"
+    },
+    "web.administration.unknown.taskKind": {
+      "text": "«{name}» no es un tipo de tarea.",
+      "status": "machineDraft"
+    },
+    "web.administration.unknown.workload": {
+      "text": "No hay ninguna regla de carga de trabajo «{name}».",
+      "status": "machineDraft"
+    },
+    "web.administration.workload.added": {
+      "text": "Añadida",
+      "status": "machineDraft"
+    },
+    "web.administration.workload.enabledHeading": {
+      "text": "Activada o desactivada",
+      "status": "machineDraft"
+    },
+    "web.administration.workload.fixed": {
+      "text": "Aquello en lo que confía una regla no cambia. Para confiar en otra cosa, quite la regla y añada una nueva.",
+      "status": "machineDraft"
+    },
+    "web.administration.workload.heading": {
+      "text": "Regla de carga de trabajo",
+      "status": "machineDraft"
+    },
+    "web.administration.workload.isDisabled": {
+      "text": "Desactivada: no acepta ningún token. Sus roles esperan hasta que se active de nuevo.",
+      "status": "machineDraft"
+    },
+    "web.administration.workload.isEnabled": {
+      "text": "Activada: un trabajo cuyo token coincide actúa con los roles de esta regla.",
+      "status": "machineDraft"
+    },
+    "web.administration.workload.remove": {
+      "text": "Quitar esta regla",
+      "status": "machineDraft"
+    },
+    "web.administration.workload.removeHeading": {
+      "text": "Quitar",
+      "status": "machineDraft"
+    },
+    "web.administration.workload.rolesHeading": {
+      "text": "Roles dados a la regla",
+      "status": "machineDraft"
+    },
+    "web.administration.workloads.add": {
+      "text": "Añadir una regla",
+      "status": "machineDraft"
+    },
+    "web.administration.workloads.all": {
+      "text": "Todas las reglas",
+      "status": "machineDraft"
+    },
+    "web.administration.workloads.audience": {
+      "text": "Todo token de carga de trabajo debe nombrar la audiencia {audience}.",
+      "status": "machineDraft"
+    },
+    "web.administration.workloads.certificateAuthority": {
+      "text": "Archivo de la autoridad de certificación",
+      "status": "machineDraft"
+    },
+    "web.administration.workloads.claims": {
+      "text": "Declaraciones requeridas",
+      "status": "machineDraft"
+    },
+    "web.administration.workloads.claimsHelp": {
+      "text": "Una por línea, como claim=valor. Un token debe llevar cada una con exactamente ese valor. Una regla para GitHub Actions necesita repository_id; una para GitLab.com, project_id.",
+      "status": "machineDraft"
+    },
+    "web.administration.workloads.issuer": {
+      "text": "Emisor",
+      "status": "machineDraft"
+    },
+    "web.administration.workloads.issuerHelp": {
+      "text": "Uno de estos nombres: {named}; o la dirección https de un emisor OpenID Connect tal como la nombran sus tokens, sin barra final.",
+      "status": "machineDraft"
+    },
+    "web.administration.workloads.name": {
+      "text": "Nombre",
+      "status": "machineDraft"
+    },
+    "web.administration.workloads.noAudience": {
+      "text": "No se puede añadir ninguna regla, ni se acepta ningún token de carga de trabajo, hasta que se fije el ajuste del servidor identity.workloadAudience.",
+      "status": "machineDraft"
+    },
+    "web.administration.workloads.none": {
+      "text": "Aún no hay reglas de carga de trabajo.",
+      "status": "machineDraft"
+    },
     "web.app.name": {
       "text": "OpenFurrow",
       "status": "machineDraft"
@@ -1953,6 +3361,14 @@
       "text": "Ensayos",
       "status": "machineDraft"
     },
+    "web.notFound.heading": {
+      "text": "No encontrado",
+      "status": "machineDraft"
+    },
+    "web.notFound.intro": {
+      "text": "Esto no está aquí, o no le corresponde verlo.",
+      "status": "machineDraft"
+    },
     "web.place.label": {
       "text": "{level} al que pertenece el ensayo",
       "status": "machineDraft"
@@ -2019,6 +3435,30 @@
     },
     "web.places.problem": {
       "text": "No se añadió el lugar: {reason}",
+      "status": "machineDraft"
+    },
+    "web.refused.heading": {
+      "text": "No permitido",
+      "status": "machineDraft"
+    },
+    "web.refused.intro": {
+      "text": "Su cuenta no tiene allí el permiso que esto requiere, así que no se hizo nada.",
+      "status": "machineDraft"
+    },
+    "web.refused.permission": {
+      "text": "Permiso necesario",
+      "status": "machineDraft"
+    },
+    "web.refused.whatNext": {
+      "text": "Una persona que gestione el acceso aquí puede darle un rol que lo incluya.",
+      "status": "machineDraft"
+    },
+    "web.refused.where": {
+      "text": "Dónde",
+      "status": "machineDraft"
+    },
+    "web.refused.who": {
+      "text": "Sesión iniciada como",
       "status": "machineDraft"
     },
     "web.report.back": {
