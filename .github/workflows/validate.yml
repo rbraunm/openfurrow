@@ -180,11 +180,55 @@ jobs:
         working-directory: ${{ runner.temp }}/carnelian
         run: docker compose --file testbed/compose.yaml --env-file testbed/generated/keycloak.env --profile directory down --volumes
 
+  # The web server and the scheduler as real services (decision 0009): installed through each system's own service
+  # manager under a throwaway name, started, used, stopped and removed. The project is installed as a copy, not
+  # from the checkout, so a service's own account can read it: on Linux the checkout is in a home directory.
+  service:
+    name: service (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v7
+      - name: Exclude the checkout, the job's temp folder and pip's cache from real-time scanning
+        if: runner.os == 'Windows'
+        run: |
+          Add-MpPreference -ExclusionPath $env:GITHUB_WORKSPACE, $env:RUNNER_TEMP, (Join-Path $env:LOCALAPPDATA "pip\Cache")
+          "TEMP=$env:RUNNER_TEMP" >> $env:GITHUB_ENV
+          "TMP=$env:RUNNER_TEMP" >> $env:GITHUB_ENV
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: |
+            constraints.txt
+            pyproject.toml
+      - name: Exclude the job's Python from real-time scanning
+        if: runner.os == 'Windows'
+        run: Add-MpPreference -ExclusionPath (python -c "import sys; print(sys.base_prefix)")
+      - name: Install the project with its test and service extras
+        run: python -m pip install --constraint constraints.txt ".[test,service]"
+      - name: Let a service's account reach the job's Python, which is in the runner's home directory
+        if: runner.os == 'macOS'
+        run: chmod o+rx "$HOME"
+      - name: Install, run and remove the services
+        if: runner.os == 'Windows'
+        run: python -m pytest tests/testServiceInstall.py --service-install -n0 --durations=10
+      - name: Install, run and remove the services, as root
+        if: runner.os != 'Windows'
+        run: sudo "$(which python)" -m pytest tests/testServiceInstall.py --service-install -n0 -p no:cacheprovider --durations=10
+      - name: Show what systemd recorded of the services
+        if: failure() && runner.os == 'Linux'
+        run: sudo journalctl --no-pager --since "-30min" --unit "openfurrow-*" | tail -n 200
+
   # The one check main requires: its name stays the same when the matrix changes.
   validated:
     name: validated
     if: always()
-    needs: [test, postgresql, providers]
+    needs: [test, postgresql, providers, service]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -193,4 +237,5 @@ jobs:
           testResult: ${{ needs.test.result }}
           postgresqlResult: ${{ needs.postgresql.result }}
           providersResult: ${{ needs.providers.result }}
-        run: test "$testResult" = "success" && test "$postgresqlResult" = "success" && test "$providersResult" = "success"
+          serviceResult: ${{ needs.service.result }}
+        run: test "$testResult" = "success" && test "$postgresqlResult" = "success" && test "$providersResult" = "success" && test "$serviceResult" = "success"
