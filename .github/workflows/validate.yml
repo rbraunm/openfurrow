@@ -228,7 +228,7 @@ jobs:
   validated:
     name: validated
     if: always()
-    needs: [test, postgresql, providers, service]
+    needs: [test, oldest, postgresql, providers, service]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -238,4 +238,5 @@ jobs:
           postgresqlResult: ${{ needs.postgresql.result }}
           providersResult: ${{ needs.providers.result }}
           serviceResult: ${{ needs.service.result }}
-        run: test "$testResult" = "success" && test "$postgresqlResult" = "success" && test "$providersResult" = "success" && test "$serviceResult" = "success"
+          oldestResult: ${{ needs.oldest.result }}
+        run: test "$testResult" = "success" && test "$postgresqlResult" = "success" && test "$providersResult" = "success" && test "$serviceResult" = "success" && test "$oldestResult" = "success"
