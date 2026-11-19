@@ -35,14 +35,14 @@ postgresql = [
 test = [
   "pytest>=8.3",
   "pytest-xdist>=3.6.1",
-  "statsmodels>=0.14.4",
+  "statsmodels>=0.14.6",
   "openpyxl>=3.1.5",
   "pg8000>=1.31.2",
   "flask>=3.1",
   "markdown>=3.7",
   "build>=1.2.2",
   # A federation aggregate signed in the test, as a federation signs one (decision 0040).
-  "signxml>=4.0.2",
+  "signxml>=4.3",
   "lxml>=5.3",
 ]
 
