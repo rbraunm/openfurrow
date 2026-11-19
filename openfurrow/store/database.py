@@ -858,16 +858,22 @@ def createDatabase(location: str, create: bool = True) -> Engine:
   if not existingTables:
     if not create:
       raise StoreError(f"database '{displayLocation(location)}' holds no OpenFurrow store; create it first")
-    Base.metadata.create_all(engine)
     from openfurrow.schema.hierarchy import defaultLevelCodes
     from openfurrow.store.tasks import createFeatureTasks
-    with Session(engine) as session:
-      session.add(StoreVersionRow(version=storeVersion))
-      session.add_all(
-        HierarchyLevelRow(levelCode=code, ordinal=ordinal, name=None) for ordinal, code in enumerate(defaultLevelCodes)
-      )
-      createFeatureTasks(session, datetime.datetime.now(datetime.UTC))
-      session.commit()
+    with engine.connect() as connection:
+      if engine.dialect.name == "sqlite":
+        # Python's SQLite driver opens no transaction for CREATE statements, so each table and index would be written
+        # to disk on its own; begun explicitly, the store's creation is one write, and all of it or none.
+        connection.exec_driver_sql("BEGIN")
+      Base.metadata.create_all(connection)
+      with Session(bind=connection, join_transaction_mode="create_savepoint") as session:
+        session.add(StoreVersionRow(version=storeVersion))
+        session.add_all(
+          HierarchyLevelRow(levelCode=code, ordinal=ordinal, name=None) for ordinal, code in enumerate(defaultLevelCodes)
+        )
+        createFeatureTasks(session, datetime.datetime.now(datetime.UTC))
+        session.commit()
+      connection.commit()
     return engine
 
   if StoreVersionRow.__tablename__ not in existingTables:

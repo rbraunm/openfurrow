@@ -13,7 +13,8 @@ import sqlite3
 
 import pytest
 from pydantic import ValidationError
-from sqlalchemy import select
+from sqlalchemy import event, select
+from sqlalchemy.engine import Engine
 from sqlalchemy.exc import DBAPIError
 from sqlalchemy.orm import Session
 
@@ -44,6 +45,27 @@ from openfurrow.store.database import (
 )
 from storeHelpers import standardPath, standardStudy
 from openfurrow import Workspace
+
+
+def testASQLiteStoreIsCreatedInOneTransaction(tmp_path):
+  statements = []
+
+  def traced(connection, record):
+    connection.set_trace_callback(statements.append)
+
+  event.listen(Engine, "connect", traced)
+  try:
+    createDatabase(str(tmp_path / "one.db")).dispose()
+  finally:
+    event.remove(Engine, "connect", traced)
+  words = [statement.split()[0].upper() for statement in statements]
+  first = words.index("CREATE")
+  last = len(words) - 1 - words[::-1].index("INSERT")
+  begun = words.index("BEGIN")
+  assert words.count("CREATE") > 40 and begun < first < last
+  assert words.count("BEGIN") == 1 and "COMMIT" not in words[begun:last] and words[last + 1:].count("COMMIT") == 1
+  with sqlite3.connect(tmp_path / "one.db") as written:
+    assert written.execute("SELECT version FROM storeVersion").fetchall() == [(storeVersion,)]
 
 
 @pytest.fixture
