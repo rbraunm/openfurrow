@@ -17,7 +17,8 @@ Every Workspace acts as someone (decisions 0036 to 0038). Each method checks tha
 actor holds the permission it needs where it acts, and each change writes an audit event
 in its own transaction. The command line and the library act as the store's operator,
 and the open mode as everyone; both hold every permission. The service gives each request
-a Workspace acting as the signed-in account (`actingAs`).
+a Workspace acting as the signed-in account, or as the workload rule that accepted the
+request's token (decision 0042), through `actingAs`.
 
 Lifetime: a Workspace holds the SQLAlchemy engine and opens a fresh session per
 method call. The engine is the poolable, reusable resource (a long-running service
@@ -124,6 +125,7 @@ from openfurrow.store.audit import AuditEvent, events as _auditEvents, record as
 from openfurrow.store.identity import (
   actorForToken as _actorForToken,
   assignRole as _assignRole,
+  assignmentsOfRule as _assignmentsOfRule,
   createAccount as _createAccount,
   createGroup as _createGroup,
   defineRole as _defineRole,
@@ -180,6 +182,22 @@ from openfurrow.store.providers import (
   takePending as _takePending,
 )
 from openfurrow.store.provisioning import ProvisioningStore
+from openfurrow.identity.workloads import (
+  WorkloadRule,
+  WorkloadTokenRefused,
+  acceptingRule as _acceptingRule,
+  claimedIssuer as _claimedIssuer,
+  isWorkloadToken as _isWorkloadToken,
+  runOf as _runOf,
+)
+from openfurrow.store.workloads import (
+  addRule as _addWorkloadRule,
+  enabledRulesOf as _enabledRulesOf,
+  listRules as _listWorkloadRules,
+  removeRule as _removeWorkloadRule,
+  rule as _workloadRuleNamed,
+  setRuleEnabled as _setWorkloadRuleEnabled,
+)
 from openfurrow.store.discovery import (
   discoveryList as _discoveryList,
   isDiscovered as _isDiscovered,
@@ -653,6 +671,13 @@ class Workspace:
     with _sessionScope(self._engine) as session:
       return _actorForToken(session, token, "api", surface)
 
+  def actorForBearerToken(self, token: str, surface: str) -> Actor:
+    """Who a request's bearer token stands for: a workload when the token has the form of a JSON Web Token (decision
+    0042), otherwise the account whose API token it is."""
+    if _isWorkloadToken(token):
+      return self.actorForWorkloadToken(token, surface)
+    return self.actorForAPIToken(token, surface)
+
   def issueAPIToken(self, name: str, days: int | None) -> str:
     """A token for this workspace's own account, to use from scripts; shown once."""
     if self.actor.kind is not ActorKind.account:
@@ -805,6 +830,61 @@ class Workspace:
       return None
     with _sessionScope(self._engine) as session:
       return next(a for a in _listAccounts(session) if a.accountID == self.actor.accountID)
+
+  # ---- trusted workloads (decision 0042) --------------------------------------
+
+  def _workloadAudience(self, session) -> str | None:
+    return {s.key: s.value for s in _effectiveSettings(session, "server")}["identity.workloadAudience"]
+
+  def addWorkloadRule(self, name: str, issuer: str, claims: dict[str, str],
+                      certificateAuthority: str | None = None) -> WorkloadRule:
+    """Trust the jobs whose tokens `issuer` signs with exactly these claims. The rule holds no role until one is
+    given to it (`assignRole`)."""
+    with self._acting(Permission.manageAccess, "server") as session:
+      if self._workloadAudience(session) is None:
+        raise IdentityError("set the server setting identity.workloadAudience before adding a workload rule: it is "
+                            "the audience every workload token must name, and it has no default")
+      rule = WorkloadRule(name=name, issuer=issuer, claims=claims, certificateAuthority=certificateAuthority,
+                          createdAt=_utcNow().replace(tzinfo=None))
+      _addWorkloadRule(session, rule)
+      self._audit(session, "workload.add", "server", {"rule": rule.name, "issuer": rule.issuer, "claims": rule.claims,
+                                                      "certificateAuthority": rule.certificateAuthority})
+      return rule
+
+  def workloadRules(self) -> list[WorkloadRule]:
+    with self._acting(Permission.manageAccess, "server") as session:
+      return _listWorkloadRules(session)
+
+  def workloadRule(self, name: str) -> tuple[WorkloadRule, list[RoleAssignment]]:
+    """A rule and the roles given to it."""
+    with self._acting(Permission.manageAccess, "server") as session:
+      return _workloadRuleNamed(session, name), _assignmentsOfRule(session, name)
+
+  def setWorkloadRuleEnabled(self, name: str, enabled: bool) -> None:
+    """A disabled rule accepts no token and holds nothing; its roles wait for it to be enabled again."""
+    with self._acting(Permission.manageAccess, "server") as session:
+      _setWorkloadRuleEnabled(session, name, enabled)
+      self._audit(session, "workload.enable", "server", {"rule": name, "enabled": enabled})
+
+  def removeWorkloadRule(self, name: str) -> None:
+    """Remove a rule and, with it, every role given to it."""
+    with self._acting(Permission.manageAccess, "server") as session:
+      given = _assignmentsOfRule(session, name)
+      _removeWorkloadRule(session, name)
+      self._audit(session, "workload.remove", "server", {
+        "rule": name, "roles": [{"roleCode": assignment.roleCode, "scope": assignment.scope} for assignment in given]})
+
+  def actorForWorkloadToken(self, token: str, surface: str) -> Actor:
+    """The workload a platform's token proves: the one enabled rule, among those of the issuer the token names, whose
+    checks it passes. The token is used for this and not kept."""
+    with _sessionScope(self._engine) as session:
+      audience = self._workloadAudience(session)
+      if audience is None:
+        raise WorkloadTokenRefused("workload tokens are not accepted here: the server setting "
+                                   "identity.workloadAudience is not set")
+      candidates = _enabledRulesOf(session, _claimedIssuer(token))
+    rule, identity = _acceptingRule(token, candidates, audience)
+    return Actor.workload(rule.name, _runOf(identity), surface)
 
   # ---- identity providers (decision 0040) ------------------------------------
 

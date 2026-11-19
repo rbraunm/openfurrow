@@ -34,11 +34,11 @@ from __future__ import annotations
 import datetime
 import re
 
-from sqlalchemy import ForeignKey, Index, Text, event, inspect, select
+from sqlalchemy import CheckConstraint, ForeignKey, Index, Text, case, column, event, inspect, select
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, relationship
 
-storeVersion = 19
+storeVersion = 20
 
 
 class StoreError(RuntimeError):
@@ -136,16 +136,38 @@ class CustomRoleRow(Base):
   permissionsJSON: Mapped[str]
 
 
+class WorkloadRuleRow(Base):
+  """A trusted workload (decision 0042): the issuer whose tokens it accepts and, as a JSON object, the claims each
+  must carry with exactly these values. Nothing of a token is kept."""
+
+  __tablename__ = "workloadRule"
+
+  ruleName: Mapped[str] = mapped_column(primary_key=True)
+  issuer: Mapped[str]
+  claimsJSON: Mapped[str] = mapped_column(Text)
+  enabled: Mapped[bool]
+  certificateAuthority: Mapped[str | None]
+  createdAt: Mapped[datetime.datetime]
+
+
+def _named(columnName: str):
+  return case((column(columnName).is_(None), 0), else_=1)
+
+
 class RoleAssignmentRow(Base):
-  """A role given to one account or one group at a stored scope ('server', 'place:<id>', 'trial:<code>')."""
+  """A role given to exactly one of an account, a group or a workload rule, at a stored scope ('server', 'place:<id>',
+  'trial:<code>')."""
 
   __tablename__ = "roleAssignment"
+  __table_args__ = (CheckConstraint(_named("accountID") + _named("groupID") + _named("ruleName") == 1,
+                                    name="roleAssignmentHasOneHolder"),)
 
   assignmentID: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
   roleCode: Mapped[str]
   scope: Mapped[str]
   accountID: Mapped[int | None] = mapped_column(ForeignKey("account.accountID", ondelete="CASCADE"))
   groupID: Mapped[int | None] = mapped_column(ForeignKey("accountGroup.groupID", ondelete="CASCADE"))
+  ruleName: Mapped[str | None] = mapped_column(ForeignKey("workloadRule.ruleName", ondelete="CASCADE"))
 
 
 class AuthTokenRow(Base):

@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Accounts, groups, roles, assignments and tokens in the store (decisions 0036, 0037)."""
+"""Accounts, groups, roles, assignments and tokens in the store (decisions 0036, 0037); a workload rule holds roles
+like an account or a group (decision 0042)."""
 
 from __future__ import annotations
 
@@ -8,7 +9,7 @@ import hashlib
 import json
 import secrets
 
-from sqlalchemy import select
+from sqlalchemy import or_, select
 from sqlalchemy.orm import Session
 
 from openfurrow.identity.model import (
@@ -31,6 +32,7 @@ from openfurrow.store.database import (
   CustomRoleRow,
   GroupMemberRow,
   RoleAssignmentRow,
+  WorkloadRuleRow,
 )
 from openfurrow.store.hierarchy import scopeChain, storedScope, writtenScope
 
@@ -176,19 +178,22 @@ def deleteRole(session: Session, roleCode: str) -> None:
 def assignRole(session: Session, assignment: RoleAssignment, given: bool = True) -> None:
   if assignment.roleCode not in roles(session):
     raise IdentityError(f"no role '{assignment.roleCode}'")
-  if (assignment.userName is None) == (assignment.groupName is None):
-    raise IdentityError("a role is given to one account or one group")
+  holders = [assignment.userName, assignment.groupName, assignment.ruleName]
+  if sum(holder is not None for holder in holders) != 1:
+    raise IdentityError("a role is given to exactly one of an account, a group or a workload rule")
   accountID = None if assignment.userName is None else accountRow(session, assignment.userName).accountID
   groupID = None if assignment.groupName is None else groupRow(session, assignment.groupName).groupID
+  if assignment.ruleName is not None and session.get(WorkloadRuleRow, assignment.ruleName) is None:
+    raise IdentityError(f"no workload rule '{assignment.ruleName}'")
   stored = storedScope(session, assignment.scope)
-  query = select(RoleAssignmentRow).where(
-    RoleAssignmentRow.roleCode == assignment.roleCode, RoleAssignmentRow.scope == stored,
-    RoleAssignmentRow.accountID.is_(None) if accountID is None else RoleAssignmentRow.accountID == accountID,
-    RoleAssignmentRow.groupID.is_(None) if groupID is None else RoleAssignmentRow.groupID == groupID,
-  )
-  existing = session.execute(query).scalar_one_or_none()
+  holder = (RoleAssignmentRow.accountID == accountID if accountID is not None
+            else RoleAssignmentRow.groupID == groupID if groupID is not None
+            else RoleAssignmentRow.ruleName == assignment.ruleName)
+  existing = session.execute(select(RoleAssignmentRow).where(
+    RoleAssignmentRow.roleCode == assignment.roleCode, RoleAssignmentRow.scope == stored, holder)).scalar_one_or_none()
   if given and existing is None:
-    session.add(RoleAssignmentRow(roleCode=assignment.roleCode, scope=stored, accountID=accountID, groupID=groupID))
+    session.add(RoleAssignmentRow(roleCode=assignment.roleCode, scope=stored, accountID=accountID, groupID=groupID,
+                                  ruleName=assignment.ruleName))
   elif not given:
     if existing is None:
       raise IdentityError(f"role '{assignment.roleCode}' is not given there")
@@ -196,44 +201,60 @@ def assignRole(session: Session, assignment: RoleAssignment, given: bool = True)
   session.flush()
 
 
+def _assignment(session: Session, row: RoleAssignmentRow) -> RoleAssignment:
+  return RoleAssignment(
+    roleCode=row.roleCode, scope=writtenScope(session, row.scope),
+    userName=None if row.accountID is None else session.get(AccountRow, row.accountID).userName,
+    groupName=None if row.groupID is None else session.get(AccountGroupRow, row.groupID).name,
+    ruleName=row.ruleName,
+  )
+
+
 def listAssignments(session: Session) -> list[RoleAssignment]:
-  result = []
-  for row in session.execute(select(RoleAssignmentRow).order_by(RoleAssignmentRow.assignmentID)).scalars().all():
-    result.append(RoleAssignment(
-      roleCode=row.roleCode, scope=writtenScope(session, row.scope),
-      userName=None if row.accountID is None else session.get(AccountRow, row.accountID).userName,
-      groupName=None if row.groupID is None else session.get(AccountGroupRow, row.groupID).name,
-    ))
-  return result
+  rows = session.execute(select(RoleAssignmentRow).order_by(RoleAssignmentRow.assignmentID)).scalars().all()
+  return [_assignment(session, row) for row in rows]
+
+
+def assignmentsOfRule(session: Session, ruleName: str) -> list[RoleAssignment]:
+  rows = session.execute(select(RoleAssignmentRow).where(RoleAssignmentRow.ruleName == ruleName)
+                         .order_by(RoleAssignmentRow.assignmentID)).scalars().all()
+  return [_assignment(session, row) for row in rows]
+
+
+def _heldBy(session: Session, actor: Actor):
+  """The condition that picks an actor's role assignments: an active account's own and its groups', or an enabled
+  workload rule's. None for an actor that holds none: an account or a rule that is gone or switched off."""
+  if actor.kind is ActorKind.workload:
+    rule = session.get(WorkloadRuleRow, actor.ruleName)
+    return RoleAssignmentRow.ruleName == rule.ruleName if rule is not None and rule.enabled else None
+  account = session.get(AccountRow, actor.accountID)
+  if account is None or not account.active:
+    return None
+  groupIDs = session.execute(select(GroupMemberRow.groupID).where(GroupMemberRow.accountID == account.accountID)).scalars().all()
+  return or_(RoleAssignmentRow.accountID == account.accountID, RoleAssignmentRow.groupID.in_(groupIDs))
 
 
 def permissionsAt(session: Session, actor: Actor, scope: str) -> frozenset[Permission]:
-  """What an actor may do at a scope: every permission for everyone and the operator, else its roles' union."""
+  """What an actor may do at a scope: every permission for everyone, the operator and the scheduler; for an account
+  or a workload, the union of the roles it holds there and above."""
   if actor.holdsEverything:
     return frozenset(Permission)
-  account = session.get(AccountRow, actor.accountID)
-  if account is None or not account.active:
+  held = _heldBy(session, actor)
+  if held is None:
     return frozenset()
-  groupIDs = session.execute(select(GroupMemberRow.groupID).where(GroupMemberRow.accountID == account.accountID)).scalars().all()
   stored = [entry for entry, _ in scopeChain(session, scope)]
-  rows = session.execute(select(RoleAssignmentRow).where(RoleAssignmentRow.scope.in_(stored))).scalars().all()
+  codes = session.execute(select(RoleAssignmentRow.roleCode).where(RoleAssignmentRow.scope.in_(stored), held)).scalars().all()
   defined = roles(session)
-  held: set[Permission] = set()
-  for row in rows:
-    if row.accountID == account.accountID or (row.groupID is not None and row.groupID in groupIDs):
-      held |= defined[row.roleCode].permissions
-  return frozenset(held)
+  return frozenset(permission for code in codes for permission in defined[code].permissions)
 
 
 def scopesWithAssignments(session: Session, actor: Actor) -> list[str]:
-  """The written scopes where an account holds a role itself or through a group."""
-  account = session.get(AccountRow, actor.accountID)
-  if account is None:
+  """The written scopes where an account holds a role itself or through a group, or a workload through its rule."""
+  held = _heldBy(session, actor)
+  if held is None:
     return []
-  groupIDs = session.execute(select(GroupMemberRow.groupID).where(GroupMemberRow.accountID == account.accountID)).scalars().all()
-  rows = session.execute(select(RoleAssignmentRow)).scalars().all()
-  return sorted({writtenScope(session, row.scope) for row in rows
-                 if row.accountID == account.accountID or (row.groupID is not None and row.groupID in groupIDs)})
+  scopes = session.execute(select(RoleAssignmentRow.scope).where(held)).scalars().all()
+  return sorted({writtenScope(session, scope) for scope in scopes})
 
 
 def _hashed(token: str) -> str:
@@ -256,7 +277,7 @@ def issueToken(session: Session, userName: str, kind: str, lifetime: datetime.ti
 
 
 def actorForToken(session: Session, token: str, kind: str, surface: str) -> Actor:
-  row = session.get(AuthTokenRow, _hashed(token))
+  row = session.get(AuthTokenRow, _hashed(token)) if token.isascii() else None
   if row is None or row.kind != kind:
     raise IdentityError("the token is not valid")
   if row.expiresAt is not None and row.expiresAt <= now():

@@ -31,6 +31,7 @@ from openfurrow.settings import SettingError
 from openfurrow.store.hierarchy import ScopeError
 from openfurrow.identity import Actor, IdentityError, Permission, RoleAssignment, RoleDefinition
 from openfurrow.identity.providers import Provider, ProviderKind
+from openfurrow.identity.workloads import namedIssuers
 from openfurrow.importers.weatherCsv import WeatherFileError
 from openfurrow.workspace import (
   AnalysisError,
@@ -267,6 +268,39 @@ def _buildParser() -> argparse.ArgumentParser:
   providerLink.add_argument("userName")
   providerLink.set_defaults(handler=_commandProviderLink)
 
+  workloadParser = sub.add_parser(
+    "workload", help="trusted workloads: CI and cloud jobs that prove what they are with their platform's token "
+                     "(decision 0042)",
+    epilog="A rule's roles are given with 'role assign ... --workload <name>'. Every token must name the audience "
+           "in the server setting identity.workloadAudience.",
+  )
+  workloadSub = workloadParser.add_subparsers(dest="workloadCommand", required=True)
+  workloadAdd = workloadSub.add_parser("add", help="trust the jobs whose tokens an issuer signs with exactly these claims")
+  workloadAdd.add_argument("database")
+  workloadAdd.add_argument("name")
+  workloadAdd.add_argument("issuer", help=f"{' or '.join(namedIssuers)}, or the https address of an OpenID Connect issuer")
+  workloadAdd.add_argument("claims", nargs="+", metavar="CLAIM=VALUE",
+                           help="a claim every token must carry with exactly this value, such as repository_id=123456")
+  workloadAdd.add_argument("--certificate-authority", dest="certificateAuthority", metavar="FILE",
+                           help="a PEM file of the certificate authority of an issuer that has one of its own")
+  workloadAdd.set_defaults(handler=_commandWorkloadAdd)
+  workloadList = workloadSub.add_parser("list", help="list the workload rules")
+  workloadList.add_argument("database")
+  workloadList.set_defaults(handler=_commandWorkloadList)
+  workloadShow = workloadSub.add_parser("show", help="one rule in full, with the roles given to it")
+  workloadShow.add_argument("database")
+  workloadShow.add_argument("name")
+  workloadShow.set_defaults(handler=_commandWorkloadShow)
+  for name, enabled in (("enable", True), ("disable", False)):
+    toggle = workloadSub.add_parser(name, help=f"{name} a workload rule")
+    toggle.add_argument("database")
+    toggle.add_argument("name")
+    toggle.set_defaults(handler=_commandWorkloadEnabled, enabled=enabled)
+  workloadRemove = workloadSub.add_parser("remove", help="remove a workload rule and the roles given to it")
+  workloadRemove.add_argument("database")
+  workloadRemove.add_argument("name")
+  workloadRemove.set_defaults(handler=_commandWorkloadRemove)
+
   roleParser = sub.add_parser("role", help="define roles and give them at a scope")
   roleSub = roleParser.add_subparsers(dest="roleCommand", required=True)
   roleList = roleSub.add_parser("list", help="the roles and their permissions")
@@ -279,13 +313,14 @@ def _buildParser() -> argparse.ArgumentParser:
   roleDefine.add_argument("permissions", nargs="+")
   roleDefine.set_defaults(handler=_commandRoleDefine)
   for name, given in (("assign", True), ("unassign", False)):
-    assign = roleSub.add_parser(name, help=f"{name} a role to an account or a group at a scope")
+    assign = roleSub.add_parser(name, help=f"{name} a role to an account, a group or a workload rule at a scope")
     assign.add_argument("database")
     assign.add_argument("roleCode")
     assign.add_argument("scope", help="'server', 'place:<path>' or 'trial:<code>'")
     who = assign.add_mutually_exclusive_group(required=True)
     who.add_argument("--user", dest="userName")
     who.add_argument("--group", dest="groupName")
+    who.add_argument("--workload", dest="ruleName", help="a workload rule's name")
     assign.set_defaults(handler=_commandRoleAssign, given=given)
   roleAssignments = roleSub.add_parser("assignments", help="every role given, to whom and where")
   roleAssignments.add_argument("database")
@@ -542,7 +577,8 @@ def _commandRoleDefine(args) -> int:
 
 
 def _commandRoleAssign(args) -> int:
-  assignment = RoleAssignment(roleCode=args.roleCode, scope=args.scope, userName=args.userName, groupName=args.groupName)
+  assignment = RoleAssignment(roleCode=args.roleCode, scope=args.scope, userName=args.userName, groupName=args.groupName,
+                              ruleName=args.ruleName)
   workspace = _operator(args.database)
   (workspace.assignRole if args.given else workspace.unassignRole)(assignment)
   print(f"{'Gave' if args.given else 'Took back'} '{args.roleCode}' at {args.scope}")
@@ -551,8 +587,68 @@ def _commandRoleAssign(args) -> int:
 
 def _commandRoleAssignments(args) -> int:
   for assignment in _operator(args.database).assignments():
-    who = f"user {assignment.userName}" if assignment.userName else f"group {assignment.groupName}"
+    holders = (("user", assignment.userName), ("group", assignment.groupName), ("workload", assignment.ruleName))
+    who = next(f"{kind} {name}" for kind, name in holders if name is not None)
     print(f"{assignment.roleCode}\t{assignment.scope}\t{who}")
+  return 0
+
+
+def _claimsGiven(pairs: list[str]) -> dict[str, str]:
+  claims: dict[str, str] = {}
+  for pair in pairs:
+    name, separator, value = pair.partition("=")
+    if not separator or name in claims:
+      raise IdentityError(f"'{pair}' is not a required claim: write each claim once, as CLAIM=VALUE")
+    claims[name] = value
+  return claims
+
+
+def _ruleLine(rule) -> str:
+  claims = " ".join(f"{name}={value}" for name, value in sorted(rule.claims.items()))
+  return f"{rule.name}\t{'enabled' if rule.enabled else 'disabled'}\t{rule.issuer}\t{claims}"
+
+
+def _commandWorkloadAdd(args) -> int:
+  rule = _operator(args.database).addWorkloadRule(args.name, args.issuer, _claimsGiven(args.claims), args.certificateAuthority)
+  print(f"Added workload rule '{rule.name}' for {rule.issuer}; it holds no role until one is given "
+        f"(role assign ... --workload {rule.name})")
+  return 0
+
+
+def _commandWorkloadList(args) -> int:
+  rules = _operator(args.database).workloadRules()
+  if not rules:
+    print("(no workload rules)")
+  for rule in rules:
+    print(_ruleLine(rule))
+  return 0
+
+
+def _commandWorkloadShow(args) -> int:
+  rule, given = _operator(args.database).workloadRule(args.name)
+  print(f"Workload rule: {rule.name}, {'enabled' if rule.enabled else 'disabled'}")
+  print(f"Issuer: {rule.issuer}")
+  for name, value in sorted(rule.claims.items()):
+    print(f"Requires: {name}={value}")
+  if rule.certificateAuthority is not None:
+    print(f"Certificate authority: {rule.certificateAuthority}")
+  print(f"Added: {_when(rule.createdAt)}")
+  if not given:
+    print("Roles: none")
+  for assignment in given:
+    print(f"Role: {assignment.roleCode} at {assignment.scope}")
+  return 0
+
+
+def _commandWorkloadEnabled(args) -> int:
+  _operator(args.database).setWorkloadRuleEnabled(args.name, args.enabled)
+  print(f"{'Enabled' if args.enabled else 'Disabled'} workload rule '{args.name}'")
+  return 0
+
+
+def _commandWorkloadRemove(args) -> int:
+  _operator(args.database).removeWorkloadRule(args.name)
+  print(f"Removed workload rule '{args.name}' and the roles given to it")
   return 0
 
 

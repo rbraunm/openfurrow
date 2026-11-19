@@ -13,7 +13,8 @@ is 409, bad input is 400. Nothing is caught and turned into a cheerful empty res
 The status mapping keys off the exception *type*, never the message text.
 
 Who a request acts as comes from the store's sign-in mode (decision 0036): everyone in
-the open mode, otherwise the account behind a bearer token. The facade checks every
+the open mode, otherwise the account, or the trusted workload (decision 0042), behind its
+bearer token. The facade checks every
 permission and writes every audit event, so the controllers stay free of both.
 
 JSON is serialized with the `json` module rather than `flask.jsonify`, per the house

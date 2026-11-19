@@ -9,6 +9,7 @@ from pathlib import Path
 
 import pytest
 
+from openIDConnectStandIn import StandInIssuer
 from openfurrow import schemaVersion
 
 postgresVariable = "OPENFURROW_TEST_POSTGRES"
@@ -38,6 +39,14 @@ def testbed(request):
   if path is None:
     pytest.skip("identity provider test: run with --testbed=<Carnelian's testbed.json> against a running testbed")
   return json.loads(Path(path).read_text(encoding="utf-8"))
+
+
+@pytest.fixture
+def standIn(tmp_path):
+  """An OpenID Connect issuer on the loopback address, with a certificate authority of its own."""
+  issuer = StandInIssuer(tmp_path)
+  yield issuer
+  issuer.close()
 
 
 @pytest.fixture

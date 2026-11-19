@@ -1,8 +1,9 @@
 # SPDX-License-Identifier: Apache-2.0
 """A stand-in OpenID Connect provider on the loopback address, over HTTPS with a certificate authority of its own:
-discovery, a JWK set, an authorization endpoint that signs the next person in without a form, a token endpoint, and
-back-channel logout tokens signed with its key. It stands at the network boundary for back-channel logout, which a
-provider in another network cannot deliver to a test."""
+discovery, a JWK set, an authorization endpoint that signs the next person in without a form, a token endpoint,
+back-channel logout tokens and workload tokens signed with its key. It stands at the network boundary for back-channel
+logout, which a provider in another network cannot deliver to a test, and for the CI platforms whose tokens only
+their own running jobs can ask for."""
 
 from __future__ import annotations
 
@@ -66,13 +67,15 @@ def loopbackCertificates(directory: Path) -> tuple[Path, Path, Path]:
 
 
 class StandInIssuer:
-  """Issuers at https://127.0.0.1:<port>/<realm>; the realm 'noLogout' names no end_session_endpoint."""
+  """Issuers at https://127.0.0.1:<port>/<realm>; the realm 'noLogout' names no end_session_endpoint, and the
+  discovery document of the realm 'misnamed' names another issuer. `fetched` lists the paths asked for."""
 
   def __init__(self, directory: Path) -> None:
     self.certificateAuthority, certificate, key = loopbackCertificates(directory)
     self._signingKey = rsa.generate_private_key(public_exponent=65537, key_size=2048)
     self._codes: dict[str, dict] = {}
     self.nextPerson: dict = {}
+    self.fetched: list[str] = []
     issuer = self
 
     class Handler(BaseHTTPRequestHandler):
@@ -90,6 +93,7 @@ class StandInIssuer:
       def do_GET(self):
         parts = urllib.parse.urlsplit(self.path)
         realm, _, rest = parts.path.lstrip("/").partition("/")
+        issuer.fetched.append(parts.path)
         if rest == ".well-known/openid-configuration":
           self._json(issuer.discovery(realm))
         elif rest == "jwks":
@@ -131,7 +135,8 @@ class StandInIssuer:
 
   def discovery(self, realm: str) -> dict:
     base = self.issuer(realm)
-    document = {"issuer": base, "authorization_endpoint": f"{base}/authorize", "token_endpoint": f"{base}/token",
+    named = self.issuer("another") if realm == "misnamed" else base
+    document = {"issuer": named, "authorization_endpoint": f"{base}/authorize", "token_endpoint": f"{base}/token",
                 "jwks_uri": f"{base}/jwks", "id_token_signing_alg_values_supported": ["RS256"],
                 "backchannel_logout_supported": True, "backchannel_logout_session_supported": True}
     if realm != "noLogout":
@@ -159,6 +164,17 @@ class StandInIssuer:
     if sessionID is not None:
       claims["sid"] = sessionID
     return self.signed(claims, "logout+jwt")
+
+  def workloadToken(self, realm: str, audience: str, claims: dict, age: int = 0, lifetime: int = 300,
+                    validIn: int | None = None) -> str:
+    """A token as a CI platform hands a running job: for the audience the job asked for, issued `age` seconds ago,
+    good for `lifetime` seconds from then, and with `validIn` not to be used before that many seconds from now."""
+    now = int(time.time())
+    body = {"iss": self.issuer(realm), "aud": audience, "iat": now - age, "exp": now - age + lifetime,
+            "jti": secrets.token_urlsafe(16), **claims}
+    if validIn is not None:
+      body["nbf"] = now + validIn
+    return self.signed(body, "JWT")
 
   def close(self) -> None:
     self._server.shutdown()

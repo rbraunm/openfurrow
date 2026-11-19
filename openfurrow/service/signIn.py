@@ -3,15 +3,18 @@
 
 In the open mode every request acts as everyone. With accounts, a web request carries a
 session cookie (HttpOnly, SameSite=Strict, Secure under TLS) and an API request a bearer
-token; anything else is sent to sign in (web) or refused with 401 (API). A web request
-that changes something must also come from this site's own pages: its Origin, or failing
-that its Referer, names this host, or it is refused with 403. Each request then gets a
-Workspace acting as its account, so every permission check and audit event in the
-facade names the person (decisions 0037, 0038).
+token: an account's API token, or the platform's token of a trusted workload (decision
+0042), which the web never takes. Anything else is sent to sign in (web) or refused with
+401 (API). A web request that changes something must also come from this site's own
+pages: its Origin, or failing that its Referer, names this host, or it is refused with
+403. Each request then gets a Workspace acting as its account or its workload rule, so
+every permission check and audit event in the facade names who it was (decisions 0037,
+0038).
 """
 
 from __future__ import annotations
 
+import json
 from urllib.parse import urlparse
 
 from flask import Flask, Response, g, redirect, request, url_for
@@ -43,6 +46,10 @@ def _sameSite() -> bool:
   return f"{parsed.scheme}://{parsed.netloc}" == request.host_url.rstrip("/")
 
 
+def _unauthorized(why: str) -> Response:
+  return Response(json.dumps({"error": why}), 401, mimetype="application/json", headers={"WWW-Authenticate": "Bearer"})
+
+
 def installSignIn(application: Flask, base: Workspace, secureCookies: bool) -> None:
   application.config["openfurrowSecureCookies"] = secureCookies
 
@@ -63,12 +70,11 @@ def installSignIn(application: Flask, base: Workspace, secureCookies: bool) -> N
         g.workspace = base.actingAs(Actor.everyone(surface))
         return None
       if not authorization.startswith("Bearer "):
-        return Response('{"error": "sign in with an API token (Authorization: Bearer <token>)"}', 401,
-                        mimetype="application/json", headers={"WWW-Authenticate": "Bearer"})
+        return _unauthorized("send an API token or a trusted workload's token (Authorization: Bearer <token>)")
       try:
-        actor = base.actorForAPIToken(authorization.removeprefix("Bearer ").strip(), surface)
+        actor = base.actorForBearerToken(authorization.removeprefix("Bearer ").strip(), surface)
       except IdentityError as error:
-        return Response(f'{{"error": "{error}"}}', 401, mimetype="application/json", headers={"WWW-Authenticate": "Bearer"})
+        return _unauthorized(str(error))
       g.workspace = base.actingAs(actor)
       return None
     if request.method not in ("GET", "HEAD", "OPTIONS") and request.endpoint not in _crossSite and not _sameSite():

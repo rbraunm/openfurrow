@@ -66,11 +66,24 @@ def testTheAnalysisFollowsTheTrialsSettings(workspace):
   ("galaxy", "analysis.significanceLevel", 0.1, "'galaxy' is not a scope"),
   ("place:station/nowhere", "analysis.significanceLevel", 0.1, "no place 'station/nowhere'"),
   ("trial:NOPE", "analysis.significanceLevel", 0.1, "trial 'NOPE' not found"),
+  ("server", "identity.workloadAudience", "two words", "does not take 'two words'"),
+  ("server", "identity.workloadAudience", "", "does not take ''"),
+  ("server", "identity.workloadAudience", None, "is not set to nothing; clear it instead"),
+  ("server", "analysis.significanceLevel", None, "is not set to nothing; clear it instead"),
+  ("place:station", "identity.workloadAudience", "https://openfurrow.example.org", "is not set at the place level"),
 ])
 def testWhatASettingDoesNotTakeIsRefused(workspace, scope, key, value, message):
   with pytest.raises(Exception, match=message):
     workspace.setSetting(scope, key, value)
   assert effective(workspace, "server")["analysis.significanceLevel"] == (0.05, "default")
+
+
+def testTheWorkloadAudienceHasNoDefaultUntilTheServerSetsIt(workspace):
+  assert effective(workspace, "server")["identity.workloadAudience"] == (None, "default")
+  workspace.setSetting("server", "identity.workloadAudience", "https://openfurrow.example.org")
+  assert effective(workspace, "trial:ESV-2025-01")["identity.workloadAudience"] == ("https://openfurrow.example.org", "server")
+  workspace.clearSetting("server", "identity.workloadAudience")
+  assert effective(workspace, "server")["identity.workloadAudience"] == (None, "default")
 
 
 def testATrialsValuesGoWithIt(workspace, validPackageDict):

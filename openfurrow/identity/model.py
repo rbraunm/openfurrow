@@ -6,8 +6,10 @@ an account or to a group the account belongs to, and it holds below where it is 
 Five roles are built in; an organization defines its own from the same permissions. Who
 acts is an Actor: a signed-in account, everyone (the open mode, where every permission is
 held everywhere), the store's operator (the command line and the library, which reach
-the store directly and so hold every permission too), or the scheduler running a task
-(decision 0041), which acts for the operator and is recorded under the task's name.
+the store directly and so hold every permission too), the scheduler running a task
+(decision 0041), which acts for the operator and is recorded under the task's name, or a
+trusted workload (decision 0042): a job whose platform-signed token one workload rule
+accepted, holding the roles given to that rule and recorded under the rule's name.
 """
 
 from __future__ import annotations
@@ -15,6 +17,7 @@ from __future__ import annotations
 import re
 import unicodedata
 from enum import Enum
+from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
@@ -50,6 +53,7 @@ class ActorKind(str, Enum):
   everyone = "everyone"
   operator = "operator"
   scheduler = "scheduler"
+  workload = "workload"
 
 
 class Actor(BaseModel):
@@ -61,6 +65,8 @@ class Actor(BaseModel):
   accountID: int | None = None
   userName: str | None = None
   taskName: str | None = None
+  ruleName: str | None = None
+  run: dict[str, Any] | None = Field(default=None, description="a workload's run, as its token's claims tell it")
   surface: str = Field(description="web, api, cli, library, provisioning or scheduler")
 
   @classmethod
@@ -76,18 +82,23 @@ class Actor(BaseModel):
     """A scheduled task's run (decision 0041), acting for the store like the operator, recorded under its task."""
     return cls(kind=ActorKind.scheduler, taskName=taskName, surface="scheduler")
 
+  @classmethod
+  def workload(cls, ruleName: str, run: dict[str, Any], surface: str) -> Actor:
+    """A job whose token the workload rule `ruleName` accepted (decision 0042); `run` goes into every event it writes."""
+    return cls(kind=ActorKind.workload, ruleName=ruleName, run=run, surface=surface)
+
   @property
   def holdsEverything(self) -> bool:
-    return self.kind is not ActorKind.account
+    return self.kind in (ActorKind.everyone, ActorKind.operator, ActorKind.scheduler)
 
   @property
   def name(self) -> str | None:
-    """The account's user name, or the task a scheduler run belongs to."""
-    return self.taskName if self.kind is ActorKind.scheduler else self.userName
+    """The account's user name, the task a scheduler run belongs to, or the rule that accepted a workload."""
+    return {ActorKind.scheduler: self.taskName, ActorKind.workload: self.ruleName}.get(self.kind, self.userName)
 
   @property
   def label(self) -> str:
-    return self.name if self.kind in (ActorKind.account, ActorKind.scheduler) else self.kind.value
+    return self.kind.value if self.kind in (ActorKind.everyone, ActorKind.operator) else self.name
 
 
 roleCodePattern = re.compile(r"^[a-z][A-Za-z0-9]{1,39}$")
@@ -177,7 +188,8 @@ builtInRoles: dict[str, RoleDefinition] = {
 
 
 class RoleAssignment(BaseModel):
-  """A role given to an account or a group at a scope ('server', 'place:<path>', 'trial:<code>')."""
+  """A role given to exactly one of an account, a group or a workload rule, at a scope ('server', 'place:<path>',
+  'trial:<code>')."""
 
   model_config = ConfigDict(extra="forbid")
 
@@ -185,3 +197,4 @@ class RoleAssignment(BaseModel):
   scope: str
   userName: str | None = None
   groupName: str | None = None
+  ruleName: str | None = None

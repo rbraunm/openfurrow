@@ -22,7 +22,7 @@ from carnelian.saml import SAMLRefused, ServiceProvider, identityProviderFromMet
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
-from openIDConnectStandIn import StandInIssuer, clientID as standInClientID
+from openIDConnectStandIn import clientID as standInClientID
 from openfurrow import Workspace
 from openfurrow.identity import RoleAssignment
 from openfurrow.identity.model import IdentityError
@@ -237,13 +237,6 @@ def testTheStoredReplaysRefuseASAMLMessageUsedTwice(location):
 # ---- signing out, with a stand-in OpenID Connect provider --------------------------
 
 origin = {"Origin": "http://localhost"}
-
-
-@pytest.fixture
-def standIn(tmp_path):
-  issuer = StandInIssuer(tmp_path)
-  yield issuer
-  issuer.close()
 
 
 def addStandIn(location, standIn, monkeypatch, name="standin", realm="lab", **settings):

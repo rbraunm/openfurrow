@@ -33,6 +33,10 @@ class AuditEvent(BaseModel):
 
 
 def record(session: Session, actor: Actor, action: str, scope: str, detail: dict) -> None:
+  """Write an event. A workload's event also carries the run its token came from (decision 0042), added here so no
+  caller can leave it out."""
+  if actor.run is not None:
+    detail = detail | {"workloadRun": actor.run}
   session.add(AuditEventRow(
     at=now(), actorKind=actor.kind.value, actorName=actor.name, surface=actor.surface, action=action,
     scope=scope, detailJSON=json.dumps(detail, sort_keys=True, default=str),

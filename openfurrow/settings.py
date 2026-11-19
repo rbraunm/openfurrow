@@ -60,6 +60,14 @@ def _timeZone(name: str) -> str:
     raise ValueError(f"'{name}' is not an IANA time zone name such as UTC or Africa/Nairobi ({error})") from None
   return name
 
+
+def _audience(name: str) -> str:
+  """The audience every workload token must name (decision 0042): the server's own name for itself, usually its address."""
+  if not 1 <= len(name) <= 255 or not name.isascii() or not name.isprintable() or " " in name:
+    raise ValueError("an audience is 1 to 255 printable ASCII characters without spaces, such as the server's address")
+  return name
+
+
 definitions: dict[str, SettingDefinition] = {
   definition.key: definition for definition in (
     SettingDefinition(
@@ -70,6 +78,9 @@ definitions: dict[str, SettingDefinition] = {
     SettingDefinition("identity.signInMode", TypeAdapter(SignInMode), SignInMode.open, frozenset({SettingScope.server})),
     SettingDefinition(
       "identity.sessionHours", TypeAdapter(Annotated[int, Field(ge=1, le=720)]), 12, frozenset({SettingScope.server}),
+    ),
+    SettingDefinition(
+      "identity.workloadAudience", TypeAdapter(Annotated[str, AfterValidator(_audience)] | None), None, serverOnly,
     ),
     SettingDefinition("tasks.timeZone", TypeAdapter(Annotated[str, AfterValidator(_timeZone)]), "UTC", serverOnly),
     SettingDefinition(
@@ -94,6 +105,8 @@ def checkedValue(key: str, value: Any, scope: SettingScope) -> Any:
   definition = definitionFor(key)
   if scope not in definition.scopes:
     raise SettingError(f"setting '{key}' is not set at the {scope.value} level")
+  if value is None:
+    raise SettingError(f"setting '{key}' is not set to nothing; clear it instead")
   try:
     return definition.adapter.validate_python(value)
   except ValidationError as error:
