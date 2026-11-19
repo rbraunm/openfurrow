@@ -81,6 +81,19 @@ def createTask(session: Session, name: str, kind: str, parameters: dict, at: dat
   session.flush()
 
 
+def deleteTask(session: Session, name: str) -> None:
+  """Delete a task and its runs. A task kept for a feature goes with that feature, and one with a run requested or
+  running waits for it."""
+  row = taskRow(session, name)
+  if row.ownerProvider is not None:
+    raise TaskError(f"task '{name}' is kept for the identity provider '{row.ownerProvider}' and is not deleted "
+                    "while that provider uses it")
+  if hasActiveRun(session, name):
+    raise TaskError(f"task '{name}' has a run requested or running; delete it once that run has ended")
+  session.delete(row)
+  session.flush()
+
+
 def _run(row: TaskRunRow) -> TaskRun:
   return TaskRun(runID=row.runID, taskName=row.taskName, requestedBy=row.requestedBy,
                  requestedAt=aware(row.requestedAt), startedAt=aware(row.startedAt), finishedAt=aware(row.finishedAt),

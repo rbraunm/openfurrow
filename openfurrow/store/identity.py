@@ -138,8 +138,21 @@ def listGroups(session: Session) -> list[Group]:
       select(AccountRow.userName).join(GroupMemberRow, GroupMemberRow.accountID == AccountRow.accountID)
       .where(GroupMemberRow.groupID == row.groupID).order_by(AccountRow.userName)
     ).scalars().all()
-    groups.append(Group(groupID=row.groupID, name=row.name, members=list(members)))
+    groups.append(Group(groupID=row.groupID, name=row.name, members=list(members), providerName=row.providerName))
   return groups
+
+
+def deleteGroup(session: Session, name: str) -> list[tuple[str, str]]:
+  """Delete a group, its memberships and the roles given to it; those roles are returned, as (role, written scope)."""
+  group = groupRow(session, name)
+  if group.providerName is not None:
+    raise IdentityError(f"group '{name}' is mirrored from {group.providerName}, which alone removes it")
+  rows = session.execute(select(RoleAssignmentRow).where(RoleAssignmentRow.groupID == group.groupID)
+                         .order_by(RoleAssignmentRow.assignmentID)).scalars().all()
+  given = [(row.roleCode, writtenScope(session, row.scope)) for row in rows]
+  session.delete(group)
+  session.flush()
+  return given
 
 
 def defineRole(session: Session, role: RoleDefinition) -> None:
@@ -147,6 +160,8 @@ def defineRole(session: Session, role: RoleDefinition) -> None:
     raise IdentityError(f"'{role.roleCode}' is a built-in role")
   if not role.name:
     raise IdentityError(f"role '{role.roleCode}' needs a name")
+  if not role.permissions:
+    raise IdentityError(f"role '{role.roleCode}' needs a permission: a role that holds none gives nothing")
   text = json.dumps(sorted(permission.value for permission in role.permissions))
   row = session.get(CustomRoleRow, role.roleCode)
   if row is None:
@@ -246,6 +261,20 @@ def permissionsAt(session: Session, actor: Actor, scope: str) -> frozenset[Permi
   codes = session.execute(select(RoleAssignmentRow.roleCode).where(RoleAssignmentRow.scope.in_(stored), held)).scalars().all()
   defined = roles(session)
   return frozenset(permission for code in codes for permission in defined[code].permissions)
+
+
+def scopesGranting(session: Session, actor: Actor, permission: Permission) -> list[str]:
+  """The written scopes where a role given to the actor carries a permission, the server first; the permission then
+  holds there and below. The server alone for an actor that holds everything."""
+  if actor.holdsEverything:
+    return ["server"]
+  held = _heldBy(session, actor)
+  if held is None:
+    return []
+  defined = roles(session)
+  rows = session.execute(select(RoleAssignmentRow.roleCode, RoleAssignmentRow.scope).where(held)).all()
+  scopes = {writtenScope(session, scope) for code, scope in rows if permission in defined[code].permissions}
+  return sorted(scopes, key=lambda scope: (scope != "server", scope))
 
 
 def scopesWithAssignments(session: Session, actor: Actor) -> list[str]:

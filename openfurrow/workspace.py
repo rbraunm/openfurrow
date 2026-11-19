@@ -122,7 +122,7 @@ from openfurrow.identity.model import (
 )
 from openfurrow.schema.hierarchy import HierarchyLevel, Place
 from openfurrow.settings import EffectiveSetting
-from openfurrow.store.audit import AuditEvent, events as _auditEvents, record as _record
+from openfurrow.store.audit import AuditEvent, EventFilter, events as _auditEvents, record as _record
 from openfurrow.store.identity import (
   actorForToken as _actorForToken,
   assignRole as _assignRole,
@@ -130,6 +130,7 @@ from openfurrow.store.identity import (
   createAccount as _createAccount,
   createGroup as _createGroup,
   defineRole as _defineRole,
+  deleteGroup as _deleteGroup,
   deleteRole as _deleteRole,
   issueToken as _issueToken,
   listAccounts as _listAccounts,
@@ -138,6 +139,7 @@ from openfurrow.store.identity import (
   permissionsAt as _permissionsAt,
   revokeToken as _revokeToken,
   roles as _roles,
+  scopesGranting as _scopesGranting,
   scopesWithAssignments as _scopesWithAssignments,
   setActive as _setActive,
   setLocale as _setLocale,
@@ -166,11 +168,13 @@ from openfurrow.identity.providers import (
   serviceProvider as _serviceProvider,
 )
 from openfurrow.store.providers import (
+  LinkedIdentity,
   StoredReplays as _StoredReplays,
   addProvider as _addProvider,
   claimOnce as _claimOnce,
   completeSignIn as _completeSignIn,
   endProviderSessions as _endProviderSessions,
+  identitiesOf as _identitiesOf,
   issueProvisioningToken as _issueProvisioningToken,
   linkIdentity as _linkIdentity,
   listProviders as _listProviders,
@@ -207,6 +211,7 @@ from openfurrow.store.discovery import (
 )
 from openfurrow.store.tasks import (
   createTask as _createTask,
+  deleteTask as _deleteTask,
   heartbeat as _schedulerHeartbeat,
   listTasks as _listTasks,
   requestRun as _requestRun,
@@ -217,7 +222,8 @@ from openfurrow.store.tasks import (
   setTimeLimit as _setTimeLimit,
   task as _taskNamed,
 )
-from openfurrow.tasks.model import SchedulerHeartbeat, Task, TaskError, TaskRun
+from openfurrow.tasks.kinds import registeredKinds as _registeredTaskKinds
+from openfurrow.tasks.model import SchedulerHeartbeat, Task, TaskError, TaskKind, TaskRun
 
 _redirectKinds = (ProviderKind.openIDConnect, ProviderKind.saml, ProviderKind.samlFederation, ProviderKind.cas)
 from openfurrow.store.hierarchy import (
@@ -256,6 +262,7 @@ from openfurrow.store import (
 # module rather than reaching into the internals that raise them.
 __all__ = [
   "AnalysisError",
+  "EventFilter",
   "ExchangeError",
   "MessageError",
   "IdentityError",
@@ -281,6 +288,11 @@ def _jsonSetting(setting: EffectiveSetting | None) -> dict | None:
 
 class NotPermitted(PermissionError):
   """The actor does not hold the permission an operation needs where it acts; not bad input, so no form catches it."""
+
+  def __init__(self, who: str, permission: Permission, scope: str) -> None:
+    super().__init__(f"{who} may not {permission.value} at {scope}")
+    self.permission = permission
+    self.scope = scope
 
 
 institutionSearchLimit = 50
@@ -386,7 +398,7 @@ class Workspace:
     if Permission.view not in held and scope != "server":
       kind, _, name = scope.partition(":")
       raise NotFoundError(f"{kind} '{name}' not found")
-    raise NotPermitted(f"{self.actor.label} may not {permission.value} at {scope}")
+    raise NotPermitted(self.actor.label, permission, scope)
 
   @contextmanager
   def _acting(self, permission: Permission, scope: str):
@@ -402,12 +414,27 @@ class Workspace:
     with _sessionScope(self._engine) as session:
       return _permissionsAt(session, self.actor, scope)
 
-  def auditEvents(self, scope: str = "server", limit: int = 200) -> list[AuditEvent]:
-    """The latest audit events at a scope and inside it, newest first."""
-    with self._acting(Permission.viewAudit, scope):
+  def require(self, permission: Permission, scope: str) -> None:
+    """Refuse unless this workspace's actor holds a permission at a scope: for a page made of reads that are open
+    to everyone but that is meant for the holders of one permission."""
+    with self._acting(permission, scope):
       pass
+
+  def scopesGranting(self, permission: Permission) -> list[str]:
+    """The scopes where a role given to this workspace's actor carries a permission, the server first."""
     with _sessionScope(self._engine) as session:
-      return _auditEvents(session, None if scope == "server" else scope, limit)
+      return _scopesGranting(session, self.actor, permission)
+
+  def auditEvents(self, scope: str = "server", limit: int = 200, chosen: EventFilter = EventFilter()) -> list[AuditEvent]:
+    """The latest audit events at a scope and inside it, newest first: at the server every event; at a place its
+    own, those of the places inside it and of the trials in them; at a trial its own. `chosen` narrows them."""
+    with self._acting(Permission.viewAudit, scope) as session:
+      kind, _, name = scope.partition(":")
+      if scope == "server":
+        return _auditEvents(session, limit=limit, chosen=chosen)
+      if kind == "place":
+        return _auditEvents(session, name, [code for code, _ in _trialsIn(session, name)], limit, chosen)
+      return _auditEvents(session, None, [name], limit, chosen)
 
   # ---- trial management ---------------------------------------------------
 
@@ -627,6 +654,13 @@ class Workspace:
   def groups(self) -> list[Group]:
     with self._acting(Permission.manageAccess, "server") as session:
       return _listGroups(session)
+
+  def deleteGroup(self, name: str) -> None:
+    """Delete a group and, with it, its memberships and every role given to it; a mirrored group is its provider's."""
+    with self._acting(Permission.manageAccess, "server") as session:
+      given = _deleteGroup(session, name)
+      self._audit(session, "group.delete", "server", {
+        "group": name, "roles": [{"roleCode": roleCode, "scope": scope} for roleCode, scope in given]})
 
   def defineRole(self, role: RoleDefinition) -> None:
     with self._acting(Permission.manageAccess, "server") as session:
@@ -932,6 +966,11 @@ class Workspace:
       _linkIdentity(session, name, subject, userName)
       self._audit(session, "provider.link", "server", {"provider": name, "subject": subject, "userName": userName})
 
+  def linkedIdentities(self, userName: str) -> list[LinkedIdentity]:
+    """The providers' identities an account is linked to."""
+    with self._acting(Permission.manageAccess, "server") as session:
+      return _identitiesOf(session, userName)
+
   def signInProviders(self) -> list[tuple[str, ProviderKind]]:
     """The enabled providers a person can sign in with, for the sign-in page."""
     with _sessionScope(self._engine) as session:
@@ -1101,8 +1140,23 @@ class Workspace:
     """Configure a task of a kind, with the kind's default schedule and time limit, enabled."""
     with self._acting(Permission.manageTasks, "server") as session:
       _createTask(session, name, kind, parameters, _utcNow())
-      self._audit(session, "task.create", "server", {"task": name, "kind": kind, "parameters": parameters})
-      return _taskNamed(session, name)
+      created = _taskNamed(session, name)
+      self._audit(session, "task.create", "server", {"task": name, "kind": kind, "parameters": created.parameters})
+      return created
+
+  def taskKinds(self) -> list[TaskKind]:
+    """The kinds a task can be of, by name."""
+    with self._acting(Permission.manageTasks, "server"):
+      return _registeredTaskKinds()
+
+  def deleteTask(self, name: str) -> None:
+    """Delete a task and its runs; refused for a task its feature keeps and while a run of it is requested or
+    running."""
+    with self._acting(Permission.manageTasks, "server") as session:
+      deleted = _taskNamed(session, name)
+      _deleteTask(session, name)
+      self._audit(session, "task.delete", "server", {"task": name, "kind": deleted.kind,
+                                                     "parameters": deleted.parameters})
 
   def tasks(self) -> list[Task]:
     with self._acting(Permission.manageTasks, "server") as session:

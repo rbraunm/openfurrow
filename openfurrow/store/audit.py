@@ -8,10 +8,12 @@ its event cannot be committed. The tool never updates or deletes an event; reten
 
 from __future__ import annotations
 
+import datetime
 import json
+from dataclasses import dataclass
 
 from pydantic import BaseModel, ConfigDict
-from sqlalchemy import select
+from sqlalchemy import and_, or_, select
 from sqlalchemy.orm import Session
 
 from openfurrow.identity.model import Actor
@@ -44,11 +46,46 @@ def record(session: Session, actor: Actor, action: str, scope: str, detail: dict
   session.flush()
 
 
-def events(session: Session, scopePrefix: str | None = None, limit: int = 200) -> list[AuditEvent]:
-  """The latest events, newest first; with a prefix, only those whose scope starts with it."""
+@dataclass(frozen=True)
+class EventFilter:
+  """Which events to read: those of an actor (an account's user name, a task, a workload rule, or 'operator' and
+  'everyone' for the actors that have no name), those whose action is `action` or starts with it, those from `since`
+  on and before `until` (UTC), and those older than the event `before`. Nothing set reads every event."""
+
+  actor: str | None = None
+  action: str | None = None
+  since: datetime.datetime | None = None
+  until: datetime.datetime | None = None
+  before: int | None = None
+
+
+def _stored(moment: datetime.datetime) -> datetime.datetime:
+  if moment.tzinfo is None:
+    raise ValueError("a moment carries its time zone")
+  return moment.astimezone(datetime.UTC).replace(tzinfo=None)
+
+
+def events(session: Session, place: str | None = None, trialCodes: list[str] | None = None, limit: int = 200,
+           chosen: EventFilter = EventFilter()) -> list[AuditEvent]:
+  """The latest events, newest first: every one, or those at a place, at the places inside it and at the trials
+  named (the ones the caller found in it), or with no place those at the trials named alone."""
   query = select(AuditEventRow).order_by(AuditEventRow.eventID.desc()).limit(limit)
-  if scopePrefix is not None:
-    query = query.where(AuditEventRow.scope.startswith(scopePrefix))
+  if place is not None or trialCodes is not None:
+    scopes = [AuditEventRow.scope.in_([f"trial:{code}" for code in trialCodes or []])]
+    if place is not None:
+      scopes += [AuditEventRow.scope == f"place:{place}", AuditEventRow.scope.startswith(f"place:{place}/", autoescape=True)]
+    query = query.where(or_(*scopes))
+  if chosen.actor is not None:
+    query = query.where(or_(AuditEventRow.actorName == chosen.actor,
+                            and_(AuditEventRow.actorName.is_(None), AuditEventRow.actorKind == chosen.actor)))
+  if chosen.action is not None:
+    query = query.where(AuditEventRow.action.startswith(chosen.action, autoescape=True))
+  if chosen.since is not None:
+    query = query.where(AuditEventRow.at >= _stored(chosen.since))
+  if chosen.until is not None:
+    query = query.where(AuditEventRow.at < _stored(chosen.until))
+  if chosen.before is not None:
+    query = query.where(AuditEventRow.eventID < chosen.before)
   return [
     AuditEvent(eventID=row.eventID, at=row.at.isoformat(timespec="seconds") + "Z", actorKind=row.actorKind,
                actorName=row.actorName, surface=row.surface, action=row.action, scope=row.scope,

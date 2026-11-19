@@ -118,6 +118,17 @@ class WorkloadRule(BaseModel):
     return self
 
 
+def claimsGiven(pairs: list[str]) -> dict[str, str]:
+  """The claims a rule requires, from the way a person writes them: each once, as CLAIM=VALUE."""
+  claims: dict[str, str] = {}
+  for pair in pairs:
+    name, separator, value = pair.partition("=")
+    if not separator or name in claims:
+      raise IdentityError(f"'{pair}' is not a required claim: write each claim once, as CLAIM=VALUE")
+    claims[name] = value
+  return claims
+
+
 _tokenForm = re.compile(r"[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+")
 
 

@@ -234,6 +234,21 @@ def linkIdentity(session: Session, name: str, subject: str, userName: str) -> No
   session.flush()
 
 
+@dataclass(frozen=True)
+class LinkedIdentity:
+  """A provider's identity an account is linked to: the provider, and its own subject for the person."""
+
+  providerName: str
+  subject: str
+
+
+def identitiesOf(session: Session, userName: str) -> list[LinkedIdentity]:
+  account = accountRow(session, userName)
+  rows = session.execute(select(ExternalIdentityRow).where(ExternalIdentityRow.accountID == account.accountID)
+                         .order_by(ExternalIdentityRow.providerName, ExternalIdentityRow.subject)).scalars().all()
+  return [LinkedIdentity(row.providerName, row.subject) for row in rows]
+
+
 def mirroredGroupName(providerName: str, groupName: str) -> str:
   return f"{providerName}/{groupName.strip().strip('/')}"
 

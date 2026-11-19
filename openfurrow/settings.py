@@ -108,6 +108,15 @@ def checkedValue(key: str, value: Any, scope: SettingScope) -> Any:
     raise SettingError(f"setting '{key}' does not take {value!r}: {error.errors()[0]['msg']}") from None
 
 
+def allowedValues(key: str) -> list[str] | None:
+  """The values a setting takes when it takes one of a fixed list; None for a setting that takes a number or text."""
+  return definitionFor(key).adapter.json_schema().get("enum")
+
+
+def takesNumber(key: str) -> bool:
+  return definitionFor(key).adapter.json_schema().get("type") in ("number", "integer")
+
+
 def jsonValue(key: str, value: Any) -> Any:
   return definitionFor(key).adapter.dump_python(value, mode="json")
 

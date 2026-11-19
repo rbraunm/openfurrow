@@ -31,7 +31,7 @@ from openfurrow.settings import SettingError
 from openfurrow.store.hierarchy import ScopeError
 from openfurrow.identity import Actor, IdentityError, Permission, RoleAssignment, RoleDefinition
 from openfurrow.identity.providers import Provider, ProviderKind
-from openfurrow.identity.workloads import namedIssuers
+from openfurrow.identity.workloads import claimsGiven, namedIssuers
 from openfurrow.importers.weatherCsv import WeatherFileError
 from openfurrow.osService.deployment import DeploymentError, Role, ServiceState, serviceName
 from openfurrow.workspace import (
@@ -622,23 +622,13 @@ def _commandRoleAssignments(args) -> int:
   return 0
 
 
-def _claimsGiven(pairs: list[str]) -> dict[str, str]:
-  claims: dict[str, str] = {}
-  for pair in pairs:
-    name, separator, value = pair.partition("=")
-    if not separator or name in claims:
-      raise IdentityError(f"'{pair}' is not a required claim: write each claim once, as CLAIM=VALUE")
-    claims[name] = value
-  return claims
-
-
 def _ruleLine(rule) -> str:
   claims = " ".join(f"{name}={value}" for name, value in sorted(rule.claims.items()))
   return f"{rule.name}\t{'enabled' if rule.enabled else 'disabled'}\t{rule.issuer}\t{claims}"
 
 
 def _commandWorkloadAdd(args) -> int:
-  rule = _operator(args.database).addWorkloadRule(args.name, args.issuer, _claimsGiven(args.claims), args.certificateAuthority)
+  rule = _operator(args.database).addWorkloadRule(args.name, args.issuer, claimsGiven(args.claims), args.certificateAuthority)
   print(f"Added workload rule '{rule.name}' for {rule.issuer}; it holds no role until one is given "
         f"(role assign ... --workload {rule.name})")
   return 0

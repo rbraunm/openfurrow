@@ -151,6 +151,7 @@ class Group(BaseModel):
   groupID: int
   name: str
   members: list[str]
+  providerName: str | None = Field(default=None, description="the identity provider a mirrored group belongs to")
 
 
 class RoleDefinition(BaseModel):

@@ -25,4 +25,8 @@ def kindNamed(name: str) -> TaskKind:
     raise TaskError(f"no task kind '{name}'; the kinds are {sorted(_kinds)}") from None
 
 
+def registeredKinds() -> list[TaskKind]:
+  return [_kinds[name] for name in sorted(_kinds)]
+
+
 register(federationRefresh)
