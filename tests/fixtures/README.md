@@ -75,6 +75,9 @@ treatment effect that is not significant.
   `agridat/gomez.seedrate`. agridat notes the data are used with permission of K. A. Gomez.
 - Published ANOVA: treatment SS 1,198,331; error df 15 SS 1,658,376 MS 110,558; F 2.17;
   CV 6.7%.
+- The same book's missing-data examples take values of this table as missing: sections
+  7.1.2.1 (Tables 7.1 to 7.3) and 7.1.2.6 (Tables 7.9 and 7.10), checked in
+  `tests/testMissingPlotsPublished.py`.
 
 ## gomezSplitPlot.csv
 
@@ -106,6 +109,18 @@ log10(count + 1).
 - Source: Gomez & Gomez (1984), Statistical Procedures for Agricultural Research, Table
   7.14; obtained via the Rdatasets agridat CSV mirror, dataset `agridat/gomez.nonnormal1`.
   The analysis it is checked against is Tables 7.16 and 7.17.
+
+## gomezHerbicide.csv
+
+Rice grain yield under eleven weed-control treatments in a completely randomized design
+with unequal replication, four treatments on three plots and seven on four
+(`treatment, replicate, yield`).
+
+- Source: Gomez & Gomez (1984), Statistical Procedures for Agricultural Research, Table
+  2.3; the ANOVA it is checked against is Table 2.4. Transcribed from the book and checked
+  against its printed treatment totals and grand total (103,301).
+- Published ANOVA: treatment df 10 SS 15,090,304 MS 1,509,030 F 8.55; error df 29
+  SS 5,119,420 MS 176,532; total df 39 SS 20,209,724; cv 16.3%.
 
 ## gomezInsecticide.csv
 

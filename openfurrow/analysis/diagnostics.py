@@ -10,6 +10,10 @@ Shapiro-Wilk follows Royston's AS R94 (the algorithm R's shapiro.test and
 scipy.stats.shapiro use), which needs only the normal CDF and its inverse -- no
 order-statistic covariance matrix and no incomplete gamma. It is validated
 against scipy in the tests.
+
+A table with missing plots that the missing-plot policy handles (decision 0043) is checked
+on the plots present, never on an estimate: Brown-Forsythe on each treatment's own values,
+Tukey's test on the least-squares fit, Shapiro-Wilk on that fit's residuals.
 """
 
 from __future__ import annotations
@@ -19,8 +23,11 @@ import math
 import numpy
 from pydantic import BaseModel, ConfigDict, Field
 
-from openfurrow.analysis.anova import buildRcbdMatrix
-from openfurrow.analysis.crd import buildCrdMatrix
+from openfurrow.analysis.anova import additiveResiduals
+from openfurrow.analysis.crd import collectCrdGroups, fitCrdGroups
+from openfurrow.analysis.leastSquares import TreatmentFit
+from openfurrow.analysis.missingPlots import MissingPlotPolicy
+from openfurrow.analysis.rcbd import collectRcbdCells, fitRcbdCells
 from openfurrow.analysis.splitPlot import buildSplitPlotValues
 from openfurrow.analysis.distributions import fDistributionSurvival, inverseNormalCdf, normalCdf
 from openfurrow.analysis.transforms import preferredTransform
@@ -171,24 +178,30 @@ class Assumptions(BaseModel):
 
 
 def brownForsythe(matrix, significanceLevel=0.05):
-  """Brown-Forsythe equal-variance test across treatments (columns of matrix, one row per plot of each).
+  """Brown-Forsythe equal-variance test across treatments (columns of matrix, one row per plot of each)."""
+  return brownForsytheGroups([matrix[:, column] for column in range(matrix.shape[1])], significanceLevel)
+
+
+def brownForsytheGroups(groups, significanceLevel=0.05):
+  """Brown-Forsythe equal-variance test across treatments, each given by the values of its own plots.
 
   Levene's test on absolute deviations from each treatment's median -- an F-test
-  robust to non-normality. Returns a DiagnosticOutcome.
+  robust to non-normality, with as many plots per treatment as each has. Returns a
+  DiagnosticOutcome.
   """
   nameKey = "diagnostic.equalVariance.name"
-  blockCount, treatmentCount = matrix.shape
-  if treatmentCount < 2 or blockCount < 2:
+  sizes = [int(group.size) for group in groups]
+  if len(groups) < 2 or min(sizes) < 2:
     return DiagnosticOutcome(
       nameKey=nameKey, computed=False,
       notComputedKey="diagnostic.notComputed.needsTwoByTwo")
-  deviations = numpy.abs(matrix - numpy.median(matrix, axis=0))
-  groupMeans = deviations.mean(axis=0)
-  grandMean = float(deviations.mean())
-  numeratorDf = treatmentCount - 1
-  denominatorDf = treatmentCount * (blockCount - 1)
-  sumSquaresBetween = float(blockCount * ((groupMeans - grandMean) ** 2).sum())
-  sumSquaresWithin = float(((deviations - groupMeans) ** 2).sum())
+  deviations = [numpy.abs(group - numpy.median(group)) for group in groups]
+  groupMeans = numpy.array([deviation.mean() for deviation in deviations])
+  grandMean = float(numpy.concatenate(deviations).mean())
+  numeratorDf = len(groups) - 1
+  denominatorDf = sum(sizes) - len(groups)
+  sumSquaresBetween = float((numpy.array(sizes) * (groupMeans - grandMean) ** 2).sum())
+  sumSquaresWithin = float(sum(((deviation - mean) ** 2).sum() for deviation, mean in zip(deviations, groupMeans)))
   if sumSquaresWithin <= 0.0:
     return DiagnosticOutcome(
       nameKey=nameKey, computed=False,
@@ -243,10 +256,44 @@ def tukeyNonAdditivity(matrix, significanceLevel=0.05):
                 else "diagnostic.nonAdditivity.clear"))
 
 
+def nonAdditivityOfFit(fit: TreatmentFit, blockIndex, treatmentIndex, significanceLevel=0.05):
+  """Tukey's one-degree-of-freedom test on a least-squares fit of blocks and treatments to the plots present.
+
+  The term tested is each plot's block effect times its treatment effect, less what the
+  additive model already fits of it; on a complete table that is Tukey's own formula.
+  Returns a DiagnosticOutcome.
+  """
+  nameKey = "diagnostic.nonAdditivity.name"
+  denominatorDf = fit.errorDegreesOfFreedom - 1
+  if denominatorDf < 1:
+    return DiagnosticOutcome(
+      nameKey=nameKey, computed=False,
+      notComputedKey="diagnostic.notComputed.tooFewErrorDegreesOfFreedom")
+  product = fit.blockEffects[blockIndex] * fit.treatmentEffects[treatmentIndex]
+  term = fit.residualOf(product)
+  termSquares = float(term @ term)
+  if termSquares <= 1.0e-22 * float(product @ product):
+    return DiagnosticOutcome(
+      nameKey=nameKey, computed=False,
+      notComputedKey="diagnostic.notComputed.noTreatmentOrBlockVariation")
+  sumSquaresNonadditivity = float(fit.residuals @ term) ** 2 / termSquares
+  sumSquaresRemainder = fit.errorSumOfSquares - sumSquaresNonadditivity
+  if sumSquaresRemainder <= 1.0e-12 * max(1.0, fit.errorSumOfSquares):
+    return DiagnosticOutcome(
+      nameKey=nameKey, computed=False,
+      notComputedKey="diagnostic.notComputed.noRemainderVariation")
+  fStatistic = sumSquaresNonadditivity / (sumSquaresRemainder / denominatorDf)
+  pValue = fDistributionSurvival(fStatistic, 1, denominatorDf)
+  return DiagnosticOutcome(
+    nameKey=nameKey, computed=True, statisticName="F", statistic=fStatistic,
+    numeratorDegreesOfFreedom=1, denominatorDegreesOfFreedom=denominatorDf, pValue=pValue,
+    readingKey=("diagnostic.nonAdditivity.flagged" if pValue < significanceLevel
+                else "diagnostic.nonAdditivity.clear"))
+
+
 def rcbdResiduals(matrix):
   """y_ij - (treatment mean + block mean - grand mean), from a block-by-treatment matrix."""
-  grand = float(matrix.mean())
-  return (matrix - matrix.mean(axis=0)[None, :] - matrix.mean(axis=1)[:, None] + grand).ravel()
+  return additiveResiduals(matrix).ravel()
 
 
 def crdResiduals(matrix):
@@ -317,13 +364,16 @@ def recommendTransform(outcomes, measurementKind, currentTransform, significance
   return ("diagnostic.recommendation.generic", None, None)
 
 
-def assessAssumptions(assessmentCode, package, layout, observations, significanceLevel=0.05):
+def assessAssumptions(
+  assessmentCode, package, layout, observations, significanceLevel=0.05, missingPlots=MissingPlotPolicy.refuse,
+):
   """Compute the report-only ANOVA assumption diagnostics for one assessment.
 
-  Diagnostics never change the analysis (decision 0006). Reuses the validated matrix of
-  the design's own ANOVA, so a non-numeric or incomplete design raises the same
-  AnalysisError. Includes an advisory transform recommendation when assumptions are
-  flagged and no transform is applied; the recommendation is never acted on automatically.
+  Diagnostics never change the analysis (decision 0006). Reuses the validated values of
+  the design's own ANOVA under the same missing-plot policy, so a non-numeric assessment
+  or a missing plot the analysis refuses raises the same AnalysisError. Includes an
+  advisory transform recommendation when assumptions are flagged and no transform is
+  applied; the recommendation is never acted on automatically.
   """
   if not 0.0 < significanceLevel < 1.0:
     raise ValueError(f"significanceLevel must be in (0, 1), got {significanceLevel}")
@@ -336,14 +386,28 @@ def assessAssumptions(assessmentCode, package, layout, observations, significanc
     mainResiduals, subResiduals = splitPlotResiduals(values)
     mainPlotNormality = shapiroWilkResiduals(mainResiduals, significanceLevel, "diagnostic.mainPlotNormality.name")
     normality = shapiroWilkResiduals(subResiduals, significanceLevel, "diagnostic.subPlotNormality.name")
+    equalVariance = brownForsythe(matrix, significanceLevel)
   elif designType is DesignType.crd:
-    matrix, _ = buildCrdMatrix(assessmentCode, package, layout, observations)
-    normality = shapiroWilkResiduals(crdResiduals(matrix), significanceLevel)
+    groups = collectCrdGroups(assessmentCode, package, layout, observations, missingPlots)
+    if groups.missing:
+      normality = shapiroWilkResiduals(fitCrdGroups(groups).residuals, significanceLevel)
+    else:
+      normality = shapiroWilkResiduals(crdResiduals(numpy.array(groups.values, dtype=float).T), significanceLevel)
+    equalVariance = brownForsytheGroups(groups.values, significanceLevel)
   else:
-    matrix, _, _, _ = buildRcbdMatrix(assessmentCode, package, layout, observations)
-    nonAdditivity = tukeyNonAdditivity(matrix, significanceLevel)
-    normality = shapiroWilkResiduals(rcbdResiduals(matrix), significanceLevel)
-  equalVariance = brownForsythe(matrix, significanceLevel)
+    cells = collectRcbdCells(assessmentCode, package, layout, observations, missingPlots)
+    if cells.missing:
+      fit = fitRcbdCells(cells)
+      blockIndex, treatmentIndex = numpy.nonzero(~numpy.isnan(cells.values))
+      nonAdditivity = nonAdditivityOfFit(fit, blockIndex, treatmentIndex, significanceLevel)
+      normality = shapiroWilkResiduals(fit.residuals, significanceLevel)
+      equalVariance = brownForsytheGroups(
+        [column[~numpy.isnan(column)] for column in cells.values.T], significanceLevel,
+      )
+    else:
+      nonAdditivity = tukeyNonAdditivity(cells.values, significanceLevel)
+      normality = shapiroWilkResiduals(rcbdResiduals(cells.values), significanceLevel)
+      equalVariance = brownForsythe(cells.values, significanceLevel)
   outcomes = [outcome for outcome in (equalVariance, nonAdditivity, mainPlotNormality, normality) if outcome is not None]
   recommendationKey, recommendationTransform, recommendationKind = recommendTransform(
     outcomes,

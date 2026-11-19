@@ -13,7 +13,7 @@ import pytest
 
 from openfurrow import TrialPackage, Workspace, schemaVersion
 from openfurrow.analysis import AnalysisError, MeanComparison, analyzeRcbd, compareWithControl, separateMeans
-from openfurrow.analysis.dunnett import dunnettCdf, dunnettQuantile
+from openfurrow.analysis.dunnett import dunnettCdf, dunnettQuantile, equalLoadings
 from openfurrow.design import generateLayout
 from openfurrow.reports import buildReport
 from openfurrow.schema.observation import Observation
@@ -24,12 +24,12 @@ from storeHelpers import standardStudy
 def testOneComparisonIsTheTwoSidedT(degreesOfFreedom):
   tDistribution = pytest.importorskip("scipy.stats").t
   for d in (1.0, 2.0, 2.8, 4.0):
-    assert dunnettCdf(d, 1, degreesOfFreedom) == pytest.approx(1 - 2 * tDistribution.sf(d, degreesOfFreedom), abs=1e-10)
+    assert dunnettCdf(d, equalLoadings(1), degreesOfFreedom) == pytest.approx(1 - 2 * tDistribution.sf(d, degreesOfFreedom), abs=1e-10)
 
 
 def testCriticalValueMatchesDunnettsTable():
   # Dunnett (1955), two-sided, alpha 0.05: 2.76 for six treatments against a control on 24 df.
-  assert round(dunnettQuantile(0.95, 6, 24), 2) == 2.76
+  assert round(dunnettQuantile(0.95, equalLoadings(6), 24), 2) == 2.76
 
 
 @pytest.mark.parametrize("comparisons, perGroupDf", [(3, 4), (6, 4), (9, 3)])
@@ -41,7 +41,7 @@ def testPValuesAgreeWithScipy(comparisons, perGroupDf):
   errorDf = (comparisons + 1) * perGroupDf
   # scipy integrates the multivariate t by quasi-Monte Carlo, to about 1e-4.
   for statistic, pValue in zip(result.statistic, result.pvalue):
-    assert 1 - dunnettCdf(abs(statistic), comparisons, errorDf) == pytest.approx(pValue, abs=2e-4)
+    assert 1 - dunnettCdf(abs(statistic), equalLoadings(comparisons), errorDf) == pytest.approx(pValue, abs=2e-4)
 
 
 def checkTrial(roles=("untreatedControl", None, None, None)):
@@ -71,7 +71,7 @@ def testEachTreatmentAgainstTheCheck():
   package, layout, observations = checkTrial()
   result = analyzeRcbd("D", package, layout, observations)
   comparison = compareWithControl(result, package)
-  expected = dunnettQuantile(0.95, 3, result.errorDegreesOfFreedom) * math.sqrt(2 * result.errorMeanSquare / 4)
+  expected = dunnettQuantile(0.95, equalLoadings(3), result.errorDegreesOfFreedom) * math.sqrt(2 * result.errorMeanSquare / 4)
   assert comparison.criticalDifference == pytest.approx(expected, rel=1e-12)
   verdicts = {row.treatmentCode: (round(row.difference, 2), row.significant) for row in comparison.comparisons}
   assert verdicts == {"A": (-8.0, True), "B": (-1.0, False), "C": (-10.0, True)}

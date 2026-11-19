@@ -27,6 +27,7 @@ from pydantic import BaseModel, ConfigDict
 from openfurrow.analysis.subsamples import plotValues
 from openfurrow.analysis.anova import AnalysisError, AnovaResult, TreatmentMean, anovaFromMatrix
 from openfurrow.analysis.distributions import tDistributionSurvival
+from openfurrow.analysis.missingPlots import MissingPlotPolicy, coveredDesigns
 from openfurrow.analysis.splitPlot import SplitPlotResult, twoStrataAnova
 from openfurrow.analysis.transforms import TransformError, applyTransform
 from openfurrow.schema.assessment import AssessmentDataType, EfficacyMethod, Transform
@@ -99,7 +100,7 @@ def checkPairs(
   if missing:
     raise AnalysisError(
       f"assessment '{assessmentCode}' has missing values; comparing with the checks needs every plot "
-      f"and every check plot. Missing: {missing}"
+      f"and every check plot under every policy: {coveredDesigns}. Missing: {missing}"
     )
   pairs = []
   for plot in sorted(layout.plots, key=lambda plot: plot.plotNumber):
@@ -143,15 +144,20 @@ def plotEfficacies(
 
 def analyzeEfficacy(
   assessmentCode: str, package: TrialPackage, layout: TrialLayout, observations: list[Observation],
+  missingPlots: MissingPlotPolicy = MissingPlotPolicy.refuse,
 ) -> AnovaResult:
-  """The RCBD ANOVA of percent control, plot by plot."""
+  """The RCBD ANOVA of percent control, plot by plot.
+
+  `missingPlots` is the policy in force, recorded with the result; percent control needs
+  every plot and its check under every policy.
+  """
   treatmentCodes = package.analysedTreatmentCodes(assessmentCode)
   efficacies = [result for result in plotEfficacies(assessmentCode, package, layout, observations)
                 if result.treatmentCode in treatmentCodes]
   matrix = numpy.empty((layout.replications, len(treatmentCodes)), dtype=float)
   for result in efficacies:
     matrix[result.block - 1, treatmentCodes.index(result.treatmentCode)] = result.efficacy
-  return anovaFromMatrix(assessmentCode, matrix, treatmentCodes, Transform.none, 0.0)
+  return anovaFromMatrix(assessmentCode, matrix, treatmentCodes, Transform.none, 0.0, missingPlots)
 
 
 def _onDeclaredScale(

@@ -19,6 +19,7 @@ from zoneinfo import ZoneInfo
 from pydantic import AfterValidator, BaseModel, ConfigDict, Field, TypeAdapter, ValidationError
 
 from openfurrow.analysis.meanSeparation import MeanComparison
+from openfurrow.analysis.missingPlots import MissingPlotPolicy
 from openfurrow.identity.model import SignInMode
 
 
@@ -32,12 +33,6 @@ class SettingScope(str, Enum):
   server = "server"
   place = "place"
   trial = "trial"
-
-
-class MissingPlotPolicy(str, Enum):
-  """What an analysis does with a plot that has no value (decision 0003)."""
-
-  refuse = "refuse"  # the analysis stops and names the missing plots
 
 
 @dataclass(frozen=True)

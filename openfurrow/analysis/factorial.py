@@ -23,7 +23,7 @@ import math
 import numpy
 from pydantic import BaseModel, ConfigDict
 
-from openfurrow.analysis.anova import AnalysisError, AnovaSource, TreatmentMean, buildRcbdMatrix
+from openfurrow.analysis.anova import AnalysisError, AnovaSource, TreatmentMean, buildBlockTreatmentMatrix
 from openfurrow.analysis.distributions import fDistributionSurvival
 from openfurrow.analysis.distributions import tCriticalValue
 from openfurrow.analysis.meanSeparation import MeanComparison
@@ -71,7 +71,9 @@ def analyzeFactorialRcbd(
   """Run the two-factor ANOVA of an RCBD whose treatments are the combinations of two factors."""
   if len(package.factors) != 2:
     raise AnalysisError(f"trial '{package.trial.trialCode}' is not a two-factor trial")
-  matrix, treatmentCodes, blocks, transform = buildRcbdMatrix(assessmentCode, package, layout, observations)
+  if layout.designType is not DesignType.rcbd:
+    raise AnalysisError(f"analyzeFactorialRcbd requires an RCBD layout, got {layout.designType.value}")
+  matrix, treatmentCodes, blocks, transform = buildBlockTreatmentMatrix(assessmentCode, package, layout, observations)
   first, second = package.factors
   firstLevels = [level.levelCode for level in first.levels]
   secondLevels = [level.levelCode for level in second.levels]

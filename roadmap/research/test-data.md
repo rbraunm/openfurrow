@@ -137,23 +137,35 @@ yields given as totals of 3 reps.
 
 ---
 
-## C. Derived fixture (negative test)
+## C. Derived fixtures (missing plots)
 
 ### missing-data variants
 
-Copies of a complete trial with cells removed in a specific pattern, exercising the MVP
-missing-data policy (decision 0003): the analyzer must **reject and fail loud**, naming the
-missing cell(s), rather than silently analyzing an incomplete table. In use today: three
-patterns removed from the Yates oats data in `tests/testAnovaRcbd.py` (one cell, one
-value recorded as missing, a whole treatment). The full pattern matrix
--- a single cell, several scattered cells, a whole treatment absent from one block, a
-non-estimable pattern, and the complete-table control -- lives in decision 0003; the
-fixtures derive from B1 (stirret.borers) by removing cells in each pattern. Documented as
-derived -- the deletions are the test condition, not real data.
+Copies of a complete trial with cells removed in a specific pattern, exercising the
+missing-plot policy (decisions 0003 and 0043): under `refuse` the analyzer must **reject
+and fail loud**, naming the missing cell(s); under `leastSquares` and `estimate` it must
+analyze an estimable pattern and refuse a non-estimable one with its reason. In use:
 
-- **Study type:** single-factor RCBD with an induced gap
+- the pattern matrix of decision 0003 -- a single cell, several scattered cells, a whole
+  treatment absent from one block, the non-estimable patterns (a treatment absent from
+  every block, a whole block absent, a disconnected design, no degrees of freedom left for
+  error), and the complete-table control -- removed from B1 (stirret.borers), both counts,
+  in `tests/testMissingPlots.py`;
+- the first three patterns removed from every RCBD dataset in use (stirret.borers, Yates
+  oats, clewer.wheat, gomez.seedrate, and gomez.nonnormal1 on its log10(count + 1) scale),
+  and from generated tables of random size, each checked against statsmodels under both
+  methods;
+- generated completely randomized trials with unequal numbers of plots, against
+  statsmodels and scipy;
+- three patterns removed from the Yates oats data in `tests/testAnovaRcbd.py` (one cell,
+  one value recorded as missing, a whole treatment), on the reject path.
+
+Documented as derived -- the deletions are the test condition, not real data. The
+published missing-data examples are D2 and D10.
+
+- **Study type:** single-factor RCBD or CRD with an induced gap
 - **Condition:** intentionally incomplete
-- **MVP scope:** yes -- the reject-on-missing path.
+- **Role:** the missing-plot policy and both methods.
 
 ---
 
@@ -197,6 +209,17 @@ the treatment means, the ANOVA and the CV.
   gives a treatment sum of squares of 1,198,331, an error sum of squares of 1,658,376, an
   error mean square of 110,558, F = 2.17 and a CV of 6.7%, the values reported from the
   book's tables.
+- **Also the book's worked example of missing data.** Section 7.1.2.1 (pages 276 to 279,
+  Tables 7.1 to 7.3) takes the value of the 100 kg seed/ha treatment in replication II
+  (4,831) as missing: estimate 5,265 kg/ha, bias correction 546, error 1,540,726 on 14 df,
+  adjusted treatment sum of squares 1,139,955, F = 2.07, standard error of a difference
+  with that treatment 257, LSD 551 at 5% and 765 at 1%. Section 7.1.2.6 (pages 287 to
+  292, Tables 7.9 and 7.10) takes the 25 kg treatment's value in replication I (5,113) as
+  missing as well: estimates 5,244 and 5,422 by iteration, error 1,481,374 on 13 df. Read
+  from an openly posted scan of the book. `tests/testMissingPlotsPublished.py` holds
+  OpenFurrow to these and reproduces the printed replication and total lines from the
+  book's estimates, which it rounds to the whole kg/ha before its analysis of variance
+  (decision 0043).
 
 ### D7. gomez.splitplot -- rice nitrogen by variety (split plot)
 
@@ -240,6 +263,26 @@ grain yield in t/ha.
   its printed treatment total.
 - **Status:** IN USE. Fixture `tests/fixtures/gomezInsecticide.csv`, validated by
   `tests/testCrd.py` against the book and statsmodels.
+
+### D10. gomez herbicides -- postemergence herbicides in dryland rice (completely randomized, unequal replication)
+
+**11 treatments on 4 or 3 plots each, 40 values**, grain yield in kg/ha: the book's worked
+example of a completely randomized design with unequal replication, which is what a CRD
+with missing plots is.
+
+- **Source:** Gomez & Gomez (1984), *Statistical Procedures for Agricultural Research*,
+  section 2.1.2.2, Table 2.3 (data) and Table 2.4 (ANOVA), pages 17 to 20. Read from an
+  openly posted scan of the book and transcribed; three values the scan leaves unclear
+  (3,001, 3,103 and 2,470) are settled by their printed treatment totals.
+- **Role:** the known answer for a CRD analysed by least squares on unequal numbers of
+  plots: treatment 15,090,304 on 10 df, error 5,119,420 on 29 df, total 20,209,724,
+  F = 8.55, cv 16.3%.
+- **Status:** IN USE. Fixture `tests/fixtures/gomezHerbicide.csv`, validated by
+  `tests/testMissingPlotsPublished.py`, which enters it as a trial of four plots per
+  treatment with four plots missing.
+- **Confirmed on transcription:** every treatment total and the grand total (103,301)
+  agree with the book's. The book's cv divides by the mean of the 40 values; OpenFurrow's
+  is on the mean of the treatment means and is labelled so; both are 16.3%.
 
 ### D3. sweetpotato -- virus conditions (completely randomized)
 
@@ -301,7 +344,9 @@ confirmed as a pair of plot-level data and a matching published analysis.
 | minnesota.barley.yield subset | single-factor RCBD  | numeric         | complete, more trts  | not yet in use |
 | clewer.wheat                  | single-factor RCBD  | numeric         | complete, own layout | yes    |
 | gomez.seedrate                | single-factor RCBD  | numeric         | complete, not signif.| yes    |
-| missing-data variants         | RCBD + gap          | count           | incomplete (induced) | yes    |
+| missing-data variants         | RCBD or CRD + gap   | count, numeric  | incomplete (induced) | yes    |
+| gomez.seedrate, values missing| RCBD + gap          | numeric         | incomplete, published| yes    |
+| gomez herbicides              | CRD, unequal reps   | numeric         | published            | yes    |
 | beall.webworms                | factorial + subsamp | count           | complete, large      | future |
 | gomez.splitplot               | split-plot          | numeric         | complete, published  | yes    |
 | gomez.factorial               | factorial RCBD      | numeric         | complete, published  | yes    |
@@ -317,7 +362,8 @@ dataset with a treatment+block structure can be adopted later if a clean one is 
 The fixtures in use are the **Yates oats anchor** (published table), **stirret.borers**
 (realistic single-factor RCBD, ARM domain, multi-assessment), **clewer.wheat** (published
 table, a layout from the field, overlapping letters), **gomez.seedrate** (published table
-with its CV, no separation under protection), and the **missing-data variants** (reject
-path). The **minnesota.barley.yield subset** (mean-separation stress) is registered and
-not yet used. The factorial, split-plot, and MET datasets are recorded now so
+with its CV, no separation under protection, and the book's own missing-data examples),
+the **missing-data variants** (the missing-plot policy and both of its methods), and the
+**gomez herbicides** (a published CRD with unequal replication). The
+**minnesota.barley.yield subset** (mean-separation stress) is registered and not yet used. The factorial, split-plot, and MET datasets are recorded now so
 they are ready when those study types are added.

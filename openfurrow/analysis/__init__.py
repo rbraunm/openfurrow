@@ -6,7 +6,8 @@ from openfurrow.analysis.anova import (
   AnovaResult,
   AnovaSource,
   TreatmentMean,
-  analyzeRcbd,
+  differenceStandardError,
+  meanStandardError,
 )
 from openfurrow.analysis.checks import (
   CheckPair,
@@ -37,6 +38,14 @@ from openfurrow.analysis.diagnostics import (
   DiagnosticOutcome,
   assessAssumptions,
 )
+from openfurrow.analysis.missingPlots import (
+  MissingCell,
+  MissingHandling,
+  MissingPlotEstimation,
+  MissingPlotPolicy,
+  SumsOfSquares,
+)
+from openfurrow.analysis.rcbd import analyzeRcbd
 from openfurrow.analysis.splitPlot import (
   FactorSeparation,
   LevelGroup,
@@ -52,6 +61,7 @@ from openfurrow.analysis.splitPlot import (
 from openfurrow.analysis.meanSeparation import (
   MeanComparison,
   MeanSeparation,
+  PairComparison,
   TreatmentGroup,
   criticalDifference,
   letterGroups,
@@ -76,9 +86,15 @@ __all__ = [
   "LevelMean",
   "MeanComparison",
   "MeanSeparation",
+  "MissingCell",
+  "MissingHandling",
+  "MissingPlotEstimation",
+  "MissingPlotPolicy",
+  "PairComparison",
   "PairedComparison",
   "PlotEfficacy",
   "SplitPlotResult",
+  "SumsOfSquares",
   "TreatmentGroup",
   "TreatmentMean",
   "analyzeCrd",
@@ -93,9 +109,11 @@ __all__ = [
   "compareWithChecks",
   "compareWithControl",
   "criticalDifference",
+  "differenceStandardError",
   "dunnettCdf",
   "dunnettQuantile",
   "letterGroups",
+  "meanStandardError",
   "methodKeyFor",
   "plotEfficacies",
   "separateFactorMeans",

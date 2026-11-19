@@ -15,7 +15,7 @@ import pytest
 from openfurrow.analysis import MeanComparison
 from openfurrow import schemaVersion
 from openfurrow.analysis import AnalysisError, analyzeRcbd, separateMeans
-from openfurrow.analysis.meanSeparation import _letterFor, letterGroups
+from openfurrow.analysis.meanSeparation import _letterFor, letterGroups, lettersFor
 from openfurrow.design import generateRcbdLayout
 from openfurrow.schema import TrialPackage
 from openfurrow.schema.observation import Observation
@@ -75,6 +75,15 @@ def testLetterGroupsOverlap():
 
 def testLetterGroupsAllDifferent():
   assert letterGroups([10.0, 5.0, 0.0], 1.0) == ["a", "b", "c"]
+
+
+def testLettersForPairsThatDoNotFormRuns():
+  """With a critical difference for each pair the sets that share a letter need not be runs of sorted means."""
+  # Only the two highest differ, so the lowest shares a letter with each of them.
+  assert lettersFor(3, lambda higher, lower: (higher, lower) == (0, 1)) == ["a", "b", "ab"]
+  # The highest and the lowest are alike and both differ from the one between them.
+  assert lettersFor(3, lambda higher, lower: 1 in (higher, lower)) == ["a", "b", "a"]
+  assert lettersFor(4, lambda higher, lower: (higher, lower) in {(0, 3), (1, 2)}) == ["ab", "ac", "bd", "cd"]
 
 
 def testLetterForSequence():

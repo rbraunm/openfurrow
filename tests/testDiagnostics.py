@@ -20,6 +20,7 @@ from openfurrow.analysis.diagnostics import (
   DiagnosticOutcome,
   assessAssumptions,
   brownForsythe,
+  brownForsytheGroups,
   rcbdResiduals,
   recommendTransform,
   shapiroWilk,
@@ -98,6 +99,21 @@ def testBrownForsytheNotComputedWhenTooSmall():
   outcome = brownForsythe(np.array([[1.0, 2.0, 3.0]]))  # a single block
   assert outcome.computed is False
   assert outcome.notComputedKey == "diagnostic.notComputed.needsTwoByTwo"
+
+
+def testBrownForsytheOnUnequalGroupsMatchesScipyLevene():
+  rng = np.random.default_rng(404)
+  for sizes in [(4, 3, 4, 2), (15, 14, 13, 15), (2, 9, 5)]:
+    groups = [rng.normal(20.0 + index, 1.0 + index, size) for index, size in enumerate(sizes)]
+    outcome = brownForsytheGroups(groups)
+    reference = stats.levene(*groups, center="median")
+    assert outcome.computed is True
+    assert (outcome.numeratorDegreesOfFreedom, outcome.denominatorDegreesOfFreedom) == (len(sizes) - 1, sum(sizes) - len(sizes))
+    assert outcome.statistic == pytest.approx(reference.statistic, rel=1e-9)
+    assert outcome.pValue == pytest.approx(reference.pvalue, rel=1e-6)
+  # A treatment left with one plot has no spread of its own to compare.
+  outcome = brownForsytheGroups([np.array([1.0, 2.0, 4.0]), np.array([3.0])])
+  assert (outcome.computed, outcome.notComputedKey) == (False, "diagnostic.notComputed.needsTwoByTwo")
 
 
 # ---- Tukey non-additivity vs statsmodels fitted-square model -------------
