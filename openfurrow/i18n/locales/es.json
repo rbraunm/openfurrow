@@ -1493,6 +1493,10 @@
       "text": "Dónde inician sesión las personas además de este sitio, y qué aprovisiona las cuentas: OpenID Connect, SAML, federaciones de investigación, CAS, LDAP y SCIM.",
       "status": "machineDraft"
     },
+    "web.administration.about.retention": {
+      "text": "Lo que el almacén contiene en cada área y la regla por la que se conserva, las retenciones y la depuración. Los registros de ensayos, los archivos recibidos y el registro de auditoría se conservan hasta que alguien decida otra cosa; las sesiones y los tokens caducados salen a los 30 días y las ejecuciones de tareas terminadas a los 90, salvo que se cambien sus reglas.",
+      "status": "machineDraft"
+    },
     "web.administration.about.roles": {
       "text": "Conjuntos de permisos con nombre. Cinco vienen incorporados; defina los suyos con los mismos permisos.",
       "status": "machineDraft"
@@ -1845,6 +1849,10 @@
       "text": "Esta tarea se mantiene para el proveedor de identidad {provider} y no se elimina mientras ese proveedor la use.",
       "status": "machineDraft"
     },
+    "web.administration.confirm.task.keptForFeature": {
+      "text": "Esta tarea se mantiene para {feature} y no se elimina; desactívela para detener sus ejecuciones.",
+      "status": "machineDraft"
+    },
     "web.administration.confirm.task.warning": {
       "text": "Esto elimina la tarea y el registro de todas sus ejecuciones. No se puede deshacer.",
       "status": "machineDraft"
@@ -1929,8 +1937,16 @@
       "text": "Vinculada.",
       "status": "machineDraft"
     },
+    "web.administration.done.nothingPruned": {
+      "text": "No se depuró nada: ninguna regla deja ir nada.",
+      "status": "machineDraft"
+    },
     "web.administration.done.passwordSet": {
       "text": "La contraseña está fijada.",
+      "status": "machineDraft"
+    },
+    "web.administration.done.pruned": {
+      "text": "Depurado. Lo eliminado consta en el registro de auditoría.",
       "status": "machineDraft"
     },
     "web.administration.done.reactivated": {
@@ -2593,6 +2609,10 @@
       "text": "Proveedores de identidad",
       "status": "machineDraft"
     },
+    "web.administration.section.retention": {
+      "text": "Conservación",
+      "status": "machineDraft"
+    },
     "web.administration.section.roles": {
       "text": "Roles",
       "status": "machineDraft"
@@ -2637,12 +2657,28 @@
       "text": "La audiencia que debe nombrar el token de toda carga de trabajo de confianza: el nombre que este servidor se da a sí mismo, normalmente su dirección. Mientras no esté fijada, no se acepta ningún token de carga de trabajo.",
       "status": "machineDraft"
     },
-    "web.administration.setting.tasks.maximumConcurrentRuns": {
-      "text": "Cuántas ejecuciones de tareas deja el planificador en marcha a la vez: de 1 a 64.",
+    "web.administration.setting.retention.auditLog": {
+      "text": "Cuánto tiempo se conservan los eventos de auditoría: keep, keepFor:<period> contado desde el evento, o keepUntilClosed:<period> contado desde la fecha de cierre de su ensayo.",
       "status": "machineDraft"
     },
-    "web.administration.setting.tasks.runRetentionDays": {
-      "text": "Cuántos días se conservan los registros de ejecución de una tarea: de 1 a 3650.",
+    "web.administration.setting.retention.receivedFiles": {
+      "text": "Cuánto tiempo se conservan los archivos tal como se recibieron: keep, keepFor:<period> contado desde su importación, o keepUntilClosed:<period> contado desde la fecha de cierre de su ensayo.",
+      "status": "machineDraft"
+    },
+    "web.administration.setting.retention.sessionsAndTokens": {
+      "text": "Cuánto tiempo se conservan las sesiones y los tokens caducados después de caducar: keep o keepFor:<period>.",
+      "status": "machineDraft"
+    },
+    "web.administration.setting.retention.taskRuns": {
+      "text": "Cuánto tiempo se conservan los registros de las ejecuciones de tareas terminadas: keep o keepFor:<period>.",
+      "status": "machineDraft"
+    },
+    "web.administration.setting.retention.trialRecords": {
+      "text": "Cuánto tiempo se conserva el registro de un ensayo: keep, o keepUntilClosed:<period> para eliminar el ensayo entero ese tiempo después de su fecha de cierre. Un periodo son días, meses o años: P90D, P18M, P5Y.",
+      "status": "machineDraft"
+    },
+    "web.administration.setting.tasks.maximumConcurrentRuns": {
+      "text": "Cuántas ejecuciones de tareas deja el planificador en marcha a la vez: de 1 a 64.",
       "status": "machineDraft"
     },
     "web.administration.setting.tasks.timeZone": {
@@ -2659,6 +2695,10 @@
     },
     "web.administration.settings.clearNamed": {
       "text": "Borrar {setting} aquí",
+      "status": "machineDraft"
+    },
+    "web.administration.settings.needsPermission": {
+      "text": "Cambiar este ajuste aquí requiere el permiso: {permission}.",
       "status": "machineDraft"
     },
     "web.administration.settings.newValue": {
@@ -3361,10 +3401,6 @@
       "text": "Lugares",
       "status": "machineDraft"
     },
-    "web.nav.retention": {
-      "text": "Conservación",
-      "status": "machineDraft"
-    },
     "web.nav.tasks": {
       "text": "Tareas",
       "status": "machineDraft"
@@ -3621,6 +3657,10 @@
       "text": "Los tamaños son los bytes del contenido guardado, no el espacio que la base de datos usa para él.",
       "status": "machineDraft"
     },
+    "web.retention.changeRules": {
+      "text": "Cambiar las reglas en Ajustes",
+      "status": "machineDraft"
+    },
     "web.retention.column.area": {
       "text": "Área",
       "status": "machineDraft"
@@ -3661,10 +3701,6 @@
       "text": "El ensayo está abierto de nuevo.",
       "status": "machineDraft"
     },
-    "web.retention.heading": {
-      "text": "Conservación",
-      "status": "machineDraft"
-    },
     "web.retention.holds.column.by": {
       "text": "Puesta por",
       "status": "machineDraft"
@@ -3687,22 +3723,6 @@
     },
     "web.retention.holds.none": {
       "text": "Ningún ensayo está bajo retención.",
-      "status": "machineDraft"
-    },
-    "web.retention.intro": {
-      "text": "Lo que contiene este almacén, cuánto tiempo se conserva cada tipo de dato y lo que las reglas dejan ir ahora. Nada sale hasta que una regla lo diga: cada área se conserva mientras no se cambie su regla.",
-      "status": "machineDraft"
-    },
-    "web.retention.outcome.done": {
-      "text": "Esto se eliminó y quedó registrado en el registro de auditoría:",
-      "status": "machineDraft"
-    },
-    "web.retention.outcome.heading": {
-      "text": "Depurado",
-      "status": "machineDraft"
-    },
-    "web.retention.outcome.nothing": {
-      "text": "No se depuró nada: ninguna regla deja ir nada.",
       "status": "machineDraft"
     },
     "web.retention.period.days": {
@@ -3769,6 +3789,10 @@
       "text": "Esto elimina definitivamente todo lo que se enumera abajo. No se puede deshacer.",
       "status": "machineDraft"
     },
+    "web.retention.pruning.audit": {
+      "text": "Lo que eliminaron las depuraciones, en el registro de auditoría",
+      "status": "machineDraft"
+    },
     "web.retention.pruning.heading": {
       "text": "Depuración",
       "status": "machineDraft"
@@ -3793,16 +3817,8 @@
       "text": "Conservar hasta el cierre del ensayo y después durante {period}",
       "status": "machineDraft"
     },
-    "web.retention.scope.server": {
-      "text": "El servidor",
-      "status": "machineDraft"
-    },
     "web.retention.settingHelp": {
-      "text": "Una regla es un ajuste que cambia quien puede gestionar la conservación: keep, keepFor:<period> o keepUntilClosed:<period>, con un periodo como P90D, P18M o P5Y. Las reglas de los registros de ensayos, de los archivos recibidos y del registro de auditoría también pueden fijarse para un lugar o un ensayo.",
-      "status": "machineDraft"
-    },
-    "web.retention.source.trial": {
-      "text": "fijado para el ensayo",
+      "text": "Una regla es un ajuste que cambia, en la página de ajustes, quien puede gestionar la conservación: keep, keepFor:<period> o keepUntilClosed:<period>, con un periodo como P90D, P18M o P5Y. Las reglas de los registros de ensayos, de los archivos recibidos y del registro de auditoría también pueden fijarse para un lugar o un ensayo.",
       "status": "machineDraft"
     },
     "web.retention.trial.close": {
@@ -3998,7 +4014,7 @@
       "status": "machineDraft"
     },
     "web.task.feature.retention": {
-      "text": "Conservación: la depuración propia del almacén",
+      "text": "la depuración propia del almacén (conservación)",
       "status": "machineDraft"
     },
     "web.task.heading": {

@@ -90,6 +90,9 @@ def deleteTask(session: Session, name: str) -> None:
   if row.ownerProvider is not None:
     raise TaskError(f"task '{name}' is kept for the identity provider '{row.ownerProvider}' and is not deleted "
                     "while that provider uses it")
+  if row.ownerFeature is not None:
+    raise TaskError(f"task '{name}' is kept for the store's own {row.ownerFeature} and is not deleted; disable it "
+                    "to stop its runs")
   if hasActiveRun(session, name):
     raise TaskError(f"task '{name}' has a run requested or running; delete it once that run has ended")
   session.delete(row)

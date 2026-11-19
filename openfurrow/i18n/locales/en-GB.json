@@ -3229,10 +3229,6 @@
       "text": "How many task runs the scheduler lets go at once: 1 to 64.",
       "status": "humanApproved"
     },
-    "web.administration.setting.tasks.runRetentionDays": {
-      "text": "How many days a task's run records are kept: 1 to 3650.",
-      "status": "humanApproved"
-    },
     "web.administration.signInMode.current": {
       "text": "The server's sign-in mode is: {mode}",
       "status": "humanApproved"
@@ -3925,16 +3921,12 @@
       "text": "More institutions match than the first {count} shown; type more of the name to narrow them.",
       "status": "humanApproved"
     },
-    "web.nav.retention": {
-      "text": "Retention",
-      "status": "humanApproved"
-    },
     "web.task.ownerFeature": {
       "text": "Kept for",
       "status": "humanApproved"
     },
     "web.task.feature.retention": {
-      "text": "Retention: the store's own pruning",
+      "text": "the store's own pruning (retention)",
       "status": "humanApproved"
     },
     "web.size.bytes": {
@@ -4125,14 +4117,6 @@
       "text": "write the day as YYYY-MM-DD",
       "status": "humanApproved"
     },
-    "web.retention.heading": {
-      "text": "Retention",
-      "status": "humanApproved"
-    },
-    "web.retention.intro": {
-      "text": "What this store holds, how long each kind of data is kept, and what the rules now let go. Nothing leaves until a rule says so: every area is kept unless its rule is changed.",
-      "status": "humanApproved"
-    },
     "web.retention.areas.heading": {
       "text": "Storage areas",
       "status": "humanApproved"
@@ -4206,7 +4190,7 @@
       "status": "humanApproved"
     },
     "web.retention.settingHelp": {
-      "text": "A rule is a setting, changed by someone who may manage retention: keep, keepFor:<period> or keepUntilClosed:<period>, with a period such as P90D, P18M or P5Y. The rules of trial records, received files and the audit log can also be set for a place or a trial.",
+      "text": "A rule is a setting, changed on the settings page by someone who may manage retention: keep, keepFor:<period> or keepUntilClosed:<period>, with a period such as P90D, P18M or P5Y. The rules of trial records, received files and the audit log can also be set for a place or a trial.",
       "status": "humanApproved"
     },
     "web.retention.rule.keep": {
@@ -4243,14 +4227,6 @@
     },
     "web.retention.period.one.years": {
       "text": "1 year",
-      "status": "humanApproved"
-    },
-    "web.retention.scope.server": {
-      "text": "The server",
-      "status": "humanApproved"
-    },
-    "web.retention.source.trial": {
-      "text": "set for the trial",
       "status": "humanApproved"
     },
     "web.retention.withTheTrialRecord": {
@@ -4325,16 +4301,56 @@
       "text": "Back to retention",
       "status": "humanApproved"
     },
-    "web.retention.outcome.heading": {
-      "text": "Pruned",
+    "web.administration.section.retention": {
+      "text": "Retention",
       "status": "humanApproved"
     },
-    "web.retention.outcome.done": {
-      "text": "This was removed, and recorded in the audit log:",
+    "web.administration.about.retention": {
+      "text": "What the store holds in each storage area and the rule each is kept by, the holds, and pruning. Trial records, files as received and the audit log are kept until someone decides otherwise; expired sessions and tokens leave after 30 days and finished task runs after 90 unless their rules are changed.",
       "status": "humanApproved"
     },
-    "web.retention.outcome.nothing": {
+    "web.administration.setting.retention.trialRecords": {
+      "text": "How long a trial's record is kept: keep, or keepUntilClosed:<period> to remove the whole trial that long after its closed date. A period is days, months or years: P90D, P18M, P5Y.",
+      "status": "humanApproved"
+    },
+    "web.administration.setting.retention.receivedFiles": {
+      "text": "How long the files as received are kept: keep, keepFor:<period> counted from their import, or keepUntilClosed:<period> counted from their trial's closed date.",
+      "status": "humanApproved"
+    },
+    "web.administration.setting.retention.auditLog": {
+      "text": "How long audit events are kept: keep, keepFor:<period> counted from the event, or keepUntilClosed:<period> counted from their trial's closed date.",
+      "status": "humanApproved"
+    },
+    "web.administration.setting.retention.sessionsAndTokens": {
+      "text": "How long expired sessions and tokens are kept after they expire: keep or keepFor:<period>.",
+      "status": "humanApproved"
+    },
+    "web.administration.setting.retention.taskRuns": {
+      "text": "How long the records of finished task runs are kept: keep or keepFor:<period>.",
+      "status": "humanApproved"
+    },
+    "web.administration.confirm.task.keptForFeature": {
+      "text": "This task is kept for {feature} and is not deleted; disable it to stop its runs.",
+      "status": "humanApproved"
+    },
+    "web.administration.settings.needsPermission": {
+      "text": "Changing this setting here needs the permission: {permission}.",
+      "status": "humanApproved"
+    },
+    "web.retention.changeRules": {
+      "text": "Change the rules under Settings",
+      "status": "humanApproved"
+    },
+    "web.administration.done.pruned": {
+      "text": "Pruned. What went is recorded in the audit log.",
+      "status": "humanApproved"
+    },
+    "web.administration.done.nothingPruned": {
       "text": "Nothing was pruned: no rule lets anything go.",
+      "status": "humanApproved"
+    },
+    "web.retention.pruning.audit": {
+      "text": "What prunings removed, in the audit log",
       "status": "humanApproved"
     }
   }

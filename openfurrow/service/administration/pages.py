@@ -11,7 +11,8 @@ from flask import Response, g, redirect, render_template, request, url_for
 from pydantic import ValidationError
 
 from openfurrow.identity.model import Permission, RoleAssignment, SignInMode
-from openfurrow.settings import SettingError
+from openfurrow.retention import RetentionError
+from openfurrow.settings import SettingError, definitions
 from openfurrow.store.hierarchy import ScopeError
 from openfurrow.workspace import IdentityError, NotFoundError, StoreError, TaskError, Workspace
 
@@ -25,13 +26,16 @@ sectionEndpoints = {
   "providers": "web.administrationProviders",
   "workloads": "web.administrationWorkloads",
   "tasks": "web.tasks",
+  "retention": "web.administrationRetention",
   "audit": "web.administrationAudit",
 }
 doneCodes = frozenset({
   "created", "passwordSet", "deactivated", "reactivated", "linked", "joined", "left", "deleted", "defined", "saved",
-  "given", "takenBack", "set", "cleared", "added", "enabled", "disabled", "removed",
+  "given", "takenBack", "set", "cleared", "added", "enabled", "disabled", "removed", "pruned", "nothingPruned",
 })
-refusals = (IdentityError, StoreError, TaskError, SettingError, ScopeError, ValidationError)
+refusals = (IdentityError, StoreError, TaskError, SettingError, ScopeError, ValidationError, RetentionError)
+# A setting names the permission that changes it (decision 0044): the settings page is for whoever holds one of them.
+settingPermissions = frozenset(definition.permission for definition in definitions.values())
 holderFields = {"user": "userName", "group": "groupName", "rule": "ruleName"}
 
 
@@ -62,11 +66,12 @@ class Pages:
       "groups": Permission.manageAccess in held,
       "roles": Permission.manageAccess in held,
       "assignments": Permission.manageAccess in held,
-      "settings": bool(self.workspace.scopesGranting(Permission.changeSettings)),
+      "settings": any(self.workspace.scopesGranting(permission) for permission in settingPermissions),
       "signInMode": Permission.changeSettings in held,
       "providers": Permission.manageAccess in held,
       "workloads": Permission.manageAccess in held,
       "tasks": Permission.manageTasks in held,
+      "retention": Permission.manageRetention in held,
       "audit": bool(self.workspace.scopesGranting(Permission.viewAudit)),
     }
     return [(section, endpoint) for section, endpoint in sectionEndpoints.items() if may[section]]

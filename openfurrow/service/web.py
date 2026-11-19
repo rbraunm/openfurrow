@@ -23,9 +23,9 @@ The pages: list trials; add a trial (the trial form, or the canonical package JS
 a trial with its field layout, its files as received, its closed date and its hold;
 enter values; import observations from a CSV or an .xlsx workbook through a preview and
 an explicit column mapping (decision 0031); read the report; check reproducibility;
-delete a trial; the scheduled tasks with their runs (decision 0041); and what the store
-holds, with a preview of pruning and pruning itself (decision 0044). The administration
-area is `openfurrow.service.administration`, and the pages a refusal answers with are
+delete a trial; and the scheduled tasks with their runs (decision 0041). The
+administration area, retention's pages among it (decision 0044), is
+`openfurrow.service.administration`, and the pages a refusal answers with are
 `openfurrow.service.refusalPages`.
 """
 
@@ -49,7 +49,7 @@ from openfurrow.config import OpenFurrowConfig, defaultConfig
 from openfurrow.i18n import availableLocales, sourceLocale, translatorFor
 from openfurrow.importers.entry import EntryRefused, readEntry, writeEntry
 from openfurrow.reports.charts import meansFigure
-from openfurrow.retention import RetentionError, RetentionRule, StorageArea, retentionTaskName, settingKey
+from openfurrow.retention import RetentionError, settingKey, trialBoundAreas
 from openfurrow.interop.fieldbook import fieldBookTraitColumn, fieldBookValueColumn, fieldUniqueIDColumn
 from openfurrow.service.trialForm import FormProblem, emptyForm, formFromRequest, packageFromForm
 from openfurrow.schema import AssessmentDataType, Observation, RandomizationMethod, TrialPackage
@@ -59,6 +59,7 @@ from openfurrow.identity.model import Permission, SignInMode
 from openfurrow.identity.providers import ProviderKind
 from openfurrow.service.administration import registerAdministration
 from openfurrow.service.refusalPages import registerRefusalPages
+from openfurrow.service.retentionWords import ruleText, sizeText
 from openfurrow.service.signIn import pendingCookie, sessionCookie
 from openfurrow.workspace import (
   IdentityError,
@@ -106,12 +107,10 @@ def createWebBlueprint(workspace: Workspace, config: OpenFurrowConfig | None = N
   def _localeContext(translator):
     # Shared template context: the translator, the current locale, its direction, and
     # the locales offered in the switcher.
-    held = (workspace.permissionsAt("server") if g.signedIn is not None or g.signInMode is SignInMode.open
-            else frozenset())
-    mayManageTasks = Permission.manageTasks in held
+    mayManageTasks = ((g.signedIn is not None or g.signInMode is SignInMode.open)
+                      and Permission.manageTasks in workspace.permissionsAt("server"))
     return {
-      "mayManageRetention": Permission.manageRetention in held,
-      "size": lambda count: _sizeText(count, translator),
+      "size": lambda count: sizeText(count, translator),
       "t": translator,
       "locale": translator.locale,
       "direction": translator.direction,
@@ -139,10 +138,10 @@ def createWebBlueprint(workspace: Workspace, config: OpenFurrowConfig | None = N
     return {setting.key: setting.value for setting in workspace.effectiveSettings("server")}["tasks.timeZone"]
 
   def _retentionWords(translator) -> dict:
-    """What the trial page and the retention page say rules, sources and moments with."""
+    """What the trial page says rules, sources and moments with."""
     zone = _serverZone()
     return {
-      "ruleText": lambda rule: _ruleText(rule, translator),
+      "ruleText": lambda rule: ruleText(rule, translator),
       "sourceText": lambda source: _sourceText(source, translator),
       "moment": lambda moment: _moment(moment, zone, translator),
       "zone": zone,
@@ -170,8 +169,8 @@ def createWebBlueprint(workspace: Workspace, config: OpenFurrowConfig | None = N
       "closedOn": workspace.closedOn(trialCode),
       "hold": workspace.holdOn(trialCode),
       "mayClose": Permission.manageTrials in held,
-      "mayHold": Permission.manageRetention in held,
-      "retentionRules": [(area, rules[settingKey(area)]) for area in _trialAreas],
+      "mayManageRetention": Permission.manageRetention in held,
+      "retentionRules": [(area, rules[settingKey(area)]) for area in trialBoundAreas],
       "retentionProblem": None,
       "retentionNotice": translator.text(f"web.retention.done.{done}") if done in _trialActions else None,
     } | _retentionWords(translator)
@@ -454,32 +453,6 @@ def createWebBlueprint(workspace: Workspace, config: OpenFurrowConfig | None = N
 
   registerRefusalPages(blueprint, _translator, _localeContext)
   registerAdministration(blueprint, workspace, _translator, _localeContext, _localized, _moment, _levelName)
-  def _pruningContext(translator) -> dict:
-    return {"retentionTask": retentionTaskName} | _retentionWords(translator)
-
-  @blueprint.get("/retention")
-  def retention() -> Response:
-    """What the store holds, area by area, for holders of manageRetention (decision 0044): counts, sizes, each
-    area's rule and where it was set, the holds, and on request a preview of what pruning now would remove."""
-    translator = _translator()
-    context = {
-      "status": workspace.retentionStatus(), "outcome": None,
-      "preview": workspace.previewPruning() if request.args.get("preview") == "yes" else None,
-    }
-    return Response(render_template("retention.html", **context, **_pruningContext(translator),
-                                    **_localeContext(translator)))
-
-  @blueprint.route("/retention/prune", methods=["GET", "POST"])
-  def prune() -> Response:
-    """Pruning: the GET shows exactly what would go and asks; only the POST removes it, and shows what went."""
-    translator = _translator()
-    if request.method == "GET":
-      return Response(render_template("retentionPrune.html", preview=workspace.previewPruning(),
-                                      **_pruningContext(translator), **_localeContext(translator)))
-    outcome = workspace.prune()
-    context = {"status": workspace.retentionStatus(), "outcome": outcome, "preview": None}
-    return Response(render_template("retention.html", **context, **_pruningContext(translator),
-                                    **_localeContext(translator)))
 
   @blueprint.get("/tasks")
   def tasks() -> Response:
@@ -950,27 +923,7 @@ def _attachment(content: bytes, fileName: str, mimetype: str) -> Response:
   return response
 
 
-_trialAreas = (StorageArea.trialRecords, StorageArea.receivedFiles, StorageArea.auditLog)
 _trialActions = ("close", "reopen", "hold", "release")
-_sizeUnits = (("gigabytes", 10 ** 9), ("megabytes", 10 ** 6), ("kilobytes", 10 ** 3))
-
-
-def _sizeText(count: int, translator) -> str:
-  for unit, bytesIn in _sizeUnits:
-    if count >= bytesIn:
-      return translator.text(f"web.size.{unit}", count=translator.number(count / bytesIn, decimals=1))
-  return translator.text("web.size.bytes", count=translator.integer(count))
-
-
-def _ruleText(rule: str, translator) -> str:
-  """A retention rule in the reader's words."""
-  read = RetentionRule.read(rule)
-  if read.period is None:
-    return translator.text("web.retention.rule.keep")
-  unit = read.period.unit.name
-  period = (translator.text(f"web.retention.period.one.{unit}") if read.period.count == 1
-            else translator.text(f"web.retention.period.{unit}", count=translator.integer(read.period.count)))
-  return translator.text(f"web.retention.rule.{read.policy.value}", period=period)
 
 
 def _sourceText(source: str, translator) -> str:

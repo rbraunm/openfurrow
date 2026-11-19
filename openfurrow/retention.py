@@ -6,8 +6,11 @@ records, the files as received, the audit log, sessions and tokens, and the runs
 scheduled tasks. Each area has a retention rule, a setting of the registry (decision
 0035) named `retention.<area>`:
 
-- `keep`: nothing leaves. The default everywhere.
-- `keepFor:<period>`: a record leaves once it is older than the period.
+- `keep`: nothing leaves. The default for everything an owner would miss: trial records,
+  files as received and the audit log.
+- `keepFor:<period>`: a record leaves once it is older than the period. Expired sessions
+  and tokens are kept for 30 days and finished task runs for 90 unless an owner says
+  otherwise, so a store nobody tends does not grow without bound.
 - `keepUntilClosed:<period>`: a trial's records stay while the trial is open and for the
   period after its closed date.
 
@@ -133,6 +136,14 @@ policiesOf: dict[StorageArea, frozenset[RetentionPolicy]] = {
   StorageArea.taskRuns: _byAge,
 }
 trialBoundAreas = (StorageArea.trialRecords, StorageArea.receivedFiles, StorageArea.auditLog)
+# What an area is kept by until its setting says otherwise.
+defaultRuleOf: dict[StorageArea, str] = {
+  StorageArea.trialRecords: "keep",
+  StorageArea.receivedFiles: "keep",
+  StorageArea.auditLog: "keep",
+  StorageArea.sessionsAndTokens: "keepFor:P30D",
+  StorageArea.taskRuns: "keepFor:P90D",
+}
 
 
 def settingKey(area: StorageArea) -> str:

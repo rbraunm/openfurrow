@@ -7,24 +7,26 @@
         <th scope="col" class="num">{{ t.text('web.retention.column.count') }}</th>
         <th scope="col" class="num">{{ t.text('web.retention.column.size') }}</th>
         <th scope="col">{{ t.text('web.retention.column.rule') }}</th>
+        <th scope="col">{{ t.text('web.administration.settings.source') }}</th>
       </tr>
     </thead>
     <tbody>
       {% for line in report.lines %}
       <tr>
         <td>{{ t.text('web.retention.area.' ~ line.area.value) }}</td>
-        <td>{% if line.scope == 'server' %}{{ t.text('web.retention.scope.server') }}{% else %}<span class="code" dir="ltr">{{ line.scope }}</span>{% endif %}</td>
+        <td dir="auto">{{ scopeName(line.scope) }}</td>
         <td class="num code">{{ t.integer(line.count) }}</td>
         <td class="num">{{ size(line.sizeBytes) }}</td>
-        <td>{{ ruleText(line.rule) }} ({{ sourceText(line.source) if line.source.partition(':')[0] != 'trial' else t.text('web.retention.source.trial') }})</td>
+        <td>{{ ruleText(line.rule) }}</td>
+        <td dir="auto">{{ sourceName(line.source) }}</td>
       </tr>
       {% if line.area.value == 'trialRecords' %}
       <tr>
-        <td colspan="5"><span dir="auto">{{ line.detail['title'] }}</span>. {{ t.text('web.trial.contentHash') }} <span class="code" dir="ltr">{{ line.detail['contentHash'] }}</span></td>
+        <td colspan="6"><span dir="auto">{{ line.detail['title'] }}</span>. {{ t.text('web.trial.contentHash') }} <span class="code" dir="ltr">{{ line.detail['contentHash'] }}</span></td>
       </tr>
       {% elif line.area.value == 'receivedFiles' %}
       <tr>
-        <td colspan="5">
+        <td colspan="6">
           {% if line.detail['withTheTrialRecord'] %}<p class="help">{{ t.text('web.retention.withTheTrialRecord') }}</p>{% endif %}
           <ul>
             {% for file in line.detail['files'] %}

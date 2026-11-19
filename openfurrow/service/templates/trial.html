@@ -195,7 +195,7 @@
   {% else %}
   <p>{{ t.text('web.retention.trial.notHeld') }}</p>
   {% endif %}
-  {% if mayHold %}
+  {% if mayManageRetention %}
   <form class="import-form" method="post" action="{{ retentionAction }}">
     <input type="hidden" name="action" value="{{ 'release' if hold else 'hold' }}">
     <div class="field-row">
@@ -222,6 +222,9 @@
       {% endfor %}
     </tbody>
   </table>
+  {% if mayManageRetention %}
+  <p><a href="{{ url_for('web.administrationSettings', scope='trial:' ~ package.trial.trialCode, locale=locale if locale != 'en-US' else none) }}">{{ t.text('web.retention.changeRules') }}</a></p>
+  {% endif %}
 </section>
 
 <section class="manage" aria-label="{{ t.text('web.manage.heading') }}">

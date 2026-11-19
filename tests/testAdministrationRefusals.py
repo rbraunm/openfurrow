@@ -40,6 +40,8 @@ guardedPages = {
   "/administration/tasks/delete/echo": Permission.manageTasks,
   "/tasks": Permission.manageTasks,
   "/tasks/echo": Permission.manageTasks,
+  "/administration/retention": Permission.manageRetention,
+  "/administration/retention/prune": Permission.manageRetention,
   "/administration/audit": Permission.viewAudit,
 }
 openPages = ["/administration", "/administration/settings", f"/administration/settings?scope=trial:{trialCode}"]
@@ -74,6 +76,7 @@ changes = [
   ("/administration/tasks/add/testEcho", {"name": "other", "message": "again"}),
   ("/administration/tasks/delete/echo", {}),
   ("/tasks/other", {"action": "disable"}),
+  ("/administration/retention/prune", {}),
   ("/administration/sign-in-mode", {"mode": "open", "confirm": "yes"}),
 ]
 

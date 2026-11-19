@@ -1493,6 +1493,10 @@
       "text": "أين يسجّل الأشخاص دخولهم خارج هذا الموقع، وما الذي يزوّد الحسابات: OpenID Connect و SAML واتحادات البحث و CAS و LDAP و SCIM.",
       "status": "machineDraft"
     },
+    "web.administration.about.retention": {
+      "text": "ما يحتويه المخزن في كل منطقة والقاعدة التي تُحفظ بها، وحالات الحجز، والتنقية. تبقى سجلات التجارب والملفات المستلمة وسجل التدقيق محفوظة إلى أن يقرر أحد غير ذلك؛ أما الجلسات والرموز المنتهية فتخرج بعد 30 يومًا وتشغيلات المهام المنتهية بعد 90 يومًا ما لم تُغيَّر قواعدها.",
+      "status": "machineDraft"
+    },
     "web.administration.about.roles": {
       "text": "مجموعات مسمّاة من الصلاحيات. خمسة منها مدمجة؛ عرّف أدوارك من الصلاحيات نفسها.",
       "status": "machineDraft"
@@ -1845,6 +1849,10 @@
       "text": "هذه المهمة محفوظة لمزوّد الهوية {provider} ولا تُحذف ما دام ذلك المزوّد يستخدمها.",
       "status": "machineDraft"
     },
+    "web.administration.confirm.task.keptForFeature": {
+      "text": "هذه المهمة محفوظة من أجل {feature} ولا تُحذف؛ عطّلها لإيقاف تشغيلاتها.",
+      "status": "machineDraft"
+    },
     "web.administration.confirm.task.warning": {
       "text": "سيؤدي هذا إلى حذف المهمة وسجل كل تشغيلاتها. لا يمكن التراجع.",
       "status": "machineDraft"
@@ -1929,8 +1937,16 @@
       "text": "تم الربط.",
       "status": "machineDraft"
     },
+    "web.administration.done.nothingPruned": {
+      "text": "لم يُنقَّ شيء: لا قاعدة تسمح بإزالة شيء.",
+      "status": "machineDraft"
+    },
     "web.administration.done.passwordSet": {
       "text": "تم تعيين كلمة المرور.",
+      "status": "machineDraft"
+    },
+    "web.administration.done.pruned": {
+      "text": "تمت التنقية. ما أُزيل مسجَّل في سجل التدقيق.",
       "status": "machineDraft"
     },
     "web.administration.done.reactivated": {
@@ -2593,6 +2609,10 @@
       "text": "مزوّدو الهوية",
       "status": "machineDraft"
     },
+    "web.administration.section.retention": {
+      "text": "الاحتفاظ بالبيانات",
+      "status": "machineDraft"
+    },
     "web.administration.section.roles": {
       "text": "الأدوار",
       "status": "machineDraft"
@@ -2637,12 +2657,28 @@
       "text": "الجمهور (audience) الذي يجب أن يسمّيه رمز كل حمل عمل موثوق: الاسم الذي يعرّف به هذا الخادم نفسه، وهو عادةً عنوانه. ما دام غير معيَّن لا يُقبل أي رمز حمل عمل.",
       "status": "machineDraft"
     },
-    "web.administration.setting.tasks.maximumConcurrentRuns": {
-      "text": "عدد تشغيلات المهام التي يسمح بها المُجدوِل في آن واحد: من 1 إلى 64.",
+    "web.administration.setting.retention.auditLog": {
+      "text": "مدة الاحتفاظ بأحداث التدقيق: keep، أو keepFor:<period> محسوبة من الحدث، أو keepUntilClosed:<period> محسوبة من تاريخ إغلاق تجربتها.",
       "status": "machineDraft"
     },
-    "web.administration.setting.tasks.runRetentionDays": {
-      "text": "عدد الأيام التي تُحفظ فيها سجلات تشغيل المهمة: من 1 إلى 3650.",
+    "web.administration.setting.retention.receivedFiles": {
+      "text": "مدة الاحتفاظ بالملفات كما استُلمت: keep، أو keepFor:<period> محسوبة من استيرادها، أو keepUntilClosed:<period> محسوبة من تاريخ إغلاق تجربتها.",
+      "status": "machineDraft"
+    },
+    "web.administration.setting.retention.sessionsAndTokens": {
+      "text": "مدة الاحتفاظ بالجلسات والرموز المنتهية بعد انتهائها: keep أو keepFor:<period>.",
+      "status": "machineDraft"
+    },
+    "web.administration.setting.retention.taskRuns": {
+      "text": "مدة الاحتفاظ بسجلات تشغيلات المهام المنتهية: keep أو keepFor:<period>.",
+      "status": "machineDraft"
+    },
+    "web.administration.setting.retention.trialRecords": {
+      "text": "مدة الاحتفاظ بسجل التجربة: keep، أو keepUntilClosed:<period> لإزالة التجربة كلها بعد تلك المدة من تاريخ إغلاقها. المدة بالأيام أو الأشهر أو السنوات: P90D، P18M، P5Y.",
+      "status": "machineDraft"
+    },
+    "web.administration.setting.tasks.maximumConcurrentRuns": {
+      "text": "عدد تشغيلات المهام التي يسمح بها المُجدوِل في آن واحد: من 1 إلى 64.",
       "status": "machineDraft"
     },
     "web.administration.setting.tasks.timeZone": {
@@ -2659,6 +2695,10 @@
     },
     "web.administration.settings.clearNamed": {
       "text": "مسح {setting} هنا",
+      "status": "machineDraft"
+    },
+    "web.administration.settings.needsPermission": {
+      "text": "تغيير هذا الإعداد هنا يتطلب الصلاحية: {permission}.",
       "status": "machineDraft"
     },
     "web.administration.settings.newValue": {
@@ -3361,10 +3401,6 @@
       "text": "الأماكن",
       "status": "machineDraft"
     },
-    "web.nav.retention": {
-      "text": "الاحتفاظ",
-      "status": "machineDraft"
-    },
     "web.nav.tasks": {
       "text": "المهام",
       "status": "machineDraft"
@@ -3621,6 +3657,10 @@
       "text": "الأحجام هي بايتات المحتوى المحفوظ، لا المساحة التي تستخدمها قاعدة البيانات له.",
       "status": "machineDraft"
     },
+    "web.retention.changeRules": {
+      "text": "تغيير القواعد من الإعدادات",
+      "status": "machineDraft"
+    },
     "web.retention.column.area": {
       "text": "المنطقة",
       "status": "machineDraft"
@@ -3661,10 +3701,6 @@
       "text": "التجربة مفتوحة من جديد.",
       "status": "machineDraft"
     },
-    "web.retention.heading": {
-      "text": "الاحتفاظ",
-      "status": "machineDraft"
-    },
     "web.retention.holds.column.by": {
       "text": "وضعه",
       "status": "machineDraft"
@@ -3687,22 +3723,6 @@
     },
     "web.retention.holds.none": {
       "text": "لا توجد تجربة تحت الحجز.",
-      "status": "machineDraft"
-    },
-    "web.retention.intro": {
-      "text": "ما يحتويه هذا المخزن، ومدة الاحتفاظ بكل نوع من البيانات، وما تسمح القواعد بإزالته الآن. لا يخرج شيء حتى تقول قاعدةٌ ذلك: تبقى كل منطقة محفوظة ما لم تُغيَّر قاعدتها.",
-      "status": "machineDraft"
-    },
-    "web.retention.outcome.done": {
-      "text": "أُزيل هذا وسُجّل في سجل التدقيق:",
-      "status": "machineDraft"
-    },
-    "web.retention.outcome.heading": {
-      "text": "ما أُزيل",
-      "status": "machineDraft"
-    },
-    "web.retention.outcome.nothing": {
-      "text": "لم يُنقَّ شيء: لا قاعدة تسمح بإزالة شيء.",
       "status": "machineDraft"
     },
     "web.retention.period.days": {
@@ -3769,6 +3789,10 @@
       "text": "هذا يزيل نهائيًا كل ما هو مدرج أدناه. لا يمكن التراجع عنه.",
       "status": "machineDraft"
     },
+    "web.retention.pruning.audit": {
+      "text": "ما أزالته عمليات التنقية، في سجل التدقيق",
+      "status": "machineDraft"
+    },
     "web.retention.pruning.heading": {
       "text": "التنقية",
       "status": "machineDraft"
@@ -3793,16 +3817,8 @@
       "text": "احتفاظ حتى إغلاق التجربة، ثم لمدة {period}",
       "status": "machineDraft"
     },
-    "web.retention.scope.server": {
-      "text": "الخادم",
-      "status": "machineDraft"
-    },
     "web.retention.settingHelp": {
-      "text": "القاعدة إعدادٌ يغيّره من يحق له إدارة الاحتفاظ: keep أو keepFor:<period> أو keepUntilClosed:<period>، بمدة مثل P90D أو P18M أو P5Y. ويمكن أيضًا تحديد قواعد سجلات التجارب والملفات المستلمة وسجل التدقيق لمكان أو لتجربة.",
-      "status": "machineDraft"
-    },
-    "web.retention.source.trial": {
-      "text": "محدَّد للتجربة",
+      "text": "القاعدة إعدادٌ يغيّره، من صفحة الإعدادات، من يحق له إدارة الاحتفاظ: keep أو keepFor:<period> أو keepUntilClosed:<period>، بمدة مثل P90D أو P18M أو P5Y. ويمكن أيضًا تحديد قواعد سجلات التجارب والملفات المستلمة وسجل التدقيق لمكان أو لتجربة.",
       "status": "machineDraft"
     },
     "web.retention.trial.close": {
@@ -3998,7 +4014,7 @@
       "status": "machineDraft"
     },
     "web.task.feature.retention": {
-      "text": "الاحتفاظ: التنقية الخاصة بالمخزن",
+      "text": "التنقية الخاصة بالمخزن (الاحتفاظ)",
       "status": "machineDraft"
     },
     "web.task.heading": {

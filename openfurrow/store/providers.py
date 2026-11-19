@@ -83,8 +83,10 @@ def provisioningTokenMatches(session: Session, name: str, token: str) -> bool:
 # ---- sign-ins waiting for a provider ------------------------------------------
 
 def startPending(session: Session, name: str, state: dict) -> str:
-  """Keep a sign-in's state until the provider answers; the key returned goes to the browser's cookie. One that is
-  never answered expires where it is, and leaves the store when retention says (decision 0044)."""
+  """Keep a sign-in's state until the provider answers; the key returned goes to the browser's cookie. Starting one
+  sweeps those that expired unanswered: anyone can start a sign-in without signing in, so what they leave behind
+  is not kept for any retention rule to decide (decision 0044)."""
+  session.execute(PendingSignInRow.__table__.delete().where(PendingSignInRow.expiresAt < now()))
   key = secrets.token_urlsafe(32)
   session.add(PendingSignInRow(keyHash=_hashed(key), providerName=name, stateJSON=json.dumps(state),
                                expiresAt=now() + datetime.timedelta(minutes=pendingMinutes)))

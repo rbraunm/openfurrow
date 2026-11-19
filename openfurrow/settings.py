@@ -22,7 +22,7 @@ from pydantic import AfterValidator, BaseModel, ConfigDict, Field, TypeAdapter, 
 from openfurrow.analysis.meanSeparation import MeanComparison
 from openfurrow.analysis.missingPlots import MissingPlotPolicy
 from openfurrow.identity.model import Permission, SignInMode
-from openfurrow.retention import RetentionPolicy, StorageArea, checkedRule, policiesOf, settingKey
+from openfurrow.retention import RetentionPolicy, StorageArea, checkedRule, defaultRuleOf, policiesOf, settingKey
 
 
 class SettingError(ValueError):
@@ -71,7 +71,7 @@ def _retention(area: StorageArea) -> SettingDefinition:
   scopes = everyScope if RetentionPolicy.keepUntilClosed in policiesOf[area] else serverOnly
   return SettingDefinition(
     settingKey(area), TypeAdapter(Annotated[str, AfterValidator(partial(checkedRule, area))]),
-    RetentionPolicy.keep.value, scopes, Permission.manageRetention,
+    checkedRule(area, defaultRuleOf[area]), scopes, Permission.manageRetention,
   )
 
 

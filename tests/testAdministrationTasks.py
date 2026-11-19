@@ -11,6 +11,7 @@ from openIDConnectStandIn import loopbackCertificates
 from openfurrow import Workspace
 from openfurrow.i18n import translatorFor
 from openfurrow.identity.providers import Provider
+from openfurrow.retention import retentionTaskName
 from openfurrow.tasks.kinds import registeredKinds
 from openfurrow.tasks.model import TaskError
 
@@ -27,6 +28,10 @@ def location(newStore, validPackageDict):
 
 def shown(written: str) -> str:
   return str(escape(written))
+
+
+def taskNames(operator: Workspace) -> list[str]:
+  return [task.name for task in operator.tasks()]
 
 
 def testATaskOfAKindIsAddedWithTheFormItsParametersMake(location):
@@ -47,7 +52,7 @@ def testATaskOfAKindIsAddedWithTheFormItsParametersMake(location):
   badName = admin.post(address, data={"name": "Greeting Task", "message": "hello"}, headers=origin)
   assert badName.status_code == 400 and shown("'Greeting Task' is not a task name") in text(badName)
   assert formWith(text(badName), "name") == {"name": "Greeting Task", "message": "hello"}
-  assert operator.tasks() == []
+  assert taskNames(operator) == [retentionTaskName]
 
   added = admin.post(address, data={"name": "greeting", "message": "hello"}, headers=origin)
   assert added.status_code == 302 and added.headers["Location"] == "/tasks/greeting"
@@ -77,17 +82,17 @@ def testATaskIsDeletedAfterAConfirmationPageUnlessAFeatureKeepsItOrARunIsUnderWa
   assert 'href="/administration/tasks/delete/greeting"' in text(admin.get("/tasks/greeting"))
   confirm = admin.get("/administration/tasks/delete/greeting")
   assert confirm.status_code == 200 and shown(english.text("web.administration.confirm.task.warning")) in text(confirm)
-  assert [task.name for task in operator.tasks()] == ["greeting"]
+  assert taskNames(operator) == ["greeting", retentionTaskName]
 
   operator.runTaskNow("greeting")
   running = admin.post("/administration/tasks/delete/greeting", headers=origin)
   assert running.status_code == 400 and shown("task 'greeting' has a run requested or running") in text(running)
-  assert [task.name for task in operator.tasks()] == ["greeting"]
+  assert taskNames(operator) == ["greeting", retentionTaskName]
 
   operator.createTask("other", "testEcho", {"message": "again"})
   deleted = admin.post("/administration/tasks/delete/other", headers=origin)
   assert deleted.status_code == 302 and deleted.headers["Location"] == "/tasks"
-  assert [task.name for task in operator.tasks()] == ["greeting"]
+  assert taskNames(operator) == ["greeting", retentionTaskName]
   assert audited(operator, "task.delete") == [("admin", "task.delete", {"task": "other", "kind": "testEcho",
                                                                          "parameters": {"message": "again"}})]
   assert admin.get("/administration/tasks/delete/other").status_code == 404
@@ -106,6 +111,6 @@ def testATaskIsDeletedAfterAConfirmationPageUnlessAFeatureKeepsItOrARunIsUnderWa
   assert kept in confirmKept and 'class="button button-danger"' not in confirmKept
   refused = admin.post("/administration/tasks/delete/federationRefresh-fed", headers=origin)
   assert refused.status_code == 400 and shown("task 'federationRefresh-fed' is kept for the identity provider 'fed'") in text(refused)
-  assert [task.name for task in operator.tasks()] == ["federationRefresh-fed", "greeting"]
+  assert taskNames(operator) == ["federationRefresh-fed", "greeting", retentionTaskName]
   with pytest.raises(TaskError, match="is kept for the identity provider 'fed'"):
     operator.deleteTask("federationRefresh-fed")

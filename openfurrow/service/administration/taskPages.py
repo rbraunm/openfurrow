@@ -58,8 +58,12 @@ def registerTaskPages(blueprint: Blueprint, workspace: Workspace, pages: Pages) 
         return pages.back("web.tasks", translator)
       except refusals as error:
         problems = pages.reasons(error)
-    kept = (None if task.ownerProvider is None
-            else translator.text("web.administration.confirm.task.kept", provider=task.ownerProvider))
+    kept = None
+    if task.ownerProvider is not None:
+      kept = translator.text("web.administration.confirm.task.kept", provider=task.ownerProvider)
+    elif task.ownerFeature is not None:
+      kept = translator.text("web.administration.confirm.task.keptForFeature",
+                             feature=translator.text(f"web.task.feature.{task.ownerFeature}"))
     return pages.confirm(translator, problems, "task", "tasks", task.name,
                          pages.addressOf("web.administrationTaskDelete", translator, name=name),
                          pages.addressOf("web.task", translator, name=name), blocked=kept)

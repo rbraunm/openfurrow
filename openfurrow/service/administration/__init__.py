@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 """The administration area of the web interface (worklist GOV-6): accounts, groups, roles and who holds them, settings
-by scope and the sign-in mode, identity providers, trusted workload rules, adding and deleting scheduled tasks, and
-the audit log.
+by scope and the sign-in mode, identity providers, trusted workload rules, adding and deleting scheduled tasks,
+retention (what the store holds, and pruning), and the audit log.
 
 Like every page, these are thin over the `Workspace` facade: the facade checks each permission and writes each audit
 event, so a page only reads the request, makes its one or two calls and renders. A section is offered to the people
@@ -18,6 +18,7 @@ from openfurrow.service.administration.accessPages import registerAccessPages
 from openfurrow.service.administration.auditPages import registerAuditPages
 from openfurrow.service.administration.pages import Pages
 from openfurrow.service.administration.providerPages import registerProviderPages
+from openfurrow.service.administration.retentionPages import registerRetentionPages
 from openfurrow.service.administration.settingPages import registerSettingPages
 from openfurrow.service.administration.taskPages import registerTaskPages
 from openfurrow.service.administration.workloadPages import registerWorkloadPages
@@ -47,4 +48,5 @@ def registerAdministration(blueprint: Blueprint, workspace: Workspace, translato
   registerProviderPages(blueprint, workspace, pages)
   registerWorkloadPages(blueprint, workspace, pages)
   registerTaskPages(blueprint, workspace, pages)
+  registerRetentionPages(blueprint, workspace, pages)
   registerAuditPages(blueprint, workspace, pages)

@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}{{ t.text('web.retention.prune.confirmHeading') }} - {{ t.text('web.administration.heading') }} - {{ t.text('web.app.name') }}{% endblock %}
+{% block content %}
+{% import "administrationParts.html" as parts with context %}
+{% set localeArgument = locale if locale != 'en-US' else none %}
+{% set retentionAddress = url_for('web.administrationRetention', locale=localeArgument) %}
+{{ parts.nav('retention') }}
+{{ parts.back(retentionAddress, t.text('web.retention.prune.back')) }}
+<div class="page-head">
+  <h1>{{ t.text('web.retention.prune.confirmHeading') }}</h1>
+</div>
+{{ parts.messages() }}
+
+{% if preview.lines %}
+<div class="error" role="alert">{{ t.text('web.retention.prune.confirmIntro') }}</div>
+{% with report = preview %}{% include "administrationPruneLines.html" %}{% endwith %}
+<form class="delete-form" method="post" action="{{ url_for('web.administrationRetentionPrune', locale=localeArgument) }}">
+  <button class="button button-danger" type="submit">{{ t.text('web.retention.prune.confirm') }}</button>
+  <a class="cancel" href="{{ retentionAddress }}">{{ t.text('web.delete.cancel') }}</a>
+</form>
+{% else %}
+<p class="notice" role="status">{{ t.text('web.retention.preview.nothing') }}</p>
+{% endif %}
+{% endblock %}

@@ -1493,6 +1493,10 @@
       "text": "Où les personnes se connectent en dehors de ce site, et ce qui provisionne les comptes : OpenID Connect, SAML, fédérations de recherche, CAS, LDAP et SCIM.",
       "status": "machineDraft"
     },
+    "web.administration.about.retention": {
+      "text": "Ce que le magasin contient dans chaque zone et la règle selon laquelle elle est conservée, les blocages et l'épuration. Les dossiers d'essais, les fichiers reçus et le journal d'audit sont conservés jusqu'à ce que quelqu'un en décide autrement ; les sessions et jetons expirés partent après 30 jours et les exécutions de tâches terminées après 90, sauf si leurs règles sont modifiées.",
+      "status": "machineDraft"
+    },
     "web.administration.about.roles": {
       "text": "Des ensembles nommés de permissions. Cinq sont intégrés ; définissez les vôtres à partir des mêmes permissions.",
       "status": "machineDraft"
@@ -1845,6 +1849,10 @@
       "text": "Cette tâche est tenue pour le fournisseur d'identité {provider} et n'est pas supprimée tant que ce fournisseur l'utilise.",
       "status": "machineDraft"
     },
+    "web.administration.confirm.task.keptForFeature": {
+      "text": "Cette tâche est tenue pour {feature} et n'est pas supprimée ; désactivez-la pour arrêter ses exécutions.",
+      "status": "machineDraft"
+    },
     "web.administration.confirm.task.warning": {
       "text": "Ceci supprime la tâche et l'enregistrement de toutes ses exécutions. Irréversible.",
       "status": "machineDraft"
@@ -1929,8 +1937,16 @@
       "text": "Lié.",
       "status": "machineDraft"
     },
+    "web.administration.done.nothingPruned": {
+      "text": "Rien n'a été épuré : aucune règle ne laisse rien partir.",
+      "status": "machineDraft"
+    },
     "web.administration.done.passwordSet": {
       "text": "Le mot de passe est défini.",
+      "status": "machineDraft"
+    },
+    "web.administration.done.pruned": {
+      "text": "Épuré. Ce qui est parti est consigné dans le journal d'audit.",
       "status": "machineDraft"
     },
     "web.administration.done.reactivated": {
@@ -2593,6 +2609,10 @@
       "text": "Fournisseurs d'identité",
       "status": "machineDraft"
     },
+    "web.administration.section.retention": {
+      "text": "Conservation",
+      "status": "machineDraft"
+    },
     "web.administration.section.roles": {
       "text": "Rôles",
       "status": "machineDraft"
@@ -2637,12 +2657,28 @@
       "text": "L'audience que le jeton de toute charge de travail de confiance doit nommer : le nom que ce serveur se donne, en général son adresse. Tant qu'elle n'est pas définie, aucun jeton de charge de travail n'est accepté.",
       "status": "machineDraft"
     },
-    "web.administration.setting.tasks.maximumConcurrentRuns": {
-      "text": "Combien d'exécutions de tâches le planificateur laisse tourner à la fois : de 1 à 64.",
+    "web.administration.setting.retention.auditLog": {
+      "text": "Combien de temps les événements d'audit sont conservés : keep, keepFor:<period> à compter de l'événement, ou keepUntilClosed:<period> à compter de la date de clôture de leur essai.",
       "status": "machineDraft"
     },
-    "web.administration.setting.tasks.runRetentionDays": {
-      "text": "Combien de jours les enregistrements d'exécution d'une tâche sont conservés : de 1 à 3650.",
+    "web.administration.setting.retention.receivedFiles": {
+      "text": "Combien de temps les fichiers tels que reçus sont conservés : keep, keepFor:<period> à compter de leur importation, ou keepUntilClosed:<period> à compter de la date de clôture de leur essai.",
+      "status": "machineDraft"
+    },
+    "web.administration.setting.retention.sessionsAndTokens": {
+      "text": "Combien de temps les sessions et jetons expirés sont conservés après leur expiration : keep ou keepFor:<period>.",
+      "status": "machineDraft"
+    },
+    "web.administration.setting.retention.taskRuns": {
+      "text": "Combien de temps les enregistrements des exécutions de tâches terminées sont conservés : keep ou keepFor:<period>.",
+      "status": "machineDraft"
+    },
+    "web.administration.setting.retention.trialRecords": {
+      "text": "Combien de temps le dossier d'un essai est conservé : keep, ou keepUntilClosed:<period> pour retirer l'essai entier ce délai après sa date de clôture. Une période est en jours, mois ou années : P90D, P18M, P5Y.",
+      "status": "machineDraft"
+    },
+    "web.administration.setting.tasks.maximumConcurrentRuns": {
+      "text": "Combien d'exécutions de tâches le planificateur laisse tourner à la fois : de 1 à 64.",
       "status": "machineDraft"
     },
     "web.administration.setting.tasks.timeZone": {
@@ -2659,6 +2695,10 @@
     },
     "web.administration.settings.clearNamed": {
       "text": "Effacer {setting} ici",
+      "status": "machineDraft"
+    },
+    "web.administration.settings.needsPermission": {
+      "text": "Modifier ce paramètre ici demande la permission : {permission}.",
       "status": "machineDraft"
     },
     "web.administration.settings.newValue": {
@@ -3361,10 +3401,6 @@
       "text": "Emplacements",
       "status": "machineDraft"
     },
-    "web.nav.retention": {
-      "text": "Conservation",
-      "status": "machineDraft"
-    },
     "web.nav.tasks": {
       "text": "Tâches",
       "status": "machineDraft"
@@ -3621,6 +3657,10 @@
       "text": "Les tailles sont les octets du contenu conservé, non l'espace que la base de données lui consacre.",
       "status": "machineDraft"
     },
+    "web.retention.changeRules": {
+      "text": "Modifier les règles dans Paramètres",
+      "status": "machineDraft"
+    },
     "web.retention.column.area": {
       "text": "Zone",
       "status": "machineDraft"
@@ -3661,10 +3701,6 @@
       "text": "L'essai est de nouveau ouvert.",
       "status": "machineDraft"
     },
-    "web.retention.heading": {
-      "text": "Conservation",
-      "status": "machineDraft"
-    },
     "web.retention.holds.column.by": {
       "text": "Posé par",
       "status": "machineDraft"
@@ -3687,22 +3723,6 @@
     },
     "web.retention.holds.none": {
       "text": "Aucun essai n'est sous blocage.",
-      "status": "machineDraft"
-    },
-    "web.retention.intro": {
-      "text": "Ce que contient ce magasin, combien de temps chaque type de donnée est conservé et ce que les règles laissent partir maintenant. Rien ne part tant qu'une règle ne le dit pas : chaque zone est conservée tant que sa règle n'est pas modifiée.",
-      "status": "machineDraft"
-    },
-    "web.retention.outcome.done": {
-      "text": "Ceci a été retiré et consigné dans le journal d'audit :",
-      "status": "machineDraft"
-    },
-    "web.retention.outcome.heading": {
-      "text": "Épuré",
-      "status": "machineDraft"
-    },
-    "web.retention.outcome.nothing": {
-      "text": "Rien n'a été épuré : aucune règle ne laisse rien partir.",
       "status": "machineDraft"
     },
     "web.retention.period.days": {
@@ -3769,6 +3789,10 @@
       "text": "Ceci retire définitivement tout ce qui est listé ci-dessous. C'est irréversible.",
       "status": "machineDraft"
     },
+    "web.retention.pruning.audit": {
+      "text": "Ce que les épurations ont retiré, dans le journal d'audit",
+      "status": "machineDraft"
+    },
     "web.retention.pruning.heading": {
       "text": "Épuration",
       "status": "machineDraft"
@@ -3793,16 +3817,8 @@
       "text": "Conserver jusqu'à la clôture de l'essai, puis pendant {period}",
       "status": "machineDraft"
     },
-    "web.retention.scope.server": {
-      "text": "Le serveur",
-      "status": "machineDraft"
-    },
     "web.retention.settingHelp": {
-      "text": "Une règle est un paramètre, modifié par qui peut gérer la conservation : keep, keepFor:<period> ou keepUntilClosed:<period>, avec une période telle que P90D, P18M ou P5Y. Les règles des dossiers d'essais, des fichiers reçus et du journal d'audit peuvent aussi être définies pour un lieu ou un essai.",
-      "status": "machineDraft"
-    },
-    "web.retention.source.trial": {
-      "text": "défini pour l'essai",
+      "text": "Une règle est un paramètre, modifié sur la page des paramètres par qui peut gérer la conservation : keep, keepFor:<period> ou keepUntilClosed:<period>, avec une période telle que P90D, P18M ou P5Y. Les règles des dossiers d'essais, des fichiers reçus et du journal d'audit peuvent aussi être définies pour un emplacement ou un essai.",
       "status": "machineDraft"
     },
     "web.retention.trial.close": {
@@ -3998,7 +4014,7 @@
       "status": "machineDraft"
     },
     "web.task.feature.retention": {
-      "text": "Conservation : l'épuration propre au magasin",
+      "text": "l'épuration propre au magasin (conservation)",
       "status": "machineDraft"
     },
     "web.task.heading": {

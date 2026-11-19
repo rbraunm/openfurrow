@@ -10,11 +10,13 @@ import threading
 from pathlib import Path
 
 import pytest
-from sqlalchemy import select, update
+from markupsafe import escape
+from sqlalchemy import func, select, update
 from sqlalchemy.orm import Session
 
 from openfurrow import TrialPackage, Workspace, defaultConfig
 from openfurrow.cli.main import main
+from openfurrow.i18n import translatorFor
 from openfurrow.identity import Actor, ActorKind, IdentityError, Permission, RoleAssignment, RoleDefinition
 from openfurrow.identity.providers import Provider
 from openfurrow.retention import (
@@ -25,6 +27,7 @@ from openfurrow.retention import (
   RetentionPolicy,
   RetentionRule,
   StorageArea,
+  defaultRuleOf,
   retentionTaskName,
 )
 from openfurrow.service import createApp
@@ -32,7 +35,7 @@ from openfurrow.settings import SettingError
 from openfurrow.store import NotFoundError
 from openfurrow.store.database import AuthTokenRow, PendingSignInRow, createDatabase
 from openfurrow.store.providers import claimOnce
-from openfurrow.tasks.model import RunState
+from openfurrow.tasks.model import RunState, TaskError
 from openfurrow.tasks.scheduler import Scheduler
 from openfurrow.workspace import NotPermitted
 
@@ -95,6 +98,15 @@ def imported(workspace, trialCode, assessment="YIELD"):
 
 def sha256(content):
   return hashlib.sha256(content).hexdigest()
+
+
+def withStandIn(operator, standIn, monkeypatch):
+  """Add the stand-in issuer as the OpenID Connect provider 'standin', so a sign-in can be started."""
+  monkeypatch.setenv("OPENFURROW_TEST_SECRET", "stand-in secret")
+  operator.addProvider(Provider.of("standin", "openIDConnect", {
+    "issuer": standIn.issuer("lab"), "clientID": "openfurrow", "clientSecretVariable": "OPENFURROW_TEST_SECRET",
+    "returnURL": "https://openfurrow.example.org/signin/with/standin/return",
+    "certificateAuthority": str(standIn.certificateAuthority)}))
 
 
 def exportedBytes(workspace, trialCode, folder):
@@ -166,9 +178,11 @@ def testAPeriodCountsBackKeepingTheDayOfTheMonth():
   assert Period.read("P18M").before(moment) == datetime.datetime(2024, 7, 15, 8, 30, tzinfo=datetime.UTC)
 
 
-def testEveryAreaIsKeptUntilARuleIsSet(store):
-  expected = {f"retention.{area.value}": ("keep", "default") for area in StorageArea}
-  assert rules(store, "server") == rules(store, "trial:TRIAL-A") == expected
+def testRecordsAreKeptByDefaultAndExpiredSessionsAndFinishedRunsForAPeriod(store):
+  assert rules(store, "server") == rules(store, "trial:TRIAL-A") == {
+    "retention.trialRecords": ("keep", "default"), "retention.receivedFiles": ("keep", "default"),
+    "retention.auditLog": ("keep", "default"), "retention.sessionsAndTokens": ("keepFor:P30D", "default"),
+    "retention.taskRuns": ("keepFor:P90D", "default")}
 
 
 @pytest.mark.parametrize("scope, area, text, why", [
@@ -182,7 +196,7 @@ def testEveryAreaIsKeptUntilARuleIsSet(store):
 def testAnAreaTakesOnlyTheRulesAndScopesThatFitIt(store, scope, area, text, why):
   with pytest.raises(SettingError, match=why):
     store.setSetting(scope, f"retention.{area}", text)
-  assert rules(store, "trial:TRIAL-A")[f"retention.{area}"] == ("keep", "default")
+  assert rules(store, "trial:TRIAL-A")[f"retention.{area}"] == (defaultRuleOf[StorageArea(area)], "default")
 
 
 def testTheNearestRuleAppliesAndSaysWhereItWasSet(store):
@@ -213,11 +227,7 @@ def testEachAreaIsCountedAndWeighedByItsContent(location, validPackageDict, stan
   acting.addPlace("station", "campo", "Campo")
   operator.signIn("jos\u00e9", password, "web")
   acting.issueAPIToken("cl\u00e9", None)
-  monkeypatch.setenv("OPENFURROW_TEST_SECRET", "stand-in secret")
-  operator.addProvider(Provider.of("standin", "openIDConnect", {
-    "issuer": standIn.issuer("lab"), "clientID": "openfurrow", "clientSecretVariable": "OPENFURROW_TEST_SECRET",
-    "returnURL": "https://openfurrow.example.org/signin/with/standin/return",
-    "certificateAuthority": str(standIn.certificateAuthority)}))
+  withStandIn(operator, standIn, monkeypatch)
   operator.beginProviderSignIn("standin", "/")
   engine = createDatabase(location, create=False)
   with Session(engine) as session:
@@ -247,14 +257,23 @@ def testEachAreaIsCountedAndWeighedByItsContent(location, validPackageDict, stan
 
 # ---- the forms of a rule, and what pruning then removes ------------------------------------------------
 
-def testWithEveryAreaKeptNothingIsEverPruned(store, clock):
-  imported(store, "TRIAL-A")
-  store.closeTrial("TRIAL-A", start.date())
-  clock.moment = start + days(36500)
-  assert store.previewPruning().lines == []
-  before = areas(store)
-  assert store.prune().lines == []
-  assert areas(store) == before
+def testByDefaultNoRecordEverLeavesOnlyExpiredSessionsAndWithKeepNotEvenThose(location, validPackageDict):
+  now = datetime.datetime.now(datetime.UTC)
+  clock = Clock(now)
+  operator = populated(location, validPackageDict, clock)
+  imported(operator, "TRIAL-A")
+  operator.closeTrial("TRIAL-A", now.date())
+  operator.createAccount("ana", "Ana", None, password)
+  operator.signIn("ana", password, "web")
+  clock.moment = now + days(36500)
+  [line] = operator.previewPruning().lines
+  assert (line.area, line.scope, line.count, line.rule, line.source) == (
+    StorageArea.sessionsAndTokens, "server", 1, "keepFor:P30D", "default")
+  operator.setSetting("server", "retention.sessionsAndTokens", "keep")
+  assert operator.previewPruning().lines == []
+  before = areas(operator)
+  assert operator.prune().lines == []
+  assert areas(operator) == before
 
 
 def testAFileKeptForAPeriodLeavesOnceItIsOlder(store, clock):
@@ -437,11 +456,7 @@ def testExpiredSessionsTokensSignInsAndClaimsLeaveAPeriodAfterTheyExpire(locatio
   _, stale = operator.signIn("ana", password, "web")
   ana = operator.actingAs(operator.actorForSession(session, "web"))
   forever, week = ana.issueAPIToken("forever", None), ana.issueAPIToken("week", 7)
-  monkeypatch.setenv("OPENFURROW_TEST_SECRET", "stand-in secret")
-  operator.addProvider(Provider.of("standin", "openIDConnect", {
-    "issuer": standIn.issuer("lab"), "clientID": "openfurrow", "clientSecretVariable": "OPENFURROW_TEST_SECRET",
-    "returnURL": "https://openfurrow.example.org/signin/with/standin/return",
-    "certificateAuthority": str(standIn.certificateAuthority)}))
+  withStandIn(operator, standIn, monkeypatch)
   operator.beginProviderSignIn("standin", "/")
   engine = createDatabase(location, create=False)
   with Session(engine) as database:
@@ -480,6 +495,24 @@ def testExpiredSessionsTokensSignInsAndClaimsLeaveAPeriodAfterTheyExpire(locatio
   assert operator.actorForAPIToken(forever, "api").userName == "ana"
   with pytest.raises(IdentityError, match="the token is not valid"):
     operator.actorForAPIToken(week, "api")
+
+
+def testStartingASignInSweepsTheExpiredOnesWhateverTheRuleSays(location, standIn, monkeypatch):
+  operator = Workspace.create(location)
+  operator.setSetting("server", "retention.sessionsAndTokens", "keep")
+  withStandIn(operator, standIn, monkeypatch)
+  operator.beginProviderSignIn("standin", "/")
+  operator.beginProviderSignIn("standin", "/")
+  engine = createDatabase(location, create=False)
+  with Session(engine) as database:
+    long = datetime.datetime.now(datetime.UTC).replace(tzinfo=None) - datetime.timedelta(minutes=1)
+    database.execute(update(PendingSignInRow).values(expiresAt=long))
+    database.commit()
+  assert areas(operator)[StorageArea.sessionsAndTokens][0] == 2 and operator.previewPruning().lines == []
+  operator.beginProviderSignIn("standin", "/")
+  with Session(engine) as database:
+    assert database.execute(select(func.count()).select_from(PendingSignInRow)).scalar_one() == 1
+  assert areas(operator)[StorageArea.sessionsAndTokens][0] == 1
 
 
 # ---- the store's own task ----------------------------------------------------------------
@@ -523,15 +556,14 @@ def testTheStoresOwnTaskPrunesEveryDayAndItsSummarySaysWhatWent(location, validP
   assert (event.actorKind, event.actorName, event.surface, event.scope) == (
     "scheduler", retentionTaskName, "scheduler", "trial:TRIAL-A")
 
-  operator.setSetting("server", "retention.taskRuns", "keepFor:P30D")
   operator.runTaskNow(retentionTaskName)
-  later = Workspace.open(location, clock=Clock(now + days(29)))
+  later = Workspace.open(location, clock=Clock(now + days(89)))
   assert later.previewPruning().lines == []
-  later = Workspace.open(location, clock=Clock(datetime.datetime.now(datetime.UTC) + days(31)))
+  later = Workspace.open(location, clock=Clock(datetime.datetime.now(datetime.UTC) + days(91)))
   finished = [run for run in operator.taskRuns(retentionTaskName) if run.finishedAt is not None]
   [line] = later.prune().lines
-  assert (line.area, line.scope, line.count, line.detail["byTask"]) == (
-    StorageArea.taskRuns, "server", 2, {retentionTaskName: 2})
+  assert (line.area, line.scope, line.count, line.rule, line.source, line.detail["byTask"]) == (
+    StorageArea.taskRuns, "server", 2, "keepFor:P90D", "default", {retentionTaskName: 2})
   assert line.sizeBytes == sum(len(text.encode("utf-8")) for run in finished
                                for text in (run.taskName, run.requestedBy, run.summary, run.output))
   assert [run.state for run in operator.taskRuns(retentionTaskName)] == [RunState.requested]
@@ -776,7 +808,26 @@ def testTheCommandLineShowsHoldsPreviewsAndPrunes(location, validPackageDict, ca
   assert "trial 'TRIAL-A' is not closed" in said("reopen", "TRIAL-A", code=1)
 
 
-# ---- the web ---------------------------------------------------------------------------
+# ---- the web: retention in the administration area ---------------------------------------------------
+
+english = translatorFor("en-US")
+retentionPage, prunePage = "/administration/retention", "/administration/retention/prune"
+
+
+def shown(written: str) -> str:
+  """A text as a page carries it."""
+  return str(escape(written))
+
+
+def pageOf(response) -> str:
+  return response.get_data(as_text=True)
+
+
+def card(page: str, key: str) -> str:
+  """The part of the settings page that is one setting's."""
+  start = page.index(f'dir="ltr">{key}</h2>')
+  return page[start:page.index("</article>", start)]
+
 
 @pytest.fixture
 def aged(location, validPackageDict):
@@ -791,54 +842,67 @@ def testTheRetentionPageShowsAreasHoldsAPreviewAndPrunesOnlyOnConfirmation(aged,
   operator.setSetting("trial:TRIAL-B", "retention.receivedFiles", "keepUntilClosed:P5Y")
   operator.holdTrial("TRIAL-B", "Dispute over plot 7")
   client = createApp(location).test_client()
-  assert 'href="/retention"' in client.get("/").get_data(as_text=True)
+  home = pageOf(client.get("/"))
+  assert 'href="/administration"' in home and f'href="{retentionPage}"' not in home
+  assert f'href="{retentionPage}"' in pageOf(client.get("/administration"))
 
-  page = client.get("/retention").get_data(as_text=True)
+  page = pageOf(client.get(retentionPage))
   for expected in ("Storage areas", "Trial records", "Files as received", "Audit log", "Sessions and tokens", "Task runs",
-                   f"{len(data)} bytes", "Keep for 30 days (set for the server)", "retention.receivedFiles = keepFor:P30D",
-                   "Keep until the trial is closed, then for 5 years", "trial:TRIAL-B", "Keep (default)",
-                   "Dispute over plot 7", 'href="/trials/TRIAL-B#retention"', 'href="/tasks/retentionPrune"'):
+                   f"{len(data)} bytes", "Keep for 30 days", "Keep for 90 days", "The whole server", "the default",
+                   "retention.receivedFiles = keepFor:P30D", "retention.sessionsAndTokens = keepFor:P30D",
+                   "retention.taskRuns = keepFor:P90D", "retention.trialRecords = keep",
+                   "Keep until the trial is closed, then for 5 years", "Trial TRIAL-B", "Dispute over plot 7",
+                   'href="/trials/TRIAL-B#retention"', 'href="/tasks/retentionPrune"', 'href="/administration/settings"',
+                   f'<a href="{retentionPage}" aria-current="page">'):
     assert expected in page, expected
   assert "Pruning now would remove exactly this:" not in page
 
-  preview = client.get("/retention?preview=yes").get_data(as_text=True)
+  preview = pageOf(client.get(f"{retentionPage}?preview=yes"))
   assert "Pruning now would remove exactly this:" in preview and "yield.csv" in preview and sha256(data) in preview
-  confirm = client.get("/retention/prune").get_data(as_text=True)
+  assert "Trial TRIAL-A" in preview
+  confirm = pageOf(client.get(prunePage))
   assert "Prune now?" in confirm and "It cannot be undone." in confirm and sha256(data) in confirm
   assert len(operator.receivedFiles("TRIAL-A")) == 1
 
-  done = client.post("/retention/prune")
-  body = done.get_data(as_text=True)
-  assert done.status_code == 200 and "This was removed, and recorded in the audit log:" in body and sha256(data) in body
+  done = client.post(prunePage)
+  assert done.status_code == 302 and done.headers["Location"] == f"{retentionPage}?done=pruned"
   assert operator.receivedFiles("TRIAL-A") == []
-  assert "Nothing would be pruned now" in client.get("/retention?preview=yes").get_data(as_text=True)
-  assert "Nothing was pruned" in client.post("/retention/prune").get_data(as_text=True)
-  assert "Nothing would be pruned now" in client.get("/retention/prune").get_data(as_text=True)
+  after = pageOf(client.get(done.headers["Location"]))
+  assert english.text("web.administration.done.pruned") in after
+  assert 'href="/administration/audit?action=retention.prune"' in after
+  recorded = client.get("/administration/audit?action=retention.prune")
+  assert recorded.status_code == 200 and sha256(data) in pageOf(recorded)
+
+  again = client.post(prunePage)
+  assert again.status_code == 302 and again.headers["Location"] == f"{retentionPage}?done=nothingPruned"
+  assert english.text("web.administration.done.nothingPruned") in pageOf(client.get(again.headers["Location"]))
+  assert "Nothing would be pruned now" in pageOf(client.get(f"{retentionPage}?preview=yes"))
+  assert "Nothing would be pruned now" in pageOf(client.get(prunePage))
 
 
 def testTheTrialPageClosesReopensHoldsAndReleases(aged, location):
   operator, _ = aged
   client = createApp(location).test_client()
-  page = client.get("/trials/TRIAL-A").get_data(as_text=True)
+  page = pageOf(client.get("/trials/TRIAL-A"))
   assert "This trial is open." in page and "This trial is under no hold." in page and "Keep (default)" in page
 
   def post(**fields):
     return client.post("/trials/TRIAL-A/retention", data=fields)
 
   bad = post(action="close", closedOn="yesterday")
-  assert bad.status_code == 400 and "Not done: write the day as YYYY-MM-DD" in bad.get_data(as_text=True)
+  assert bad.status_code == 400 and "Not done: write the day as YYYY-MM-DD" in pageOf(bad)
   future = post(action="close", closedOn="2999-01-01")
-  assert future.status_code == 400 and "a day that has not come" in future.get_data(as_text=True)
+  assert future.status_code == 400 and "a day that has not come" in pageOf(future)
   closed = post(action="close", closedOn="2026-01-05")
   assert closed.status_code == 302 and closed.headers["Location"].endswith("/trials/TRIAL-A?done=close")
-  page = client.get(closed.headers["Location"]).get_data(as_text=True)
+  page = pageOf(client.get(closed.headers["Location"]))
   assert "The closed date is recorded." in page and "This trial was closed on 01/05/2026." in page
   assert operator.closedOn("TRIAL-A") == datetime.date(2026, 1, 5)
 
   unreasoned = post(action="hold", reason=" ")
-  assert unreasoned.status_code == 400 and "Not done: a hold needs its reason" in unreasoned.get_data(as_text=True)
+  assert unreasoned.status_code == 400 and "Not done: a hold needs its reason" in pageOf(unreasoned)
   assert post(action="hold", reason="Dispute over plot 7").status_code == 302
-  page = client.get("/trials/TRIAL-A").get_data(as_text=True)
+  page = pageOf(client.get("/trials/TRIAL-A"))
   assert "This trial is under a hold" in page and "Dispute over plot 7" in page and "everyone (no sign-in)" in page
   assert client.post("/trials/TRIAL-A/delete").status_code == 400
   assert [code for code, _ in operator.listTrials()] == ["TRIAL-A", "TRIAL-B"]
@@ -858,49 +922,122 @@ def testEveryRetentionPageRendersInEveryLocale(aged, location, locale):
   operator.closeTrial("TRIAL-A", datetime.date(2020, 1, 1))
   operator.holdTrial("TRIAL-B", "Dispute")
   client = createApp(location).test_client()
-  for address in ("/retention", "/retention?preview=yes", "/retention/prune", "/trials/TRIAL-A", "/trials/TRIAL-B",
-                  f"/tasks/{retentionTaskName}"):
+  for address in (retentionPage, f"{retentionPage}?preview=yes", prunePage, "/trials/TRIAL-A", "/trials/TRIAL-B",
+                  f"/tasks/{retentionTaskName}", f"/administration/tasks/delete/{retentionTaskName}",
+                  "/administration/settings", "/administration/settings?scope=trial:TRIAL-B"):
     separator = "&" if "?" in address else "?"
     answered = client.get(f"{address}{separator}locale={locale}")
-    assert answered.status_code == 200, (address, answered.get_data(as_text=True)[:400])
-    assert ('dir="rtl"' in answered.get_data(as_text=True)) == (locale == "ar")
-  assert client.post(f"/retention/prune?locale={locale}").status_code == 200
+    assert answered.status_code == 200, (address, pageOf(answered)[:400])
+    assert ('dir="rtl"' in pageOf(answered)) == (locale == "ar")
+  pruned = client.post(f"{prunePage}?locale={locale}")
+  assert pruned.status_code == 302
+  assert shown(translatorFor(locale).text("web.administration.done.pruned")) in pageOf(client.get(pruned.headers["Location"]))
   assert operator.listTrials() == [("TRIAL-B", "Fungicide efficacy on winter wheat")]
 
 
 def testTheArabicRetentionPageIsWrittenRightToLeft(aged, location):
-  page = createApp(location).test_client().get("/retention?locale=ar").get_data(as_text=True)
+  arabic = translatorFor("ar")
+  page = pageOf(createApp(location).test_client().get(f"{retentionPage}?locale=ar"))
   assert '<html lang="ar" dir="rtl">' in page
-  assert "\u0645\u0646\u0627\u0637\u0642 \u0627\u0644\u062a\u062e\u0632\u064a\u0646" in page
+  assert arabic.text("web.retention.areas.heading") in page and arabic.text("web.administration.section.retention") in page
   assert '<span class="code" dir="ltr">retention.receivedFiles = keep</span>' in page
 
 
-def testRetentionOnTheWebTakesItsPermissions(people, location):
-  def signedIn(userName):
-    client = createApp(location).test_client()
-    assert client.post("/signin", data={"userName": userName, "password": password}, headers=origin).status_code == 302
-    return client
+def signedIn(location, userName):
+  client = createApp(location).test_client()
+  assert client.post("/signin", data={"userName": userName, "password": password}, headers=origin).status_code == 302
+  return client
 
-  viewer, manager, administrator = signedIn("vic"), signedIn("tia"), signedIn("ada")
-  assert 'href="/retention"' not in viewer.get("/").get_data(as_text=True)
-  assert viewer.get("/retention").status_code == 403 and viewer.get("/retention/prune").status_code == 403
-  assert viewer.post("/retention/prune", headers=origin).status_code == 403
+
+def testRetentionOnTheWebTakesItsPermissions(people, location):
+  viewer, manager, administrator = signedIn(location, "vic"), signedIn(location, "tia"), signedIn(location, "ada")
+  trialRules = 'href="/administration/settings?scope=trial:TRIAL-A"'
+  assert 'href="/administration"' not in pageOf(viewer.get("/"))
+  for address in (retentionPage, prunePage):
+    refused = viewer.get(address)
+    assert refused.status_code == 403 and english.text("web.refused.heading") in pageOf(refused)
+    assert '<span class="code">manageRetention</span>' in pageOf(refused)
+  assert viewer.post(prunePage, headers=origin).status_code == 403
   assert viewer.post("/trials/TRIAL-A/retention", data={"action": "close", "closedOn": "2026-01-05"},
                      headers=origin).status_code == 403
-  page = viewer.get("/trials/TRIAL-A").get_data(as_text=True)
+  page = pageOf(viewer.get("/trials/TRIAL-A"))
   assert "This trial is open." in page and 'name="closedOn"' not in page and 'name="reason"' not in page
+  assert trialRules not in page
 
-  page = manager.get("/trials/TRIAL-A").get_data(as_text=True)
-  assert 'name="closedOn"' in page and 'name="reason"' not in page
+  index = pageOf(manager.get("/administration"))
+  assert 'href="/administration/settings"' in index and f'href="{retentionPage}"' not in index
+  page = pageOf(manager.get("/trials/TRIAL-A"))
+  assert 'name="closedOn"' in page and 'name="reason"' not in page and trialRules not in page
   assert manager.post("/trials/TRIAL-A/retention", data={"action": "hold", "reason": "Mine"},
                       headers=origin).status_code == 403
   assert manager.post("/trials/TRIAL-A/retention", data={"action": "close", "closedOn": "2026-01-05"},
                       headers=origin).status_code == 302
-  assert manager.get("/retention").status_code == 403
+  assert manager.get(retentionPage).status_code == 403
 
-  assert 'href="/retention"' in administrator.get("/").get_data(as_text=True)
-  page = administrator.get("/trials/TRIAL-A").get_data(as_text=True)
-  assert 'name="closedOn"' in page and 'name="reason"' in page
-  assert administrator.get("/retention").status_code == 200
-  assert administrator.post("/retention/prune", headers=origin).status_code == 200
-  assert administrator.post("/retention/prune").status_code == 403
+  assert f'href="{retentionPage}"' in pageOf(administrator.get("/administration"))
+  page = pageOf(administrator.get("/trials/TRIAL-A"))
+  assert 'name="closedOn"' in page and 'name="reason"' in page and trialRules in page
+  assert administrator.get("/administration/settings?scope=trial:TRIAL-A").status_code == 200
+  assert administrator.get(retentionPage).status_code == 200
+  assert administrator.post(prunePage, headers=origin).status_code == 302
+  assert administrator.post(prunePage).status_code == 403
+
+
+def testARetentionRuleIsSetOnTheSettingsPageByWhoeverManagesRetentionThere(people, location):
+  trial = "trial:TRIAL-A"
+  address = f"/administration/settings?scope={trial}"
+  manager, officer, administrator = signedIn(location, "tia"), signedIn(location, "rex"), signedIn(location, "ada")
+  needsRetention = shown(english.text("web.administration.settings.needsPermission",
+                                      permission=english.text("web.administration.permission.manageRetention")))
+  setForm = 'name="action" value="set"'
+
+  page = pageOf(manager.get(address))
+  assert setForm in card(page, "analysis.meanComparison")
+  assert setForm not in card(page, "retention.auditLog") and needsRetention in card(page, "retention.auditLog")
+  refused = manager.post(address, data={"action": "set", "key": "retention.auditLog", "value": "keepFor:P1D"}, headers=origin)
+  assert refused.status_code == 403 and english.text("web.refused.heading") in pageOf(refused)
+  assert '<span class="code">manageRetention</span>' in pageOf(refused)
+  assert manager.post(address, data={"action": "clear", "key": "retention.auditLog"}, headers=origin).status_code == 403
+  assert rules(people, trial)["retention.auditLog"] == ("keep", "default")
+
+  index = pageOf(officer.get("/administration"))
+  assert 'href="/administration/settings"' in index and f'href="{retentionPage}"' not in index
+  page = pageOf(officer.get(address))
+  assert setForm in card(page, "retention.receivedFiles") and setForm not in card(page, "analysis.meanComparison")
+  assert english.text("web.administration.settings.notAtThisScope") in card(page, "retention.taskRuns")
+  changed = officer.post(address, data={"action": "set", "key": "retention.receivedFiles", "value": "keepUntilClosed:P5Y"},
+                         headers=origin)
+  assert changed.status_code == 302 and rules(people, trial)["retention.receivedFiles"] == ("keepUntilClosed:P5Y", trial)
+  bad = officer.post(address, data={"action": "set", "key": "retention.receivedFiles", "value": "forever"}, headers=origin)
+  assert bad.status_code == 400 and shown("'forever' is not a retention rule") in pageOf(bad)
+  assert 'value="forever"' in card(pageOf(bad), "retention.receivedFiles")
+  assert officer.post(address, data={"action": "set", "key": "analysis.meanComparison", "value": "lsd"},
+                      headers=origin).status_code == 403
+  assert officer.post(address, data={"action": "clear", "key": "retention.receivedFiles"}, headers=origin).status_code == 302
+  assert rules(people, trial)["retention.receivedFiles"] == ("keep", "default")
+  atServer = pageOf(officer.get("/administration/settings?scope=server"))
+  assert english.text("web.administration.settings.readOnly") in atServer and setForm not in atServer
+
+  kept = administrator.post("/administration/settings?scope=server",
+                            data={"action": "set", "key": "retention.taskRuns", "value": "keep"}, headers=origin)
+  assert kept.status_code == 302 and rules(people, "server")["retention.taskRuns"] == ("keep", "server")
+  [event] = [event for event in people.auditEvents() if event.action == "setting.set" and event.actorName == "ada"]
+  assert event.detail == {"key": "retention.taskRuns", "before": {"value": "keepFor:P90D", "source": "default"},
+                          "after": {"value": "keep", "source": "server"}}
+
+
+def testTheStoresOwnPruningTaskIsDisabledNotDeleted(aged, location):
+  operator, _ = aged
+  with pytest.raises(TaskError, match="task 'retentionPrune' is kept for the store's own retention and is not deleted"):
+    operator.deleteTask(retentionTaskName)
+  client = createApp(location).test_client()
+  kept = shown(english.text("web.administration.confirm.task.keptForFeature",
+                            feature=english.text("web.task.feature.retention")))
+  taskPage = pageOf(client.get(f"/tasks/{retentionTaskName}"))
+  assert kept in taskPage and f"/administration/tasks/delete/{retentionTaskName}" not in taskPage
+  confirm = pageOf(client.get(f"/administration/tasks/delete/{retentionTaskName}"))
+  assert kept in confirm and 'class="button button-danger"' not in confirm
+  refused = client.post(f"/administration/tasks/delete/{retentionTaskName}")
+  assert refused.status_code == 400 and shown("is kept for the store's own retention") in pageOf(refused)
+  assert [task.name for task in operator.tasks()] == [retentionTaskName]
+  assert operator.setTaskEnabled(retentionTaskName, False).nextRunAt is None

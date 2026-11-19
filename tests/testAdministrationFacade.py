@@ -11,6 +11,7 @@ import taskKindsForTests  # noqa: F401
 from openfurrow import Workspace
 from openfurrow.identity import IdentityError, Permission, RoleAssignment, RoleDefinition
 from openfurrow.identity.providers import Provider
+from openfurrow.retention import retentionTaskName
 from openfurrow.workspace import EventFilter, NotFoundError, NotPermitted
 
 from administrationHelpers import audited, held, password, seededStore, trialCode
@@ -101,7 +102,8 @@ def testAGroupATaskAndTheirReadsBelongToThoseWhoManageThem(location):
                               (viewer.taskKinds, "manageTasks")):
     with pytest.raises(NotPermitted, match=f"^viewer may not {permission} at server$"):
       attempt()
-  assert [group.name for group in operator.groups()] == ["team"] and [task.name for task in operator.tasks()] == ["echo"]
+  assert [group.name for group in operator.groups()] == ["team"]
+  assert [task.name for task in operator.tasks()] == ["echo", retentionTaskName]
 
   assert [(linked.providerName, linked.subject) for linked in operator.linkedIdentities("viewer")] == [("campus", "campus-user-1")]
   assert operator.linkedIdentities("admin") == []
@@ -121,6 +123,6 @@ def testAGroupATaskAndTheirReadsBelongToThoseWhoManageThem(location):
   with pytest.raises(NotFoundError, match="task 'nothing' not found"):
     operator.deleteTask("nothing")
   admin.deleteTask("echo")
-  assert operator.tasks() == [] and audited(operator, "task.delete")[0][0] == "admin"
+  assert [task.name for task in operator.tasks()] == [retentionTaskName] and audited(operator, "task.delete")[0][0] == "admin"
   with pytest.raises(IdentityError, match="role 'empty' needs a permission"):
     operator.defineRole(RoleDefinition(roleCode="empty", name="Empty", permissions=[]))

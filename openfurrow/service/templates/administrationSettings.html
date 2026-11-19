@@ -36,7 +36,9 @@
   <p><a href="{{ url_for('web.administrationSignInMode', locale=localeArgument) }}">{{ t.text('web.administration.settings.changeOnItsPage') }}</a></p>
   {% elif not row.settable %}
   <p class="help">{{ t.text('web.administration.settings.notAtThisScope') }}</p>
-  {% elif mayChange %}
+  {% elif not row.mayChange %}
+  {% if mayChange %}<p class="help">{{ t.text('web.administration.settings.needsPermission', permission=t.text('web.administration.permission.' ~ row.permission)) }}</p>{% endif %}
+  {% else %}
   <form class="administration-form administration-inline" method="post" action="{{ here }}">
     <input type="hidden" name="action" value="set">
     <input type="hidden" name="key" value="{{ row.key }}">

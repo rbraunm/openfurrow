@@ -23,7 +23,8 @@ from storeHelpers import standardPath
 
 english = translatorFor("en-US")
 sectionAddresses = ["/administration/accounts", "/administration/groups", "/administration/roles", "/administration/assignments", "/administration/settings",
-                    "/administration/sign-in-mode", "/administration/providers", "/administration/workloads", "/tasks", "/administration/audit"]
+                    "/administration/sign-in-mode", "/administration/providers", "/administration/workloads", "/tasks",
+                    "/administration/retention", "/administration/audit"]
 placeScope = f"place:{standardPath}"
 trialScope = f"trial:{trialCode}"
 scimSettings = {"baseURL": "https://openfurrow.example.org/scim/campus/v2", "groups": "mirror"}

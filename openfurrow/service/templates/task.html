@@ -99,6 +99,8 @@
   <h2 id="deleteTask">{{ t.text('web.administration.tasks.deleteHeading') }}</h2>
   {% if task.ownerProvider %}
   <p class="intro">{{ t.text('web.administration.confirm.task.kept', provider=task.ownerProvider) }}</p>
+  {% elif task.ownerFeature %}
+  <p class="intro">{{ t.text('web.administration.confirm.task.keptForFeature', feature=t.text('web.task.feature.' ~ task.ownerFeature)) }}</p>
   {% else %}
   <p><a class="delete-link" href="{{ url_for('web.administrationTaskDelete', name=task.name, locale=localeArgument) }}">{{ t.text('web.administration.tasks.delete') }}</a></p>
   {% endif %}

@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 """Settings by scope (decision 0035) and the sign-in mode (decision 0036): each setting's value where it is read, where
-that value was set, and forms to set and clear it for those who may change settings there."""
+that value was set, and forms to set and clear it for those who hold, there, the permission the setting names: to
+change settings, or for a retention rule to manage retention (decision 0044)."""
 
 from __future__ import annotations
 
@@ -52,15 +53,18 @@ def registerSettingPages(blueprint: Blueprint, workspace: Workspace, pages: Page
       except refusals as error:
         problems = pages.reasons(error)
     scopeKind = SettingScope(scope.partition(":")[0])
+    held = workspace.permissionsAt(scope)
     rows = [{
       "key": setting.key, "value": shown(setting.key, setting.value, translator),
       "source": sourceName(setting.source, translator), "setHere": setting.source == scope,
       "settable": scopeKind in definitions[setting.key].scopes, "choices": allowedValues(setting.key),
       "number": takesNumber(setting.key), "ownPage": setting.key == signInModeKey,
       "typed": typedValue if setting.key == typedKey else shown(setting.key, setting.value, translator),
+      "mayChange": definitions[setting.key].permission in held,
+      "permission": definitions[setting.key].permission.value,
     } for setting in workspace.effectiveSettings(scope)]
     context = {"rows": rows, "scope": scope, "scopeName": pages.scopeName(scope, translator), "scopeChoices": choices,
-               "mayChange": Permission.changeSettings in workspace.permissionsAt(scope)}
+               "mayChange": any(row["mayChange"] for row in rows)}
     return pages.render("administrationSettings.html", translator, problems, **context)
 
   @blueprint.route("/administration/sign-in-mode", methods=["GET", "POST"])

@@ -1,8 +1,9 @@
 # SPDX-License-Identifier: Apache-2.0
 """The kind `retentionPrune`: remove what the retention rules let go (decisions 0041, 0044).
 
-Every store has one such task, made with the store and run daily. While every area is
-kept, the default, a run finds nothing and says so.
+Every store has one such task, made with the store and run daily. Under the default rules
+a run removes only sessions and tokens long expired and old finished runs; one that finds
+nothing says so.
 """
 
 from __future__ import annotations
