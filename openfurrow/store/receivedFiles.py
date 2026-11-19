@@ -11,6 +11,7 @@ from __future__ import annotations
 import datetime
 import json
 
+from pydantic import ValidationError
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -39,7 +40,8 @@ def _add(session: Session, trialCode: str, record: ReceivedFileRecord, content: 
     trialCode=trialCode, kind=record.kind.value, fileName=record.fileName, sheetName=record.sheetName,
     sha256=record.sha256, sizeBytes=record.sizeBytes, content=content,
     mappingJSON=json.dumps(record.mapping, sort_keys=True), producedJSON=json.dumps(record.produced, sort_keys=True),
-    importedByKind=record.importedBy.kind, importedByName=record.importedBy.name, importedAt=stored(record.importedAt),
+    importedByKind=record.importedBy.kind.value, importedByName=record.importedBy.name,
+    importedAt=stored(record.importedAt),
   )
   session.add(row)
   session.flush()
@@ -49,10 +51,13 @@ def _add(session: Session, trialCode: str, record: ReceivedFileRecord, content: 
 def keepFile(session: Session, trialCode: str, kind: ReceivedFileKind, fileName: str | None, sheetName: str | None,
              content: bytes, mapping: dict, produced: dict, actor: Actor, at: datetime.datetime) -> ReceivedFile:
   """Keep a file an import just read, in the import's own transaction."""
-  record = ReceivedFileRecord(
-    kind=kind, fileName=fileName, sheetName=sheetName, sha256=sha256Of(content), sizeBytes=len(content),
-    mapping=mapping, produced=produced, importedBy=Importer(kind=actor.kind.value, name=actor.name), importedAt=at,
-  )
+  try:
+    record = ReceivedFileRecord(
+      kind=kind, fileName=fileName, sheetName=sheetName, sha256=sha256Of(content), sizeBytes=len(content),
+      mapping=mapping, produced=produced, importedBy=Importer(kind=actor.kind, name=actor.name), importedAt=at,
+    )
+  except ValidationError as error:
+    raise StoreError(f"the file cannot be kept as received: {error.errors()[0]['msg']}") from None
   return _file(_add(session, trialCode, record, content))
 
 

@@ -178,6 +178,15 @@ def testTheNameIsKeptAsSentAndAnAPIBodyHasNone(location):
     (None, listed[1]["fileID"], sha256(second)), ("r\u00e9colte \u00e9t\u00e9.csv", listed[0]["fileID"], sha256(first))]
 
 
+@pytest.mark.parametrize("fileName", ["two%0Alines.csv", "n" * 252 + ".csv"])
+def testAFileNameThatCannotBeShownIsRefusedWithItsImport(location, fileName):
+  client = createApp(location).test_client()
+  refused = client.post(f"/api/trials/{trialCode}/observations?fileName={fileName}", data=yieldFile(location))
+  assert refused.status_code == 400 and "is not a file name to keep" in refused.get_json()["error"]
+  workspace = Workspace.open(location)
+  assert workspace.loadObservations(trialCode) == [] and workspace.receivedFiles(trialCode) == []
+
+
 def testAnImportThatIsRefusedKeepsNoFile(location):
   workspace = Workspace.open(location)
   profile = defaultConfig().importProfile
@@ -389,6 +398,12 @@ def changedDocument(members):
   members["trial.json"] = json.dumps(document).encode()
 
 
+def changedRecord(members, **changes):
+  manifest = json.loads(members["manifest.json"])
+  manifest["receivedFiles"][0] |= changes
+  members["manifest.json"] = json.dumps(manifest).encode()
+
+
 def changedFile(members):
   members[f"received/{sha256(weatherFile)}"] = weatherFile.replace(b"3", b"4")
 
@@ -400,6 +415,11 @@ def changedFile(members):
   (changedDocument, "its manifest names 'ESV-2025-01' with"),
   (lambda members: changedManifest(members, bundleVersion=2), "is of version 2, and this build reads version 1"),
   (lambda members: changedManifest(members, receivedFiles="none"), "manifest.json is not a manifest"),
+  (lambda members: changedRecord(members, produced={"values": "many"}), "a received file of kind observations says how many values it produced"),
+  (lambda members: changedRecord(members, importedBy={"kind": "robot"}), "manifest.json is not a manifest"),
+  (lambda members: changedRecord(members, importedBy={"kind": "account"}), "an importer of kind account needs its name"),
+  (lambda members: changedRecord(members, importedAt="2026-03-01T09:30:15"), "manifest.json is not a manifest"),
+  (lambda members: changedRecord(members, fileName="yield\n.csv"), "is not a file name to keep"),
   (lambda members: members.pop("manifest.json"), "not a trial bundle: it has no manifest.json"),
   (lambda members: members.pop("trial.json"), "not a trial bundle: it has no trial.json"),
 ])

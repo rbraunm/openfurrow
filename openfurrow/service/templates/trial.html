@@ -86,7 +86,7 @@
           <td><span dir="auto">{{ file.fileName or t.text('web.received.unnamed') }}</span>{% if file.sheetName %}<br><span class="help">{{ t.text('web.received.sheet') }} <span dir="auto">{{ file.sheetName }}</span></span>{% endif %}</td>
           <td>{{ t.text('web.received.kind.' ~ file.kind.value) }}</td>
           <td class="num">{{ size(file.sizeBytes) }}</td>
-          <td>{{ actor(file.importedBy.kind, file.importedBy.name) }}<br><span dir="ltr">{{ moment(file.importedAt) }}</span> <span class="code">{{ zone }}</span></td>
+          <td>{{ actor(file.importedBy.kind.value, file.importedBy.name) }}<br><span dir="ltr">{{ moment(file.importedAt) }}</span> <span class="code">{{ zone }}</span></td>
           <td>{% if file.kind.value == 'observations' %}{{ t.text('web.received.produced.observations', values=t.integer(file.produced['values']), missing=t.integer(file.produced['missing'])) }}{% elif file.kind.value == 'weather' %}{{ t.text('web.received.produced.weather', days=t.integer(file.produced['days'])) }}{% else %}{{ t.text('web.received.produced.layout', plots=t.integer(file.produced['plots'])) }}{% endif %}</td>
           <td class="row-action"><a href="{{ url_for('web.receivedFile', trialCode=package.trial.trialCode, fileID=file.fileID) }}">{{ t.text('web.received.download') }}</a></td>
         </tr>

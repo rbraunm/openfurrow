@@ -1047,7 +1047,7 @@ def _commandReceivedList(args) -> int:
   for file in files:
     print("\t".join([
       str(file.fileID), file.kind.value, file.fileName or "-", file.sheetName or "-", str(file.sizeBytes), file.sha256,
-      _who(file.importedBy.kind, file.importedBy.name), _when(file.importedAt),
+      _who(file.importedBy.kind.value, file.importedBy.name), _when(file.importedAt),
       json.dumps(file.produced, sort_keys=True), json.dumps(file.mapping, sort_keys=True),
     ]))
   return 0
