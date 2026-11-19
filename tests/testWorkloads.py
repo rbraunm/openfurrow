@@ -22,6 +22,7 @@ from openfurrow.identity.workloads import (Verifiers, WorkloadTokenRefused, disc
                                            runOf)
 from openfurrow.service import createApp
 from openfurrow.store.database import AccountRow, RoleAssignmentRow, createDatabase
+from openfurrow.workspace import NotPermitted
 
 from storeHelpers import standardPath, standardStudy
 
@@ -86,9 +87,14 @@ def yields(location):
   return "\n".join(lines).encode("ascii")
 
 
+def claimsOf(token):
+  payload = token.split(".")[1]
+  return json.loads(base64.urlsafe_b64decode(payload + "=" * (-len(payload) % 4)))
+
+
 def changedAfterSigning(token):
-  header, payload, signature = token.split(".")
-  claims = json.loads(base64.urlsafe_b64decode(payload + "=" * (-len(payload) % 4)))
+  header, _, signature = token.split(".")
+  claims = claimsOf(token)
   claims["ref"] = "refs/heads/another"
   changed = base64.urlsafe_b64encode(json.dumps(claims).encode("utf-8")).rstrip(b"=").decode("ascii")
   return f"{header}.{changed}.{signature}"
@@ -116,6 +122,8 @@ def testAnAcceptedTokenActsWithItsRulesRolesAtTheirScopesAndNowhereElse(location
                                                                    Permission.importValues})
   assert workload.permissionsAt(f"place:{otherPath}") == frozenset() and workload.permissionsAt("server") == frozenset()
   assert [place.path for place in workload.places()] == ["station", "station/trials", standardPath]
+  with pytest.raises(NotPermitted, match="^nightly may not manageAccess at server$"):
+    workload.addWorkloadRule("another", standIn.issuer("ci"), {"repository_id": "605918342"})
 
 
 def testAWorkloadHasNoAccountNoAPITokenAndNoWebSignIn(location, standIn, client):
@@ -455,16 +463,15 @@ def testAnOperatorManagesWorkloadRulesAndTheirRolesFromTheCommandLine(newStore, 
   assert json.loads(audit[0][5]) == {"rule": "nightly", "roles": [{"roleCode": "viewer", "scope": "server"}]}
 
 
-# ---- GitHub Actions itself ----------------------------------------------------------
+# ---- a rule of its own, and another's: the stand-in, then GitHub Actions itself ---------
 
-def testARealGitHubActionsTokenActsThroughTheAPIWithItsRulesRole(location):
-  token = os.environ.get("OPENFURROW_GITHUB_TOKEN")
-  if not token:
-    pytest.skip("needs a GitHub Actions run that asked for an OIDC token (the workflow's providers job does)")
-  repository, thisRepositoryID = os.environ["GITHUB_REPOSITORY"], os.environ["GITHUB_REPOSITORY_ID"]
+def presentedThroughTheAPI(location, token, tokenAudience, issuer, certificateAuthority, own, anothers):
+  """Presents a token where a rule requiring `own` holds trialManager at the study: it acts there and nowhere else,
+  and its change is audited under the rule; then where only a rule requiring `anothers` exists, which refuses it.
+  Returns the run its audit event carries."""
   operator = Workspace.open(location)
-  operator.setSetting("server", "identity.workloadAudience", githubAudience)
-  operator.addWorkloadRule("this-repository", "githubActions", {"repository_id": thisRepositoryID})
+  operator.setSetting("server", "identity.workloadAudience", tokenAudience)
+  operator.addWorkloadRule("this-repository", issuer, own, certificateAuthority)
   operator.assignRole(RoleAssignment(roleCode="trialManager", scope=f"place:{standardPath}", ruleName="this-repository"))
   client = createApp(location).test_client()
   listed = client.get("/api/trials", headers=bearer(token))
@@ -474,13 +481,31 @@ def testARealGitHubActionsTokenActsThroughTheAPIWithItsRulesRole(location):
   assert client.delete("/api/trials/ESV-2025-01", headers=bearer(token)).status_code == 200
   event = operator.auditEvents()[0]
   assert (event.action, event.actorKind, event.actorName) == ("trial.delete", "workload", "this-repository")
-  told = event.detail["workloadRun"]
-  assert set(told) == {"iss", "sub", "repository", "ref", "workflow_ref", "run_id", "run_attempt", "sha"}
-  assert (told["iss"], told["repository"]) == (githubActions, repository) and told["sub"].startswith(f"repo:{repository}:")
-  assert (told["run_id"], told["run_attempt"]) == (os.environ["GITHUB_RUN_ID"], os.environ["GITHUB_RUN_ATTEMPT"])
-
   operator.removeWorkloadRule("this-repository")
-  operator.addWorkloadRule("another-repository", "githubActions", {"repository_id": str(int(thisRepositoryID) + 1)})
+  operator.addWorkloadRule("another-repository", issuer, anothers, certificateAuthority)
   operator.assignRole(RoleAssignment(roleCode="administrator", scope="server", ruleName="another-repository"))
   refused = client.get("/api/trials", headers=bearer(token))
   assert refused.status_code == 401 and errorOf(refused) == matchesNoRule
+  return event.detail["workloadRun"]
+
+
+def testATokenActsWithTheRoleOfItsOwnRuleAndIsRefusedByAnothers(location, standIn):
+  told = presentedThroughTheAPI(location, standIn.workloadToken("ci", githubAudience, job), githubAudience,
+                                standIn.issuer("ci"), str(standIn.certificateAuthority), {"repository_id": repositoryID},
+                                {"repository_id": str(int(repositoryID) + 1)})
+  assert told == {"iss": standIn.issuer("ci"), "sub": job["sub"]}
+
+
+def testARealGitHubActionsTokenActsWithTheRoleOfItsOwnRuleAndIsRefusedByAnothers(location):
+  token = os.environ.get("OPENFURROW_GITHUB_TOKEN")
+  if not token:
+    pytest.skip("needs a GitHub Actions run that asked for an OIDC token (the workflow's providers job does)")
+  thisRepositoryID = os.environ["GITHUB_REPOSITORY_ID"]
+  told = presentedThroughTheAPI(location, token, githubAudience, "githubActions", None, {"repository_id": thisRepositoryID},
+                                {"repository_id": str(int(thisRepositoryID) + 1)})
+  claims = claimsOf(token)
+  assert told == {name: claims[name] for name in ("iss", "sub", "repository", "ref", "workflow_ref", "run_id",
+                                                  "run_attempt", "sha") if name in claims}
+  assert (told["iss"], told["repository"], told["run_id"], told["run_attempt"]) == (
+    githubActions, os.environ["GITHUB_REPOSITORY"], os.environ["GITHUB_RUN_ID"], os.environ["GITHUB_RUN_ATTEMPT"])
+  assert told["sub"].startswith("repo:") and "ref" in told
