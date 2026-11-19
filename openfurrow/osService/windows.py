@@ -33,11 +33,13 @@ from openfurrow.osService.deployment import (
 )
 
 elevationHint = "open the shell with 'Run as administrator'"
+failedStartsAgain = True
 administratorsSID = "S-1-5-32-544"
 systemSID = "S-1-5-18"
 failureResetSeconds = 86400
 restartDelaysMilliseconds = (5000, 30000, 60000)
 deletionSeconds = 10
+pendingSeconds = 150
 
 _scManagerConnect, _scManagerCreateService = 0x1, 0x2
 _serviceQueryConfig, _serviceQueryStatus, _serviceStart, _serviceStop, _delete = 0x1, 0x4, 0x10, 0x20, 0x10000
@@ -46,8 +48,8 @@ _serviceWin32OwnProcess, _serviceAutoStart, _serviceErrorNormal = 0x10, 2, 1
 _configDescription, _configFailureActions, _configDelayedAutoStart, _configFailureActionsFlag = 1, 2, 3, 4
 _actionRestart = 1
 _controlStop = 1
-_errorInsufficientBuffer, _errorServiceAlreadyRunning, _errorServiceDoesNotExist, _errorServiceNotActive = 122, 1056, 1060, 1062
-_errorServiceNeverStarted = 1077
+_errorInsufficientBuffer, _errorServiceAlreadyRunning, _errorServiceDoesNotExist = 122, 1056, 1060
+_errorServiceCannotAcceptControl, _errorServiceNotActive, _errorServiceNeverStarted = 1061, 1062, 1077
 _winBuiltinAdministratorsSid = 26
 
 
@@ -337,10 +339,16 @@ def start(name: str) -> None:
 
 
 def stop(name: str) -> None:
+  """Ask the service to stop. One that is starting or already stopping takes no control, so it is asked again
+  until it does or has stopped; one that is not running needs no asking."""
+  deadline = time.monotonic() + pendingSeconds
   with _service(name, _serviceStop) as (advapi32, service):
     if service is None:
       raise DeploymentError(f"the service {name} is not installed")
     status = SERVICE_STATUS()
-    if not advapi32.ControlService(service, _controlStop, ctypes.byref(status)) \
-       and ctypes.get_last_error() != _errorServiceNotActive:
-      raise _failure(f"the service {name} cannot be stopped")
+    while not advapi32.ControlService(service, _controlStop, ctypes.byref(status)):
+      if ctypes.get_last_error() == _errorServiceNotActive:
+        return
+      if ctypes.get_last_error() != _errorServiceCannotAcceptControl or time.monotonic() > deadline:
+        raise _failure(f"the service {name} cannot be stopped")
+      time.sleep(0.2)

@@ -26,7 +26,10 @@ from openfurrow.osService.deployment import (
 )
 from openfurrow.osService.posixAccount import accountComment, elevationHint, give, groupNote, isElevated, run, takeBack
 
-__all__ = ["check", "elevationHint", "install", "installed", "isElevated", "start", "state", "stop", "uninstall"]
+__all__ = ["check", "elevationHint", "failedStartsAgain", "install", "installed", "isElevated", "start", "state",
+           "stop", "uninstall"]
+
+failedStartsAgain = False
 
 daemonFolder = Path("/Library/LaunchDaemons")
 exitSeconds = 60

@@ -5,7 +5,8 @@ What is the same on every platform is here: what a deployment is checked for bef
 anything is changed, the order the services start and stop in, and what counts as done.
 What differs is behind a manager, one module per platform (`windows`, `systemd`,
 `launchd`), each with the same functions: `isElevated`, `check`, `install`, `uninstall`,
-`installed`, `state`, `start` and `stop`.
+`installed`, `state`, `start` and `stop` (which stops a service in any state), and
+`failedStartsAgain`, whether the platform starts a failed service again even after a stop.
 
 Everything refused is refused by name before the first change, and an install that fails
 part of the way is undone. Services are named by their suffix alone: the store, the
@@ -183,6 +184,11 @@ def stop(suffix: str | None = None, manager=None) -> Deployment:
   deployment = _whole(manager, checkedSuffix(suffix), "stop")
   for role in _stoppingOrder:
     _stop(manager, deployment.name(role))
+  for role in _stoppingOrder:
+    if manager.failedStartsAgain and manager.state(deployment.name(role)) is ServiceState.failed:
+      raise DeploymentError(f"{deployment.name(role)} is not running because it failed, and this system starts a "
+                            f"failed service again by itself, within a minute, whatever it is told: see its log, "
+                            f"{deployment.logFile(role)}, or uninstall the services to keep it down")
   return deployment
 
 
@@ -195,22 +201,9 @@ def status(suffix: str | None = None, manager=None) -> Status:
 
 
 def _stop(manager, name: str) -> None:
-  state = manager.state(name)
-  if state is ServiceState.starting:
-    state = _settled(manager, name, startSeconds)
-  if state in (ServiceState.running, ServiceState.stopping):
-    if state is ServiceState.running:
-      manager.stop(name)
-    _await(manager, name, ServiceState.stopped, stopSeconds, "it is still stopping")
-
-
-def _settled(manager, name: str, seconds: float) -> ServiceState:
-  deadline = time.monotonic() + seconds
-  while (state := manager.state(name)) in (ServiceState.starting, ServiceState.stopping):
-    if time.monotonic() > deadline:
-      raise DeploymentError(f"{name} is still {state.value} after {seconds} seconds")
-    time.sleep(0.2)
-  return state
+  """Have the service manager stop the service, whatever state it is in, and wait until it has."""
+  manager.stop(name)
+  _await(manager, name, ServiceState.stopped, stopSeconds, "it is still stopping")
 
 
 def _await(manager, name: str, wanted: ServiceState, seconds: float, advice: str) -> None:

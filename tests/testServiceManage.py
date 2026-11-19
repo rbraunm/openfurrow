@@ -20,8 +20,9 @@ class MemoryManager:
 
   elevationHint = "ask the test for elevation"
 
-  def __init__(self, elevated=True, failsToInstall=False, startsAs=ServiceState.running):
+  def __init__(self, elevated=True, failsToInstall=False, startsAs=ServiceState.running, failedStartsAgain=False):
     self.elevated, self.failsToInstall, self.startsAs = elevated, failsToInstall, startsAs
+    self.failedStartsAgain = failedStartsAgain
     self.deployments: dict[str, Deployment] = {}
     self.states: dict[str, ServiceState] = {}
     self.asked: list[tuple] = []
@@ -59,7 +60,8 @@ class MemoryManager:
 
   def stop(self, name):
     self.asked.append(("stop", name))
-    self.states[name] = ServiceState.stopped
+    if self.states[name] is not ServiceState.failed:
+      self.states[name] = ServiceState.stopped
 
   def changes(self):
     return [request for request in self.asked if request[0] != "check"]
@@ -276,9 +278,8 @@ def testStartStartsTheWebServerThenTheSchedulerAndStopStopsThemInReverse(store):
   assert manager.asked == []
   assert manage.stop(manager=manager) == deployment
   assert manager.asked == [("stop", "openfurrow-scheduler"), ("stop", "openfurrow-web")]
-  del manager.asked[:]
   manage.stop(manager=manager)
-  assert manager.asked == []
+  assert manage.status(manager=manager).states == {Role.web: ServiceState.stopped, Role.scheduler: ServiceState.stopped}
 
 
 def testAServiceThatFailsToStartIsReportedWithItsLog(store):
@@ -288,6 +289,29 @@ def testAServiceThatFailsToStartIsReportedWithItsLog(store):
     manage.start(manager=manager)
   assert str(refusal.value) == f"openfurrow-web failed to start; see its log, {deployment.logsFolder / 'openfurrow-web.log'}"
   assert ("start", "openfurrow-scheduler") not in manager.asked
+
+
+def testStoppingAFailedServiceSaysSoWhereTheSystemStartsItAgainByItself(store):
+  manager = MemoryManager(startsAs=ServiceState.failed, failedStartsAgain=True)
+  deployment = installedOn(store, manager)
+  with pytest.raises(DeploymentError, match="openfurrow-web failed to start"):
+    manage.start(manager=manager)
+  with pytest.raises(DeploymentError) as refusal:
+    manage.stop(manager=manager)
+  assert str(refusal.value) == (
+    f"openfurrow-web is not running because it failed, and this system starts a failed service again by itself, "
+    f"within a minute, whatever it is told: see its log, {deployment.logsFolder / 'openfurrow-web.log'}, or "
+    f"uninstall the services to keep it down")
+  assert manage.uninstall(manager=manager) == ["openfurrow-web", "openfurrow-scheduler"]
+  assert manager.states == {}
+
+
+def testAFailedServiceIsStoppedWhereTheSystemLeavesItSo(store):
+  manager = MemoryManager(startsAs=ServiceState.failed)
+  deployment = installedOn(store, manager)
+  with pytest.raises(DeploymentError, match="openfurrow-web failed to start"):
+    manage.start(manager=manager)
+  assert manage.stop(manager=manager) == deployment
 
 
 @pytest.mark.parametrize("action", ["start", "stop"])

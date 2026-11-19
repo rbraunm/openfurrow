@@ -68,6 +68,9 @@ def throwaway(request, tmp_path):
     if manage.status(suffix).deployment is not None:
       manage.uninstall(suffix)
   finally:
+    # pytest shows this with a failed test only: what the services themselves said.
+    for log in sorted((folder / "logs").glob("*")):
+      print(f"----- {log.name}\n{log.read_text(encoding='utf-8', errors='replace')[-6000:]}")
     if sys.platform in dataRoots:
       shutil.rmtree(folder)
 
