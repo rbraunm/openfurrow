@@ -21,7 +21,7 @@ from pydantic import BaseModel
 
 from openfurrow import TrialDocument, TrialPackage, Workspace, contentHash, schemaVersion
 from openfurrow.design import generateLayout
-from storeHelpers import standardStudy, standardStudyAt
+from storeHelpers import standardStudy
 
 # Every optional field populated with a value that differs from its default, and both a
 # numeric assessment (which carries transform/measurementKind/range) and an ordinal one

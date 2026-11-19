@@ -22,7 +22,7 @@ from openfurrow.analysis import (
 from openfurrow.design import generateLayout
 from openfurrow.interop.fieldbook import writeFieldImport
 from openfurrow.reports import buildReport
-from openfurrow.schema import TrialLayout, TrialPackage
+from openfurrow.schema import TrialPackage
 from openfurrow.schema.observation import Observation
 from storeHelpers import standardStudy, standardStudyAt
 

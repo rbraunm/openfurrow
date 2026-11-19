@@ -46,7 +46,7 @@ from pathlib import Path
 from carnelian.cas import CASRefused, Pending as CASPending, readLogoutRequest as _readCASLogout
 from carnelian.ldap import DirectoryRefused
 from carnelian.oidc import Pending as OpenIDConnectPending, SignInRefused
-from carnelian.saml import Pending as SAMLPending, SAMLRefused, claimedIssuer as _claimedIssuer
+from carnelian.saml import Pending as SAMLPending, SAMLRefused, claimedIssuer as _claimedSAMLIssuer
 from carnelian.scim import SCIMService
 from pydantic import BaseModel, ConfigDict
 
@@ -71,7 +71,7 @@ from openfurrow.analysis import (
   separateMeans as _separateMeans,
 )
 from openfurrow.config import ImportProfile
-from openfurrow.importers.weatherCsv import WeatherFileError, readWeatherCsv as _readWeatherCsv
+from openfurrow.importers.weatherCsv import readWeatherCsv as _readWeatherCsv
 from openfurrow.design import generateLayout as _generateLayout
 from openfurrow.exchange import (
   ExchangeError,
@@ -186,7 +186,7 @@ from openfurrow.identity.workloads import (
   WorkloadRule,
   WorkloadTokenRefused,
   acceptingRule as _acceptingRule,
-  claimedIssuer as _claimedIssuer,
+  claimedIssuer as _claimedWorkloadIssuer,
   isWorkloadToken as _isWorkloadToken,
   runOf as _runOf,
 )
@@ -795,7 +795,7 @@ class Workspace:
         institution = None
         if provider.kind is ProviderKind.samlFederation:
           # Only chooses whose keys check the request: an institution's name forged here fails at its own keys.
-          institution = _claimedIssuer("SAMLRequest", query=query, posted=samlRequest)
+          institution = _claimedSAMLIssuer("SAMLRequest", query=query, posted=samlRequest)
           self._requireOffered(session, provider, institution)
         serviceProvider = self._samlServiceProvider(provider, institution)
         asked = serviceProvider.readSignOutRequest(query=query, samlRequest=samlRequest, relayState=relayState)
@@ -882,7 +882,7 @@ class Workspace:
       if audience is None:
         raise WorkloadTokenRefused("workload tokens are not accepted here: the server setting "
                                    "identity.workloadAudience is not set")
-      candidates = _enabledRulesOf(session, _claimedIssuer(token))
+      candidates = _enabledRulesOf(session, _claimedWorkloadIssuer(token))
     rule, identity = _acceptingRule(token, candidates, audience)
     return Actor.workload(rule.name, _runOf(identity), surface)
 

@@ -9,8 +9,6 @@ the treatment F of the subsample-level model tested against the experimental err
 
 import base64
 import csv
-import json
-from io import BytesIO
 
 import numpy
 import pytest
@@ -23,7 +21,7 @@ from openfurrow.design import generateLayout
 from openfurrow.reports import buildReport
 from openfurrow.schema import TrialDocument
 from openfurrow.schema.observation import Observation
-from storeHelpers import standardStudy, standardStudyAt
+from storeHelpers import standardStudy
 
 
 def packageDict(rule="mean", count=3):

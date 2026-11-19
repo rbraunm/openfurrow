@@ -17,7 +17,7 @@ from openfurrow.analysis.dunnett import dunnettCdf, dunnettQuantile
 from openfurrow.design import generateLayout
 from openfurrow.reports import buildReport
 from openfurrow.schema.observation import Observation
-from storeHelpers import standardStudy, standardStudyAt
+from storeHelpers import standardStudy
 
 
 @pytest.mark.parametrize("degreesOfFreedom", [3, 5, 12, 24, 60])

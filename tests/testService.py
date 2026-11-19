@@ -22,7 +22,7 @@ import json
 
 import pytest
 
-from openfurrow import TrialPackage, Workspace, defaultConfig, schemaVersion
+from openfurrow import Workspace, defaultConfig, schemaVersion
 from openfurrow.config import OpenFurrowConfig, TLSSettings
 from openfurrow.service import ServiceError, createApp, serviceUrl, tlsContext
 from storeHelpers import standardPath, standardStudy, standardStudyAt

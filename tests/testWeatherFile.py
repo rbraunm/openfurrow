@@ -10,7 +10,7 @@ from openfurrow import Quantity, TrialPackage, Workspace
 from openfurrow.cli.main import main
 from openfurrow.importers.weatherCsv import WeatherFileError, readWeatherCsv
 from openfurrow.service import createApp
-from storeHelpers import standardStudy, standardStudyAt
+from storeHelpers import standardStudy
 
 goodFile = (
   "date,rainfall [mm],minimumTemperature [C],maximumTemperature [C],notes\n"

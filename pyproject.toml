@@ -41,6 +41,8 @@ test = [
   "flask>=3.1",
   "markdown>=3.7",
   "build>=1.2.2",
+  # Undefined, unused and redefined names are refused before the suite runs.
+  "ruff>=0.17",
   # A federation aggregate signed in the test, as a federation signs one (decision 0040).
   "signxml>=4.3",
   "lxml>=5.3",

@@ -41,7 +41,7 @@ from flask import Blueprint, Response, current_app, g, redirect, render_template
 from markupsafe import Markup
 
 from openfurrow.config import OpenFurrowConfig, defaultConfig
-from openfurrow.i18n import MessageError, availableLocales, sourceLocale, translatorFor
+from openfurrow.i18n import availableLocales, sourceLocale, translatorFor
 from openfurrow.importers.entry import EntryRefused, readEntry, writeEntry
 from openfurrow.importers.layoutCsv import LayoutFileError, readLayoutCsv
 from openfurrow.importers.weatherCsv import WeatherFileError

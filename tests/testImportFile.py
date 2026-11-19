@@ -14,7 +14,7 @@ from openfurrow.schema.observation import Observation
 from openfurrow.service import createApp
 
 from testWebReport import _packageDict
-from storeHelpers import standardStudy, standardStudyAt
+from storeHelpers import standardStudy
 
 openpyxl = pytest.importorskip("openpyxl")
 

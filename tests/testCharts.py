@@ -17,7 +17,7 @@ from openfurrow.reports import buildReport
 from openfurrow.reports.charts import ChartBar, MeansChart, axisRange, meansChartSvg, niceStep
 from openfurrow.reports.report import buildReportWithCharts
 from openfurrow.schema.assessment import Transform
-from storeHelpers import standardStudy, standardStudyAt
+from storeHelpers import standardStudy
 
 _svg = "{http://www.w3.org/2000/svg}"
 

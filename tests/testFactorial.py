@@ -7,7 +7,6 @@ follow it, and cross-checked against statsmodels.
 """
 
 import csv
-import io
 import math
 from pathlib import Path
 
@@ -20,7 +19,7 @@ from openfurrow.analysis import AnalysisError, analyzeFactorialRcbd, analyzeRcbd
 from openfurrow.design import generateLayout
 from openfurrow.reports import buildReport
 from openfurrow.schema.observation import Observation
-from storeHelpers import standardStudy, standardStudyAt
+from storeHelpers import standardStudy
 
 fixtures = Path(__file__).parent / "fixtures"
 varieties = ["V1", "V2", "V3"]

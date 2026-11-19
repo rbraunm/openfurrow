@@ -10,7 +10,6 @@ empty cells.
 
 import csv
 import json
-from pathlib import Path
 
 import pytest
 from pydantic import ValidationError

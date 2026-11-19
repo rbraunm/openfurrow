@@ -18,7 +18,7 @@ from openfurrow.design.spatialBalance import balanceCost, spatiallyBalancedOrder
 from openfurrow.design.stream import Sha256Stream, shuffled
 from openfurrow.reports import buildReport
 from openfurrow.schema import TrialPackage
-from storeHelpers import standardStudy, standardStudyAt
+from storeHelpers import standardStudyAt
 
 
 def balancedPackageDict(treatmentCount=5, replications=4, seed=3):

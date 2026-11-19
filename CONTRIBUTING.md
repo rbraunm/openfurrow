@@ -67,13 +67,15 @@ code starts to need something newer; the job fails until the bound says so.
 ## Validation: every change is tested on Linux and Windows
 
 Every push to `claude` and every pull request into `main` runs the `validate` workflow
-(`.github/workflows/validate.yml`) on Linux and Windows with Python 3.13 and 3.14: the test
-suite, then `scripts/productSmoke.py`, which builds the source distribution and the wheel,
+(`.github/workflows/validate.yml`) on Linux and Windows with Python 3.13 and 3.14: a
+check for unused, undefined and redefined names (ruff's F rules), the test suite, then
+`scripts/productSmoke.py`, which builds the source distribution and the wheel,
 installs the wheel into a clean environment, and runs the worked example and the service
 from there. `main` accepts a pull request only when the workflow's `validated` check has
 passed, and that rule has no bypass. Both parts run locally the same way:
 
 ```bash
+python -m ruff check --select F openfurrow tests scripts
 python -m pytest
 python scripts/productSmoke.py
 ```

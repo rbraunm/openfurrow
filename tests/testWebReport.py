@@ -19,7 +19,7 @@ import pytest
 
 from openfurrow import TrialPackage, Workspace, schemaVersion
 from openfurrow.service import createApp
-from storeHelpers import standardStudy, standardStudyAt
+from storeHelpers import standardStudy
 
 _packageDict = {
   "schemaVersion": schemaVersion,

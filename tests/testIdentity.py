@@ -8,7 +8,7 @@ import re
 import pytest
 
 from openfurrow import TrialPackage, Workspace
-from openfurrow.identity import Actor, ActorKind, IdentityError, Permission, RoleAssignment, RoleDefinition
+from openfurrow.identity import ActorKind, IdentityError, Permission, RoleAssignment, RoleDefinition
 from openfurrow.identity.passwords import hashPassword, passwordMatches
 from openfurrow.schema.observation import Observation
 from openfurrow.store import NotFoundError

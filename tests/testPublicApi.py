@@ -32,7 +32,7 @@ from openfurrow import (
   defaultConfig,
   schemaVersion,
 )
-from storeHelpers import standardStudy, standardStudyAt
+from storeHelpers import standardStudy
 
 _packageDict = {
   "schemaVersion": schemaVersion,

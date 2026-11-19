@@ -17,7 +17,7 @@ from openfurrow.design import generateLayout
 from openfurrow.importers.entry import EntryRefused, readEntry, writeEntry
 from openfurrow.schema import Rating
 from openfurrow.service import createApp
-from storeHelpers import standardStudy, standardStudyAt
+from storeHelpers import standardStudy
 
 severity = Rating(ratingCode="SEV", name="Severity", dataType="numeric", unit="%", minValue=0, maxValue=100)
 lodging = Rating(ratingCode="LODGE", name="Lodging", dataType="ordinal", allowedValues=["none", "slight", "severe"])

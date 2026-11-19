@@ -6,9 +6,7 @@ from pydantic import ValidationError
 
 from openfurrow import TrialPackage
 from openfurrow.analysis import MeanComparison, analyzeCrd, analyzeRcbd, assessAssumptions
-from openfurrow.design import generateLayout
 from openfurrow.reports import buildReport
-from openfurrow.schema.observation import Observation
 
 from testDunnett import checkTrial
 

@@ -17,7 +17,7 @@ import pytest
 from openfurrow import schemaVersion
 from openfurrow.schema import TrialPackage
 from openfurrow.workspace import ObservationImportError, Workspace
-from storeHelpers import standardStudy, standardStudyAt
+from storeHelpers import standardStudy
 
 _fixtureDir = Path(__file__).parent / "fixtures"
 

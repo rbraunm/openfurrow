@@ -13,7 +13,6 @@ raise the declared error types.
 
 import copy
 import csv
-import json
 
 import pytest
 from pydantic import ValidationError

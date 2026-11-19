@@ -24,7 +24,7 @@ from openfurrow.interop.fieldbook import (
 )
 from openfurrow.schema import TrialPackage
 from openfurrow.workspace import Workspace
-from storeHelpers import standardStudy, standardStudyAt
+from storeHelpers import standardStudy
 
 _packageDict = {
   "schemaVersion": schemaVersion,

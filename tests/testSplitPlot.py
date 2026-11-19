@@ -20,7 +20,7 @@ from openfurrow.design import generateLayout
 from openfurrow.reports import buildReport
 from openfurrow.schema import TrialLayout, TrialPackage
 from openfurrow.schema.observation import Observation
-from storeHelpers import standardStudy, standardStudyAt
+from storeHelpers import standardStudy
 
 fixturesDirectory = Path(__file__).parent / "fixtures"
 nitrogenLevels = [f"N{index}" for index in range(6)]

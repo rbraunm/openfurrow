@@ -8,13 +8,12 @@ accidental link-follow cannot destroy data. Verify is read-only and must not cha
 trial. Both fail loud (404) on an unknown trial.
 """
 
-import json
 
 import pytest
 
 from openfurrow import TrialPackage, Workspace, schemaVersion
 from openfurrow.service import createApp
-from storeHelpers import standardStudy, standardStudyAt
+from storeHelpers import standardStudyAt
 
 _packageDict = {
   "schemaVersion": schemaVersion,
