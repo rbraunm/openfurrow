@@ -1,0 +1,40 @@
+<div class="table-scroll">
+  <table class="trials prune-lines">
+    <thead>
+      <tr>
+        <th scope="col">{{ t.text('web.retention.column.area') }}</th>
+        <th scope="col">{{ t.text('web.retention.column.where') }}</th>
+        <th scope="col" class="num">{{ t.text('web.retention.column.count') }}</th>
+        <th scope="col" class="num">{{ t.text('web.retention.column.size') }}</th>
+        <th scope="col">{{ t.text('web.retention.column.rule') }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for line in report.lines %}
+      <tr>
+        <td>{{ t.text('web.retention.area.' ~ line.area.value) }}</td>
+        <td>{% if line.scope == 'server' %}{{ t.text('web.retention.scope.server') }}{% else %}<span class="code" dir="ltr">{{ line.scope }}</span>{% endif %}</td>
+        <td class="num code">{{ t.integer(line.count) }}</td>
+        <td class="num">{{ size(line.sizeBytes) }}</td>
+        <td>{{ ruleText(line.rule) }} ({{ sourceText(line.source) if line.source.partition(':')[0] != 'trial' else t.text('web.retention.source.trial') }})</td>
+      </tr>
+      {% if line.area.value == 'trialRecords' %}
+      <tr>
+        <td colspan="5"><span dir="auto">{{ line.detail['title'] }}</span>. {{ t.text('web.trial.contentHash') }} <span class="code" dir="ltr">{{ line.detail['contentHash'] }}</span></td>
+      </tr>
+      {% elif line.area.value == 'receivedFiles' %}
+      <tr>
+        <td colspan="5">
+          {% if line.detail['withTheTrialRecord'] %}<p class="help">{{ t.text('web.retention.withTheTrialRecord') }}</p>{% endif %}
+          <ul>
+            {% for file in line.detail['files'] %}
+            <li><span dir="auto">{{ file['fileName'] or t.text('web.received.unnamed') }}</span>, {{ size(file['sizeBytes']) }}, <span class="code" dir="ltr">{{ file['sha256'] }}</span></li>
+            {% endfor %}
+          </ul>
+        </td>
+      </tr>
+      {% endif %}
+      {% endfor %}
+    </tbody>
+  </table>
+</div>

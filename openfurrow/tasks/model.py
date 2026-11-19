@@ -102,6 +102,7 @@ class Task(BaseModel):
   timeLimitSeconds: int
   nextRunAt: datetime.datetime | None
   ownerProvider: str | None
+  ownerFeature: str | None
   lastRun: TaskRun | None
 
 

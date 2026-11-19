@@ -112,6 +112,10 @@ def testLayoutUploadedAsPlantedIsKeptExactly(setup):
   assert workspace.loadPackage("FORM-1").design.randomizationMethod is RandomizationMethod.imported
   plots = sorted(workspace.layoutFor("FORM-1").plots, key=lambda plot: plot.plotNumber)
   assert [(p.plotNumber, p.block, p.treatmentCode) for p in plots][:3] == [(11, 1, "A"), (12, 1, "UTC"), (13, 1, "B")]
+  [kept] = workspace.receivedFiles("FORM-1")
+  assert (kept.kind.value, kept.fileName, kept.produced, kept.importedBy.kind) == ("layout", "layout.csv", {"plots": 9}, "everyone")
+  assert kept.mapping == {"columns": ["plotNumber", "block", "positionInBlock", "treatmentCode"], "unreadColumns": ["row"]}
+  assert workspace.receivedFile("FORM-1", kept.fileID)[1] == csvText.encode("utf-8")
 
 
 def testUploadedLayoutThatIsNotCompleteBlocksIsRefused(setup):
@@ -136,11 +140,9 @@ def testUploadWithoutAFileIsRefused(setup):
   ("plotNumber,block,positionInBlock,treatmentCode\n1,1,1,\n", "row 2: treatmentCode is empty"),
   ("plotNumber,block,positionInBlock,treatmentCode\n", "lists no plots"),
 ])
-def testLayoutFileProblemsAreNamed(tmp_path, text, message):
-  path = tmp_path / "layout.csv"
-  path.write_text(text, encoding="utf-8")
+def testLayoutFileProblemsAreNamed(text, message):
   with pytest.raises(LayoutFileError, match=message):
-    readLayoutCsv(path)
+    readLayoutCsv(text.encode("utf-8"))
 
 
 def testAddTrialLeadsToTheForm(setup):

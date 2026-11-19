@@ -13,12 +13,13 @@ duplicate prints a clear message and exits non-zero rather than partially
 succeeding. The store is a SQLite file or a PostgreSQL URL the user gives explicitly.
 Trials live in places of the store's hierarchy (decision 0034), and the analysis follows
 the store's settings (decision 0035); the config file (--config) holds the import
-profile and the service's binding.
+profile, the service's binding and the largest file an import takes.
 """
 
 from __future__ import annotations
 
 import argparse
+import datetime
 import io
 import json
 import sys
@@ -32,8 +33,8 @@ from openfurrow.store.hierarchy import ScopeError
 from openfurrow.identity import Actor, IdentityError, Permission, RoleAssignment, RoleDefinition
 from openfurrow.identity.providers import Provider, ProviderKind
 from openfurrow.identity.workloads import claimsGiven, namedIssuers
-from openfurrow.importers.weatherCsv import WeatherFileError
 from openfurrow.osService.deployment import DeploymentError, Role, ServiceState, serviceName
+from openfurrow.retention import RetentionError, summaryOf
 from openfurrow.workspace import (
   AnalysisError,
   ExchangeError,
@@ -42,6 +43,7 @@ from openfurrow.workspace import (
   ObservationImportError,
   StoreError,
   TaskError,
+  WeatherFileError,
   Workspace,
   sourceLocale,
 )
@@ -62,7 +64,7 @@ def main(argv: list[str] | None = None) -> int:
   except (
     StoreError, ExchangeError, ObservationImportError, AnalysisError, MessageError,
     ValidationError, OSError, json.JSONDecodeError, WeatherFileError, SettingError, ScopeError, IdentityError,
-    NotPermitted, TaskError, DeploymentError,
+    NotPermitted, TaskError, DeploymentError, RetentionError,
   ) as error:
     print(f"error: {error}", file=sys.stderr)
     return 1
@@ -173,11 +175,13 @@ def _buildParser() -> argparse.ArgumentParser:
   )
   reportParser.set_defaults(handler=_commandReport)
 
-  exportParser = sub.add_parser("export", help="export a trial to JSON and/or CSV")
+  exportParser = sub.add_parser("export", help="export a trial to JSON, CSV and/or a bundle with its received files")
   exportParser.add_argument("database")
   exportParser.add_argument("trialCode")
   exportParser.add_argument("--json", dest="jsonPath", help="write the trial document to this JSON file")
   exportParser.add_argument("--csv", dest="csvPath", help="write observations to this CSV file")
+  exportParser.add_argument("--bundle", dest="bundlePath",
+                            help="write the trial document and its files as received to this zip file")
   exportParser.set_defaults(handler=_commandExport)
 
   weatherParser = sub.add_parser("import-weather", help="replace a trial's weather log from a CSV file")
@@ -185,6 +189,7 @@ def _buildParser() -> argparse.ArgumentParser:
   weatherParser.add_argument("trialCode")
   weatherParser.add_argument("csv", help="date, then any of rainfall, irrigation, minimumTemperature, "
                               "maximumTemperature with the unit in brackets, and notes")
+  weatherParser.add_argument("--config", help="path to a project config file (see examples/openfurrow.yaml)")
   weatherParser.set_defaults(handler=_commandImportWeather)
 
   importJsonParser = sub.add_parser("import-json", help="import a trial document from JSON into the database")
@@ -192,6 +197,62 @@ def _buildParser() -> argparse.ArgumentParser:
   importJsonParser.add_argument("jsonFile", help="path to a trial document JSON file")
   importJsonParser.add_argument("--place", help="the place the trial goes in")
   importJsonParser.set_defaults(handler=_commandImportJson)
+
+  importBundleParser = sub.add_parser("import-bundle", help="import a trial bundle: the trial and its received files")
+  importBundleParser.add_argument("database")
+  importBundleParser.add_argument("bundleFile", help="path to a bundle written by 'export --bundle'")
+  importBundleParser.add_argument("--place", help="the place the trial goes in")
+  importBundleParser.add_argument("--config", help="path to a project config file (see examples/openfurrow.yaml)")
+  importBundleParser.set_defaults(handler=_commandImportBundle)
+
+  receivedParser = sub.add_parser("received", help="the files a trial's imports received: list, download")
+  receivedSub = receivedParser.add_subparsers(dest="receivedCommand", required=True)
+  receivedList = receivedSub.add_parser("list", help="each file kept, its hash, column mapping and what it produced")
+  receivedList.add_argument("database")
+  receivedList.add_argument("trialCode")
+  receivedList.set_defaults(handler=_commandReceivedList)
+  receivedDownload = receivedSub.add_parser("download", help="write a received file's bytes exactly as they came")
+  receivedDownload.add_argument("database")
+  receivedDownload.add_argument("trialCode")
+  receivedDownload.add_argument("fileID", type=int)
+  receivedDownload.add_argument("output", help="the file to write")
+  receivedDownload.set_defaults(handler=_commandReceivedDownload)
+
+  closeParser = sub.add_parser("close", help="record the day a trial was closed; retention counts from it")
+  closeParser.add_argument("database")
+  closeParser.add_argument("trialCode")
+  closeParser.add_argument("closedOn", help="the day, YYYY-MM-DD, today or earlier")
+  closeParser.set_defaults(handler=_commandClose)
+  reopenParser = sub.add_parser("reopen", help="clear a trial's closed date")
+  reopenParser.add_argument("database")
+  reopenParser.add_argument("trialCode")
+  reopenParser.set_defaults(handler=_commandReopen)
+
+  retentionParser = sub.add_parser(
+    "retention", help="what the store holds, what its retention rules let go, holds (decision 0044)",
+    epilog="A rule is the setting retention.<area>: keep, keepFor:<period> or keepUntilClosed:<period>, a period "
+           "being P90D, P18M or P5Y; set one with 'setting set'.",
+  )
+  retentionSub = retentionParser.add_subparsers(dest="retentionCommand", required=True)
+  retentionStatus = retentionSub.add_parser("status", help="each area's count, bytes, rule and where it was set; the holds")
+  retentionStatus.add_argument("database")
+  retentionStatus.set_defaults(handler=_commandRetentionStatus)
+  retentionPreview = retentionSub.add_parser("preview", help="exactly what pruning now would remove; changes nothing")
+  retentionPreview.add_argument("database")
+  retentionPreview.set_defaults(handler=_commandRetentionPreview)
+  retentionPrune = retentionSub.add_parser("prune", help="remove what the retention rules let go")
+  retentionPrune.add_argument("database")
+  retentionPrune.set_defaults(handler=_commandRetentionPrune)
+  retentionHold = retentionSub.add_parser("hold", help="put a trial under a hold: nothing of it is pruned or deleted")
+  retentionHold.add_argument("database")
+  retentionHold.add_argument("trialCode")
+  retentionHold.add_argument("reason")
+  retentionHold.set_defaults(handler=_commandRetentionHold)
+  retentionRelease = retentionSub.add_parser("release", help="release a trial's hold")
+  retentionRelease.add_argument("database")
+  retentionRelease.add_argument("trialCode")
+  retentionRelease.add_argument("reason")
+  retentionRelease.set_defaults(handler=_commandRetentionRelease)
 
   verifyParser = sub.add_parser("verify", help="check a trial round-trips to the same content hash")
   verifyParser.add_argument("database")
@@ -512,6 +573,12 @@ def _operator(database: str) -> Workspace:
   return Workspace.open(database, Actor.operator("cli"))
 
 
+def _importer(args, create: bool = False) -> Workspace:
+  """The operator's workspace for a command that reads a file, taking files up to the configuration's limit."""
+  start = Workspace.create if create else Workspace.open
+  return start(args.database, Actor.operator("cli"), maximumFileBytes=_configFor(args).service.maxUploadBytes)
+
+
 def _passwordFromInput() -> str:
   password = sys.stdin.readline().rstrip("\r\n")
   if not password:
@@ -727,6 +794,8 @@ def _commandTaskShow(args) -> int:
   print(f"Time limit: {task.timeLimitSeconds} seconds")
   if task.ownerProvider is not None:
     print(f"Kept for the identity provider '{task.ownerProvider}'")
+  if task.ownerFeature is not None:
+    print(f"Kept for the store's own {task.ownerFeature}")
   if task.lastRun is not None:
     print(f"Last run: {task.lastRun.runID} {task.lastRun.state.value} {_when(task.lastRun.finishedAt)} "
           f"{task.lastRun.summary or ''}".rstrip())
@@ -910,9 +979,7 @@ def _commandRandomize(args) -> int:
 
 
 def _commandImport(args) -> int:
-  workspace = Workspace.open(args.database, Actor.operator("cli"))
-  config = _configFor(args)
-  result = workspace.importObservations(args.trialCode, args.csv, config.importProfile)
+  result = _importer(args).importObservations(args.trialCode, args.csv, _configFor(args).importProfile)
   print(f"Imported {len(result.observations)} observations for '{args.trialCode}'")
   for warning in result.warnings:
     print(f"  warning: {warning.message}")
@@ -931,8 +998,8 @@ def _commandReport(args) -> int:
 
 
 def _commandExport(args) -> int:
-  if not args.jsonPath and not args.csvPath:
-    print("error: specify --json and/or --csv", file=sys.stderr)
+  if not args.jsonPath and not args.csvPath and not args.bundlePath:
+    print("error: specify --json, --csv and/or --bundle", file=sys.stderr)
     return 2
   workspace = Workspace.open(args.database, Actor.operator("cli"))
   if args.jsonPath:
@@ -941,11 +1008,14 @@ def _commandExport(args) -> int:
   if args.csvPath:
     workspace.exportObservationsCsv(args.trialCode, args.csvPath)
     print(f"Wrote {args.csvPath}")
+  if args.bundlePath:
+    workspace.exportBundle(args.trialCode, args.bundlePath)
+    print(f"Wrote {args.bundlePath}")
   return 0
 
 
 def _commandImportWeather(args) -> int:
-  count = Workspace.open(args.database, Actor.operator("cli")).importWeather(args.trialCode, args.csv)
+  count = _importer(args).importWeather(args.trialCode, args.csv)
   print(f"Replaced the weather log of '{args.trialCode}' with {count} days")
   return 0
 
@@ -955,6 +1025,101 @@ def _commandImportJson(args) -> int:
   trialCode = workspace.importDocument(args.jsonFile, args.place)
   count = len(workspace.loadObservations(trialCode))
   print(f"Imported trial '{trialCode}' with {count} observations")
+  return 0
+
+
+def _commandImportBundle(args) -> int:
+  workspace = _importer(args, create=True)
+  trialCode = workspace.importBundle(args.bundleFile, args.place)
+  print(f"Imported trial '{trialCode}' with {len(workspace.loadObservations(trialCode))} observations and "
+        f"{len(workspace.receivedFiles(trialCode))} received files")
+  return 0
+
+
+def _who(kind: str, name: str | None) -> str:
+  return kind if name is None else f"{kind} {name}"
+
+
+def _commandReceivedList(args) -> int:
+  files = _operator(args.database).receivedFiles(args.trialCode)
+  if not files:
+    print("(no received files)")
+  for file in files:
+    print("\t".join([
+      str(file.fileID), file.kind.value, file.fileName or "-", file.sheetName or "-", str(file.sizeBytes), file.sha256,
+      _who(file.importedBy.kind, file.importedBy.name), _when(file.importedAt),
+      json.dumps(file.produced, sort_keys=True), json.dumps(file.mapping, sort_keys=True),
+    ]))
+  return 0
+
+
+def _commandReceivedDownload(args) -> int:
+  file, content = _operator(args.database).receivedFile(args.trialCode, args.fileID)
+  Path(args.output).write_bytes(content)
+  print(f"Wrote {args.output} ({file.sizeBytes} bytes, SHA-256 {file.sha256})")
+  return 0
+
+
+def _commandClose(args) -> int:
+  try:
+    closedOn = datetime.date.fromisoformat(args.closedOn)
+  except ValueError:
+    raise RetentionError(f"'{args.closedOn}' is not a day; write it YYYY-MM-DD") from None
+  _operator(args.database).closeTrial(args.trialCode, closedOn)
+  print(f"Trial '{args.trialCode}' is closed on {closedOn.isoformat()}")
+  return 0
+
+
+def _commandReopen(args) -> int:
+  _operator(args.database).reopenTrial(args.trialCode)
+  print(f"Trial '{args.trialCode}' is open again")
+  return 0
+
+
+def _commandRetentionStatus(args) -> int:
+  status = _operator(args.database).retentionStatus()
+  for area in status.areas:
+    print(f"{area.area.value}\t{area.count}\t{area.sizeBytes} bytes\t{area.rule}\t{area.source}")
+    for below in area.setBelow:
+      print(f"{area.area.value}\tset at {below.scope}\t{below.rule}")
+  if not status.holds:
+    print("(no holds)")
+  for hold in status.holds:
+    print(f"hold\t{hold.trialCode}\t{_who(hold.heldByKind, hold.heldByName)}\t{_when(hold.heldAt)}\t{hold.reason}")
+  return 0
+
+
+def _printPruning(report) -> None:
+  for line in report.lines:
+    print(f"{line.area.value}\t{line.scope}\t{line.count}\t{line.sizeBytes} bytes\t{line.rule}\t{line.source}")
+    for file in line.detail.get("files", []):
+      print(f"  file {file['fileID']}\t{file['fileName'] or '-'}\t{file['sizeBytes']} bytes\t{file['sha256']}")
+
+
+def _commandRetentionPreview(args) -> int:
+  report = _operator(args.database).previewPruning()
+  if not report.lines:
+    print("(nothing to prune)")
+  _printPruning(report)
+  return 0
+
+
+def _commandRetentionPrune(args) -> int:
+  report = _operator(args.database).prune()
+  _printPruning(report)
+  print(summaryOf(report))
+  return 0
+
+
+def _commandRetentionHold(args) -> int:
+  hold = _operator(args.database).holdTrial(args.trialCode, args.reason)
+  print(f"Trial '{hold.trialCode}' is under a hold: {hold.reason}")
+  return 0
+
+
+def _commandRetentionRelease(args) -> int:
+  _operator(args.database).releaseHold(args.trialCode, args.reason)
+  print(f"Released the hold on trial '{args.trialCode}'")
   return 0
 
 

@@ -15,6 +15,7 @@ from openfurrow.config.profile import (
   TLSSettings,
   ValueParsing,
   WideColumns,
+  defaultMaxUploadBytes,
 )
 
 __all__ = [
@@ -27,6 +28,7 @@ __all__ = [
   "ValueParsing",
   "WideColumns",
   "defaultConfig",
+  "defaultMaxUploadBytes",
   "defaultConfigRelativePath",
   "loadConfig",
 ]

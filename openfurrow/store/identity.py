@@ -306,12 +306,12 @@ def issueToken(session: Session, userName: str, kind: str, lifetime: datetime.ti
 
 
 def actorForToken(session: Session, token: str, kind: str, surface: str) -> Actor:
+  """Who a session or API token stands for. An expired one is refused and left where it is: when expired sessions
+  and tokens leave the store is retention's to say (decision 0044)."""
   row = session.get(AuthTokenRow, _hashed(token)) if token.isascii() else None
   if row is None or row.kind != kind:
     raise IdentityError("the token is not valid")
   if row.expiresAt is not None and row.expiresAt <= now():
-    session.delete(row)
-    session.flush()
     raise IdentityError("the token has expired")
   account = session.get(AccountRow, row.accountID)
   if not account.active:

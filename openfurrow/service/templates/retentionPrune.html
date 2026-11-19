@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}{{ t.text('web.retention.prune.confirmHeading') }} - {{ t.text('web.app.name') }}{% endblock %}
+{% block content %}
+{% set localeArgument = locale if locale != 'en-US' else none %}
+<p class="back"><a href="{{ url_for('web.retention', locale=localeArgument) }}">{{ ('&rarr;' if direction == 'rtl' else '&larr;') | safe }} {{ t.text('web.retention.prune.back') }}</a></p>
+
+<div class="page-head">
+  <h1>{{ t.text('web.retention.prune.confirmHeading') }}</h1>
+</div>
+
+{% if preview.lines %}
+<div class="error" role="alert">{{ t.text('web.retention.prune.confirmIntro') }}</div>
+{% with report = preview %}{% include "pruneLines.html" %}{% endwith %}
+<form class="delete-form" method="post" action="{{ url_for('web.prune', locale=localeArgument) }}">
+  <button class="button button-danger" type="submit">{{ t.text('web.retention.prune.confirm') }}</button>
+  <a class="cancel" href="{{ url_for('web.retention', locale=localeArgument) }}">{{ t.text('web.delete.cancel') }}</a>
+</form>
+{% else %}
+<p class="notice" role="status">{{ t.text('web.retention.preview.nothing') }}</p>
+{% endif %}
+{% endblock %}

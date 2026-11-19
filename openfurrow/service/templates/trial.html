@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% block title %}{{ package.trial.trialCode }} - {{ t.text('web.app.name') }}{% endblock %}
 {% block content %}
+{% from "actor.html" import actor with context %}
 <p class="back"><a href="{{ url_for('web.index', locale=locale if locale != 'en-US' else none) }}">{{ ('&rarr;' if direction == 'rtl' else '&larr;') | safe }} {{ t.text('web.trial.back') }}</a></p>
 
 <div class="page-head">
@@ -22,6 +23,7 @@
     {% else %}
     <div><dt>{{ t.text('report.design.seed') }}</dt><dd class="code">{{ t.integer(package.design.randomizationSeed) }}</dd></div>
     {% endif %}
+    <div><dt>{{ t.text('web.trial.closed') }}</dt><dd>{% if closedOn %}<span dir="ltr">{{ t.date(closedOn) }}</span>{% else %}{{ t.text('web.trial.open') }}{% endif %}</dd></div>
   </dl>
   <p class="hash"><span class="hash-label">{{ t.text('web.trial.contentHash') }}</span> <span class="code hash-value">{{ contentHash }}</span></p>
   {% if observationCount > 0 %}
@@ -60,6 +62,54 @@
     <div class="form-actions"><button class="button" type="submit">{{ t.text('web.import.submit') }}</button></div>
   </form>
 </section>
+
+{% if receivedFiles is not none %}
+<section class="received" aria-label="{{ t.text('web.received.heading') }}">
+  <h2>{{ t.text('web.received.heading') }}</h2>
+  <p class="intro">{{ t.text('web.received.intro') }}</p>
+  {% if receivedFiles %}
+  <div class="table-scroll">
+    <table class="trials received-files">
+      <thead>
+        <tr>
+          <th scope="col">{{ t.text('web.received.column.file') }}</th>
+          <th scope="col">{{ t.text('web.received.column.kind') }}</th>
+          <th scope="col" class="num">{{ t.text('web.received.column.size') }}</th>
+          <th scope="col">{{ t.text('web.received.column.imported') }}</th>
+          <th scope="col">{{ t.text('web.received.column.produced') }}</th>
+          <th scope="col"></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for file in receivedFiles %}
+        <tr>
+          <td><span dir="auto">{{ file.fileName or t.text('web.received.unnamed') }}</span>{% if file.sheetName %}<br><span class="help">{{ t.text('web.received.sheet') }} <span dir="auto">{{ file.sheetName }}</span></span>{% endif %}</td>
+          <td>{{ t.text('web.received.kind.' ~ file.kind.value) }}</td>
+          <td class="num">{{ size(file.sizeBytes) }}</td>
+          <td>{{ actor(file.importedBy.kind, file.importedBy.name) }}<br><span dir="ltr">{{ moment(file.importedAt) }}</span> <span class="code">{{ zone }}</span></td>
+          <td>{% if file.kind.value == 'observations' %}{{ t.text('web.received.produced.observations', values=t.integer(file.produced['values']), missing=t.integer(file.produced['missing'])) }}{% elif file.kind.value == 'weather' %}{{ t.text('web.received.produced.weather', days=t.integer(file.produced['days'])) }}{% else %}{{ t.text('web.received.produced.layout', plots=t.integer(file.produced['plots'])) }}{% endif %}</td>
+          <td class="row-action"><a href="{{ url_for('web.receivedFile', trialCode=package.trial.trialCode, fileID=file.fileID) }}">{{ t.text('web.received.download') }}</a></td>
+        </tr>
+        <tr>
+          <td colspan="6">
+            <details>
+              <summary>{{ t.text('web.received.details') }}</summary>
+              <p class="verify-hash"><span class="hash-label">SHA-256</span> <span class="code" dir="ltr">{{ file.sha256 }}</span></p>
+              <pre class="run-output" dir="ltr">{{ mappingText(file) }}</pre>
+            </details>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p class="notice">{{ t.text('web.received.none') }}</p>
+  {% endif %}
+  <p class="intro">{{ t.text('web.received.bundleIntro') }}</p>
+  <p><a class="button button-quiet" href="{{ url_for('web.bundle', trialCode=package.trial.trialCode) }}">{{ t.text('web.received.bundle') }}</a></p>
+</section>
+{% endif %}
 
 <section class="layout" aria-label="{{ t.text('web.trial.layoutHeading') }}">
   <h2>{{ t.text('web.trial.layoutHeading') }}</h2>
@@ -109,6 +159,69 @@
     </div>
     {% endfor %}
   </div>
+</section>
+
+<section class="manage" id="retention" aria-label="{{ t.text('web.retention.trial.heading') }}">
+  <h2>{{ t.text('web.retention.trial.heading') }}</h2>
+  {% if retentionProblem %}<div class="error" role="alert">{{ retentionProblem }}</div>{% endif %}
+  {% if retentionNotice %}<div class="notice" role="status">{{ retentionNotice }}</div>{% endif %}
+  {% set retentionAction = url_for('web.trialRetention', trialCode=package.trial.trialCode, locale=locale if locale != 'en-US' else none) %}
+
+  <p>{{ t.text('web.retention.trial.closedOn', date=t.date(closedOn)) if closedOn else t.text('web.retention.trial.isOpen') }}</p>
+  <p class="intro">{{ t.text('web.retention.trial.closingIntro') }}</p>
+  {% if mayClose %}
+  <form class="import-form" method="post" action="{{ retentionAction }}">
+    <input type="hidden" name="action" value="close">
+    <div class="field-row">
+      <label class="field-label" for="closedOn">{{ t.text('web.retention.trial.closedOnLabel') }}</label>
+      <input type="date" id="closedOn" name="closedOn" dir="ltr" value="{{ closedOn.isoformat() if closedOn else '' }}">
+    </div>
+    <div class="form-actions"><button class="button button-quiet" type="submit">{{ t.text('web.retention.trial.close') }}</button></div>
+  </form>
+  {% if closedOn %}
+  <form class="import-form" method="post" action="{{ retentionAction }}">
+    <input type="hidden" name="action" value="reopen">
+    <div class="form-actions"><button class="button button-quiet" type="submit">{{ t.text('web.retention.trial.reopen') }}</button></div>
+  </form>
+  {% endif %}
+  {% endif %}
+
+  {% if hold %}
+  <div class="warning" role="note">
+    {{ t.text('web.retention.trial.held') }}
+    <p class="verify-hash"><span dir="auto">{{ hold.reason }}</span></p>
+    <p class="verify-hash">{{ actor(hold.heldByKind, hold.heldByName) }}, <span dir="ltr">{{ moment(hold.heldAt) }}</span> <span class="code">{{ zone }}</span></p>
+  </div>
+  {% else %}
+  <p>{{ t.text('web.retention.trial.notHeld') }}</p>
+  {% endif %}
+  {% if mayHold %}
+  <form class="import-form" method="post" action="{{ retentionAction }}">
+    <input type="hidden" name="action" value="{{ 'release' if hold else 'hold' }}">
+    <div class="field-row">
+      <label class="field-label" for="holdReason">{{ t.text('web.retention.trial.releaseReason') if hold else t.text('web.retention.trial.holdReason') }}</label>
+      <input type="text" id="holdReason" name="reason" dir="auto" size="48">
+    </div>
+    <div class="form-actions"><button class="button button-quiet" type="submit">{{ t.text('web.retention.trial.release') if hold else t.text('web.retention.trial.hold') }}</button></div>
+  </form>
+  {% endif %}
+
+  <table class="entry-table retention-rules">
+    <thead>
+      <tr>
+        <th scope="col">{{ t.text('web.retention.column.area') }}</th>
+        <th scope="col">{{ t.text('web.retention.column.rule') }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for area, setting in retentionRules %}
+      <tr>
+        <td>{{ t.text('web.retention.area.' ~ area.value) }}</td>
+        <td>{{ ruleText(setting.value) }} ({{ sourceText(setting.source) }})</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
 </section>
 
 <section class="manage" aria-label="{{ t.text('web.manage.heading') }}">

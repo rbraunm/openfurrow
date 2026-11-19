@@ -14,12 +14,13 @@ The surface is deliberately narrow and has three parts:
 
 - **`Workspace`** -- the facade, and the only way to act on a trial. Every operation
   (add, list, layout, import, analyze, separate means, assess assumptions, report,
-  exchange, hash, verify, Field Book interop, delete) is a method on it.
+  exchange, hash, verify, Field Book interop, the files as received, closing, holds and
+  pruning, delete) is a method on it.
 - **The schema types** -- what goes in and comes out: the trial package a caller
   authors, the observations, the portable document, plus `contentHash` for fixity.
 - **The result types** -- what the facade hands back (`AnovaResult`, `MeanSeparation`,
-  `Assumptions`, `ImportResult`), the config that parameterizes import and analysis,
-  and the error types to catch.
+  `Assumptions`, `ImportResult`, `ReceivedFile`, `RetentionStatus`, `PruneReport`, `Hold`),
+  the config that parameterizes import and analysis, and the error types to catch.
 
 Everything else is internal. The store, the randomizer, the exchange writers, the
 report builder, the observation importer, and the Field Book writers are reached
@@ -67,6 +68,8 @@ from openfurrow.config import (
   loadConfig,
 )
 from openfurrow.importers import ImportResult, ImportWarning
+from openfurrow.received import ReceivedFile
+from openfurrow.retention import Hold, PruneLine, PruneReport, RetentionError, RetentionStatus
 from openfurrow.schema import (
   ActiveSubstance,
   Application,
@@ -129,6 +132,7 @@ __all__ = [
   "AnalysisError",
   "ExchangeError",
   "ObservationImportError",
+  "RetentionError",
   "StoreError",
   # Schema: what goes in and comes out.
   "ActiveSubstance",
@@ -180,6 +184,7 @@ __all__ = [
   "DiagnosticOutcome",
   "FactorialResult",
   "FactorSeparation",
+  "Hold",
   "ImportResult",
   "ImportWarning",
   "LevelGroup",
@@ -189,6 +194,10 @@ __all__ = [
   "MissingHandling",
   "MissingPlotEstimation",
   "PairComparison",
+  "PruneLine",
+  "PruneReport",
+  "ReceivedFile",
+  "RetentionStatus",
   "SplitPlotResult",
   "SumsOfSquares",
   "TreatmentGroup",

@@ -200,9 +200,9 @@ def testDiscoverySettingsAreChecked(server, change, why):
 
 def testAFederationWithAnAggregateGetsItsRefreshTaskAndAFirstRun(location):
   operator = Workspace.open(location)
-  [task] = operator.tasks()
-  assert (task.name, task.kind, task.parameters, task.schedule, task.timeLimitSeconds, task.ownerProvider) == (
-    taskName, "federationRefresh", {"provider": "fed"}, "0 */6 * * *", 900, "fed")
+  task = operator.task(taskName)
+  assert (task.name, task.kind, task.parameters, task.schedule, task.timeLimitSeconds, task.ownerProvider,
+          task.ownerFeature) == (taskName, "federationRefresh", {"provider": "fed"}, "0 */6 * * *", 900, "fed", None)
   assert [(run.state, run.requestedBy) for run in operator.taskRuns(taskName)] == [(RunState.requested, "operator")]
   page = createApp(location).test_client().get("/signin/with/fed").get_data(as_text=True)
   assert "has not been loaded yet" in page and 'name="q"' not in page

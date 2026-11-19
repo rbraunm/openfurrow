@@ -27,8 +27,12 @@ def write(tmp_path, text, name="weather.csv"):
   return path
 
 
-def testDaysAreReadWithTheirUnitsAndPutInOrder(tmp_path):
-  records = readWeatherCsv(write(tmp_path, goodFile))
+def testDaysAreReadWithTheirUnitsAndPutInOrder():
+  weather = readWeatherCsv(goodFile.encode("utf-8"))
+  records = weather.records
+  assert [(column.column, column.field, column.unit) for column in weather.columns] == [
+    ("date", "date", None), ("rainfall [mm]", "rainfall", "mm"), ("minimumTemperature [C]", "minimumTemperature", "C"),
+    ("maximumTemperature [C]", "maximumTemperature", "C"), ("notes", "notes", None)]
   assert [record.date for record in records] == [datetime.date(2026, 5, day) for day in (1, 2, 3)]
   assert records[0].rainfall == Quantity(value=12.4, unit="mm") and records[0].notes == "Storm"
   assert records[1].minimumTemperature == Quantity(value=-1.5, unit="C") and records[1].rainfall is None
@@ -50,9 +54,14 @@ def testDaysAreReadWithTheirUnitsAndPutInOrder(tmp_path):
   ("date,rainfall [mm]\n", "lists no days"),
   ("", "is empty"),
 ])
-def testProblemsAreNamed(tmp_path, text, message):
+def testProblemsAreNamed(text, message):
   with pytest.raises(WeatherFileError, match=message):
-    readWeatherCsv(write(tmp_path, text))
+    readWeatherCsv(text.encode("utf-8"))
+
+
+def testAFileThatIsNotUTF8IsNamed():
+  with pytest.raises(WeatherFileError, match=r"not UTF-8 text \(byte 25\)"):
+    readWeatherCsv("date,notes\n2026-05-01,gel\u00e9e\n".encode("latin-1"))
 
 
 @pytest.fixture
@@ -90,6 +99,14 @@ def testCommandReplacesTheLog(tmp_path, trial, capsys):
   databasePath, workspace = trial
   assert main(["import-weather", databasePath, "ESV-2025-01", str(write(tmp_path, goodFile))]) == 0
   assert "Replaced the weather log of 'ESV-2025-01' with 3 days" in capsys.readouterr().out
+  [kept] = workspace.receivedFiles("ESV-2025-01")
+  assert (kept.kind.value, kept.fileName, kept.sheetName, kept.produced) == ("weather", "weather.csv", None, {"days": 3})
+  assert kept.mapping == {"columns": [
+    {"column": "date", "field": "date", "unit": None}, {"column": "rainfall [mm]", "field": "rainfall", "unit": "mm"},
+    {"column": "minimumTemperature [C]", "field": "minimumTemperature", "unit": "C"},
+    {"column": "maximumTemperature [C]", "field": "maximumTemperature", "unit": "C"},
+    {"column": "notes", "field": "notes", "unit": None}]}
+  assert workspace.receivedFile("ESV-2025-01", kept.fileID)[1] == (tmp_path / "weather.csv").read_bytes()
   assert main(["import-weather", databasePath, "ESV-2025-01", str(write(tmp_path, "date\n", "bad.csv"))]) == 1
   assert "lists no days" in capsys.readouterr().err
 
@@ -100,7 +117,11 @@ def testTrialPageTakesTheFile(trial):
   response = client.post("/trials/ESV-2025-01/weather", data={"file": (io.BytesIO(goodFile.encode()), "w.csv")},
                          content_type="multipart/form-data")
   assert response.status_code == 200 and "The weather log now holds 3 days." in response.get_data(as_text=True)
+  [kept] = workspace.receivedFiles("ESV-2025-01")
+  assert (kept.kind.value, kept.fileName, kept.importedBy.kind) == ("weather", "w.csv", "everyone")
+  assert workspace.receivedFile("ESV-2025-01", kept.fileID)[1] == goodFile.encode()
   bad = client.post("/trials/ESV-2025-01/weather", data={"file": (io.BytesIO(b"date,rain\n"), "w.csv")},
                     content_type="multipart/form-data")
   assert bad.status_code == 400 and "is not one of" in bad.get_data(as_text=True)
+  assert len(workspace.receivedFiles("ESV-2025-01")) == 1
   assert client.get("/trials/ESV-2025-01/verify").status_code == 200

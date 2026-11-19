@@ -19,6 +19,7 @@ import taskKindsForTests  # noqa: F401
 from openfurrow import Workspace
 from openfurrow.cli.main import main
 from openfurrow.identity import RoleAssignment
+from openfurrow.retention import retentionTaskName
 from openfurrow.service import createApp
 from openfurrow.store.database import TaskRunRow, createDatabase
 from openfurrow.tasks.model import RunState, TaskError, outputLimitBytes
@@ -43,8 +44,9 @@ class Clock:
 
 @pytest.fixture
 def location(newStore):
+  """A store whose own daily task (retention, decision 0044) is disabled, so only what a test schedules can run."""
   location = newStore("tasks")
-  Workspace.create(location)
+  Workspace.create(location).setTaskEnabled(retentionTaskName, False)
   return location
 
 
@@ -274,19 +276,6 @@ def testOutputIsKeptToItsLast64KB(location, schedulers):
   assert "line 03999 " in run.output and "line 00000 " not in run.output
 
 
-def testOldRunsAreRemovedAfterTheRetentionDays(location, schedulers):
-  operator = Workspace.open(location)
-  operator.createTask("echo", "testEcho", {"message": "hello"})
-  operator.setTaskEnabled("echo", False)
-  operator.runTaskNow("echo")
-  untilSettled(schedulers(), operator, "echo")
-  operator.setSetting("server", "tasks.runRetentionDays", 30)
-  schedulers(Clock(datetime.datetime.now(datetime.UTC) + datetime.timedelta(days=29))).tick()
-  assert len(operator.taskRuns("echo")) == 1
-  schedulers(Clock(datetime.datetime.now(datetime.UTC) + datetime.timedelta(days=31))).tick()
-  assert operator.taskRuns("echo") == []
-
-
 @pytest.fixture
 def started():
   """Scheduler processes for one test, each started in a process group of its own, and none left behind by it."""
@@ -399,7 +388,7 @@ def testOnlyHoldersOfManageTasksSeeOrChangeTasks(accounts):
     with pytest.raises(NotPermitted, match="viewer may not manageTasks at server"):
       attempt()
   admin = actingAs(accounts, "admin")
-  assert [task.name for task in admin.tasks()] == ["echo"]
+  assert [task.name for task in admin.tasks()] == ["echo", retentionTaskName]
 
 
 def testEveryChangeToATaskIsAudited(accounts):
@@ -409,7 +398,7 @@ def testEveryChangeToATaskIsAudited(accounts):
   runID = admin.runTaskNow("echo")
   assert admin.taskRuns("echo")[0].requestedBy == "admin"
   events = [(event.actorName, event.action, event.detail) for event in accounts.auditEvents()
-            if event.action.startswith("task.")]
+            if event.action.startswith("task.") and event.detail["task"] == "echo"]
   assert events == [
     ("admin", "task.run", {"task": "echo", "runID": runID}),
     ("admin", "task.enable", {"task": "echo", "enabled": False}),
@@ -426,8 +415,9 @@ def testTheCommandLineShowsChangesAndRunsTasks(location, schedulers, capsys):
   assert "'5' is not a duration" in capsys.readouterr().err
   assert main(["task", "disable", location, "echo"]) == 0
   assert main(["task", "list", location]) == 0
-  listed = capsys.readouterr().out.splitlines()[-1]
-  assert listed.split("\t") == ["echo", "testEcho", "0 */2 * * *", "disabled", "next -", "last -"]
+  echo, retention = capsys.readouterr().out.splitlines()[-2:]
+  assert echo.split("\t") == ["echo", "testEcho", "0 */2 * * *", "disabled", "next -", "last -"]
+  assert retention.split("\t") == [retentionTaskName, "retentionPrune", "15 3 * * *", "disabled", "next -", "last -"]
   assert main(["task", "run", location, "echo"]) == 0
   assert capsys.readouterr().out.strip() == "Requested run 1 of 'echo'"
   untilSettled(schedulers(), Workspace.open(location), "echo")

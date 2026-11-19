@@ -2,17 +2,18 @@
 """Settings: the choices a deployment makes, by scope (decision 0035).
 
 Every setting is defined here once: its key, the values it takes, its default, and the
-scopes it may be set at. A value is set at the server, at a place of the hierarchy, or on
-a trial, and the nearest one applies: the trial, then its places from the innermost out,
-then the server, then the default. Each effective value carries where it came from, so a
-page or a report can say so. Unknown keys, values outside a setting's type, and values at
-a scope the setting does not allow are refused.
+scopes it may be set at, and the permission that changes it. A value is set at the server,
+at a place of the hierarchy, or on a trial, and the nearest one applies: the trial, then
+its places from the innermost out, then the server, then the default. Each effective value
+carries where it came from, so a page or a report can say so. Unknown keys, values outside
+a setting's type, and values at a scope the setting does not allow are refused.
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import Enum
+from functools import partial
 from typing import Annotated, Any
 from zoneinfo import ZoneInfo
 
@@ -20,7 +21,8 @@ from pydantic import AfterValidator, BaseModel, ConfigDict, Field, TypeAdapter, 
 
 from openfurrow.analysis.meanSeparation import MeanComparison
 from openfurrow.analysis.missingPlots import MissingPlotPolicy
-from openfurrow.identity.model import SignInMode
+from openfurrow.identity.model import Permission, SignInMode
+from openfurrow.retention import RetentionPolicy, StorageArea, checkedRule, policiesOf, settingKey
 
 
 class SettingError(ValueError):
@@ -41,6 +43,7 @@ class SettingDefinition:
   adapter: TypeAdapter
   default: Any
   scopes: frozenset[SettingScope]
+  permission: Permission = Permission.changeSettings
 
 
 everyScope = frozenset(SettingScope)
@@ -63,6 +66,15 @@ def _audience(name: str) -> str:
   return name
 
 
+def _retention(area: StorageArea) -> SettingDefinition:
+  """An area's retention rule (decision 0044), set down to the trial where a trial's closing can end it."""
+  scopes = everyScope if RetentionPolicy.keepUntilClosed in policiesOf[area] else serverOnly
+  return SettingDefinition(
+    settingKey(area), TypeAdapter(Annotated[str, AfterValidator(partial(checkedRule, area))]),
+    RetentionPolicy.keep.value, scopes, Permission.manageRetention,
+  )
+
+
 definitions: dict[str, SettingDefinition] = {
   definition.key: definition for definition in (
     SettingDefinition(
@@ -81,9 +93,7 @@ definitions: dict[str, SettingDefinition] = {
     SettingDefinition(
       "tasks.maximumConcurrentRuns", TypeAdapter(Annotated[int, Field(ge=1, le=64)]), 2, serverOnly,
     ),
-    SettingDefinition(
-      "tasks.runRetentionDays", TypeAdapter(Annotated[int, Field(ge=1, le=3650)]), 90, serverOnly,
-    ),
+    *(_retention(area) for area in StorageArea),
   )
 }
 

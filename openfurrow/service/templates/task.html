@@ -22,6 +22,9 @@
     {% if task.ownerProvider %}
     <div><dt>{{ t.text('web.task.owner') }}</dt><dd class="code">{{ task.ownerProvider }}</dd></div>
     {% endif %}
+    {% if task.ownerFeature %}
+    <div><dt>{{ t.text('web.task.ownerFeature') }}</dt><dd>{{ t.text('web.task.feature.' ~ task.ownerFeature) }}</dd></div>
+    {% endif %}
   </dl>
 </section>
 

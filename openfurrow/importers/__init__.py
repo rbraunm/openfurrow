@@ -3,8 +3,10 @@
 
 from openfurrow.importers.observations import (
   AssessmentCount,
+  ColumnMapping,
   ImportResult,
   ImportWarning,
+  MappedColumn,
   ObservationImportError,
   countByAssessment,
   importObservations,
@@ -14,8 +16,10 @@ from openfurrow.importers.spreadsheet import SheetTable, SpreadsheetError, readT
 
 __all__ = [
   "AssessmentCount",
+  "ColumnMapping",
   "ImportResult",
   "ImportWarning",
+  "MappedColumn",
   "ObservationImportError",
   "SheetTable",
   "SpreadsheetError",

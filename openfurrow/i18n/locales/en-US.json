@@ -3924,6 +3924,418 @@
     "web.signIn.search.more": {
       "text": "More institutions match than the first {count} shown; type more of the name to narrow them.",
       "status": "source"
+    },
+    "web.nav.retention": {
+      "text": "Retention",
+      "status": "source"
+    },
+    "web.task.ownerFeature": {
+      "text": "Kept for",
+      "status": "source"
+    },
+    "web.task.feature.retention": {
+      "text": "Retention: the store's own pruning",
+      "status": "source"
+    },
+    "web.size.bytes": {
+      "text": "{count} bytes",
+      "status": "source"
+    },
+    "web.size.kilobytes": {
+      "text": "{count} kB",
+      "status": "source"
+    },
+    "web.size.megabytes": {
+      "text": "{count} MB",
+      "status": "source"
+    },
+    "web.size.gigabytes": {
+      "text": "{count} GB",
+      "status": "source"
+    },
+    "web.actor.operator": {
+      "text": "the operator",
+      "status": "source"
+    },
+    "web.actor.everyone": {
+      "text": "everyone (no sign-in)",
+      "status": "source"
+    },
+    "web.trial.closed": {
+      "text": "Closed",
+      "status": "source"
+    },
+    "web.trial.open": {
+      "text": "Open",
+      "status": "source"
+    },
+    "web.received.heading": {
+      "text": "Files as received",
+      "status": "source"
+    },
+    "web.received.intro": {
+      "text": "Every file an import read is kept here exactly as it came, with the columns as they were mapped. The files stand beside the trial; they are not part of its content hash.",
+      "status": "source"
+    },
+    "web.received.column.file": {
+      "text": "File",
+      "status": "source"
+    },
+    "web.received.column.kind": {
+      "text": "Imported as",
+      "status": "source"
+    },
+    "web.received.column.size": {
+      "text": "Size",
+      "status": "source"
+    },
+    "web.received.column.imported": {
+      "text": "Imported by, at",
+      "status": "source"
+    },
+    "web.received.column.produced": {
+      "text": "It gave",
+      "status": "source"
+    },
+    "web.received.unnamed": {
+      "text": "(sent without a name)",
+      "status": "source"
+    },
+    "web.received.sheet": {
+      "text": "Sheet",
+      "status": "source"
+    },
+    "web.received.kind.observations": {
+      "text": "Observations",
+      "status": "source"
+    },
+    "web.received.kind.weather": {
+      "text": "Weather log",
+      "status": "source"
+    },
+    "web.received.kind.layout": {
+      "text": "Layout as planted",
+      "status": "source"
+    },
+    "web.received.produced.observations": {
+      "text": "{values} values, {missing} marked missing",
+      "status": "source"
+    },
+    "web.received.produced.weather": {
+      "text": "{days} days",
+      "status": "source"
+    },
+    "web.received.produced.layout": {
+      "text": "{plots} plots",
+      "status": "source"
+    },
+    "web.received.download": {
+      "text": "Download",
+      "status": "source"
+    },
+    "web.received.details": {
+      "text": "SHA-256 and column mapping",
+      "status": "source"
+    },
+    "web.received.none": {
+      "text": "No file has been imported into this trial yet.",
+      "status": "source"
+    },
+    "web.received.bundleIntro": {
+      "text": "A bundle is the trial's JSON document with these files and a manifest beside it, in one zip archive. Importing it into another store restores the files too.",
+      "status": "source"
+    },
+    "web.received.bundle": {
+      "text": "Download the trial with its files",
+      "status": "source"
+    },
+    "web.retention.trial.heading": {
+      "text": "Closing and retention",
+      "status": "source"
+    },
+    "web.retention.trial.closedOn": {
+      "text": "This trial was closed on {date}.",
+      "status": "source"
+    },
+    "web.retention.trial.isOpen": {
+      "text": "This trial is open.",
+      "status": "source"
+    },
+    "web.retention.trial.closingIntro": {
+      "text": "The closed date is what retention counts from where a rule keeps something until the trial is closed. Closing changes nothing else.",
+      "status": "source"
+    },
+    "web.retention.trial.closedOnLabel": {
+      "text": "Closed on (YYYY-MM-DD, today or earlier)",
+      "status": "source"
+    },
+    "web.retention.trial.close": {
+      "text": "Record the closed date",
+      "status": "source"
+    },
+    "web.retention.trial.reopen": {
+      "text": "Reopen the trial",
+      "status": "source"
+    },
+    "web.retention.trial.held": {
+      "text": "This trial is under a hold: nothing of it is pruned, and it cannot be deleted.",
+      "status": "source"
+    },
+    "web.retention.trial.notHeld": {
+      "text": "This trial is under no hold.",
+      "status": "source"
+    },
+    "web.retention.trial.holdReason": {
+      "text": "Reason for the hold",
+      "status": "source"
+    },
+    "web.retention.trial.releaseReason": {
+      "text": "Reason for releasing the hold",
+      "status": "source"
+    },
+    "web.retention.trial.hold": {
+      "text": "Put under a hold",
+      "status": "source"
+    },
+    "web.retention.trial.release": {
+      "text": "Release the hold",
+      "status": "source"
+    },
+    "web.retention.done.close": {
+      "text": "The closed date is recorded.",
+      "status": "source"
+    },
+    "web.retention.done.reopen": {
+      "text": "The trial is open again.",
+      "status": "source"
+    },
+    "web.retention.done.hold": {
+      "text": "The trial is under a hold.",
+      "status": "source"
+    },
+    "web.retention.done.release": {
+      "text": "The hold is released.",
+      "status": "source"
+    },
+    "web.retention.problem": {
+      "text": "Not done: {reason}",
+      "status": "source"
+    },
+    "web.retention.problem.date": {
+      "text": "write the day as YYYY-MM-DD",
+      "status": "source"
+    },
+    "web.retention.heading": {
+      "text": "Retention",
+      "status": "source"
+    },
+    "web.retention.intro": {
+      "text": "What this store holds, how long each kind of data is kept, and what the rules now let go. Nothing leaves until a rule says so: every area is kept unless its rule is changed.",
+      "status": "source"
+    },
+    "web.retention.areas.heading": {
+      "text": "Storage areas",
+      "status": "source"
+    },
+    "web.retention.areas.intro": {
+      "text": "Sizes are the bytes of the content held, not the space the database uses for it.",
+      "status": "source"
+    },
+    "web.retention.column.area": {
+      "text": "Area",
+      "status": "source"
+    },
+    "web.retention.column.where": {
+      "text": "Where",
+      "status": "source"
+    },
+    "web.retention.column.count": {
+      "text": "Count",
+      "status": "source"
+    },
+    "web.retention.column.size": {
+      "text": "Size",
+      "status": "source"
+    },
+    "web.retention.column.rule": {
+      "text": "Rule",
+      "status": "source"
+    },
+    "web.retention.column.setting": {
+      "text": "Setting",
+      "status": "source"
+    },
+    "web.retention.area.trialRecords": {
+      "text": "Trial records",
+      "status": "source"
+    },
+    "web.retention.area.trialRecords.holds": {
+      "text": "Each trial as its record: design, layout and values. A record leaves only whole.",
+      "status": "source"
+    },
+    "web.retention.area.receivedFiles": {
+      "text": "Files as received",
+      "status": "source"
+    },
+    "web.retention.area.receivedFiles.holds": {
+      "text": "The files imports read, kept exactly as they came.",
+      "status": "source"
+    },
+    "web.retention.area.auditLog": {
+      "text": "Audit log",
+      "status": "source"
+    },
+    "web.retention.area.auditLog.holds": {
+      "text": "Every change, who made it and from where.",
+      "status": "source"
+    },
+    "web.retention.area.sessionsAndTokens": {
+      "text": "Sessions and tokens",
+      "status": "source"
+    },
+    "web.retention.area.sessionsAndTokens.holds": {
+      "text": "Sessions, API tokens, sign-ins waiting for a provider, and messages used once. Only expired ones ever leave.",
+      "status": "source"
+    },
+    "web.retention.area.taskRuns": {
+      "text": "Task runs",
+      "status": "source"
+    },
+    "web.retention.area.taskRuns.holds": {
+      "text": "The record of each run of a scheduled task, with its output.",
+      "status": "source"
+    },
+    "web.retention.settingHelp": {
+      "text": "A rule is a setting, changed by someone who may manage retention: keep, keepFor:<period> or keepUntilClosed:<period>, with a period such as P90D, P18M or P5Y. The rules of trial records, received files and the audit log can also be set for a place or a trial.",
+      "status": "source"
+    },
+    "web.retention.rule.keep": {
+      "text": "Keep",
+      "status": "source"
+    },
+    "web.retention.rule.keepFor": {
+      "text": "Keep for {period}",
+      "status": "source"
+    },
+    "web.retention.rule.keepUntilClosed": {
+      "text": "Keep until the trial is closed, then for {period}",
+      "status": "source"
+    },
+    "web.retention.period.days": {
+      "text": "{count} days",
+      "status": "source"
+    },
+    "web.retention.period.months": {
+      "text": "{count} months",
+      "status": "source"
+    },
+    "web.retention.period.years": {
+      "text": "{count} years",
+      "status": "source"
+    },
+    "web.retention.period.one.days": {
+      "text": "1 day",
+      "status": "source"
+    },
+    "web.retention.period.one.months": {
+      "text": "1 month",
+      "status": "source"
+    },
+    "web.retention.period.one.years": {
+      "text": "1 year",
+      "status": "source"
+    },
+    "web.retention.scope.server": {
+      "text": "The server",
+      "status": "source"
+    },
+    "web.retention.source.trial": {
+      "text": "set for the trial",
+      "status": "source"
+    },
+    "web.retention.withTheTrialRecord": {
+      "text": "These leave with the trial's record.",
+      "status": "source"
+    },
+    "web.retention.holds.heading": {
+      "text": "Holds",
+      "status": "source"
+    },
+    "web.retention.holds.intro": {
+      "text": "A trial under a hold loses nothing to pruning and cannot be deleted. A hold is set and released on the trial's page.",
+      "status": "source"
+    },
+    "web.retention.holds.column.reason": {
+      "text": "Reason",
+      "status": "source"
+    },
+    "web.retention.holds.column.by": {
+      "text": "Set by",
+      "status": "source"
+    },
+    "web.retention.holds.column.since": {
+      "text": "Since",
+      "status": "source"
+    },
+    "web.retention.holds.none": {
+      "text": "No trial is under a hold.",
+      "status": "source"
+    },
+    "web.retention.pruning.heading": {
+      "text": "Pruning",
+      "status": "source"
+    },
+    "web.retention.pruning.intro": {
+      "text": "Pruning removes what the rules let go and records what went in the audit log. It also runs every day as a scheduled task.",
+      "status": "source"
+    },
+    "web.retention.pruning.task": {
+      "text": "The pruning task",
+      "status": "source"
+    },
+    "web.retention.preview.action": {
+      "text": "Preview pruning",
+      "status": "source"
+    },
+    "web.retention.preview.would": {
+      "text": "Pruning now would remove exactly this:",
+      "status": "source"
+    },
+    "web.retention.preview.nothing": {
+      "text": "Nothing would be pruned now: no rule lets anything go.",
+      "status": "source"
+    },
+    "web.retention.prune.action": {
+      "text": "Prune now",
+      "status": "source"
+    },
+    "web.retention.prune.confirmHeading": {
+      "text": "Prune now?",
+      "status": "source"
+    },
+    "web.retention.prune.confirmIntro": {
+      "text": "This removes everything listed below for good. It cannot be undone.",
+      "status": "source"
+    },
+    "web.retention.prune.confirm": {
+      "text": "Prune",
+      "status": "source"
+    },
+    "web.retention.prune.back": {
+      "text": "Back to retention",
+      "status": "source"
+    },
+    "web.retention.outcome.heading": {
+      "text": "Pruned",
+      "status": "source"
+    },
+    "web.retention.outcome.done": {
+      "text": "This was removed, and recorded in the audit log:",
+      "status": "source"
+    },
+    "web.retention.outcome.nothing": {
+      "text": "Nothing was pruned: no rule lets anything go.",
+      "status": "source"
     }
   }
 }

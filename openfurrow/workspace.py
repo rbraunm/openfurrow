@@ -11,7 +11,9 @@ re-implement part of it.
 A `Workspace` wraps one store (one system of record holding many trials) and exposes
 the trial loop as methods: add a designed package, list and load trials, read the
 layout, import observations, analyze, separate means, assess assumptions, build the
-report, exchange portable files, hash, verify, and delete.
+report, exchange portable files, hash, verify, and delete. Every file an import reads is
+kept as received, and what the store holds is kept or pruned by its retention rules
+(decision 0044).
 
 Every Workspace acts as someone (decisions 0036 to 0038). Each method checks that its
 actor holds the permission it needs where it acts, and each change writes an audit event
@@ -40,6 +42,7 @@ import datetime
 import json
 import tempfile
 import time
+from collections.abc import Callable
 from contextlib import contextmanager
 from pathlib import Path
 
@@ -71,14 +74,17 @@ from openfurrow.analysis import (
   assessAssumptions as _assessAssumptions,
   separateMeans as _separateMeans,
 )
-from openfurrow.config import ImportProfile
-from openfurrow.importers.weatherCsv import readWeatherCsv as _readWeatherCsv
+from openfurrow.config import ImportProfile, defaultMaxUploadBytes
+from openfurrow.importers.layoutCsv import LayoutFileError, layoutColumns as _layoutColumns, readLayoutCsv as _readLayoutCsv
+from openfurrow.importers.weatherCsv import WeatherFileError, readWeatherCsv as _readWeatherCsv
 from openfurrow.design import generateLayout as _generateLayout
 from openfurrow.exchange import (
   ExchangeError,
+  bundleBytes as _bundleBytes,
   exportJson as _exportJson,
   exportObservationsCsv as _exportObservationsCsv,
   importJson as _importJson,
+  readBundle as _readBundle,
 )
 from openfurrow.i18n import MessageError, availableLocales, sourceLocale
 from openfurrow.importers import (
@@ -120,8 +126,10 @@ from openfurrow.identity.model import (
   SignInMode,
   foldedUserName as _foldedUserName,
 )
+from openfurrow.received import ReceivedFile, ReceivedFileKind
+from openfurrow.retention import Hold, PruneReport, RetentionError, RetentionStatus, StorageArea
 from openfurrow.schema.hierarchy import HierarchyLevel, Place
-from openfurrow.settings import EffectiveSetting
+from openfurrow.settings import EffectiveSetting, definitionFor as _definitionFor
 from openfurrow.store.audit import AuditEvent, EventFilter, events as _auditEvents, record as _record
 from openfurrow.store.identity import (
   actorForToken as _actorForToken,
@@ -209,6 +217,23 @@ from openfurrow.store.discovery import (
   replaceDiscovery as _replaceDiscovery,
   searchDiscovery as _searchDiscovery,
 )
+from openfurrow.store.receivedFiles import (
+  fileContent as _fileContent,
+  keepFile as _keepFile,
+  listFiles as _listFiles,
+  restoreFile as _restoreFile,
+)
+from openfurrow.store.retention import (
+  closedOn as _closedOn,
+  holdOn as _holdOn,
+  prune as _prune,
+  releaseHold as _releaseHold,
+  selection as _selection,
+  setClosedOn as _setClosedOn,
+  setHold as _setHold,
+  status as _retentionStatus,
+  written as _written,
+)
 from openfurrow.store.tasks import (
   createTask as _createTask,
   deleteTask as _deleteTask,
@@ -220,6 +245,7 @@ from openfurrow.store.tasks import (
   setEnabled as _setTaskEnabled,
   setSchedule as _setSchedule,
   setTimeLimit as _setTimeLimit,
+  stored as _stored,
   task as _taskNamed,
 )
 from openfurrow.tasks.kinds import registeredKinds as _registeredTaskKinds
@@ -266,13 +292,16 @@ __all__ = [
   "ExchangeError",
   "MessageError",
   "IdentityError",
+  "LayoutFileError",
   "NotFoundError",
   "NotPermitted",
   "ObservationImportError",
+  "RetentionError",
   "RoundTripCheck",
   "SignOutOutcome",
   "StoreError",
   "TaskError",
+  "WeatherFileError",
   "Workspace",
   "availableLocales",
   "sourceLocale",
@@ -296,6 +325,8 @@ class NotPermitted(PermissionError):
 
 
 institutionSearchLimit = 50
+# What a CSV sent without a name is called while it is read; no name is kept for it.
+unnamedCSV = "upload.csv"
 
 
 def federationRefreshTaskName(providerName: str) -> str:
@@ -369,25 +400,34 @@ class Workspace:
   `postgresql+pg8000://` URL.
   """
 
-  def __init__(self, engine, actor: Actor | None = None) -> None:
+  def __init__(self, engine, actor: Actor | None = None, clock: Callable[[], datetime.datetime] = _utcNow,
+               maximumFileBytes: int = defaultMaxUploadBytes) -> None:
     # Code that holds the store's engine is its operator; a surface that serves people
     # gives each of them their own Workspace through actingAs.
     self._engine = engine
     self.actor = actor if actor is not None else Actor.operator("library")
+    self._clock = clock
+    self.maximumFileBytes = maximumFileBytes
 
   @classmethod
-  def create(cls, location: str, actor: Actor | None = None) -> "Workspace":
-    """Create (or open) the store at `location` and ensure its schema."""
-    return cls(_createDatabase(location), actor)
+  def create(cls, location: str, actor: Actor | None = None, clock: Callable[[], datetime.datetime] = _utcNow,
+             maximumFileBytes: int = defaultMaxUploadBytes) -> "Workspace":
+    """Create (or open) the store at `location` and ensure its schema.
+
+    `clock` tells the time every record is given. `maximumFileBytes` is the largest file an import takes, and so
+    the largest it keeps as received; a surface passes its configuration's `service.maxUploadBytes`.
+    """
+    return cls(_createDatabase(location), actor, clock, maximumFileBytes)
 
   @classmethod
-  def open(cls, location: str, actor: Actor | None = None) -> "Workspace":
+  def open(cls, location: str, actor: Actor | None = None, clock: Callable[[], datetime.datetime] = _utcNow,
+           maximumFileBytes: int = defaultMaxUploadBytes) -> "Workspace":
     """Open an existing store; raise if the file does not exist or the database holds none."""
-    return cls(_createDatabase(location, create=False), actor)
+    return cls(_createDatabase(location, create=False), actor, clock, maximumFileBytes)
 
   def actingAs(self, actor: Actor) -> "Workspace":
     """The same store, acting as `actor`."""
-    return Workspace(self._engine, actor)
+    return Workspace(self._engine, actor, self._clock, self.maximumFileBytes)
 
   # ---- permissions and audit (decisions 0037, 0038) -----------------------
 
@@ -406,8 +446,11 @@ class Workspace:
       self._require(session, permission, scope)
       yield session
 
+  def _recordAs(self, session, actor: Actor, action: str, scope: str, detail: dict) -> None:
+    _record(session, actor, action, scope, detail, self._clock())
+
   def _audit(self, session, action: str, scope: str, detail: dict) -> None:
-    _record(session, self.actor, action, scope, detail)
+    self._recordAs(session, self.actor, action, scope, detail)
 
   def permissionsAt(self, scope: str) -> frozenset[Permission]:
     """What this workspace's actor may do at a scope."""
@@ -457,6 +500,25 @@ class Workspace:
       _savePackage(session, package, layout.plots, layout.checkPlots, place)
       self._audit(session, "trial.add", f"trial:{package.trial.trialCode}", {"place": place})
 
+  def addPackageAsPlanted(self, package: TrialPackage, place: str | None, fileName: str, data: bytes) -> None:
+    """Persist a trial laid out elsewhere, from a CSV of its plots as planted (worklist USR-7), and keep the file.
+
+    The package declares an imported layout; the file's plots must fit it, and are kept exactly.
+    """
+    self._checkSize(fileName, len(data))
+    planted = _readLayoutCsv(data)
+    document = TrialDocument(package=package, layout=planted.plots, observations=[])
+    trialCode = package.trial.trialCode
+    with self._acting(Permission.manageTrials, "server" if place is None else f"place:{place}") as session:
+      _savePackage(session, document.package, document.layout, document.checkPlots, place)
+      kept = _keepFile(
+        session, trialCode, ReceivedFileKind.layout, fileName, None, data,
+        {"columns": list(_layoutColumns), "unreadColumns": planted.unreadColumns}, {"plots": len(planted.plots)},
+        self.actor, self._clock(),
+      )
+      self._audit(session, "trial.add", f"trial:{trialCode}", {
+        "place": place, "layoutFile": fileName, "receivedFile": kept.fileID, "sha256": kept.sha256})
+
   def listTrials(self) -> list[tuple[str, str]]:
     """The trials the actor may view, as (trialCode, title) pairs."""
     with _sessionScope(self._engine) as session:
@@ -476,11 +538,15 @@ class Workspace:
       return _loadObservations(session, trialCode)
 
   def deleteTrial(self, trialCode: str) -> None:
-    """Delete a trial and all its observations."""
+    """Delete a trial with its observations and its received files; refused while the trial is under a hold."""
     with self._acting(Permission.manageTrials, f"trial:{trialCode}") as session:
       place = _trialPlace(session, trialCode)
+      hold = _holdOn(session, trialCode)
+      if hold is not None:
+        raise RetentionError(f"trial '{trialCode}' is under a hold and is not deleted: {hold.reason}")
+      receivedFiles = len(_listFiles(session, trialCode))
       _deleteTrial(session, trialCode)
-      self._audit(session, "trial.delete", f"trial:{trialCode}", {"place": place})
+      self._audit(session, "trial.delete", f"trial:{trialCode}", {"place": place, "receivedFiles": receivedFiles})
 
   # ---- hierarchy (decision 0034) ------------------------------------------
 
@@ -550,25 +616,25 @@ class Workspace:
   # ---- settings (decision 0035) -------------------------------------------
 
   def setSetting(self, scope: str, key: str, value) -> None:
-    """Set a setting at 'server', 'place:<path>' or 'trial:<code>'."""
-    with self._acting(Permission.changeSettings, scope) as session:
+    """Set a setting at 'server', 'place:<path>' or 'trial:<code>'; it takes the permission the setting names."""
+    with self._acting(_definitionFor(key).permission, scope) as session:
       before = {setting.key: setting for setting in _effectiveSettings(session, scope)}.get(key)
       _setValue(session, scope, key, value)
       after = {setting.key: setting for setting in _effectiveSettings(session, scope)}[key]
       if key == "identity.signInMode" and after.value is SignInMode.accounts:
         self._requireAnAdministrator(session)
       if key == "tasks.timeZone":
-        _rescheduleAll(session, _utcNow())
+        _rescheduleAll(session, self._clock())
       self._audit(session, "setting.set", scope, {"key": key, "before": _jsonSetting(before), "after": _jsonSetting(after)})
 
   def clearSetting(self, scope: str, key: str) -> None:
-    with self._acting(Permission.changeSettings, scope) as session:
+    with self._acting(_definitionFor(key).permission, scope) as session:
       _clearValue(session, scope, key)
       after = {setting.key: setting for setting in _effectiveSettings(session, scope)}[key]
       if key == "identity.signInMode" and after.value is SignInMode.accounts:
         self._requireAnAdministrator(session)
       if key == "tasks.timeZone":
-        _rescheduleAll(session, _utcNow())
+        _rescheduleAll(session, self._clock())
       self._audit(session, "setting.clear", scope, {"key": key, "after": _jsonSetting(after)})
 
   def effectiveSettings(self, scope: str) -> list[EffectiveSetting]:
@@ -700,12 +766,13 @@ class Workspace:
       try:
         account = _signIn(session, userName, password)
       except IdentityError:
-        _record(session, Actor.everyone(surface), "signIn.refused", "server", {"userName": _foldedUserName(userName)})
+        self._recordAs(session, Actor.everyone(surface), "signIn.refused", "server",
+                       {"userName": _foldedUserName(userName)})
         session.commit()
         raise
       token = _issueToken(session, account.userName, "session", datetime.timedelta(hours=hours), None)
-      _record(session, Actor(kind=ActorKind.account, accountID=account.accountID, userName=account.userName, surface=surface),
-              "signIn", "server", {})
+      self._recordAs(session, Actor(kind=ActorKind.account, accountID=account.accountID, userName=account.userName,
+                                    surface=surface), "signIn", "server", {})
       return account, token
 
   def actorForSession(self, token: str, surface: str) -> Actor:
@@ -745,7 +812,7 @@ class Workspace:
       everywhere = provider is not None and provider.settings.signOutEverywhere
       _revokeToken(session, token)
       detail = {"everywhere": everywhere} | ({"provider": provider.name} if provider is not None else {})
-      _record(session, actor, "signOut", "server", detail)
+      self._recordAs(session, actor, "signOut", "server", detail)
       session.commit()
       if not everywhere:
         return SignOutOutcome(provider=provider.name if provider is not None else None)
@@ -753,9 +820,9 @@ class Workspace:
         address, key = self._signOutAt(session, provider, held, actor)
       except (SignInRefused, SAMLRefused, CASRefused, IdentityError) as error:
         session.rollback()
-        _record(session, actor, "signOut.atProvider.failed", "server", {"provider": provider.name, "why": str(error)})
+        self._recordAs(session, actor, "signOut.atProvider.failed", "server", {"provider": provider.name, "why": str(error)})
         return SignOutOutcome(provider=provider.name, problem=str(error))
-      _record(session, actor, "signOut.atProvider", "server", {"provider": provider.name})
+      self._recordAs(session, actor, "signOut.atProvider", "server", {"provider": provider.name})
       return SignOutOutcome(provider=provider.name, address=address, pendingKey=key)
 
   def _signOutAt(self, session, provider: Provider, held, actor: Actor) -> tuple[str, str | None]:
@@ -793,18 +860,18 @@ class Workspace:
         self._samlServiceProvider(provider, state["institution"]).finishSignOut(
           SAMLPending(**state["protocol"]), query=query, samlResponse=samlResponse)
       except (SAMLRefused, IdentityError) as error:
-        _record(session, actor, "signOut.atProvider.failed", "server", {"provider": name, "why": str(error)})
+        self._recordAs(session, actor, "signOut.atProvider.failed", "server", {"provider": name, "why": str(error)})
         return None, str(error)
-      _record(session, actor, "signOut.atProvider.finished", "server", {"provider": name})
+      self._recordAs(session, actor, "signOut.atProvider.finished", "server", {"provider": name})
       return provider.settings.signedOutURL, None
 
   def _signedOutByProvider(self, session, name: str, how: str, ended: int, surface: str) -> None:
-    _record(session, Actor.everyone(surface), "signOut.fromProvider", "server",
+    self._recordAs(session, Actor.everyone(surface), "signOut.fromProvider", "server",
             {"provider": name, "how": how, "sessionsEnded": ended})
 
   def _refusedSignOutFromProvider(self, session, name: str, how: str, why: str, surface: str) -> None:
     session.rollback()
-    _record(session, Actor.everyone(surface), "signOut.fromProvider.refused", "server",
+    self._recordAs(session, Actor.everyone(surface), "signOut.fromProvider.refused", "server",
             {"provider": name, "how": how, "why": why})
     session.commit()
 
@@ -890,7 +957,7 @@ class Workspace:
         raise IdentityError("set the server setting identity.workloadAudience before adding a workload rule: it is "
                             "the audience every workload token must name, and it has no default")
       rule = WorkloadRule(name=name, issuer=issuer, claims=claims, certificateAuthority=certificateAuthority,
-                          createdAt=_utcNow().replace(tzinfo=None))
+                          createdAt=self._clock().replace(tzinfo=None))
       _addWorkloadRule(session, rule)
       self._audit(session, "workload.add", "server", {"rule": rule.name, "issuer": rule.issuer, "claims": rule.claims,
                                                       "certificateAuthority": rule.certificateAuthority})
@@ -939,7 +1006,7 @@ class Workspace:
       _addProvider(session, provider)
       self._audit(session, "provider.add", "server", {"provider": provider.name, "kind": provider.kind.value})
       if provider.kind is ProviderKind.samlFederation and provider.settings.discoveryAggregate is not None:
-        name, at = federationRefreshTaskName(provider.name), _utcNow()
+        name, at = federationRefreshTaskName(provider.name), self._clock()
         _createTask(session, name, "federationRefresh", {"provider": provider.name}, at, ownerProvider=provider.name)
         runID = _requestRun(session, name, self.actor.label, at)
         self._audit(session, "task.create", "server", {"task": name, "kind": "federationRefresh",
@@ -1014,7 +1081,7 @@ class Workspace:
       raise IdentityError(f"'{name}' is not a federation provider")
     discovery = _fetchDiscovery(name, provider.settings)
     with self._acting(Permission.manageAccess, "server") as session:
-      _replaceDiscovery(session, name, discovery, _utcNow().replace(tzinfo=None))
+      _replaceDiscovery(session, name, discovery, self._clock().replace(tzinfo=None))
       outcome = DiscoveryOutcome(offered=len(discovery.institutions), hidden=discovery.hidden,
                                  skipped=list(discovery.skipped),
                                  validUntil=datetime.datetime.fromtimestamp(discovery.validUntil, datetime.UTC))
@@ -1094,7 +1161,7 @@ class Workspace:
     detail = {"provider": name, "why": why}
     if userName is not None:
       detail["userName"] = userName
-    _record(session, Actor.everyone(surface), "signIn.refused", "server", detail)
+    self._recordAs(session, Actor.everyone(surface), "signIn.refused", "server", detail)
     session.commit()
 
   def _providerSession(self, session, provider: Provider, identity: ProvidedIdentity, surface: str) -> tuple[Account, str]:
@@ -1108,7 +1175,7 @@ class Workspace:
     token = _issueToken(session, account.userName, "session", datetime.timedelta(hours=hours), None)
     if provider.kind is not ProviderKind.ldap:
       _recordProviderSession(session, token, provider.name, identity)
-    _record(session, Actor(kind=ActorKind.account, accountID=account.accountID, userName=account.userName,
+    self._recordAs(session, Actor(kind=ActorKind.account, accountID=account.accountID, userName=account.userName,
                            surface=surface), "signIn", "server", {"provider": provider.name})
     return account, token
 
@@ -1127,10 +1194,10 @@ class Workspace:
       if response.status >= 400:
         session.rollback()
         if response.status != 401:
-          _record(session, Actor(kind=ActorKind.everyone, surface="provisioning"), "provision.refused", "server",
+          self._recordAs(session, Actor(kind=ActorKind.everyone, surface="provisioning"), "provision.refused", "server",
                   {"provider": name, "method": method, "path": path, "status": response.status})
         return response
-      _record(session, Actor(kind=ActorKind.everyone, surface="provisioning"), "provision", "server",
+      self._recordAs(session, Actor(kind=ActorKind.everyone, surface="provisioning"), "provision", "server",
               {"provider": name, "method": method, "path": path, "status": response.status})
       return response
 
@@ -1139,7 +1206,7 @@ class Workspace:
   def createTask(self, name: str, kind: str, parameters: dict) -> Task:
     """Configure a task of a kind, with the kind's default schedule and time limit, enabled."""
     with self._acting(Permission.manageTasks, "server") as session:
-      _createTask(session, name, kind, parameters, _utcNow())
+      _createTask(session, name, kind, parameters, self._clock())
       created = _taskNamed(session, name)
       self._audit(session, "task.create", "server", {"task": name, "kind": kind, "parameters": created.parameters})
       return created
@@ -1173,7 +1240,7 @@ class Workspace:
     with self._acting(Permission.manageTasks, "server") as session:
       before = _taskNamed(session, name)
       if schedule is not None:
-        _setSchedule(session, name, schedule, _utcNow())
+        _setSchedule(session, name, schedule, self._clock())
       if timeLimitSeconds is not None:
         _setTimeLimit(session, name, timeLimitSeconds)
       after = _taskNamed(session, name)
@@ -1184,14 +1251,14 @@ class Workspace:
 
   def setTaskEnabled(self, name: str, enabled: bool) -> Task:
     with self._acting(Permission.manageTasks, "server") as session:
-      _setTaskEnabled(session, name, enabled, _utcNow())
+      _setTaskEnabled(session, name, enabled, self._clock())
       self._audit(session, "task.enable", "server", {"task": name, "enabled": enabled})
       return _taskNamed(session, name)
 
   def runTaskNow(self, name: str) -> int:
     """Request a run of a task at once, recorded as asked for by this actor; the scheduler starts it."""
     with self._acting(Permission.manageTasks, "server") as session:
-      runID = _requestRun(session, name, self.actor.label, _utcNow())
+      runID = _requestRun(session, name, self.actor.label, self._clock())
       self._audit(session, "task.run", "server", {"task": name, "runID": runID})
       return runID
 
@@ -1222,6 +1289,19 @@ class Workspace:
     except SpreadsheetError as error:
       raise ObservationImportError(str(error)) from error
 
+  def _checkSize(self, fileName: str | None, size: int) -> None:
+    if size > self.maximumFileBytes:
+      raise StoreError(
+        f"'{fileName if fileName is not None else unnamedCSV}' is {size} bytes; an import takes, and keeps, a file "
+        f"of at most {self.maximumFileBytes} bytes (the configuration's service.maxUploadBytes)"
+      )
+
+  def _fileAt(self, path: str) -> tuple[str, bytes]:
+    """The name and bytes of a file named to the library or on the command line, sized before it is read."""
+    file = Path(path)
+    self._checkSize(file.name, file.stat().st_size)
+    return file.name, file.read_bytes()
+
   def importObservations(
     self,
     trialCode: str,
@@ -1230,19 +1310,30 @@ class Workspace:
     sheetName: str | None = None,
   ) -> ImportResult:
     """Import observations from a .csv or .xlsx file against the trial's layout and save them."""
-    file = Path(path)
-    return self.importObservationTable(
-      trialCode, self.readObservationTable(file.name, file.read_bytes(), sheetName), importProfile,
-    )
+    fileName, data = self._fileAt(path)
+    return self.importObservationFile(trialCode, fileName, data, importProfile, sheetName)
 
-  def importObservationTable(self, trialCode: str, table: SheetTable, importProfile: ImportProfile) -> ImportResult:
-    """Import a table's observations against the trial's layout and save them.
+  def importObservationFile(
+    self,
+    trialCode: str,
+    fileName: str | None,
+    data: bytes,
+    importProfile: ImportProfile,
+    sheetName: str | None = None,
+  ) -> ImportResult:
+    """Import a file's observations against the trial's layout, save them, and keep the file as received.
+
+    `fileName` is the name the file was sent under, which says whether it is a CSV or a
+    workbook; None is CSV sent without a name, as an API request's body is.
 
     Values are validated against the package and layout at the boundary; a bad plot,
     code, or out-of-domain value is rejected rather than partially saved. An import
     adds values and never replaces stored ones: a plot and assessment the trial already
-    holds a value for refuses the whole file.
+    holds a value for refuses the whole file. The file is kept in the same transaction
+    as its values (decision 0044), with the column mapping that read it.
     """
+    self._checkSize(fileName, len(data))
+    table = self.readObservationTable(fileName if fileName is not None else unnamedCSV, data, sheetName)
     with self._acting(Permission.importValues, f"trial:{trialCode}") as session:
       package = _loadPackage(session, trialCode)
       layout = self._layoutIn(session, package)
@@ -1259,9 +1350,19 @@ class Workspace:
           f"them on the entry page"
         )
       _saveObservations(session, trialCode, result.observations)
+      counts = _countByAssessment(result, layout)
+      kept = _keepFile(
+        session, trialCode, ReceivedFileKind.observations, fileName, table.sheetName, data,
+        result.mapping.model_dump(mode="json"), {
+          "values": sum(count.values for count in counts), "missing": sum(count.missing for count in counts),
+          "assessments": {count.assessmentCode: {"values": count.values, "missing": count.missing,
+                                                 "plotsWithout": len(count.plotsWithout)} for count in counts},
+        }, self.actor, self._clock(),
+      )
       self._audit(session, "values.import", f"trial:{trialCode}", {
-        "file": table.fileName, "sheet": table.sheetName, "values": len(result.observations),
+        "file": fileName, "sheet": table.sheetName, "values": len(result.observations),
         "assessments": sorted({o.assessmentCode for o in result.observations}),
+        "receivedFile": kept.fileID, "sha256": kept.sha256,
       })
     return result
 
@@ -1385,6 +1486,36 @@ class Workspace:
       self._audit(session, "trial.add", f"trial:{trialCode}", {"place": place, "values": len(document.observations)})
     return trialCode
 
+  def bundleFor(self, trialCode: str) -> bytes:
+    """The trial as a bundle (decision 0044): its document, exactly as `exportDocument` writes it, and beside it the
+    files as received with a manifest. Reading the files back takes the permission that brings files in."""
+    document = self._documentFor(trialCode)
+    with self._acting(Permission.importValues, f"trial:{trialCode}") as session:
+      kept = [_fileContent(session, trialCode, file.fileID) for file in _listFiles(session, trialCode)]
+    return _bundleBytes(document, [(file.record(), content) for file, content in kept])
+
+  def exportBundle(self, trialCode: str, bundlePath: str) -> None:
+    """Write the trial's bundle to a file."""
+    Path(bundlePath).write_bytes(self.bundleFor(trialCode))
+
+  def importBundle(self, bundlePath: str, place: str | None) -> str:
+    """Import a trial bundle file into this store, in `place`; return its trialCode."""
+    return self.addBundle(Path(bundlePath).read_bytes(), place)
+
+  def addBundle(self, data: bytes, place: str | None) -> str:
+    """Store a bundle's trial in `place` and restore its received files, each as it was recorded: its bytes, its
+    mapping, who imported it and when. Return the trialCode."""
+    document, files = _readBundle(data, self.maximumFileBytes)
+    trialCode = document.package.trial.trialCode
+    with self._acting(Permission.manageTrials, "server" if place is None else f"place:{place}") as session:
+      _savePackage(session, document.package, document.layout, document.checkPlots, place)
+      _saveObservations(session, trialCode, document.observations)
+      for record, content in files:
+        _restoreFile(session, trialCode, record, content)
+      self._audit(session, "trial.add", f"trial:{trialCode}", {
+        "place": place, "values": len(document.observations), "receivedFiles": len(files)})
+    return trialCode
+
   def verifyRoundTrip(self, trialCode: str) -> RoundTripCheck:
     """Check the trial exports to JSON and re-imports to the same content hash."""
     document = self._documentFor(trialCode)
@@ -1441,19 +1572,31 @@ class Workspace:
       self._audit(session, "values.record", f"trial:{trialCode}", {"assessment": assessmentCode, "changes": changes})
 
   def importWeather(self, trialCode: str, csvPath: str) -> int:
-    """Replace the trial's weather log with the days a CSV lists; return how many (REC-13).
+    """Replace the trial's weather log with the days a CSV file lists; return how many (REC-13)."""
+    fileName, data = self._fileAt(csvPath)
+    return self.importWeatherFile(trialCode, fileName, data)
+
+  def importWeatherFile(self, trialCode: str, fileName: str, data: bytes) -> int:
+    """Replace the trial's weather log with the days a CSV lists, and keep the file as received; return how many.
 
     The trial with its new log is validated as a whole before anything is saved.
     """
-    records = _readWeatherCsv(csvPath)
+    self._checkSize(fileName, len(data))
+    weather = _readWeatherCsv(data)
     with self._acting(Permission.editRecord, f"trial:{trialCode}") as session:
       package = _loadPackage(session, trialCode)
-      data = package.model_dump(mode="json")
-      data["weather"] = [record.model_dump(mode="json") for record in records]
-      TrialPackage.model_validate(data)
-      _replaceWeather(session, trialCode, records)
-      self._audit(session, "weather.import", f"trial:{trialCode}", {"file": Path(csvPath).name, "days": len(records)})
-    return len(records)
+      changed = package.model_dump(mode="json")
+      changed["weather"] = [record.model_dump(mode="json") for record in weather.records]
+      TrialPackage.model_validate(changed)
+      _replaceWeather(session, trialCode, weather.records)
+      kept = _keepFile(
+        session, trialCode, ReceivedFileKind.weather, fileName, None, data,
+        {"columns": [column.model_dump(mode="json") for column in weather.columns]}, {"days": len(weather.records)},
+        self.actor, self._clock(),
+      )
+      self._audit(session, "weather.import", f"trial:{trialCode}", {
+        "file": fileName, "days": len(weather.records), "receivedFile": kept.fileID, "sha256": kept.sha256})
+    return len(weather.records)
 
   def importFieldBook(self, trialCode: str, databaseCsvPath: str) -> ImportResult:
     """Ingest a Field Book database (long) export into the trial's observations.
@@ -1463,6 +1606,101 @@ class Workspace:
     the provenance columns (timestamp, person, device_name, ...) are ignored.
     """
     return self.importObservations(trialCode, databaseCsvPath, _fieldBookImportProfile())
+
+  # ---- files as received (decision 0044) ----------------------------------
+
+  def receivedFiles(self, trialCode: str) -> list[ReceivedFile]:
+    """What the trial keeps of the files its imports received, in the order they came, without their bytes."""
+    with self._acting(Permission.importValues, f"trial:{trialCode}") as session:
+      return _listFiles(session, trialCode)
+
+  def receivedFile(self, trialCode: str, fileID: int) -> tuple[ReceivedFile, bytes]:
+    """A received file and its bytes exactly as they came, checked against their SHA-256 on the way out."""
+    with self._acting(Permission.importValues, f"trial:{trialCode}") as session:
+      return _fileContent(session, trialCode, fileID)
+
+  # ---- closing a trial, holds and pruning (decision 0044) ---------------------
+
+  def closedOn(self, trialCode: str) -> datetime.date | None:
+    """The day the trial was closed; None while it is open."""
+    with self._acting(Permission.view, f"trial:{trialCode}") as session:
+      return _closedOn(session, trialCode)
+
+  def closeTrial(self, trialCode: str, closedOn: datetime.date) -> None:
+    """Record the day the trial was closed, today or earlier. Retention counts from it; it changes nothing else."""
+    scope = f"trial:{trialCode}"
+    with self._acting(Permission.manageTrials, scope) as session:
+      before = _closedOn(session, trialCode)
+      _setClosedOn(session, trialCode, closedOn, self._clock())
+      self._audit(session, "trial.close", scope, {
+        "before": None if before is None else before.isoformat(), "after": closedOn.isoformat()})
+
+  def reopenTrial(self, trialCode: str) -> None:
+    """Clear the trial's closed date."""
+    scope = f"trial:{trialCode}"
+    with self._acting(Permission.manageTrials, scope) as session:
+      before = _closedOn(session, trialCode)
+      if before is None:
+        raise RetentionError(f"trial '{trialCode}' is not closed")
+      _setClosedOn(session, trialCode, None, self._clock())
+      self._audit(session, "trial.reopen", scope, {"before": before.isoformat()})
+
+  def holdOn(self, trialCode: str) -> Hold | None:
+    """The hold the trial is under, if any."""
+    with self._acting(Permission.view, f"trial:{trialCode}") as session:
+      return _holdOn(session, trialCode)
+
+  def holdTrial(self, trialCode: str, reason: str) -> Hold:
+    """Put the trial under a hold: until it is released nothing of the trial is pruned, and the trial is not deleted."""
+    scope = f"trial:{trialCode}"
+    with self._acting(Permission.manageRetention, scope) as session:
+      hold = _setHold(session, trialCode, reason, self.actor, self._clock())
+      self._audit(session, "retention.hold", scope, {"reason": hold.reason})
+      return hold
+
+  def releaseHold(self, trialCode: str, reason: str) -> None:
+    """Release the trial's hold, saying why."""
+    scope = f"trial:{trialCode}"
+    with self._acting(Permission.manageRetention, scope) as session:
+      if not reason.strip():
+        raise RetentionError("releasing a hold needs its reason")
+      released = _releaseHold(session, trialCode)
+      self._audit(session, "retention.release", scope, {"reason": reason.strip(), "hold": {
+        "reason": released.reason, "heldByKind": released.heldByKind, "heldByName": released.heldByName,
+        "heldAt": _written(_stored(released.heldAt))}})
+
+  def retentionStatus(self) -> RetentionStatus:
+    """Every storage area's count and size, its retention rule and where that was set, and the holds."""
+    with self._acting(Permission.manageRetention, "server") as session:
+      return _retentionStatus(session)
+
+  def previewPruning(self) -> PruneReport:
+    """Exactly what a pruning now would remove; nothing is changed."""
+    at = self._clock()
+    with self._acting(Permission.manageRetention, "server") as session:
+      return PruneReport(at=at, lines=_selection(session, at).lines)
+
+  def prune(self) -> PruneReport:
+    """Remove what the retention rules let go, and record what went.
+
+    One audit event for each area and scope something left, at that scope. What left the audit log itself is one
+    event at the server naming every scope, so the record of a trial's pruned events does not stand among them.
+    """
+    at = self._clock()
+    with self._acting(Permission.manageRetention, "server") as session:
+      lines = _prune(session, at)
+      events = []
+      for line in lines:
+        said = {"count": line.count, "sizeBytes": line.sizeBytes, "rule": line.rule, "source": line.source} | line.detail
+        if line.area is StorageArea.auditLog:
+          events.append({"scope": line.scope} | said)
+        else:
+          self._audit(session, "retention.prune", line.scope, {"area": line.area.value} | said)
+      if events:
+        self._audit(session, "retention.prune", "server", {
+          "area": StorageArea.auditLog.value, "count": sum(event["count"] for event in events),
+          "sizeBytes": sum(event["sizeBytes"] for event in events), "scopes": events})
+      return PruneReport(at=at, lines=lines)
 
   # ---- internals ----------------------------------------------------------
 

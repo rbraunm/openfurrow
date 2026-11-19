@@ -24,6 +24,9 @@
         {% if mayManageTasks %}
         <a href="{{ url_for('web.tasks', locale=locale if locale != 'en-US' else none) }}">{{ t.text('web.nav.tasks') }}</a>
         {% endif %}
+        {% if mayManageRetention %}
+        <a href="{{ url_for('web.retention', locale=locale if locale != 'en-US' else none) }}">{{ t.text('web.nav.retention') }}</a>
+        {% endif %}
         <a class="nav-action" href="{{ url_for('web.trialForm', locale=locale if locale != 'en-US' else none) }}">{{ t.text('web.nav.addTrial') }}</a>
         {% if administrationSections %}
         <a href="{{ url_for('web.administrationIndex', locale=locale if locale != 'en-US' else none) }}">{{ t.text('web.administration.heading') }}</a>

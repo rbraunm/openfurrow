@@ -13,13 +13,16 @@ outside its domain, a duplicate plot/assessment pair, or a missing required
 column. The one non-fatal case is an explicitly missing value (a configured NA
 token), which is recorded as a None-valued observation plus a warning rather
 than silently dropped.
+
+The result says which columns were read as what, every default of the profile resolved
+against the file's header, so the mapping can be kept with the file (decision 0044).
 """
 
 from __future__ import annotations
 
 from pathlib import Path
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 from openfurrow.config.profile import ImportFormat, ImportProfile
 from openfurrow.importers.spreadsheet import SheetTable, SpreadsheetError, readTable
@@ -45,13 +48,40 @@ class ImportWarning(BaseModel):
   assessmentCode: str | None = None
 
 
+class MappedColumn(BaseModel):
+  """A column of a wide file, and the assessment and subsample its values were read as."""
+
+  model_config = ConfigDict(extra="forbid")
+
+  column: str
+  assessmentCode: str
+  subsample: int | None = None
+
+
+class ColumnMapping(BaseModel):
+  """The columns an import read and how it read their values: the profile, resolved against the file's header."""
+
+  model_config = ConfigDict(extra="forbid")
+
+  format: ImportFormat
+  plotNumber: str
+  assessmentCode: str | None = Field(default=None, description="Long format: the column of assessment codes.")
+  value: str | None = Field(default=None, description="Long format: the column of values.")
+  subsample: str | None = Field(default=None, description="Long format: the column numbering subsamples.")
+  assessmentColumns: list[MappedColumn] = Field(default_factory=list, description="Wide format: each column read.")
+  unreadColumns: list[str]
+  decimalSeparator: str
+  naTokens: list[str]
+
+
 class ImportResult(BaseModel):
-  """The outcome of an import: the observations and any warnings."""
+  """The outcome of an import: the observations, any warnings, and the column mapping that was used."""
 
   model_config = ConfigDict(extra="forbid")
 
   observations: list[Observation]
   warnings: list[ImportWarning]
+  mapping: ColumnMapping
 
 
 class AssessmentCount(BaseModel):
@@ -125,9 +155,13 @@ def importTable(
   ]
   fieldnames = table.header
   if profile.format is ImportFormat.long:
-    parsed = _parseLong(rows, fieldnames, profile, assessments)
+    parsed, read = _parseLong(rows, fieldnames, profile, assessments)
   else:
-    parsed = _parseWide(rows, fieldnames, profile, assessments, subsampleCounts)
+    parsed, read = _parseWide(rows, fieldnames, profile, assessments, subsampleCounts)
+  mapping = ColumnMapping(
+    format=profile.format, decimalSeparator=profile.parsing.decimalSeparator, naTokens=profile.parsing.naTokens,
+    unreadColumns=[column for column in fieldnames if column not in _columnsOf(read)], **read,
+  )
 
   observations: list[Observation] = []
   warnings: list[ImportWarning] = []
@@ -167,7 +201,12 @@ def importTable(
     if warning is not None:
       warnings.append(warning)
 
-  return ImportResult(observations=observations, warnings=warnings)
+  return ImportResult(observations=observations, warnings=warnings, mapping=mapping)
+
+
+def _columnsOf(read: dict) -> set[str]:
+  named = {read[role] for role in ("plotNumber", "assessmentCode", "value", "subsample") if read.get(role) is not None}
+  return named | {mapped.column for mapped in read.get("assessmentColumns", [])}
 
 
 def _requireColumns(fieldnames: list[str], needed: list[str], role: str) -> None:
@@ -190,7 +229,8 @@ def _parseLong(rows, fieldnames, profile, assessments):
       )
     subsample = _parseSubsample(row[columns.subsample], rowNumber) if columns.subsample else None
     parsed.append((rowNumber, plotNumber, assessmentCode, subsample, row[columns.value]))
-  return parsed
+  return parsed, {"plotNumber": columns.plotNumber, "assessmentCode": columns.assessmentCode, "value": columns.value,
+                  "subsample": columns.subsample}
 
 
 def _parseSubsample(rawText: str, rowNumber: int) -> int | None:
@@ -240,7 +280,10 @@ def _parseWide(rows, fieldnames, profile, assessments, subsampleCounts):
     plotNumber = _parsePlotNumber(row[columns.plotNumber], rowNumber)
     for column, assessmentCode in assessmentColumns.items():
       parsed.append((rowNumber, plotNumber, assessmentCode, numbered[column], row[column]))
-  return parsed
+  return parsed, {"plotNumber": columns.plotNumber, "assessmentColumns": [
+    MappedColumn(column=column, assessmentCode=assessmentCode, subsample=numbered[column])
+    for column, assessmentCode in assessmentColumns.items()
+  ]}
 
 
 def _parsePlotNumber(rawText: str, rowNumber: int) -> int:

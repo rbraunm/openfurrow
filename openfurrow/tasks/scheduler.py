@@ -33,7 +33,7 @@ import time
 from collections.abc import Callable
 from dataclasses import dataclass, field
 
-from sqlalchemy import delete, func, select, update
+from sqlalchemy import func, select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -138,7 +138,6 @@ class Scheduler:
     if not self._stopRequested.is_set():
       self._requestDue()
       self._claimRequested()
-    self._removeOldRuns()
 
   def _checkIn(self) -> None:
     values = {"host": self.host, "processID": self.processID, "lastSeenAt": stored(self.clock())}
@@ -297,12 +296,6 @@ class Scheduler:
         if self._finish(runID, RunState.stopped, f"stopped at its time limit of {timeLimitSeconds} seconds, after "
                                                  f"the scheduler that started it stopped"):
           os.kill(processID, signal.SIGTERM)
-
-  def _removeOldRuns(self) -> None:
-    with Session(self.engine) as session:
-      days = serverSetting(session, "tasks.runRetentionDays")
-      session.execute(delete(TaskRunRow).where(TaskRunRow.finishedAt < stored(self.clock() - datetime.timedelta(days=days))))
-      session.commit()
 
   # ---- the loop -------------------------------------------------------------
 

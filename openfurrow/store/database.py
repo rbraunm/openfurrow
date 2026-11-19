@@ -35,11 +35,11 @@ import datetime
 import re
 from pathlib import Path
 
-from sqlalchemy import CheckConstraint, ForeignKey, Index, Text, case, column, event, inspect, select
+from sqlalchemy import BigInteger, CheckConstraint, ForeignKey, Index, LargeBinary, Text, case, column, event, inspect, select
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, Session, mapped_column, relationship
 
-storeVersion = 20
+storeVersion = 21
 
 
 class StoreError(RuntimeError):
@@ -285,9 +285,11 @@ class DiscoveredInstitutionRow(Base):
 
 class ScheduledTaskRow(Base):
   """A configured task of a kind defined in code (decision 0041). `ownerProvider` names the identity provider whose
-  feature made it and still needs it, so it is not deleted while that provider uses it."""
+  feature made it and still needs it, so it is not deleted while that provider uses it; `ownerFeature` names a
+  feature of the store itself that made it with the store (retention, decision 0044)."""
 
   __tablename__ = "scheduledTask"
+  __table_args__ = (CheckConstraint(_named("ownerProvider") + _named("ownerFeature") <= 1, name="scheduledTaskHasOneOwner"),)
 
   name: Mapped[str] = mapped_column(primary_key=True)
   kind: Mapped[str]
@@ -298,6 +300,7 @@ class ScheduledTaskRow(Base):
   nextRunAt: Mapped[datetime.datetime | None]
   createdAt: Mapped[datetime.datetime]
   ownerProvider: Mapped[str | None] = mapped_column(ForeignKey("identityProvider.providerName"))
+  ownerFeature: Mapped[str | None]
 
 
 class TaskRunRow(Base):
@@ -334,7 +337,8 @@ class SchedulerHeartbeatRow(Base):
 
 
 class AuditEventRow(Base):
-  """One change, who made it and from where (decision 0038); never updated or deleted by the tool."""
+  """One change, who made it and from where (decision 0038); never updated, and removed only by retention (decision
+  0044)."""
 
   __tablename__ = "auditEvent"
 
@@ -355,6 +359,8 @@ class TrialRow(Base):
 
   trialCode: Mapped[str] = mapped_column(primary_key=True)
   placeID: Mapped[int | None] = mapped_column(ForeignKey("place.placeID"))
+  # Like the place, when a trial was closed is a fact of this store, not of the trial: outside its content hash.
+  closedOn: Mapped[datetime.date | None]
   title: Mapped[str]
   crop: Mapped[str]
   season: Mapped[str]
@@ -772,6 +778,42 @@ class ObservationRow(Base):
   trial: Mapped[TrialRow] = relationship(back_populates="observations")
 
 
+class ReceivedFileRow(Base):
+  """A file as an import received it (decision 0044): its bytes and their SHA-256, the name it was sent under, the
+  sheet read, the columns as they were mapped, who imported it and when, and what the import made of it. Kept beside
+  the trial and outside its content hash; the trial's deletion removes it."""
+
+  __tablename__ = "receivedFile"
+  __table_args__ = (Index("receivedFileByTrial", "trialCode", "fileID"),)
+
+  fileID: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+  trialCode: Mapped[str] = mapped_column(ForeignKey("trial.trialCode", ondelete="CASCADE"))
+  kind: Mapped[str]
+  fileName: Mapped[str | None]
+  sheetName: Mapped[str | None]
+  sha256: Mapped[str]
+  sizeBytes: Mapped[int] = mapped_column(BigInteger)
+  content: Mapped[bytes] = mapped_column(LargeBinary, deferred=True)
+  mappingJSON: Mapped[str] = mapped_column(Text)
+  producedJSON: Mapped[str] = mapped_column(Text)
+  importedByKind: Mapped[str]
+  importedByName: Mapped[str | None]
+  importedAt: Mapped[datetime.datetime]
+
+
+class RetentionHoldRow(Base):
+  """A hold on a trial (decision 0044): while it stands nothing of the trial is pruned, and the trial is not deleted,
+  which the foreign key refuses too."""
+
+  __tablename__ = "retentionHold"
+
+  trialCode: Mapped[str] = mapped_column(ForeignKey("trial.trialCode"), primary_key=True)
+  reason: Mapped[str] = mapped_column(Text)
+  heldByKind: Mapped[str]
+  heldByName: Mapped[str | None]
+  heldAt: Mapped[datetime.datetime]
+
+
 postgresqlScheme = "postgresql+pg8000://"
 
 
@@ -818,11 +860,13 @@ def createDatabase(location: str, create: bool = True) -> Engine:
       raise StoreError(f"database '{displayLocation(location)}' holds no OpenFurrow store; create it first")
     Base.metadata.create_all(engine)
     from openfurrow.schema.hierarchy import defaultLevelCodes
+    from openfurrow.store.tasks import createFeatureTasks
     with Session(engine) as session:
       session.add(StoreVersionRow(version=storeVersion))
       session.add_all(
         HierarchyLevelRow(levelCode=code, ordinal=ordinal, name=None) for ordinal, code in enumerate(defaultLevelCodes)
       )
+      createFeatureTasks(session, datetime.datetime.now(datetime.UTC))
       session.commit()
     return engine
 

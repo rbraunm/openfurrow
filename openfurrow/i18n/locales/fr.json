@@ -1437,6 +1437,14 @@
       "text": "Votre nouveau jeton, affiché cette seule fois ; copiez-le maintenant :",
       "status": "machineDraft"
     },
+    "web.actor.everyone": {
+      "text": "tout le monde (sans connexion)",
+      "status": "machineDraft"
+    },
+    "web.actor.operator": {
+      "text": "l'opérateur",
+      "status": "machineDraft"
+    },
     "web.add.error": {
       "text": "Impossible de créer l'essai: {reason}",
       "status": "machineDraft"
@@ -3353,6 +3361,10 @@
       "text": "Emplacements",
       "status": "machineDraft"
     },
+    "web.nav.retention": {
+      "text": "Conservation",
+      "status": "machineDraft"
+    },
     "web.nav.tasks": {
       "text": "Tâches",
       "status": "machineDraft"
@@ -3437,6 +3449,86 @@
       "text": "L'emplacement n'a pas été ajouté : {reason}",
       "status": "machineDraft"
     },
+    "web.received.bundle": {
+      "text": "Télécharger l'essai avec ses fichiers",
+      "status": "machineDraft"
+    },
+    "web.received.bundleIntro": {
+      "text": "Un lot est le document JSON de l'essai avec ces fichiers et un manifeste à côté, dans une seule archive zip. L'importer dans un autre magasin restaure aussi les fichiers.",
+      "status": "machineDraft"
+    },
+    "web.received.column.file": {
+      "text": "Fichier",
+      "status": "machineDraft"
+    },
+    "web.received.column.imported": {
+      "text": "Importé par, le",
+      "status": "machineDraft"
+    },
+    "web.received.column.kind": {
+      "text": "Importé comme",
+      "status": "machineDraft"
+    },
+    "web.received.column.produced": {
+      "text": "Il a donné",
+      "status": "machineDraft"
+    },
+    "web.received.column.size": {
+      "text": "Taille",
+      "status": "machineDraft"
+    },
+    "web.received.details": {
+      "text": "SHA-256 et association des colonnes",
+      "status": "machineDraft"
+    },
+    "web.received.download": {
+      "text": "Télécharger",
+      "status": "machineDraft"
+    },
+    "web.received.heading": {
+      "text": "Fichiers tels que reçus",
+      "status": "machineDraft"
+    },
+    "web.received.intro": {
+      "text": "Chaque fichier lu par une importation est conservé ici exactement tel qu'il est arrivé, avec les colonnes telles qu'elles ont été associées. Les fichiers sont à côté de l'essai ; ils ne font pas partie de son empreinte de contenu.",
+      "status": "machineDraft"
+    },
+    "web.received.kind.layout": {
+      "text": "Plan tel que planté",
+      "status": "machineDraft"
+    },
+    "web.received.kind.observations": {
+      "text": "Observations",
+      "status": "machineDraft"
+    },
+    "web.received.kind.weather": {
+      "text": "Journal météo",
+      "status": "machineDraft"
+    },
+    "web.received.none": {
+      "text": "Aucun fichier n'a encore été importé dans cet essai.",
+      "status": "machineDraft"
+    },
+    "web.received.produced.layout": {
+      "text": "{plots} parcelles",
+      "status": "machineDraft"
+    },
+    "web.received.produced.observations": {
+      "text": "{values} valeurs, {missing} marquées manquantes",
+      "status": "machineDraft"
+    },
+    "web.received.produced.weather": {
+      "text": "{days} jours",
+      "status": "machineDraft"
+    },
+    "web.received.sheet": {
+      "text": "Feuille",
+      "status": "machineDraft"
+    },
+    "web.received.unnamed": {
+      "text": "(envoyé sans nom)",
+      "status": "machineDraft"
+    },
     "web.refused.heading": {
       "text": "Non autorisé",
       "status": "machineDraft"
@@ -3479,6 +3571,294 @@
     },
     "web.report.print": {
       "text": "Imprimer",
+      "status": "machineDraft"
+    },
+    "web.retention.area.auditLog": {
+      "text": "Journal d'audit",
+      "status": "machineDraft"
+    },
+    "web.retention.area.auditLog.holds": {
+      "text": "Chaque modification, qui l'a faite et d'où.",
+      "status": "machineDraft"
+    },
+    "web.retention.area.receivedFiles": {
+      "text": "Fichiers tels que reçus",
+      "status": "machineDraft"
+    },
+    "web.retention.area.receivedFiles.holds": {
+      "text": "Les fichiers lus par les importations, conservés exactement tels qu'ils sont arrivés.",
+      "status": "machineDraft"
+    },
+    "web.retention.area.sessionsAndTokens": {
+      "text": "Sessions et jetons",
+      "status": "machineDraft"
+    },
+    "web.retention.area.sessionsAndTokens.holds": {
+      "text": "Sessions, jetons d'API, connexions en attente d'un fournisseur et messages à usage unique. Seuls ceux qui ont expiré partent.",
+      "status": "machineDraft"
+    },
+    "web.retention.area.taskRuns": {
+      "text": "Exécutions de tâches",
+      "status": "machineDraft"
+    },
+    "web.retention.area.taskRuns.holds": {
+      "text": "L'enregistrement de chaque exécution d'une tâche planifiée, avec sa sortie.",
+      "status": "machineDraft"
+    },
+    "web.retention.area.trialRecords": {
+      "text": "Dossiers d'essais",
+      "status": "machineDraft"
+    },
+    "web.retention.area.trialRecords.holds": {
+      "text": "Chaque essai en tant que dossier : dispositif, plan et valeurs. Un dossier ne part qu'entier.",
+      "status": "machineDraft"
+    },
+    "web.retention.areas.heading": {
+      "text": "Zones de stockage",
+      "status": "machineDraft"
+    },
+    "web.retention.areas.intro": {
+      "text": "Les tailles sont les octets du contenu conservé, non l'espace que la base de données lui consacre.",
+      "status": "machineDraft"
+    },
+    "web.retention.column.area": {
+      "text": "Zone",
+      "status": "machineDraft"
+    },
+    "web.retention.column.count": {
+      "text": "Nombre",
+      "status": "machineDraft"
+    },
+    "web.retention.column.rule": {
+      "text": "Règle",
+      "status": "machineDraft"
+    },
+    "web.retention.column.setting": {
+      "text": "Paramètre",
+      "status": "machineDraft"
+    },
+    "web.retention.column.size": {
+      "text": "Taille",
+      "status": "machineDraft"
+    },
+    "web.retention.column.where": {
+      "text": "Où",
+      "status": "machineDraft"
+    },
+    "web.retention.done.close": {
+      "text": "La date de clôture est enregistrée.",
+      "status": "machineDraft"
+    },
+    "web.retention.done.hold": {
+      "text": "L'essai est sous blocage.",
+      "status": "machineDraft"
+    },
+    "web.retention.done.release": {
+      "text": "Le blocage est levé.",
+      "status": "machineDraft"
+    },
+    "web.retention.done.reopen": {
+      "text": "L'essai est de nouveau ouvert.",
+      "status": "machineDraft"
+    },
+    "web.retention.heading": {
+      "text": "Conservation",
+      "status": "machineDraft"
+    },
+    "web.retention.holds.column.by": {
+      "text": "Posé par",
+      "status": "machineDraft"
+    },
+    "web.retention.holds.column.reason": {
+      "text": "Motif",
+      "status": "machineDraft"
+    },
+    "web.retention.holds.column.since": {
+      "text": "Depuis",
+      "status": "machineDraft"
+    },
+    "web.retention.holds.heading": {
+      "text": "Blocages",
+      "status": "machineDraft"
+    },
+    "web.retention.holds.intro": {
+      "text": "Un essai sous blocage ne perd rien à l'épuration et ne peut pas être supprimé. Un blocage se pose et se lève sur la page de l'essai.",
+      "status": "machineDraft"
+    },
+    "web.retention.holds.none": {
+      "text": "Aucun essai n'est sous blocage.",
+      "status": "machineDraft"
+    },
+    "web.retention.intro": {
+      "text": "Ce que contient ce magasin, combien de temps chaque type de donnée est conservé et ce que les règles laissent partir maintenant. Rien ne part tant qu'une règle ne le dit pas : chaque zone est conservée tant que sa règle n'est pas modifiée.",
+      "status": "machineDraft"
+    },
+    "web.retention.outcome.done": {
+      "text": "Ceci a été retiré et consigné dans le journal d'audit :",
+      "status": "machineDraft"
+    },
+    "web.retention.outcome.heading": {
+      "text": "Épuré",
+      "status": "machineDraft"
+    },
+    "web.retention.outcome.nothing": {
+      "text": "Rien n'a été épuré : aucune règle ne laisse rien partir.",
+      "status": "machineDraft"
+    },
+    "web.retention.period.days": {
+      "text": "{count} jours",
+      "status": "machineDraft"
+    },
+    "web.retention.period.months": {
+      "text": "{count} mois",
+      "status": "machineDraft"
+    },
+    "web.retention.period.one.days": {
+      "text": "1 jour",
+      "status": "machineDraft"
+    },
+    "web.retention.period.one.months": {
+      "text": "1 mois",
+      "status": "machineDraft"
+    },
+    "web.retention.period.one.years": {
+      "text": "1 an",
+      "status": "machineDraft"
+    },
+    "web.retention.period.years": {
+      "text": "{count} ans",
+      "status": "machineDraft"
+    },
+    "web.retention.preview.action": {
+      "text": "Prévisualiser l'épuration",
+      "status": "machineDraft"
+    },
+    "web.retention.preview.nothing": {
+      "text": "Rien ne serait épuré maintenant : aucune règle ne laisse rien partir.",
+      "status": "machineDraft"
+    },
+    "web.retention.preview.would": {
+      "text": "Épurer maintenant retirerait exactement ceci :",
+      "status": "machineDraft"
+    },
+    "web.retention.problem": {
+      "text": "Non fait : {reason}",
+      "status": "machineDraft"
+    },
+    "web.retention.problem.date": {
+      "text": "écrivez le jour sous la forme YYYY-MM-DD",
+      "status": "machineDraft"
+    },
+    "web.retention.prune.action": {
+      "text": "Épurer maintenant",
+      "status": "machineDraft"
+    },
+    "web.retention.prune.back": {
+      "text": "Retour à la conservation",
+      "status": "machineDraft"
+    },
+    "web.retention.prune.confirm": {
+      "text": "Épurer",
+      "status": "machineDraft"
+    },
+    "web.retention.prune.confirmHeading": {
+      "text": "Épurer maintenant ?",
+      "status": "machineDraft"
+    },
+    "web.retention.prune.confirmIntro": {
+      "text": "Ceci retire définitivement tout ce qui est listé ci-dessous. C'est irréversible.",
+      "status": "machineDraft"
+    },
+    "web.retention.pruning.heading": {
+      "text": "Épuration",
+      "status": "machineDraft"
+    },
+    "web.retention.pruning.intro": {
+      "text": "L'épuration retire ce que les règles laissent partir et consigne ce qui est parti dans le journal d'audit. Elle s'exécute aussi chaque jour en tant que tâche planifiée.",
+      "status": "machineDraft"
+    },
+    "web.retention.pruning.task": {
+      "text": "La tâche d'épuration",
+      "status": "machineDraft"
+    },
+    "web.retention.rule.keep": {
+      "text": "Conserver",
+      "status": "machineDraft"
+    },
+    "web.retention.rule.keepFor": {
+      "text": "Conserver pendant {period}",
+      "status": "machineDraft"
+    },
+    "web.retention.rule.keepUntilClosed": {
+      "text": "Conserver jusqu'à la clôture de l'essai, puis pendant {period}",
+      "status": "machineDraft"
+    },
+    "web.retention.scope.server": {
+      "text": "Le serveur",
+      "status": "machineDraft"
+    },
+    "web.retention.settingHelp": {
+      "text": "Une règle est un paramètre, modifié par qui peut gérer la conservation : keep, keepFor:<period> ou keepUntilClosed:<period>, avec une période telle que P90D, P18M ou P5Y. Les règles des dossiers d'essais, des fichiers reçus et du journal d'audit peuvent aussi être définies pour un lieu ou un essai.",
+      "status": "machineDraft"
+    },
+    "web.retention.source.trial": {
+      "text": "défini pour l'essai",
+      "status": "machineDraft"
+    },
+    "web.retention.trial.close": {
+      "text": "Enregistrer la date de clôture",
+      "status": "machineDraft"
+    },
+    "web.retention.trial.closedOn": {
+      "text": "Cet essai a été clos le {date}.",
+      "status": "machineDraft"
+    },
+    "web.retention.trial.closedOnLabel": {
+      "text": "Clos le (YYYY-MM-DD, aujourd'hui ou avant)",
+      "status": "machineDraft"
+    },
+    "web.retention.trial.closingIntro": {
+      "text": "La date de clôture est le point de départ de la conservation lorsqu'une règle conserve quelque chose jusqu'à la clôture de l'essai. Clore ne change rien d'autre.",
+      "status": "machineDraft"
+    },
+    "web.retention.trial.heading": {
+      "text": "Clôture et conservation",
+      "status": "machineDraft"
+    },
+    "web.retention.trial.held": {
+      "text": "Cet essai est sous blocage : rien de lui n'est épuré et il ne peut pas être supprimé.",
+      "status": "machineDraft"
+    },
+    "web.retention.trial.hold": {
+      "text": "Mettre sous blocage",
+      "status": "machineDraft"
+    },
+    "web.retention.trial.holdReason": {
+      "text": "Motif du blocage",
+      "status": "machineDraft"
+    },
+    "web.retention.trial.isOpen": {
+      "text": "Cet essai est ouvert.",
+      "status": "machineDraft"
+    },
+    "web.retention.trial.notHeld": {
+      "text": "Cet essai n'est sous aucun blocage.",
+      "status": "machineDraft"
+    },
+    "web.retention.trial.release": {
+      "text": "Lever le blocage",
+      "status": "machineDraft"
+    },
+    "web.retention.trial.releaseReason": {
+      "text": "Motif de la levée du blocage",
+      "status": "machineDraft"
+    },
+    "web.retention.trial.reopen": {
+      "text": "Rouvrir l'essai",
+      "status": "machineDraft"
+    },
+    "web.retention.withTheTrialRecord": {
+      "text": "Ceux-ci partent avec le dossier de l'essai.",
       "status": "machineDraft"
     },
     "web.signIn.continue": {
@@ -3569,6 +3949,22 @@
       "text": "Se reconnecter",
       "status": "machineDraft"
     },
+    "web.size.bytes": {
+      "text": "{count} octets",
+      "status": "machineDraft"
+    },
+    "web.size.gigabytes": {
+      "text": "{count} Go",
+      "status": "machineDraft"
+    },
+    "web.size.kilobytes": {
+      "text": "{count} ko",
+      "status": "machineDraft"
+    },
+    "web.size.megabytes": {
+      "text": "{count} Mo",
+      "status": "machineDraft"
+    },
     "web.task.backToTasks": {
       "text": "Toutes les tâches",
       "status": "machineDraft"
@@ -3601,6 +3997,10 @@
       "text": "Activer",
       "status": "machineDraft"
     },
+    "web.task.feature.retention": {
+      "text": "Conservation : l'épuration propre au magasin",
+      "status": "machineDraft"
+    },
     "web.task.heading": {
       "text": "Tâche planifiée",
       "status": "machineDraft"
@@ -3627,6 +4027,10 @@
     },
     "web.task.owner": {
       "text": "Conservée pour le fournisseur d'identité",
+      "status": "machineDraft"
+    },
+    "web.task.ownerFeature": {
+      "text": "Conservée pour",
       "status": "machineDraft"
     },
     "web.task.parameters": {
@@ -3789,6 +4193,10 @@
       "text": "Bloc {block}",
       "status": "machineDraft"
     },
+    "web.trial.closed": {
+      "text": "Clos",
+      "status": "machineDraft"
+    },
     "web.trial.contentHash": {
       "text": "Empreinte du contenu",
       "status": "machineDraft"
@@ -3835,6 +4243,10 @@
     },
     "web.trial.observations": {
       "text": "Observations",
+      "status": "machineDraft"
+    },
+    "web.trial.open": {
+      "text": "Ouvert",
       "status": "machineDraft"
     },
     "web.trial.plot": {

@@ -1437,6 +1437,14 @@
       "text": "Su nuevo token, mostrado solo esta vez; cópielo ahora:",
       "status": "machineDraft"
     },
+    "web.actor.everyone": {
+      "text": "todos (sin inicio de sesión)",
+      "status": "machineDraft"
+    },
+    "web.actor.operator": {
+      "text": "el operador",
+      "status": "machineDraft"
+    },
     "web.add.error": {
       "text": "No se pudo crear el ensayo: {reason}",
       "status": "machineDraft"
@@ -3353,6 +3361,10 @@
       "text": "Lugares",
       "status": "machineDraft"
     },
+    "web.nav.retention": {
+      "text": "Conservación",
+      "status": "machineDraft"
+    },
     "web.nav.tasks": {
       "text": "Tareas",
       "status": "machineDraft"
@@ -3437,6 +3449,86 @@
       "text": "No se añadió el lugar: {reason}",
       "status": "machineDraft"
     },
+    "web.received.bundle": {
+      "text": "Descargar el ensayo con sus archivos",
+      "status": "machineDraft"
+    },
+    "web.received.bundleIntro": {
+      "text": "Un paquete es el documento JSON del ensayo con estos archivos y un manifiesto a su lado, en un solo archivo zip. Importarlo en otro almacén restaura también los archivos.",
+      "status": "machineDraft"
+    },
+    "web.received.column.file": {
+      "text": "Archivo",
+      "status": "machineDraft"
+    },
+    "web.received.column.imported": {
+      "text": "Importado por, el",
+      "status": "machineDraft"
+    },
+    "web.received.column.kind": {
+      "text": "Importado como",
+      "status": "machineDraft"
+    },
+    "web.received.column.produced": {
+      "text": "Dio",
+      "status": "machineDraft"
+    },
+    "web.received.column.size": {
+      "text": "Tamaño",
+      "status": "machineDraft"
+    },
+    "web.received.details": {
+      "text": "SHA-256 y asignación de columnas",
+      "status": "machineDraft"
+    },
+    "web.received.download": {
+      "text": "Descargar",
+      "status": "machineDraft"
+    },
+    "web.received.heading": {
+      "text": "Archivos tal como se recibieron",
+      "status": "machineDraft"
+    },
+    "web.received.intro": {
+      "text": "Cada archivo que leyó una importación se conserva aquí exactamente como llegó, con las columnas tal como se asignaron. Los archivos están junto al ensayo; no forman parte de su huella de contenido.",
+      "status": "machineDraft"
+    },
+    "web.received.kind.layout": {
+      "text": "Disposición tal como se plantó",
+      "status": "machineDraft"
+    },
+    "web.received.kind.observations": {
+      "text": "Observaciones",
+      "status": "machineDraft"
+    },
+    "web.received.kind.weather": {
+      "text": "Registro meteorológico",
+      "status": "machineDraft"
+    },
+    "web.received.none": {
+      "text": "Todavía no se ha importado ningún archivo en este ensayo.",
+      "status": "machineDraft"
+    },
+    "web.received.produced.layout": {
+      "text": "{plots} parcelas",
+      "status": "machineDraft"
+    },
+    "web.received.produced.observations": {
+      "text": "{values} valores, {missing} marcados como faltantes",
+      "status": "machineDraft"
+    },
+    "web.received.produced.weather": {
+      "text": "{days} días",
+      "status": "machineDraft"
+    },
+    "web.received.sheet": {
+      "text": "Hoja",
+      "status": "machineDraft"
+    },
+    "web.received.unnamed": {
+      "text": "(enviado sin nombre)",
+      "status": "machineDraft"
+    },
     "web.refused.heading": {
       "text": "No permitido",
       "status": "machineDraft"
@@ -3479,6 +3571,294 @@
     },
     "web.report.print": {
       "text": "Imprimir",
+      "status": "machineDraft"
+    },
+    "web.retention.area.auditLog": {
+      "text": "Registro de auditoría",
+      "status": "machineDraft"
+    },
+    "web.retention.area.auditLog.holds": {
+      "text": "Cada cambio, quién lo hizo y desde dónde.",
+      "status": "machineDraft"
+    },
+    "web.retention.area.receivedFiles": {
+      "text": "Archivos tal como se recibieron",
+      "status": "machineDraft"
+    },
+    "web.retention.area.receivedFiles.holds": {
+      "text": "Los archivos que leyeron las importaciones, conservados exactamente como llegaron.",
+      "status": "machineDraft"
+    },
+    "web.retention.area.sessionsAndTokens": {
+      "text": "Sesiones y tokens",
+      "status": "machineDraft"
+    },
+    "web.retention.area.sessionsAndTokens.holds": {
+      "text": "Sesiones, tokens de API, inicios de sesión a la espera de un proveedor y mensajes de un solo uso. Solo salen los caducados.",
+      "status": "machineDraft"
+    },
+    "web.retention.area.taskRuns": {
+      "text": "Ejecuciones de tareas",
+      "status": "machineDraft"
+    },
+    "web.retention.area.taskRuns.holds": {
+      "text": "El registro de cada ejecución de una tarea programada, con su salida.",
+      "status": "machineDraft"
+    },
+    "web.retention.area.trialRecords": {
+      "text": "Registros de ensayos",
+      "status": "machineDraft"
+    },
+    "web.retention.area.trialRecords.holds": {
+      "text": "Cada ensayo como su registro: diseño, disposición y valores. Un registro solo sale entero.",
+      "status": "machineDraft"
+    },
+    "web.retention.areas.heading": {
+      "text": "Áreas de almacenamiento",
+      "status": "machineDraft"
+    },
+    "web.retention.areas.intro": {
+      "text": "Los tamaños son los bytes del contenido guardado, no el espacio que la base de datos usa para él.",
+      "status": "machineDraft"
+    },
+    "web.retention.column.area": {
+      "text": "Área",
+      "status": "machineDraft"
+    },
+    "web.retention.column.count": {
+      "text": "Cantidad",
+      "status": "machineDraft"
+    },
+    "web.retention.column.rule": {
+      "text": "Regla",
+      "status": "machineDraft"
+    },
+    "web.retention.column.setting": {
+      "text": "Ajuste",
+      "status": "machineDraft"
+    },
+    "web.retention.column.size": {
+      "text": "Tamaño",
+      "status": "machineDraft"
+    },
+    "web.retention.column.where": {
+      "text": "Dónde",
+      "status": "machineDraft"
+    },
+    "web.retention.done.close": {
+      "text": "La fecha de cierre quedó registrada.",
+      "status": "machineDraft"
+    },
+    "web.retention.done.hold": {
+      "text": "El ensayo está bajo retención.",
+      "status": "machineDraft"
+    },
+    "web.retention.done.release": {
+      "text": "La retención se levantó.",
+      "status": "machineDraft"
+    },
+    "web.retention.done.reopen": {
+      "text": "El ensayo está abierto de nuevo.",
+      "status": "machineDraft"
+    },
+    "web.retention.heading": {
+      "text": "Conservación",
+      "status": "machineDraft"
+    },
+    "web.retention.holds.column.by": {
+      "text": "Puesta por",
+      "status": "machineDraft"
+    },
+    "web.retention.holds.column.reason": {
+      "text": "Motivo",
+      "status": "machineDraft"
+    },
+    "web.retention.holds.column.since": {
+      "text": "Desde",
+      "status": "machineDraft"
+    },
+    "web.retention.holds.heading": {
+      "text": "Retenciones",
+      "status": "machineDraft"
+    },
+    "web.retention.holds.intro": {
+      "text": "Un ensayo bajo retención no pierde nada por la depuración y no puede eliminarse. La retención se pone y se levanta en la página del ensayo.",
+      "status": "machineDraft"
+    },
+    "web.retention.holds.none": {
+      "text": "Ningún ensayo está bajo retención.",
+      "status": "machineDraft"
+    },
+    "web.retention.intro": {
+      "text": "Lo que contiene este almacén, cuánto tiempo se conserva cada tipo de dato y lo que las reglas dejan ir ahora. Nada sale hasta que una regla lo diga: cada área se conserva mientras no se cambie su regla.",
+      "status": "machineDraft"
+    },
+    "web.retention.outcome.done": {
+      "text": "Esto se eliminó y quedó registrado en el registro de auditoría:",
+      "status": "machineDraft"
+    },
+    "web.retention.outcome.heading": {
+      "text": "Depurado",
+      "status": "machineDraft"
+    },
+    "web.retention.outcome.nothing": {
+      "text": "No se depuró nada: ninguna regla deja ir nada.",
+      "status": "machineDraft"
+    },
+    "web.retention.period.days": {
+      "text": "{count} días",
+      "status": "machineDraft"
+    },
+    "web.retention.period.months": {
+      "text": "{count} meses",
+      "status": "machineDraft"
+    },
+    "web.retention.period.one.days": {
+      "text": "1 día",
+      "status": "machineDraft"
+    },
+    "web.retention.period.one.months": {
+      "text": "1 mes",
+      "status": "machineDraft"
+    },
+    "web.retention.period.one.years": {
+      "text": "1 año",
+      "status": "machineDraft"
+    },
+    "web.retention.period.years": {
+      "text": "{count} años",
+      "status": "machineDraft"
+    },
+    "web.retention.preview.action": {
+      "text": "Previsualizar la depuración",
+      "status": "machineDraft"
+    },
+    "web.retention.preview.nothing": {
+      "text": "Ahora no se depuraría nada: ninguna regla deja ir nada.",
+      "status": "machineDraft"
+    },
+    "web.retention.preview.would": {
+      "text": "Depurar ahora eliminaría exactamente esto:",
+      "status": "machineDraft"
+    },
+    "web.retention.problem": {
+      "text": "No se hizo: {reason}",
+      "status": "machineDraft"
+    },
+    "web.retention.problem.date": {
+      "text": "escriba el día como YYYY-MM-DD",
+      "status": "machineDraft"
+    },
+    "web.retention.prune.action": {
+      "text": "Depurar ahora",
+      "status": "machineDraft"
+    },
+    "web.retention.prune.back": {
+      "text": "Volver a conservación",
+      "status": "machineDraft"
+    },
+    "web.retention.prune.confirm": {
+      "text": "Depurar",
+      "status": "machineDraft"
+    },
+    "web.retention.prune.confirmHeading": {
+      "text": "¿Depurar ahora?",
+      "status": "machineDraft"
+    },
+    "web.retention.prune.confirmIntro": {
+      "text": "Esto elimina definitivamente todo lo que se enumera abajo. No se puede deshacer.",
+      "status": "machineDraft"
+    },
+    "web.retention.pruning.heading": {
+      "text": "Depuración",
+      "status": "machineDraft"
+    },
+    "web.retention.pruning.intro": {
+      "text": "La depuración elimina lo que las reglas dejan ir y registra lo eliminado en el registro de auditoría. También se ejecuta cada día como tarea programada.",
+      "status": "machineDraft"
+    },
+    "web.retention.pruning.task": {
+      "text": "La tarea de depuración",
+      "status": "machineDraft"
+    },
+    "web.retention.rule.keep": {
+      "text": "Conservar",
+      "status": "machineDraft"
+    },
+    "web.retention.rule.keepFor": {
+      "text": "Conservar durante {period}",
+      "status": "machineDraft"
+    },
+    "web.retention.rule.keepUntilClosed": {
+      "text": "Conservar hasta el cierre del ensayo y después durante {period}",
+      "status": "machineDraft"
+    },
+    "web.retention.scope.server": {
+      "text": "El servidor",
+      "status": "machineDraft"
+    },
+    "web.retention.settingHelp": {
+      "text": "Una regla es un ajuste que cambia quien puede gestionar la conservación: keep, keepFor:<period> o keepUntilClosed:<period>, con un periodo como P90D, P18M o P5Y. Las reglas de los registros de ensayos, de los archivos recibidos y del registro de auditoría también pueden fijarse para un lugar o un ensayo.",
+      "status": "machineDraft"
+    },
+    "web.retention.source.trial": {
+      "text": "fijado para el ensayo",
+      "status": "machineDraft"
+    },
+    "web.retention.trial.close": {
+      "text": "Registrar la fecha de cierre",
+      "status": "machineDraft"
+    },
+    "web.retention.trial.closedOn": {
+      "text": "Este ensayo se cerró el {date}.",
+      "status": "machineDraft"
+    },
+    "web.retention.trial.closedOnLabel": {
+      "text": "Cerrado el (YYYY-MM-DD, hoy o antes)",
+      "status": "machineDraft"
+    },
+    "web.retention.trial.closingIntro": {
+      "text": "La fecha de cierre es el punto desde el que cuenta la conservación cuando una regla conserva algo hasta el cierre del ensayo. Cerrar no cambia nada más.",
+      "status": "machineDraft"
+    },
+    "web.retention.trial.heading": {
+      "text": "Cierre y conservación",
+      "status": "machineDraft"
+    },
+    "web.retention.trial.held": {
+      "text": "Este ensayo está bajo retención: nada de él se depura y no puede eliminarse.",
+      "status": "machineDraft"
+    },
+    "web.retention.trial.hold": {
+      "text": "Poner bajo retención",
+      "status": "machineDraft"
+    },
+    "web.retention.trial.holdReason": {
+      "text": "Motivo de la retención",
+      "status": "machineDraft"
+    },
+    "web.retention.trial.isOpen": {
+      "text": "Este ensayo está abierto.",
+      "status": "machineDraft"
+    },
+    "web.retention.trial.notHeld": {
+      "text": "Este ensayo no está bajo retención.",
+      "status": "machineDraft"
+    },
+    "web.retention.trial.release": {
+      "text": "Levantar la retención",
+      "status": "machineDraft"
+    },
+    "web.retention.trial.releaseReason": {
+      "text": "Motivo para levantar la retención",
+      "status": "machineDraft"
+    },
+    "web.retention.trial.reopen": {
+      "text": "Reabrir el ensayo",
+      "status": "machineDraft"
+    },
+    "web.retention.withTheTrialRecord": {
+      "text": "Estos salen con el registro del ensayo.",
       "status": "machineDraft"
     },
     "web.signIn.continue": {
@@ -3569,6 +3949,22 @@
       "text": "Iniciar sesión de nuevo",
       "status": "machineDraft"
     },
+    "web.size.bytes": {
+      "text": "{count} bytes",
+      "status": "machineDraft"
+    },
+    "web.size.gigabytes": {
+      "text": "{count} GB",
+      "status": "machineDraft"
+    },
+    "web.size.kilobytes": {
+      "text": "{count} kB",
+      "status": "machineDraft"
+    },
+    "web.size.megabytes": {
+      "text": "{count} MB",
+      "status": "machineDraft"
+    },
     "web.task.backToTasks": {
       "text": "Todas las tareas",
       "status": "machineDraft"
@@ -3601,6 +3997,10 @@
       "text": "Activar",
       "status": "machineDraft"
     },
+    "web.task.feature.retention": {
+      "text": "Conservación: la depuración propia del almacén",
+      "status": "machineDraft"
+    },
     "web.task.heading": {
       "text": "Tarea programada",
       "status": "machineDraft"
@@ -3627,6 +4027,10 @@
     },
     "web.task.owner": {
       "text": "Mantenida para el proveedor de identidad",
+      "status": "machineDraft"
+    },
+    "web.task.ownerFeature": {
+      "text": "Se mantiene para",
       "status": "machineDraft"
     },
     "web.task.parameters": {
@@ -3789,6 +4193,10 @@
       "text": "Bloque {block}",
       "status": "machineDraft"
     },
+    "web.trial.closed": {
+      "text": "Cerrado",
+      "status": "machineDraft"
+    },
     "web.trial.contentHash": {
       "text": "Hash de contenido",
       "status": "machineDraft"
@@ -3835,6 +4243,10 @@
     },
     "web.trial.observations": {
       "text": "Observaciones",
+      "status": "machineDraft"
+    },
+    "web.trial.open": {
+      "text": "Abierto",
       "status": "machineDraft"
     },
     "web.trial.plot": {

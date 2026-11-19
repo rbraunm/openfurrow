@@ -2,8 +2,8 @@
 """The audit log: every change, who made it, from where, and what it changed (decision 0038).
 
 An event is written in the same transaction as the change it records, so a change without
-its event cannot be committed. The tool never updates or deletes an event; retention
-(decision to come) is the only way one leaves.
+its event cannot be committed. The tool never updates an event, and one leaves only when
+the audit log's retention rule lets it go (decision 0044).
 """
 
 from __future__ import annotations
@@ -18,7 +18,7 @@ from sqlalchemy.orm import Session
 
 from openfurrow.identity.model import Actor
 from openfurrow.store.database import AuditEventRow
-from openfurrow.store.identity import now
+from openfurrow.store.tasks import stored
 
 
 class AuditEvent(BaseModel):
@@ -34,13 +34,13 @@ class AuditEvent(BaseModel):
   detail: dict
 
 
-def record(session: Session, actor: Actor, action: str, scope: str, detail: dict) -> None:
+def record(session: Session, actor: Actor, action: str, scope: str, detail: dict, at: datetime.datetime) -> None:
   """Write an event. A workload's event also carries the run its token came from (decision 0042), added here so no
   caller can leave it out."""
   if actor.run is not None:
     detail = detail | {"workloadRun": actor.run}
   session.add(AuditEventRow(
-    at=now(), actorKind=actor.kind.value, actorName=actor.name, surface=actor.surface, action=action,
+    at=stored(at), actorKind=actor.kind.value, actorName=actor.name, surface=actor.surface, action=action,
     scope=scope, detailJSON=json.dumps(detail, sort_keys=True, default=str),
   ))
   session.flush()
@@ -59,12 +59,6 @@ class EventFilter:
   before: int | None = None
 
 
-def _stored(moment: datetime.datetime) -> datetime.datetime:
-  if moment.tzinfo is None:
-    raise ValueError("a moment carries its time zone")
-  return moment.astimezone(datetime.UTC).replace(tzinfo=None)
-
-
 def events(session: Session, place: str | None = None, trialCodes: list[str] | None = None, limit: int = 200,
            chosen: EventFilter = EventFilter()) -> list[AuditEvent]:
   """The latest events, newest first: every one, or those at a place, at the places inside it and at the trials
@@ -81,9 +75,9 @@ def events(session: Session, place: str | None = None, trialCodes: list[str] | N
   if chosen.action is not None:
     query = query.where(AuditEventRow.action.startswith(chosen.action, autoescape=True))
   if chosen.since is not None:
-    query = query.where(AuditEventRow.at >= _stored(chosen.since))
+    query = query.where(AuditEventRow.at >= stored(chosen.since))
   if chosen.until is not None:
-    query = query.where(AuditEventRow.at < _stored(chosen.until))
+    query = query.where(AuditEventRow.at < stored(chosen.until))
   if chosen.before is not None:
     query = query.where(AuditEventRow.eventID < chosen.before)
   return [

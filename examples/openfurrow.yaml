@@ -51,7 +51,8 @@ import:
       - "na"
       - "N/A"
 
-# The HTTP service and web UI (openfurrow serve). Only read by `serve`.
+# The HTTP service and web UI (openfurrow serve). Read by `serve`; the import commands
+# read `maxUploadBytes` as well.
 service:
   # Loopback by default: the tool must not become a network service by accident.
   # There is NO authentication yet, so do not bind this to a reachable address.
@@ -59,7 +60,9 @@ service:
   port: 8420
 
   # Largest accepted request body, in bytes. Bounds memory use; oversize uploads are
-  # rejected before being read. Trial packages and observation CSVs are small.
+  # rejected before being read. Trial packages and observation CSVs are small. It is also
+  # the largest file an import keeps as received, so `import`, `import-weather` and
+  # `import-bundle` read it too and refuse a larger file.
   maxUploadBytes: 16777216
 
   # HTTPS is off by default because a local single-user tool on loopback gains nothing

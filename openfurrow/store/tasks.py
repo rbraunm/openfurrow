@@ -16,9 +16,11 @@ from pydantic import BaseModel, ValidationError
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from openfurrow.retention import retentionTaskName
 from openfurrow.store.database import NotFoundError, ScheduledTaskRow, SchedulerHeartbeatRow, TaskRunRow
 from openfurrow.store.settingValues import effectiveSettings
 from openfurrow.tasks.kinds import kindNamed
+from openfurrow.tasks.retentionPrune import retentionPrune
 from openfurrow.tasks.model import (RunState, SchedulerHeartbeat, Task, TaskError, TaskRun, activeStates,
                                     checkedTaskName, checkedTimeLimit)
 from openfurrow.tasks.schedule import Schedule, ScheduleError
@@ -66,7 +68,7 @@ def taskRow(session: Session, name: str) -> ScheduledTaskRow:
 
 
 def createTask(session: Session, name: str, kind: str, parameters: dict, at: datetime.datetime,
-               ownerProvider: str | None = None) -> None:
+               ownerProvider: str | None = None, ownerFeature: str | None = None) -> None:
   checkedTaskName(name)
   definition = kindNamed(kind)
   checked = checkedParameters(kind, parameters)
@@ -75,7 +77,7 @@ def createTask(session: Session, name: str, kind: str, parameters: dict, at: dat
   row = ScheduledTaskRow(name=name, kind=kind, parametersJSON=checked.model_dump_json(),
                          schedule=definition.defaultSchedule, enabled=True,
                          timeLimitSeconds=definition.defaultTimeLimitSeconds, createdAt=stored(at),
-                         ownerProvider=ownerProvider)
+                         ownerProvider=ownerProvider, ownerFeature=ownerFeature)
   row.nextRunAt = nextRun(row, serverSetting(session, "tasks.timeZone"), at)
   session.add(row)
   session.flush()
@@ -92,6 +94,9 @@ def deleteTask(session: Session, name: str) -> None:
     raise TaskError(f"task '{name}' has a run requested or running; delete it once that run has ended")
   session.delete(row)
   session.flush()
+def createFeatureTasks(session: Session, at: datetime.datetime) -> None:
+  """The tasks a store's own features need, made with the store: retention's daily pruning (decision 0044)."""
+  createTask(session, retentionTaskName, retentionPrune.name, {}, at, ownerFeature="retention")
 
 
 def _run(row: TaskRunRow) -> TaskRun:
@@ -109,7 +114,7 @@ def _task(session: Session, row: ScheduledTaskRow, zone: str) -> Task:
   latest = _latestRun(session, row.name)
   return Task(name=row.name, kind=row.kind, parameters=json.loads(row.parametersJSON), schedule=row.schedule,
               timeZone=zone, enabled=row.enabled, timeLimitSeconds=row.timeLimitSeconds,
-              nextRunAt=aware(row.nextRunAt), ownerProvider=row.ownerProvider,
+              nextRunAt=aware(row.nextRunAt), ownerProvider=row.ownerProvider, ownerFeature=row.ownerFeature,
               lastRun=None if latest is None else _run(latest))
 
 

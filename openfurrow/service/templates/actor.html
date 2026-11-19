@@ -1,0 +1,1 @@
+{% macro actor(kind, name) %}{% if name is not none %}<span class="code" dir="auto">{{ name }}</span>{% else %}{{ t.text('web.actor.' ~ kind) }}{% endif %}{% endmacro %}

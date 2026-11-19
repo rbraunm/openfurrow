@@ -3924,6 +3924,418 @@
     "web.signIn.search.more": {
       "text": "More institutions match than the first {count} shown; type more of the name to narrow them.",
       "status": "humanApproved"
+    },
+    "web.nav.retention": {
+      "text": "Retention",
+      "status": "humanApproved"
+    },
+    "web.task.ownerFeature": {
+      "text": "Kept for",
+      "status": "humanApproved"
+    },
+    "web.task.feature.retention": {
+      "text": "Retention: the store's own pruning",
+      "status": "humanApproved"
+    },
+    "web.size.bytes": {
+      "text": "{count} bytes",
+      "status": "humanApproved"
+    },
+    "web.size.kilobytes": {
+      "text": "{count} kB",
+      "status": "humanApproved"
+    },
+    "web.size.megabytes": {
+      "text": "{count} MB",
+      "status": "humanApproved"
+    },
+    "web.size.gigabytes": {
+      "text": "{count} GB",
+      "status": "humanApproved"
+    },
+    "web.actor.operator": {
+      "text": "the operator",
+      "status": "humanApproved"
+    },
+    "web.actor.everyone": {
+      "text": "everyone (no sign-in)",
+      "status": "humanApproved"
+    },
+    "web.trial.closed": {
+      "text": "Closed",
+      "status": "humanApproved"
+    },
+    "web.trial.open": {
+      "text": "Open",
+      "status": "humanApproved"
+    },
+    "web.received.heading": {
+      "text": "Files as received",
+      "status": "humanApproved"
+    },
+    "web.received.intro": {
+      "text": "Every file an import read is kept here exactly as it came, with the columns as they were mapped. The files stand beside the trial; they are not part of its content hash.",
+      "status": "humanApproved"
+    },
+    "web.received.column.file": {
+      "text": "File",
+      "status": "humanApproved"
+    },
+    "web.received.column.kind": {
+      "text": "Imported as",
+      "status": "humanApproved"
+    },
+    "web.received.column.size": {
+      "text": "Size",
+      "status": "humanApproved"
+    },
+    "web.received.column.imported": {
+      "text": "Imported by, at",
+      "status": "humanApproved"
+    },
+    "web.received.column.produced": {
+      "text": "It gave",
+      "status": "humanApproved"
+    },
+    "web.received.unnamed": {
+      "text": "(sent without a name)",
+      "status": "humanApproved"
+    },
+    "web.received.sheet": {
+      "text": "Sheet",
+      "status": "humanApproved"
+    },
+    "web.received.kind.observations": {
+      "text": "Observations",
+      "status": "humanApproved"
+    },
+    "web.received.kind.weather": {
+      "text": "Weather log",
+      "status": "humanApproved"
+    },
+    "web.received.kind.layout": {
+      "text": "Layout as planted",
+      "status": "humanApproved"
+    },
+    "web.received.produced.observations": {
+      "text": "{values} values, {missing} marked missing",
+      "status": "humanApproved"
+    },
+    "web.received.produced.weather": {
+      "text": "{days} days",
+      "status": "humanApproved"
+    },
+    "web.received.produced.layout": {
+      "text": "{plots} plots",
+      "status": "humanApproved"
+    },
+    "web.received.download": {
+      "text": "Download",
+      "status": "humanApproved"
+    },
+    "web.received.details": {
+      "text": "SHA-256 and column mapping",
+      "status": "humanApproved"
+    },
+    "web.received.none": {
+      "text": "No file has been imported into this trial yet.",
+      "status": "humanApproved"
+    },
+    "web.received.bundleIntro": {
+      "text": "A bundle is the trial's JSON document with these files and a manifest beside it, in one zip archive. Importing it into another store restores the files too.",
+      "status": "humanApproved"
+    },
+    "web.received.bundle": {
+      "text": "Download the trial with its files",
+      "status": "humanApproved"
+    },
+    "web.retention.trial.heading": {
+      "text": "Closing and retention",
+      "status": "humanApproved"
+    },
+    "web.retention.trial.closedOn": {
+      "text": "This trial was closed on {date}.",
+      "status": "humanApproved"
+    },
+    "web.retention.trial.isOpen": {
+      "text": "This trial is open.",
+      "status": "humanApproved"
+    },
+    "web.retention.trial.closingIntro": {
+      "text": "The closed date is what retention counts from where a rule keeps something until the trial is closed. Closing changes nothing else.",
+      "status": "humanApproved"
+    },
+    "web.retention.trial.closedOnLabel": {
+      "text": "Closed on (YYYY-MM-DD, today or earlier)",
+      "status": "humanApproved"
+    },
+    "web.retention.trial.close": {
+      "text": "Record the closed date",
+      "status": "humanApproved"
+    },
+    "web.retention.trial.reopen": {
+      "text": "Reopen the trial",
+      "status": "humanApproved"
+    },
+    "web.retention.trial.held": {
+      "text": "This trial is under a hold: nothing of it is pruned, and it cannot be deleted.",
+      "status": "humanApproved"
+    },
+    "web.retention.trial.notHeld": {
+      "text": "This trial is under no hold.",
+      "status": "humanApproved"
+    },
+    "web.retention.trial.holdReason": {
+      "text": "Reason for the hold",
+      "status": "humanApproved"
+    },
+    "web.retention.trial.releaseReason": {
+      "text": "Reason for releasing the hold",
+      "status": "humanApproved"
+    },
+    "web.retention.trial.hold": {
+      "text": "Put under a hold",
+      "status": "humanApproved"
+    },
+    "web.retention.trial.release": {
+      "text": "Release the hold",
+      "status": "humanApproved"
+    },
+    "web.retention.done.close": {
+      "text": "The closed date is recorded.",
+      "status": "humanApproved"
+    },
+    "web.retention.done.reopen": {
+      "text": "The trial is open again.",
+      "status": "humanApproved"
+    },
+    "web.retention.done.hold": {
+      "text": "The trial is under a hold.",
+      "status": "humanApproved"
+    },
+    "web.retention.done.release": {
+      "text": "The hold is released.",
+      "status": "humanApproved"
+    },
+    "web.retention.problem": {
+      "text": "Not done: {reason}",
+      "status": "humanApproved"
+    },
+    "web.retention.problem.date": {
+      "text": "write the day as YYYY-MM-DD",
+      "status": "humanApproved"
+    },
+    "web.retention.heading": {
+      "text": "Retention",
+      "status": "humanApproved"
+    },
+    "web.retention.intro": {
+      "text": "What this store holds, how long each kind of data is kept, and what the rules now let go. Nothing leaves until a rule says so: every area is kept unless its rule is changed.",
+      "status": "humanApproved"
+    },
+    "web.retention.areas.heading": {
+      "text": "Storage areas",
+      "status": "humanApproved"
+    },
+    "web.retention.areas.intro": {
+      "text": "Sizes are the bytes of the content held, not the space the database uses for it.",
+      "status": "humanApproved"
+    },
+    "web.retention.column.area": {
+      "text": "Area",
+      "status": "humanApproved"
+    },
+    "web.retention.column.where": {
+      "text": "Where",
+      "status": "humanApproved"
+    },
+    "web.retention.column.count": {
+      "text": "Count",
+      "status": "humanApproved"
+    },
+    "web.retention.column.size": {
+      "text": "Size",
+      "status": "humanApproved"
+    },
+    "web.retention.column.rule": {
+      "text": "Rule",
+      "status": "humanApproved"
+    },
+    "web.retention.column.setting": {
+      "text": "Setting",
+      "status": "humanApproved"
+    },
+    "web.retention.area.trialRecords": {
+      "text": "Trial records",
+      "status": "humanApproved"
+    },
+    "web.retention.area.trialRecords.holds": {
+      "text": "Each trial as its record: design, layout and values. A record leaves only whole.",
+      "status": "humanApproved"
+    },
+    "web.retention.area.receivedFiles": {
+      "text": "Files as received",
+      "status": "humanApproved"
+    },
+    "web.retention.area.receivedFiles.holds": {
+      "text": "The files imports read, kept exactly as they came.",
+      "status": "humanApproved"
+    },
+    "web.retention.area.auditLog": {
+      "text": "Audit log",
+      "status": "humanApproved"
+    },
+    "web.retention.area.auditLog.holds": {
+      "text": "Every change, who made it and from where.",
+      "status": "humanApproved"
+    },
+    "web.retention.area.sessionsAndTokens": {
+      "text": "Sessions and tokens",
+      "status": "humanApproved"
+    },
+    "web.retention.area.sessionsAndTokens.holds": {
+      "text": "Sessions, API tokens, sign-ins waiting for a provider, and messages used once. Only expired ones ever leave.",
+      "status": "humanApproved"
+    },
+    "web.retention.area.taskRuns": {
+      "text": "Task runs",
+      "status": "humanApproved"
+    },
+    "web.retention.area.taskRuns.holds": {
+      "text": "The record of each run of a scheduled task, with its output.",
+      "status": "humanApproved"
+    },
+    "web.retention.settingHelp": {
+      "text": "A rule is a setting, changed by someone who may manage retention: keep, keepFor:<period> or keepUntilClosed:<period>, with a period such as P90D, P18M or P5Y. The rules of trial records, received files and the audit log can also be set for a place or a trial.",
+      "status": "humanApproved"
+    },
+    "web.retention.rule.keep": {
+      "text": "Keep",
+      "status": "humanApproved"
+    },
+    "web.retention.rule.keepFor": {
+      "text": "Keep for {period}",
+      "status": "humanApproved"
+    },
+    "web.retention.rule.keepUntilClosed": {
+      "text": "Keep until the trial is closed, then for {period}",
+      "status": "humanApproved"
+    },
+    "web.retention.period.days": {
+      "text": "{count} days",
+      "status": "humanApproved"
+    },
+    "web.retention.period.months": {
+      "text": "{count} months",
+      "status": "humanApproved"
+    },
+    "web.retention.period.years": {
+      "text": "{count} years",
+      "status": "humanApproved"
+    },
+    "web.retention.period.one.days": {
+      "text": "1 day",
+      "status": "humanApproved"
+    },
+    "web.retention.period.one.months": {
+      "text": "1 month",
+      "status": "humanApproved"
+    },
+    "web.retention.period.one.years": {
+      "text": "1 year",
+      "status": "humanApproved"
+    },
+    "web.retention.scope.server": {
+      "text": "The server",
+      "status": "humanApproved"
+    },
+    "web.retention.source.trial": {
+      "text": "set for the trial",
+      "status": "humanApproved"
+    },
+    "web.retention.withTheTrialRecord": {
+      "text": "These leave with the trial's record.",
+      "status": "humanApproved"
+    },
+    "web.retention.holds.heading": {
+      "text": "Holds",
+      "status": "humanApproved"
+    },
+    "web.retention.holds.intro": {
+      "text": "A trial under a hold loses nothing to pruning and cannot be deleted. A hold is set and released on the trial's page.",
+      "status": "humanApproved"
+    },
+    "web.retention.holds.column.reason": {
+      "text": "Reason",
+      "status": "humanApproved"
+    },
+    "web.retention.holds.column.by": {
+      "text": "Set by",
+      "status": "humanApproved"
+    },
+    "web.retention.holds.column.since": {
+      "text": "Since",
+      "status": "humanApproved"
+    },
+    "web.retention.holds.none": {
+      "text": "No trial is under a hold.",
+      "status": "humanApproved"
+    },
+    "web.retention.pruning.heading": {
+      "text": "Pruning",
+      "status": "humanApproved"
+    },
+    "web.retention.pruning.intro": {
+      "text": "Pruning removes what the rules let go and records what went in the audit log. It also runs every day as a scheduled task.",
+      "status": "humanApproved"
+    },
+    "web.retention.pruning.task": {
+      "text": "The pruning task",
+      "status": "humanApproved"
+    },
+    "web.retention.preview.action": {
+      "text": "Preview pruning",
+      "status": "humanApproved"
+    },
+    "web.retention.preview.would": {
+      "text": "Pruning now would remove exactly this:",
+      "status": "humanApproved"
+    },
+    "web.retention.preview.nothing": {
+      "text": "Nothing would be pruned now: no rule lets anything go.",
+      "status": "humanApproved"
+    },
+    "web.retention.prune.action": {
+      "text": "Prune now",
+      "status": "humanApproved"
+    },
+    "web.retention.prune.confirmHeading": {
+      "text": "Prune now?",
+      "status": "humanApproved"
+    },
+    "web.retention.prune.confirmIntro": {
+      "text": "This removes everything listed below for good. It cannot be undone.",
+      "status": "humanApproved"
+    },
+    "web.retention.prune.confirm": {
+      "text": "Prune",
+      "status": "humanApproved"
+    },
+    "web.retention.prune.back": {
+      "text": "Back to retention",
+      "status": "humanApproved"
+    },
+    "web.retention.outcome.heading": {
+      "text": "Pruned",
+      "status": "humanApproved"
+    },
+    "web.retention.outcome.done": {
+      "text": "This was removed, and recorded in the audit log:",
+      "status": "humanApproved"
+    },
+    "web.retention.outcome.nothing": {
+      "text": "Nothing was pruned: no rule lets anything go.",
+      "status": "humanApproved"
     }
   }
 }

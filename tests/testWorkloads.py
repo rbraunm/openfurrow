@@ -4,6 +4,7 @@ signed by the stand-in issuer and, in the workflow's providers job, by GitHub Ac
 
 import base64
 import copy
+import hashlib
 import json
 import os
 import re
@@ -402,14 +403,16 @@ def testTheStoreItselfRefusesARoleAssignmentWithTwoHoldersOrNone(location, stand
 def testEveryChangeAWorkloadMakesNamesItsRuleAndItsRun(location, standIn, client):
   operator = trust(location, standIn, roles=(("trialManager", f"place:{standardPath}"),))
   token = standIn.workloadToken("ci", audience, job)
-  assert client.post("/api/trials/ESV-2025-01/observations", data=yields(location), headers=bearer(token)).status_code == 201
+  sent = yields(location)
+  assert client.post("/api/trials/ESV-2025-01/observations", data=sent, headers=bearer(token)).status_code == 201
   assert client.delete("/api/trials/ESV-2025-01", headers=bearer(token)).status_code == 200
   deleted, imported = operator.auditEvents("trial:ESV-2025-01")[:2]
   assert [(event.action, event.actorKind, event.actorName, event.surface) for event in (deleted, imported)] == [
     ("trial.delete", "workload", "nightly", "api"), ("values.import", "workload", "nightly", "api")]
   run = {"iss": standIn.issuer("ci"), "sub": job["sub"]}
-  assert deleted.detail == {"place": standardPath, "workloadRun": run}
-  assert imported.detail == {"file": "upload.csv", "sheet": None, "values": 12, "assessments": ["YIELD"], "workloadRun": run}
+  assert deleted.detail == {"place": standardPath, "receivedFiles": 1, "workloadRun": run}
+  assert imported.detail == {"file": None, "sheet": None, "values": 12, "assessments": ["YIELD"], "receivedFile": 1,
+                             "sha256": hashlib.sha256(sent).hexdigest(), "workloadRun": run}
   assert all("workloadRun" not in event.detail for event in operator.auditEvents() if event.actorKind != "workload")
 
 

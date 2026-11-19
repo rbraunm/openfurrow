@@ -34,6 +34,7 @@ from werkzeug.exceptions import RequestEntityTooLarge
 from openfurrow.config import ImportProfile, OpenFurrowConfig, defaultConfig
 from openfurrow.i18n import MessageError, availableLocales, sourceLocale
 from openfurrow.interop.fieldbook import fieldBookImportProfile
+from openfurrow.retention import RetentionError
 from openfurrow.schema import TrialPackage
 from openfurrow.identity.model import Actor
 from openfurrow.service.providerRoutes import installProvisioning
@@ -67,7 +68,7 @@ def createApp(databasePath: str, config: OpenFurrowConfig | None = None) -> Flas
   # Bound request bodies so an oversize upload is rejected with 413 before being read
   # into memory, rather than letting it exhaust memory on a self-hosted server.
   application.config["MAX_CONTENT_LENGTH"] = settings.service.maxUploadBytes
-  base = Workspace.open(databasePath, Actor.operator("service"))
+  base = Workspace.open(databasePath, Actor.operator("service"), maximumFileBytes=settings.service.maxUploadBytes)
   workspace = RequestWorkspace()
   installSignIn(application, base, settings.service.tls.enabled)
   installProvisioning(application, base)
@@ -118,6 +119,10 @@ def _registerErrorHandlers(application: Flask) -> None:
 
   @application.errorhandler(TaskError)
   def taskFailure(error: TaskError) -> Response:
+    return _error(str(error), 400)
+
+  @application.errorhandler(RetentionError)
+  def retentionFailure(error: RetentionError) -> Response:
     return _error(str(error), 400)
 
   @application.errorhandler(ScopeError)
@@ -212,13 +217,12 @@ def _registerRoutes(application: Flask, workspace: Workspace, config: OpenFurrow
 
   @application.post("/api/trials/<trialCode>/observations")
   def importObservations(trialCode: str) -> Response:
-    """Import a CSV body. The profile comes from config unless one is supplied."""
+    """Import a CSV body, or with `fileName` a file of that name. The profile comes from config unless one is supplied."""
     profile = config.importProfile
     supplied = request.args.get("profile")
     if supplied:
       profile = ImportProfile.model_validate(json.loads(supplied))
-    table = workspace.readObservationTable("upload.csv", _requestBody())
-    result = workspace.importObservationTable(trialCode, table, profile)
+    result = workspace.importObservationFile(trialCode, request.args.get("fileName"), _requestBody(), profile)
     return _json({
       "trialCode": trialCode,
       "imported": len(result.observations),
@@ -229,13 +233,24 @@ def _registerRoutes(application: Flask, workspace: Workspace, config: OpenFurrow
   @application.post("/api/trials/<trialCode>/observations/fieldbook")
   def importFieldBook(trialCode: str) -> Response:
     """Import a Field Book database (long) export, posted as CSV."""
-    table = workspace.readObservationTable("upload.csv", _requestBody())
-    result = workspace.importObservationTable(trialCode, table, fieldBookImportProfile())
+    result = workspace.importObservationFile(trialCode, request.args.get("fileName"), _requestBody(),
+                                             fieldBookImportProfile())
     return _json({
       "trialCode": trialCode,
       "imported": len(result.observations),
       "contentHash": workspace.contentHashFor(trialCode),
     }, 201)
+
+  # -- files as received (decision 0044) --
+
+  @application.get("/api/trials/<trialCode>/received")
+  def listReceivedFiles(trialCode: str) -> Response:
+    return _json(workspace.receivedFiles(trialCode))
+
+  @application.get("/api/trials/<trialCode>/received/<int:fileID>")
+  def getReceivedFile(trialCode: str, fileID: int) -> Response:
+    _, content = workspace.receivedFile(trialCode, fileID)
+    return Response(content, status=200, mimetype="application/octet-stream")
 
   # -- analysis --
 
@@ -275,6 +290,16 @@ def _registerRoutes(application: Flask, workspace: Workspace, config: OpenFurrow
       workspace.exportDocument(trialCode, path)
       body = Path(path).read_text(encoding="utf-8")
     return Response(body, status=200, mimetype=_jsonType)
+
+  @application.get("/api/trials/<trialCode>/bundle")
+  def exportBundle(trialCode: str) -> Response:
+    return Response(workspace.bundleFor(trialCode), status=200, mimetype="application/zip")
+
+  @application.post("/api/bundles")
+  def importBundle() -> Response:
+    trialCode = workspace.addBundle(request.get_data(), request.args.get("place"))
+    return _json({"trialCode": trialCode, "contentHash": workspace.contentHashFor(trialCode),
+                  "receivedFiles": len(workspace.receivedFiles(trialCode))}, 201)
 
   @application.post("/api/documents")
   def importDocument() -> Response:

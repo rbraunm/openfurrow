@@ -1437,6 +1437,14 @@
       "text": "رمزك الجديد، يُعرض هذه المرة فقط؛ انسخه الآن:",
       "status": "machineDraft"
     },
+    "web.actor.everyone": {
+      "text": "الجميع (بلا تسجيل دخول)",
+      "status": "machineDraft"
+    },
+    "web.actor.operator": {
+      "text": "المشغّل",
+      "status": "machineDraft"
+    },
     "web.add.error": {
       "text": "تعذر إنشاء التجربة: {reason}",
       "status": "machineDraft"
@@ -3353,6 +3361,10 @@
       "text": "الأماكن",
       "status": "machineDraft"
     },
+    "web.nav.retention": {
+      "text": "الاحتفاظ",
+      "status": "machineDraft"
+    },
     "web.nav.tasks": {
       "text": "المهام",
       "status": "machineDraft"
@@ -3437,6 +3449,86 @@
       "text": "لم يُضف المكان: {reason}",
       "status": "machineDraft"
     },
+    "web.received.bundle": {
+      "text": "تنزيل التجربة مع ملفاتها",
+      "status": "machineDraft"
+    },
+    "web.received.bundleIntro": {
+      "text": "الحزمة هي مستند JSON للتجربة ومعه هذه الملفات وبيان بها، في أرشيف zip واحد. استيرادها في مخزن آخر يعيد الملفات أيضًا.",
+      "status": "machineDraft"
+    },
+    "web.received.column.file": {
+      "text": "الملف",
+      "status": "machineDraft"
+    },
+    "web.received.column.imported": {
+      "text": "استورده، في",
+      "status": "machineDraft"
+    },
+    "web.received.column.kind": {
+      "text": "استُورد بوصفه",
+      "status": "machineDraft"
+    },
+    "web.received.column.produced": {
+      "text": "نتج عنه",
+      "status": "machineDraft"
+    },
+    "web.received.column.size": {
+      "text": "الحجم",
+      "status": "machineDraft"
+    },
+    "web.received.details": {
+      "text": "SHA-256 وربط الأعمدة",
+      "status": "machineDraft"
+    },
+    "web.received.download": {
+      "text": "تنزيل",
+      "status": "machineDraft"
+    },
+    "web.received.heading": {
+      "text": "الملفات كما استُلمت",
+      "status": "machineDraft"
+    },
+    "web.received.intro": {
+      "text": "يُحفظ هنا كل ملف قرأته عملية استيراد كما ورد تمامًا، مع الأعمدة كما رُبطت. الملفات إلى جانب التجربة وليست جزءًا من بصمة محتواها.",
+      "status": "machineDraft"
+    },
+    "web.received.kind.layout": {
+      "text": "التخطيط كما زُرع",
+      "status": "machineDraft"
+    },
+    "web.received.kind.observations": {
+      "text": "مشاهدات",
+      "status": "machineDraft"
+    },
+    "web.received.kind.weather": {
+      "text": "سجل الطقس",
+      "status": "machineDraft"
+    },
+    "web.received.none": {
+      "text": "لم يُستورد أي ملف في هذه التجربة بعد.",
+      "status": "machineDraft"
+    },
+    "web.received.produced.layout": {
+      "text": "{plots} قطعة",
+      "status": "machineDraft"
+    },
+    "web.received.produced.observations": {
+      "text": "{values} قيمة، و{missing} معلَّمة كمفقودة",
+      "status": "machineDraft"
+    },
+    "web.received.produced.weather": {
+      "text": "{days} يومًا",
+      "status": "machineDraft"
+    },
+    "web.received.sheet": {
+      "text": "الورقة",
+      "status": "machineDraft"
+    },
+    "web.received.unnamed": {
+      "text": "(أُرسل بلا اسم)",
+      "status": "machineDraft"
+    },
     "web.refused.heading": {
       "text": "غير مسموح",
       "status": "machineDraft"
@@ -3479,6 +3571,294 @@
     },
     "web.report.print": {
       "text": "طباعة",
+      "status": "machineDraft"
+    },
+    "web.retention.area.auditLog": {
+      "text": "سجل التدقيق",
+      "status": "machineDraft"
+    },
+    "web.retention.area.auditLog.holds": {
+      "text": "كل تغيير، ومن أجراه ومن أين.",
+      "status": "machineDraft"
+    },
+    "web.retention.area.receivedFiles": {
+      "text": "الملفات كما استُلمت",
+      "status": "machineDraft"
+    },
+    "web.retention.area.receivedFiles.holds": {
+      "text": "الملفات التي قرأتها عمليات الاستيراد، محفوظة كما وردت تمامًا.",
+      "status": "machineDraft"
+    },
+    "web.retention.area.sessionsAndTokens": {
+      "text": "الجلسات والرموز",
+      "status": "machineDraft"
+    },
+    "web.retention.area.sessionsAndTokens.holds": {
+      "text": "الجلسات، ورموز API، وعمليات تسجيل الدخول التي تنتظر مزوّدًا، والرسائل المستخدمة مرة واحدة. لا يخرج إلا ما انتهت صلاحيته.",
+      "status": "machineDraft"
+    },
+    "web.retention.area.taskRuns": {
+      "text": "تشغيلات المهام",
+      "status": "machineDraft"
+    },
+    "web.retention.area.taskRuns.holds": {
+      "text": "سجل كل تشغيل لمهمة مجدولة، مع مخرجاته.",
+      "status": "machineDraft"
+    },
+    "web.retention.area.trialRecords": {
+      "text": "سجلات التجارب",
+      "status": "machineDraft"
+    },
+    "web.retention.area.trialRecords.holds": {
+      "text": "كل تجربة بسجلها: التصميم والتخطيط والقيم. لا يخرج السجل إلا كاملًا.",
+      "status": "machineDraft"
+    },
+    "web.retention.areas.heading": {
+      "text": "مناطق التخزين",
+      "status": "machineDraft"
+    },
+    "web.retention.areas.intro": {
+      "text": "الأحجام هي بايتات المحتوى المحفوظ، لا المساحة التي تستخدمها قاعدة البيانات له.",
+      "status": "machineDraft"
+    },
+    "web.retention.column.area": {
+      "text": "المنطقة",
+      "status": "machineDraft"
+    },
+    "web.retention.column.count": {
+      "text": "العدد",
+      "status": "machineDraft"
+    },
+    "web.retention.column.rule": {
+      "text": "القاعدة",
+      "status": "machineDraft"
+    },
+    "web.retention.column.setting": {
+      "text": "الإعداد",
+      "status": "machineDraft"
+    },
+    "web.retention.column.size": {
+      "text": "الحجم",
+      "status": "machineDraft"
+    },
+    "web.retention.column.where": {
+      "text": "أين",
+      "status": "machineDraft"
+    },
+    "web.retention.done.close": {
+      "text": "سُجّل تاريخ الإغلاق.",
+      "status": "machineDraft"
+    },
+    "web.retention.done.hold": {
+      "text": "التجربة تحت الحجز.",
+      "status": "machineDraft"
+    },
+    "web.retention.done.release": {
+      "text": "رُفع الحجز.",
+      "status": "machineDraft"
+    },
+    "web.retention.done.reopen": {
+      "text": "التجربة مفتوحة من جديد.",
+      "status": "machineDraft"
+    },
+    "web.retention.heading": {
+      "text": "الاحتفاظ",
+      "status": "machineDraft"
+    },
+    "web.retention.holds.column.by": {
+      "text": "وضعه",
+      "status": "machineDraft"
+    },
+    "web.retention.holds.column.reason": {
+      "text": "السبب",
+      "status": "machineDraft"
+    },
+    "web.retention.holds.column.since": {
+      "text": "منذ",
+      "status": "machineDraft"
+    },
+    "web.retention.holds.heading": {
+      "text": "حالات الحجز",
+      "status": "machineDraft"
+    },
+    "web.retention.holds.intro": {
+      "text": "التجربة التي تحت الحجز لا تفقد شيئًا بالتنقية ولا يمكن حذفها. يُوضع الحجز ويُرفع من صفحة التجربة.",
+      "status": "machineDraft"
+    },
+    "web.retention.holds.none": {
+      "text": "لا توجد تجربة تحت الحجز.",
+      "status": "machineDraft"
+    },
+    "web.retention.intro": {
+      "text": "ما يحتويه هذا المخزن، ومدة الاحتفاظ بكل نوع من البيانات، وما تسمح القواعد بإزالته الآن. لا يخرج شيء حتى تقول قاعدةٌ ذلك: تبقى كل منطقة محفوظة ما لم تُغيَّر قاعدتها.",
+      "status": "machineDraft"
+    },
+    "web.retention.outcome.done": {
+      "text": "أُزيل هذا وسُجّل في سجل التدقيق:",
+      "status": "machineDraft"
+    },
+    "web.retention.outcome.heading": {
+      "text": "ما أُزيل",
+      "status": "machineDraft"
+    },
+    "web.retention.outcome.nothing": {
+      "text": "لم يُنقَّ شيء: لا قاعدة تسمح بإزالة شيء.",
+      "status": "machineDraft"
+    },
+    "web.retention.period.days": {
+      "text": "{count} يومًا",
+      "status": "machineDraft"
+    },
+    "web.retention.period.months": {
+      "text": "{count} شهرًا",
+      "status": "machineDraft"
+    },
+    "web.retention.period.one.days": {
+      "text": "يوم واحد",
+      "status": "machineDraft"
+    },
+    "web.retention.period.one.months": {
+      "text": "شهر واحد",
+      "status": "machineDraft"
+    },
+    "web.retention.period.one.years": {
+      "text": "سنة واحدة",
+      "status": "machineDraft"
+    },
+    "web.retention.period.years": {
+      "text": "{count} سنة",
+      "status": "machineDraft"
+    },
+    "web.retention.preview.action": {
+      "text": "معاينة التنقية",
+      "status": "machineDraft"
+    },
+    "web.retention.preview.nothing": {
+      "text": "لن يُنقّى شيء الآن: لا قاعدة تسمح بإزالة شيء.",
+      "status": "machineDraft"
+    },
+    "web.retention.preview.would": {
+      "text": "التنقية الآن ستزيل هذا بالضبط:",
+      "status": "machineDraft"
+    },
+    "web.retention.problem": {
+      "text": "لم يتم: {reason}",
+      "status": "machineDraft"
+    },
+    "web.retention.problem.date": {
+      "text": "اكتب اليوم بالصيغة YYYY-MM-DD",
+      "status": "machineDraft"
+    },
+    "web.retention.prune.action": {
+      "text": "التنقية الآن",
+      "status": "machineDraft"
+    },
+    "web.retention.prune.back": {
+      "text": "العودة إلى الاحتفاظ",
+      "status": "machineDraft"
+    },
+    "web.retention.prune.confirm": {
+      "text": "تنقية",
+      "status": "machineDraft"
+    },
+    "web.retention.prune.confirmHeading": {
+      "text": "التنقية الآن؟",
+      "status": "machineDraft"
+    },
+    "web.retention.prune.confirmIntro": {
+      "text": "هذا يزيل نهائيًا كل ما هو مدرج أدناه. لا يمكن التراجع عنه.",
+      "status": "machineDraft"
+    },
+    "web.retention.pruning.heading": {
+      "text": "التنقية",
+      "status": "machineDraft"
+    },
+    "web.retention.pruning.intro": {
+      "text": "تزيل التنقية ما تسمح القواعد بإزالته وتسجّل ما أُزيل في سجل التدقيق. وهي تعمل أيضًا كل يوم كمهمة مجدولة.",
+      "status": "machineDraft"
+    },
+    "web.retention.pruning.task": {
+      "text": "مهمة التنقية",
+      "status": "machineDraft"
+    },
+    "web.retention.rule.keep": {
+      "text": "احتفاظ دائم",
+      "status": "machineDraft"
+    },
+    "web.retention.rule.keepFor": {
+      "text": "احتفاظ لمدة {period}",
+      "status": "machineDraft"
+    },
+    "web.retention.rule.keepUntilClosed": {
+      "text": "احتفاظ حتى إغلاق التجربة، ثم لمدة {period}",
+      "status": "machineDraft"
+    },
+    "web.retention.scope.server": {
+      "text": "الخادم",
+      "status": "machineDraft"
+    },
+    "web.retention.settingHelp": {
+      "text": "القاعدة إعدادٌ يغيّره من يحق له إدارة الاحتفاظ: keep أو keepFor:<period> أو keepUntilClosed:<period>، بمدة مثل P90D أو P18M أو P5Y. ويمكن أيضًا تحديد قواعد سجلات التجارب والملفات المستلمة وسجل التدقيق لمكان أو لتجربة.",
+      "status": "machineDraft"
+    },
+    "web.retention.source.trial": {
+      "text": "محدَّد للتجربة",
+      "status": "machineDraft"
+    },
+    "web.retention.trial.close": {
+      "text": "تسجيل تاريخ الإغلاق",
+      "status": "machineDraft"
+    },
+    "web.retention.trial.closedOn": {
+      "text": "أُغلقت هذه التجربة في {date}.",
+      "status": "machineDraft"
+    },
+    "web.retention.trial.closedOnLabel": {
+      "text": "أُغلقت في (YYYY-MM-DD، اليوم أو قبله)",
+      "status": "machineDraft"
+    },
+    "web.retention.trial.closingIntro": {
+      "text": "تاريخ الإغلاق هو ما يبدأ منه حساب الاحتفاظ حين تُبقي قاعدةٌ شيئًا إلى أن تُغلق التجربة. الإغلاق لا يغيّر شيئًا آخر.",
+      "status": "machineDraft"
+    },
+    "web.retention.trial.heading": {
+      "text": "الإغلاق والاحتفاظ",
+      "status": "machineDraft"
+    },
+    "web.retention.trial.held": {
+      "text": "هذه التجربة تحت الحجز: لا يُنقّى شيء منها ولا يمكن حذفها.",
+      "status": "machineDraft"
+    },
+    "web.retention.trial.hold": {
+      "text": "وضع تحت الحجز",
+      "status": "machineDraft"
+    },
+    "web.retention.trial.holdReason": {
+      "text": "سبب الحجز",
+      "status": "machineDraft"
+    },
+    "web.retention.trial.isOpen": {
+      "text": "هذه التجربة مفتوحة.",
+      "status": "machineDraft"
+    },
+    "web.retention.trial.notHeld": {
+      "text": "هذه التجربة ليست تحت أي حجز.",
+      "status": "machineDraft"
+    },
+    "web.retention.trial.release": {
+      "text": "رفع الحجز",
+      "status": "machineDraft"
+    },
+    "web.retention.trial.releaseReason": {
+      "text": "سبب رفع الحجز",
+      "status": "machineDraft"
+    },
+    "web.retention.trial.reopen": {
+      "text": "إعادة فتح التجربة",
+      "status": "machineDraft"
+    },
+    "web.retention.withTheTrialRecord": {
+      "text": "تخرج هذه مع سجل التجربة.",
       "status": "machineDraft"
     },
     "web.signIn.continue": {
@@ -3569,6 +3949,22 @@
       "text": "تسجيل الدخول من جديد",
       "status": "machineDraft"
     },
+    "web.size.bytes": {
+      "text": "{count} بايت",
+      "status": "machineDraft"
+    },
+    "web.size.gigabytes": {
+      "text": "{count} غيغابايت",
+      "status": "machineDraft"
+    },
+    "web.size.kilobytes": {
+      "text": "{count} كيلوبايت",
+      "status": "machineDraft"
+    },
+    "web.size.megabytes": {
+      "text": "{count} ميغابايت",
+      "status": "machineDraft"
+    },
     "web.task.backToTasks": {
       "text": "كل المهام",
       "status": "machineDraft"
@@ -3601,6 +3997,10 @@
       "text": "تفعيل",
       "status": "machineDraft"
     },
+    "web.task.feature.retention": {
+      "text": "الاحتفاظ: التنقية الخاصة بالمخزن",
+      "status": "machineDraft"
+    },
     "web.task.heading": {
       "text": "مهمة مجدولة",
       "status": "machineDraft"
@@ -3627,6 +4027,10 @@
     },
     "web.task.owner": {
       "text": "محفوظة لمزوّد الهوية",
+      "status": "machineDraft"
+    },
+    "web.task.ownerFeature": {
+      "text": "محفوظة من أجل",
       "status": "machineDraft"
     },
     "web.task.parameters": {
@@ -3789,6 +4193,10 @@
       "text": "القطاع {block}",
       "status": "machineDraft"
     },
+    "web.trial.closed": {
+      "text": "أُغلقت",
+      "status": "machineDraft"
+    },
     "web.trial.contentHash": {
       "text": "بصمة المحتوى",
       "status": "machineDraft"
@@ -3835,6 +4243,10 @@
     },
     "web.trial.observations": {
       "text": "المشاهدات",
+      "status": "machineDraft"
+    },
+    "web.trial.open": {
+      "text": "مفتوحة",
       "status": "machineDraft"
     },
     "web.trial.plot": {

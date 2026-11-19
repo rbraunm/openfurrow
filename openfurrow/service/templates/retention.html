@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% block title %}{{ t.text('web.retention.heading') }} - {{ t.text('web.app.name') }}{% endblock %}
+{% block content %}
+{% set localeArgument = locale if locale != 'en-US' else none %}
+{% from "actor.html" import actor with context %}
+<div class="page-head">
+  <h1>{{ t.text('web.retention.heading') }}</h1>
+</div>
+<p class="intro">{{ t.text('web.retention.intro') }}</p>
+
+{% if outcome is not none %}
+<section aria-label="{{ t.text('web.retention.outcome.heading') }}">
+  <h2>{{ t.text('web.retention.outcome.heading') }}</h2>
+  {% if outcome.lines %}
+  <div class="notice" role="status">{{ t.text('web.retention.outcome.done') }}</div>
+  {% with report = outcome %}{% include "pruneLines.html" %}{% endwith %}
+  {% else %}
+  <div class="notice" role="status">{{ t.text('web.retention.outcome.nothing') }}</div>
+  {% endif %}
+</section>
+{% endif %}
+
+<section aria-label="{{ t.text('web.retention.areas.heading') }}">
+  <h2>{{ t.text('web.retention.areas.heading') }}</h2>
+  <p class="intro">{{ t.text('web.retention.areas.intro') }}</p>
+  <div class="table-scroll">
+    <table class="trials retention-areas">
+      <thead>
+        <tr>
+          <th scope="col">{{ t.text('web.retention.column.area') }}</th>
+          <th scope="col" class="num">{{ t.text('web.retention.column.count') }}</th>
+          <th scope="col" class="num">{{ t.text('web.retention.column.size') }}</th>
+          <th scope="col">{{ t.text('web.retention.column.rule') }}</th>
+          <th scope="col">{{ t.text('web.retention.column.setting') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for area in status.areas %}
+        <tr>
+          <td>{{ t.text('web.retention.area.' ~ area.area.value) }}<br><span class="help">{{ t.text('web.retention.area.' ~ area.area.value ~ '.holds') }}</span></td>
+          <td class="num code">{{ t.integer(area.count) }}</td>
+          <td class="num">{{ size(area.sizeBytes) }}</td>
+          <td>{{ ruleText(area.rule) }} ({{ sourceText(area.source) }})
+            {% if area.setBelow %}
+            <ul class="help">
+              {% for below in area.setBelow %}
+              <li><span class="code" dir="ltr">{{ below.scope }}</span>: {{ ruleText(below.rule) }}</li>
+              {% endfor %}
+            </ul>
+            {% endif %}
+          </td>
+          <td><span class="code" dir="ltr">retention.{{ area.area.value }} = {{ area.rule }}</span></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <p class="help">{{ t.text('web.retention.settingHelp') }}</p>
+</section>
+
+<section aria-label="{{ t.text('web.retention.holds.heading') }}">
+  <h2>{{ t.text('web.retention.holds.heading') }}</h2>
+  <p class="intro">{{ t.text('web.retention.holds.intro') }}</p>
+  {% if status.holds %}
+  <table class="trials retention-holds">
+    <thead>
+      <tr>
+        <th scope="col">{{ t.text('web.trials.column.code') }}</th>
+        <th scope="col">{{ t.text('web.retention.holds.column.reason') }}</th>
+        <th scope="col">{{ t.text('web.retention.holds.column.by') }}</th>
+        <th scope="col">{{ t.text('web.retention.holds.column.since') }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for hold in status.holds %}
+      <tr>
+        <td class="code"><a href="{{ url_for('web.trial', trialCode=hold.trialCode, locale=localeArgument) }}#retention">{{ hold.trialCode }}</a></td>
+        <td dir="auto">{{ hold.reason }}</td>
+        <td>{{ actor(hold.heldByKind, hold.heldByName) }}</td>
+        <td><span dir="ltr">{{ moment(hold.heldAt) }}</span> <span class="code">{{ zone }}</span></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="notice">{{ t.text('web.retention.holds.none') }}</p>
+  {% endif %}
+</section>
+
+<section aria-label="{{ t.text('web.retention.pruning.heading') }}">
+  <h2>{{ t.text('web.retention.pruning.heading') }}</h2>
+  <p class="intro">{{ t.text('web.retention.pruning.intro') }}
+    {% if mayManageTasks %}<a href="{{ url_for('web.task', name=retentionTask, locale=localeArgument) }}">{{ t.text('web.retention.pruning.task') }}</a>{% endif %}</p>
+  {% if preview is not none %}
+  {% if preview.lines %}
+  <p>{{ t.text('web.retention.preview.would') }}</p>
+  {% with report = preview %}{% include "pruneLines.html" %}{% endwith %}
+  {% else %}
+  <p class="notice" role="status">{{ t.text('web.retention.preview.nothing') }}</p>
+  {% endif %}
+  {% endif %}
+  <div class="manage-actions">
+    <a class="button button-quiet" href="{{ url_for('web.retention', preview='yes', locale=localeArgument) }}">{{ t.text('web.retention.preview.action') }}</a>
+    <a class="delete-link" href="{{ url_for('web.prune', locale=localeArgument) }}">{{ t.text('web.retention.prune.action') }}</a>
+  </div>
+</section>
+{% endblock %}

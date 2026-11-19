@@ -9,7 +9,7 @@ from io import BytesIO
 import pytest
 
 from openfurrow import TrialPackage, Workspace
-from openfurrow.importers import ImportResult, countByAssessment
+from openfurrow.importers import ColumnMapping, ImportResult, countByAssessment
 from openfurrow.schema.observation import Observation
 from openfurrow.service import createApp
 
@@ -131,6 +131,7 @@ def testCountsAgainstEveryPlotAndCheckPlot(setup):
   result = ImportResult(observations=[
     Observation(plotNumber=numbers[0], assessmentCode="YIELD", value=1.0),
     Observation(plotNumber=numbers[1], assessmentCode="YIELD", value=None),
-  ], warnings=[])
+  ], warnings=[], mapping=ColumnMapping(format="long", plotNumber="plotNumber", assessmentCode="assessmentCode",
+                                        value="value", unreadColumns=[], decimalSeparator=".", naTokens=[]))
   [count] = countByAssessment(result, layout)
   assert (count.assessmentCode, count.values, count.missing, count.plotsWithout) == ("YIELD", 1, 1, numbers[2:])

@@ -5,6 +5,7 @@ from __future__ import annotations
 
 from openfurrow.tasks.federationRefresh import federationRefresh
 from openfurrow.tasks.model import TaskError, TaskKind, checkedTimeLimit
+from openfurrow.tasks.retentionPrune import retentionPrune
 from openfurrow.tasks.schedule import Schedule
 
 _kinds: dict[str, TaskKind] = {}
@@ -30,3 +31,4 @@ def registeredKinds() -> list[TaskKind]:
 
 
 register(federationRefresh)
+register(retentionPrune)

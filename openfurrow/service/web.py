@@ -20,11 +20,13 @@ resolve a request into one or two facade calls and render. No statistics, no sto
 access, no layout logic lives here.
 
 The pages: list trials; add a trial (the trial form, or the canonical package JSON); view
-a trial with its field layout; enter values; import observations from a CSV or an .xlsx
-workbook through a preview and an explicit column mapping (decision 0031); read the
-report; check reproducibility; delete a trial; and the scheduled tasks with their runs
-(decision 0041). The administration area is `openfurrow.service.administration`, and the
-pages a refusal answers with are `openfurrow.service.refusalPages`.
+a trial with its field layout, its files as received, its closed date and its hold;
+enter values; import observations from a CSV or an .xlsx workbook through a preview and
+an explicit column mapping (decision 0031); read the report; check reproducibility;
+delete a trial; the scheduled tasks with their runs (decision 0041); and what the store
+holds, with a preview of pruning and pruning itself (decision 0044). The administration
+area is `openfurrow.service.administration`, and the pages a refusal answers with are
+`openfurrow.service.refusalPages`.
 """
 
 from __future__ import annotations
@@ -33,22 +35,22 @@ import base64
 import binascii
 import datetime
 import html
+import io
 import json
 import secrets
+from pathlib import PurePosixPath
 from zoneinfo import ZoneInfo
 
 import markdown as markdownLibrary
-from flask import Blueprint, Response, current_app, g, redirect, render_template, request, url_for
+from flask import Blueprint, Response, current_app, g, redirect, render_template, request, send_file, url_for
 from markupsafe import Markup
 
 from openfurrow.config import OpenFurrowConfig, defaultConfig
 from openfurrow.i18n import availableLocales, sourceLocale, translatorFor
 from openfurrow.importers.entry import EntryRefused, readEntry, writeEntry
-from openfurrow.importers.layoutCsv import LayoutFileError, readLayoutCsv
-from openfurrow.importers.weatherCsv import WeatherFileError
 from openfurrow.reports.charts import meansFigure
+from openfurrow.retention import RetentionError, RetentionRule, StorageArea, retentionTaskName, settingKey
 from openfurrow.interop.fieldbook import fieldBookTraitColumn, fieldBookValueColumn, fieldUniqueIDColumn
-from openfurrow.schema import TrialDocument
 from openfurrow.service.trialForm import FormProblem, emptyForm, formFromRequest, packageFromForm
 from openfurrow.schema import AssessmentDataType, Observation, RandomizationMethod, TrialPackage
 from openfurrow.schema.document import isOutOfRange
@@ -58,7 +60,15 @@ from openfurrow.identity.providers import ProviderKind
 from openfurrow.service.administration import registerAdministration
 from openfurrow.service.refusalPages import registerRefusalPages
 from openfurrow.service.signIn import pendingCookie, sessionCookie
-from openfurrow.workspace import IdentityError, ObservationImportError, StoreError, TaskError, Workspace
+from openfurrow.workspace import (
+  IdentityError,
+  LayoutFileError,
+  ObservationImportError,
+  StoreError,
+  TaskError,
+  WeatherFileError,
+  Workspace,
+)
 from pydantic import ValidationError
 
 # Okabe-Ito, a colorblind-safe qualitative palette. Treatment colour is a *redundant*
@@ -96,9 +106,12 @@ def createWebBlueprint(workspace: Workspace, config: OpenFurrowConfig | None = N
   def _localeContext(translator):
     # Shared template context: the translator, the current locale, its direction, and
     # the locales offered in the switcher.
-    mayManageTasks = ((g.signedIn is not None or g.signInMode is SignInMode.open)
-                      and Permission.manageTasks in workspace.permissionsAt("server"))
+    held = (workspace.permissionsAt("server") if g.signedIn is not None or g.signInMode is SignInMode.open
+            else frozenset())
+    mayManageTasks = Permission.manageTasks in held
     return {
+      "mayManageRetention": Permission.manageRetention in held,
+      "size": lambda count: _sizeText(count, translator),
       "t": translator,
       "locale": translator.locale,
       "direction": translator.direction,
@@ -122,11 +135,27 @@ def createWebBlueprint(workspace: Workspace, config: OpenFurrowConfig | None = N
       "places": [place for place in workspace.places() if place.levelCode == last.levelCode],
     }
 
-  def _trialContext(trialCode: str) -> dict:
-    # Assembled once and reused by the trial page and the import handler that
-    # re-renders it, so the two cannot drift.
+  def _serverZone() -> str:
+    return {setting.key: setting.value for setting in workspace.effectiveSettings("server")}["tasks.timeZone"]
+
+  def _retentionWords(translator) -> dict:
+    """What the trial page and the retention page say rules, sources and moments with."""
+    zone = _serverZone()
+    return {
+      "ruleText": lambda rule: _ruleText(rule, translator),
+      "sourceText": lambda source: _sourceText(source, translator),
+      "moment": lambda moment: _moment(moment, zone, translator),
+      "zone": zone,
+    }
+
+  def _trialContext(trialCode: str, translator) -> dict:
+    # Assembled once and reused by the trial page and the handlers that
+    # re-render it, so they cannot drift.
     package = workspace.loadPackage(trialCode)
     layout = workspace.layoutFor(trialCode)
+    held = workspace.permissionsAt(f"trial:{trialCode}")
+    rules = {setting.key: setting for setting in workspace.effectiveSettings(f"trial:{trialCode}")}
+    done = request.args.get("done")
     return {
       "package": package,
       "observationCount": len(workspace.loadObservations(trialCode)),
@@ -135,7 +164,21 @@ def createWebBlueprint(workspace: Workspace, config: OpenFurrowConfig | None = N
       "legend": _legend(package),
       "weatherResult": None,
       "weatherError": None,
-    }
+      "verifyResult": None,
+      "receivedFiles": workspace.receivedFiles(trialCode) if Permission.importValues in held else None,
+      "mappingText": lambda file: json.dumps(file.mapping, indent=2, sort_keys=True, ensure_ascii=False),
+      "closedOn": workspace.closedOn(trialCode),
+      "hold": workspace.holdOn(trialCode),
+      "mayClose": Permission.manageTrials in held,
+      "mayHold": Permission.manageRetention in held,
+      "retentionRules": [(area, rules[settingKey(area)]) for area in _trialAreas],
+      "retentionProblem": None,
+      "retentionNotice": translator.text(f"web.retention.done.{done}") if done in _trialActions else None,
+    } | _retentionWords(translator)
+
+  def _trialPage(trialCode: str, translator, status: int = 200, **changed) -> Response:
+    context = _trialContext(trialCode, translator) | changed
+    return Response(render_template("trial.html", **context, **_localeContext(translator)), status=status)
 
   @blueprint.get("/")
   def index() -> Response:
@@ -197,9 +240,7 @@ def createWebBlueprint(workspace: Workspace, config: OpenFurrowConfig | None = N
         upload = request.files.get("layoutFile")
         if not upload or not upload.filename:
           raise FormProblem("web.form.problem.layoutFile")
-        with _temporaryCsv(upload.read()) as csvPath:
-          plots = readLayoutCsv(csvPath)
-        workspace.addDocument(TrialDocument(package=package, layout=plots, observations=[]), place)
+        workspace.addPackageAsPlanted(package, place, upload.filename, upload.read())
       else:
         workspace.addPackage(package, place)
     except FormProblem as problem:
@@ -413,6 +454,32 @@ def createWebBlueprint(workspace: Workspace, config: OpenFurrowConfig | None = N
 
   registerRefusalPages(blueprint, _translator, _localeContext)
   registerAdministration(blueprint, workspace, _translator, _localeContext, _localized, _moment, _levelName)
+  def _pruningContext(translator) -> dict:
+    return {"retentionTask": retentionTaskName} | _retentionWords(translator)
+
+  @blueprint.get("/retention")
+  def retention() -> Response:
+    """What the store holds, area by area, for holders of manageRetention (decision 0044): counts, sizes, each
+    area's rule and where it was set, the holds, and on request a preview of what pruning now would remove."""
+    translator = _translator()
+    context = {
+      "status": workspace.retentionStatus(), "outcome": None,
+      "preview": workspace.previewPruning() if request.args.get("preview") == "yes" else None,
+    }
+    return Response(render_template("retention.html", **context, **_pruningContext(translator),
+                                    **_localeContext(translator)))
+
+  @blueprint.route("/retention/prune", methods=["GET", "POST"])
+  def prune() -> Response:
+    """Pruning: the GET shows exactly what would go and asks; only the POST removes it, and shows what went."""
+    translator = _translator()
+    if request.method == "GET":
+      return Response(render_template("retentionPrune.html", preview=workspace.previewPruning(),
+                                      **_pruningContext(translator), **_localeContext(translator)))
+    outcome = workspace.prune()
+    context = {"status": workspace.retentionStatus(), "outcome": outcome, "preview": None}
+    return Response(render_template("retention.html", **context, **_pruningContext(translator),
+                                    **_localeContext(translator)))
 
   @blueprint.get("/tasks")
   def tasks() -> Response:
@@ -486,18 +553,49 @@ def createWebBlueprint(workspace: Workspace, config: OpenFurrowConfig | None = N
 
   @blueprint.get("/trials/<trialCode>")
   def trial(trialCode: str) -> Response:
-    translator = _translator()
-    context = _trialContext(trialCode) | {"verifyResult": None}
-    return Response(render_template("trial.html", **context, **_localeContext(translator)))
+    return _trialPage(trialCode, _translator())
 
   @blueprint.get("/trials/<trialCode>/verify")
   def verify(trialCode: str) -> Response:
     # Read-only: exports and re-imports the trial and compares hashes. A GET is correct
     # -- it changes nothing -- and the result renders back on the trial page.
+    return _trialPage(trialCode, _translator(), verifyResult=workspace.verifyRoundTrip(trialCode))
+
+  @blueprint.post("/trials/<trialCode>/retention")
+  def trialRetention(trialCode: str) -> Response:
+    """Record or clear the trial's closed date, or set or release its hold (decision 0044)."""
     translator = _translator()
-    check = workspace.verifyRoundTrip(trialCode)
-    context = _trialContext(trialCode) | {"verifyResult": check}
-    return Response(render_template("trial.html", **context, **_localeContext(translator)))
+    action = request.form.get("action")
+    try:
+      if action == "close":
+        try:
+          closedOn = datetime.date.fromisoformat(request.form.get("closedOn", "").strip())
+        except ValueError:
+          raise RetentionError(translator.text("web.retention.problem.date")) from None
+        workspace.closeTrial(trialCode, closedOn)
+      elif action == "reopen":
+        workspace.reopenTrial(trialCode)
+      elif action == "hold":
+        workspace.holdTrial(trialCode, request.form.get("reason", ""))
+      elif action == "release":
+        workspace.releaseHold(trialCode, request.form.get("reason", ""))
+      else:
+        raise RetentionError(f"unknown action '{action}'")
+    except RetentionError as error:
+      return _trialPage(trialCode, translator, 400,
+                        retentionProblem=translator.text("web.retention.problem", reason=str(error)))
+    return redirect(_localized(url_for("web.trial", trialCode=trialCode, done=action), translator))
+
+  @blueprint.get("/trials/<trialCode>/received/<int:fileID>")
+  def receivedFile(trialCode: str, fileID: int) -> Response:
+    """A file as it was received, byte for byte; the facade checks it against its SHA-256 on the way out."""
+    file, content = workspace.receivedFile(trialCode, fileID)
+    return _attachment(content, file.fileName or f"received-{file.fileID}.csv", "application/octet-stream")
+
+  @blueprint.get("/trials/<trialCode>/bundle")
+  def bundle(trialCode: str) -> Response:
+    """The trial's document and its files as received, in one archive."""
+    return _attachment(workspace.bundleFor(trialCode), f"{trialCode}.openfurrow.zip", "application/zip")
 
   @blueprint.get("/trials/<trialCode>/delete")
   def confirmDelete(trialCode: str) -> Response:
@@ -550,7 +648,8 @@ def createWebBlueprint(workspace: Workspace, config: OpenFurrowConfig | None = N
         "mapping": mapping,
       }
       if request.form.get("action") == "import" and sameSheet:
-        result = workspace.importObservationTable(trialCode, table, _profileFor(mapping, table, settings.importProfile, package))
+        result = workspace.importObservationFile(
+          trialCode, fileName, data, _profileFor(mapping, table, settings.importProfile, package), table.sheetName)
         context["imported"] = {
           "count": len(result.observations),
           "warnings": [warning.message for warning in result.warnings],
@@ -662,15 +761,11 @@ def createWebBlueprint(workspace: Workspace, config: OpenFurrowConfig | None = N
     try:
       if not upload or not upload.filename:
         raise WeatherFileError("choose a CSV file to import")
-      with _temporaryCsv(upload.read()) as csvPath:
-        weatherResult = workspace.importWeather(trialCode, csvPath)
+      weatherResult = workspace.importWeatherFile(trialCode, upload.filename, upload.read())
     except (WeatherFileError, ValidationError) as error:
       weatherError = str(error)
-    context = _trialContext(trialCode) | {
-      "verifyResult": None, "weatherResult": weatherResult, "weatherError": weatherError,
-    }
-    status = 400 if weatherError else 200
-    return Response(render_template("trial.html", **context, **_localeContext(translator)), status=status)
+    return _trialPage(trialCode, translator, 400 if weatherError else 200,
+                      weatherResult=weatherResult, weatherError=weatherError)
 
   @blueprint.get("/trials/<trialCode>/report")
   def report(trialCode: str) -> Response:
@@ -847,22 +942,42 @@ def _submittedPackage() -> str:
   return request.form.get("package", "")
 
 
-class _temporaryCsv:
-  """Write uploaded CSV bytes to a temp file, since the importer reads from a path."""
+def _attachment(content: bytes, fileName: str, mimetype: str) -> Response:
+  """Bytes to save, never to show: a received file is whatever was uploaded, and must not open as a page here."""
+  response = send_file(io.BytesIO(content), mimetype=mimetype, as_attachment=True,
+                       download_name=PurePosixPath(fileName.replace("\\", "/")).name)
+  response.headers["X-Content-Type-Options"] = "nosniff"
+  return response
 
-  def __init__(self, data: bytes) -> None:
-    import tempfile
-    self._directory = tempfile.TemporaryDirectory()
-    self._data = data
 
-  def __enter__(self) -> str:
-    from pathlib import Path
-    path = Path(self._directory.name) / "upload.csv"
-    path.write_bytes(self._data)
-    return str(path)
+_trialAreas = (StorageArea.trialRecords, StorageArea.receivedFiles, StorageArea.auditLog)
+_trialActions = ("close", "reopen", "hold", "release")
+_sizeUnits = (("gigabytes", 10 ** 9), ("megabytes", 10 ** 6), ("kilobytes", 10 ** 3))
 
-  def __exit__(self, *exception) -> None:
-    self._directory.cleanup()
+
+def _sizeText(count: int, translator) -> str:
+  for unit, bytesIn in _sizeUnits:
+    if count >= bytesIn:
+      return translator.text(f"web.size.{unit}", count=translator.number(count / bytesIn, decimals=1))
+  return translator.text("web.size.bytes", count=translator.integer(count))
+
+
+def _ruleText(rule: str, translator) -> str:
+  """A retention rule in the reader's words."""
+  read = RetentionRule.read(rule)
+  if read.period is None:
+    return translator.text("web.retention.rule.keep")
+  unit = read.period.unit.name
+  period = (translator.text(f"web.retention.period.one.{unit}") if read.period.count == 1
+            else translator.text(f"web.retention.period.{unit}", count=translator.integer(read.period.count)))
+  return translator.text(f"web.retention.rule.{read.policy.value}", period=period)
+
+
+def _sourceText(source: str, translator) -> str:
+  kind, _, name = source.partition(":")
+  if kind == "place":
+    return translator.text("report.settings.source.place", name=name)
+  return translator.text(f"report.settings.source.{kind}")
 
 
 def _localized(path: str, translator) -> str:
