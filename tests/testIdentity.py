@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 """Accounts, roles, permissions and the audit log in the facade (decisions 0036 to 0038)."""
 
+import copy
 import hashlib
 import re
 
@@ -68,6 +69,26 @@ def testARoleHoldsBelowWhereItIsGiven(store):
     ana.setSetting("trial:ESV-2025-01", "analysis.significanceLevel", 0.01)
   with pytest.raises(NotPermitted, match="ana may not manageTrials at trial:ESV-2025-01"):
     ana.deleteTrial("ESV-2025-01")
+
+
+def testAPersonInTwoOrganizationsHoldsEachRoleOnlyInItsOwn(store, validPackageDict):
+  for parent, code in ((None, "institute"), ("institute", "program"), ("institute/program", "study")):
+    store.addPlace(parent, code, code.title())
+  second = copy.deepcopy(validPackageDict)
+  second["trial"]["trialCode"] = "INS-2025-01"
+  store.addPackage(TrialPackage.model_validate(second), "institute/program/study")
+  store.assignRole(RoleAssignment(roleCode="dataCollector", scope="place:station", userName="ana"))
+  store.assignRole(RoleAssignment(roleCode="viewer", scope="place:institute", userName="ana"))
+  ana = acting(store, "ana")
+  assert ana.permissionsAt("trial:ESV-2025-01") == frozenset({Permission.view, Permission.enterValues})
+  assert ana.permissionsAt("trial:INS-2025-01") == frozenset({Permission.view})
+  assert ana.permissionsAt("server") == frozenset()
+  assert sorted(code for code, _ in ana.listTrials()) == ["ESV-2025-01", "INS-2025-01"]
+  plot = ana.layoutFor("INS-2025-01").plots[0].plotNumber
+  with pytest.raises(NotPermitted, match="ana may not enterValues at trial:INS-2025-01"):
+    ana.recordValues("INS-2025-01", "YIELD", [Observation(plotNumber=plot, assessmentCode="YIELD", value=5000.0)])
+  ana.recordValues("ESV-2025-01", "YIELD", [Observation(plotNumber=ana.layoutFor("ESV-2025-01").plots[0].plotNumber,
+                                                        assessmentCode="YIELD", value=5000.0)])
 
 
 def testWithoutViewATrialIsNotFoundLikeOneThatDoesNotExist(store):

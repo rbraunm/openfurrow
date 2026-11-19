@@ -232,9 +232,15 @@ measure), `owner` (the owner's call), `done`.
   - research federations and CAS are tested against the testbed's own federation and
     Apereo CAS, and Carnelian checks InCommon's live metadata; neither has met a partner
     university's real identity provider yet.
-- **GOV-4** `build` **Test fixtures and dataset**: every sign-in provider and both
-  databases, reprovisionable for development and one-time for the workflow, one dataset
-  for all.
+- **GOV-4** `done` **Test fixtures and dataset.** Every sign-in provider and both databases have
+  fixtures from scripts: Carnelian's testbed (Keycloak for OpenID Connect and SAML, a
+  federation's MDQ service, Apereo CAS, OpenLDAP, a Samba Active Directory) and this
+  repository's PostgreSQL, reprovisionable on a lab machine for development and started for
+  one run by the workflow's `providers` and `postgresql` jobs; SCIM is held to Entra ID's and
+  Okta's documented requests; local accounts and the open mode are tested in the suite. One
+  dataset serves every provider (names in several scripts, a user name that is not ASCII, a
+  disabled account, nested groups, an account in forty groups); an account removed by
+  provisioning and a person holding roles in two organizations are tested in the suite.
 - **GOV-5** `build` **Retention** (F6), with the files as received (REC-16).
 - **GOV-7** `done` **Scheduled tasks.** Built as decision 0041: `openfurrow scheduler`
   beside the web server, task kinds in code and tasks in the store, each run a subprocess
