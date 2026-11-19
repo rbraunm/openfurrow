@@ -254,7 +254,7 @@ class ReplayClaimRow(Base):
 
   scope: Mapped[str] = mapped_column(primary_key=True)
   identifier: Mapped[str] = mapped_column(primary_key=True)
-  expiresAt: Mapped[datetime.datetime]
+  expiresAt: Mapped[datetime.datetime] = mapped_column(index=True)
 
 
 class DiscoveryListRow(Base):

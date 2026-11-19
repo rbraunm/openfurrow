@@ -88,6 +88,11 @@ and how the audit log can be pruned without erasing the trail of its own pruning
 - **What a period runs from**: a received file's import; an event's own time; a session's,
   token's, pending sign-in's or message claim's expiry (one that has not expired, or never
   does, is not retention's to remove); a run's finish (one requested or running stays).
+- **Protocol state does not wait for a rule.** Expired pending sign-ins are swept whenever a
+  new sign-in starts, and every expired message claim whenever a new claim is made: anyone
+  who can reach the sign-in page or send a message makes them, they protect nothing once
+  expired, and so they must not gather whatever the rule says. Retention counts them and
+  removes what such a sweep has not yet met.
 - **The audit log's rule is the one that holds at each event's scope**, the trial's, the
   place's or the server's. When the place or trial is gone, its own settings went with it and
   the server's rule holds. Under `keepUntilClosed`, an event outside any trial in the store has

@@ -20,6 +20,7 @@ from carnelian.keys import LocalSigningKey
 from carnelian.oidc import Identity
 from carnelian.saml import SAMLRefused, ServiceProvider, identityProviderFromMetadata
 from pydantic import ValidationError
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from openIDConnectStandIn import clientID as standInClientID
@@ -29,7 +30,7 @@ from openfurrow.identity.model import IdentityError
 from openfurrow.identity.providers import (ProvidedIdentity, Provider, ProviderFailure, _ProviderCache, fromOpenIDConnect,
                                           providerRefreshSeconds, serviceProvider)
 from openfurrow.service import createApp
-from openfurrow.store.database import createDatabase
+from openfurrow.store.database import ReplayClaimRow, createDatabase
 from openfurrow.store.providers import StoredReplays, claimOnce, completeSignIn
 
 # Keycloak refuses some logins as expired codes when one realm's sign-ins run at once.
@@ -223,6 +224,10 @@ def testAClaimHoldsUntilItExpiresAndOnlyInItsScope(location):
   assert claimOnce(engine, "a", "m", now + 10, now + 9) is False
   assert claimOnce(engine, "b", "m", now + 10, now) is True
   assert claimOnce(engine, "a", "m", now + 30, now + 10) is True
+  assert claimOnce(engine, "c", "another", now + 100, now + 20) is True
+  with Session(engine) as session:
+    left = sorted(session.execute(select(ReplayClaimRow.scope, ReplayClaimRow.identifier)).all())
+  assert left == [("a", "m"), ("c", "another")]
 
 
 def testTheStoredReplaysRefuseASAMLMessageUsedTwice(location):

@@ -158,10 +158,11 @@ def _stored(instant: float) -> datetime.datetime:
 
 def claimOnce(engine: Engine, scope: str, identifier: str, until: float, at: float) -> bool:
   """Claim an identifier in its scope until `until` (seconds since the epoch), in a transaction of its own so that
-  nothing after it can undo it: True for the one claim that is new, False while an earlier claim holds."""
+  nothing after it can undo it: True for the one claim that is new, False while an earlier claim holds. Every claim
+  that has expired goes with it, whoever made it: an expired claim protects nothing, and claims are made by whoever
+  sends a message, so they must not gather."""
   with Session(engine) as session:
-    session.execute(delete(ReplayClaimRow).where(ReplayClaimRow.scope == scope, ReplayClaimRow.identifier == identifier,
-                                                 ReplayClaimRow.expiresAt <= _stored(at)))
+    session.execute(delete(ReplayClaimRow).where(ReplayClaimRow.expiresAt <= _stored(at)))
     session.add(ReplayClaimRow(scope=scope, identifier=identifier, expiresAt=_stored(until)))
     try:
       session.commit()
