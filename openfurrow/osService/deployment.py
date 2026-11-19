@@ -211,11 +211,16 @@ def serviceCode(python: Path, **account) -> list[Path]:
   """The interpreter and every file a service's process loads code from, asked of that interpreter started as a
   service manager starts it: without this shell's folder or Python settings. `account` runs it as another user."""
   environment = {name: value for name, value in os.environ.items() if not name.upper().startswith("PYTHON")}
-  probe = subprocess.run([str(python), "-P", "-c", _codeProbe], capture_output=True, text=True, env=environment, **account)
+  who = "the services' account" if account else "a service"
+  remedy = ("Python and OpenFurrow must be installed where every account can read them" if account else
+            "OpenFurrow must be installed for that Python with its service extra: pip install 'openfurrow[service]'")
+  try:
+    probe = subprocess.run([str(python), "-P", "-c", _codeProbe], capture_output=True, text=True, env=environment, **account)
+  except OSError as error:
+    raise DeploymentError(f"{who} cannot run {python} ({error.strerror}); {remedy}") from error
   if probe.returncode != 0:
     reason = (probe.stderr.strip().splitlines() or [f"exit code {probe.returncode}"])[-1]
-    raise DeploymentError(f"{python} cannot load OpenFurrow's services ({reason}); OpenFurrow must be installed "
-                          f"for that Python with its service extra: pip install 'openfurrow[service]'")
+    raise DeploymentError(f"{who} cannot load OpenFurrow with {python} ({reason}); {remedy}")
   return [Path(entry) for entry in json.loads(probe.stdout.splitlines()[-1])]
 
 

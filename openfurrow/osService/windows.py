@@ -1,14 +1,21 @@
 # SPDX-License-Identifier: Apache-2.0
 """OpenFurrow's services on Windows: real services, made and removed through the service manager's own calls.
 
-Each service runs as its own virtual account, `NT SERVICE\\<service name>`: an identity
-Windows derives from the service's name, with no password to keep, no rights beyond an
-ordinary user's, and nothing shared with any other service. LocalService would be shared
-with every other service that uses it, so rights given on a store's folder would reach
-all of them; LocalSystem can do anything on the machine. The two accounts are given
-"modify" on the folders the services write in and "read" on the environment file, which
-is closed to everyone but them, administrators and the system; uninstalling takes the
-rights back.
+Each service runs as LocalService, the built-in account with the fewest rights: an
+ordinary user's on the machine and none of the machine's own on the network. What it
+needs beyond that is given to the service alone, not to LocalService: each service has an
+identifier of its own, `NT SERVICE\\<service name>`, which Windows derives from its name
+and puts in its process's token, and the two identifiers are given "modify" on the
+folders the services write in and "read" on the environment file, which is closed to
+everyone but them, administrators and the system. Uninstalling takes the rights back and
+leaves nothing.
+
+A service is not run as the account of that same name (a virtual account), which would
+keep even more to itself: Windows makes a user profile for such an account when the
+service first starts and keeps it loaded until the machine restarts, so an uninstall
+could not remove it. LocalSystem can do anything on the machine. What LocalService costs
+is that the files the services make are owned by an account other services run as too,
+and that they share its folder for temporary files.
 
 A service starts automatically, delayed until the machine has settled after boot, and is
 started again when it fails: after 5 seconds, then 30, then every 60, the count forgotten
@@ -34,6 +41,7 @@ from openfurrow.osService.deployment import (
 
 elevationHint = "open the shell with 'Run as administrator'"
 failedStartsAgain = True
+localService = "NT AUTHORITY\\LocalService"
 administratorsSID = "S-1-5-32-544"
 systemSID = "S-1-5-18"
 failureResetSeconds = 86400
@@ -46,6 +54,7 @@ _serviceQueryConfig, _serviceQueryStatus, _serviceStart, _serviceStop, _delete =
 _serviceAllAccess = 0xF01FF
 _serviceWin32OwnProcess, _serviceAutoStart, _serviceErrorNormal = 0x10, 2, 1
 _configDescription, _configFailureActions, _configDelayedAutoStart, _configFailureActionsFlag = 1, 2, 3, 4
+_configServiceSIDInfo, _serviceSIDTypeNone, _serviceSIDTypeUnrestricted = 5, 0, 1
 _actionRestart = 1
 _controlStop = 1
 _errorInsufficientBuffer, _errorServiceAlreadyRunning, _errorServiceDoesNotExist = 122, 1056, 1060
@@ -61,7 +70,8 @@ class ServiceDefinition:
   displayName: str
   description: str
   commandLine: str
-  account: str
+  account: str = localService
+  hasOwnSID: bool = True
   delayedStart: bool = True
   failureResetSeconds: int = failureResetSeconds
   restartDelaysMilliseconds: tuple[int, ...] = restartDelaysMilliseconds
@@ -81,7 +91,7 @@ def definition(deployment: Deployment, role: Role) -> ServiceDefinition:
   does = ("serves the web interface and the API" if role is Role.web else "runs the scheduled tasks")
   return ServiceDefinition(name=name, displayName=serviceTitle(role, deployment.suffix),
                            description=f"OpenFurrow, agricultural trial management: {does} of one store.",
-                           commandLine=subprocess.list2cmdline(command), account=f"NT SERVICE\\{name}")
+                           commandLine=subprocess.list2cmdline(command))
 
 
 def grantCommands(deployment: Deployment) -> list[list[str]]:
@@ -135,6 +145,10 @@ class SERVICE_FAILURE_ACTIONSW(ctypes.Structure):
 
 class SERVICE_FAILURE_ACTIONS_FLAG(ctypes.Structure):
   _fields_ = [("fFailureActionsOnNonCrashFailures", wintypes.BOOL)]
+
+
+class SERVICE_SID_INFO(ctypes.Structure):
+  _fields_ = [("dwServiceSidType", wintypes.DWORD)]
 
 
 def _advapi32():
@@ -227,7 +241,7 @@ def check(deployment: Deployment) -> None:
   profile = Path(os.environ["USERPROFILE"]).resolve()
   hidden = sorted({str(path) for path in serviceCode(deployment.python) if under(path, (profile,))})
   if hidden:
-    raise DeploymentError(f"a service runs as an account of its own, which cannot read your profile folder {profile}, "
+    raise DeploymentError(f"a service runs as LocalService, which cannot read your profile folder {profile}, "
                           f"and Python or OpenFurrow is installed there ({hidden[0]}"
                           f"{f' and {len(hidden) - 1} more files' if len(hidden) > 1 else ''}). Install Python for "
                           f"all users and OpenFurrow outside the profile, then install the services from there")
@@ -293,7 +307,7 @@ def install(deployment: Deployment) -> None:
 def _create(advapi32, manager, wanted: ServiceDefinition) -> None:
   service = advapi32.CreateServiceW(manager, wanted.name, wanted.displayName, _serviceAllAccess, _serviceWin32OwnProcess,
                                     _serviceAutoStart, _serviceErrorNormal, wanted.commandLine, None, None, None,
-                                    wanted.account, None)
+                                    wanted.account, "")
   if not service:
     raise _failure(f"the service {wanted.name} cannot be created")
   try:
@@ -301,6 +315,7 @@ def _create(advapi32, manager, wanted: ServiceDefinition) -> None:
       *[SC_ACTION(_actionRestart, delay) for delay in wanted.restartDelaysMilliseconds])
     for level, information in (
       (_configDescription, SERVICE_DESCRIPTIONW(wanted.description)),
+      (_configServiceSIDInfo, SERVICE_SID_INFO(_serviceSIDTypeUnrestricted if wanted.hasOwnSID else _serviceSIDTypeNone)),
       (_configDelayedAutoStart, SERVICE_DELAYED_AUTO_START_INFO(wanted.delayedStart)),
       (_configFailureActions, SERVICE_FAILURE_ACTIONSW(wanted.failureResetSeconds, None, None, len(actions), actions)),
       (_configFailureActionsFlag, SERVICE_FAILURE_ACTIONS_FLAG(wanted.restartsOnExitCode)),

@@ -4,6 +4,7 @@ deployment an install hands on, and the order services start and stop in. A serv
 in for the platform's; the real ones are exercised by testServiceInstall.py."""
 
 import sys
+import venv
 from pathlib import Path
 
 import pytest
@@ -11,7 +12,7 @@ import pytest
 from openfurrow import StoreError, Workspace
 from openfurrow.cli.main import main
 from openfurrow.osService import launchd, manage, systemd, windows
-from openfurrow.osService.deployment import Deployment, DeploymentError, Role, ServiceState
+from openfurrow.osService.deployment import Deployment, DeploymentError, Role, ServiceState, serviceCode
 from openfurrow.service import listen
 
 
@@ -96,6 +97,24 @@ def testEachSupportedPlatformHasItsServiceManager():
 def testAnUnsupportedPlatformIsRefusedByName(platform):
   with pytest.raises(DeploymentError, match=f"this platform, '{platform}', is none of them"):
     manage.managerFor(platform)
+
+
+# ---- the code a service runs ------------------------------------------------------------
+
+def testTheCodeAServiceLoadsIsAskedOfTheInterpreterThatWillRunIt():
+  files = serviceCode(Path(sys.executable))
+  assert files[0] == Path(sys.executable)
+  assert {("osService", "host.py"), ("service", "app.py"), ("flask", "app.py")} <= {(path.parent.name, path.name) for path in files}
+
+
+def testAnInterpreterThatCannotLoadOpenFurrowIsRefusedByName(tmp_path):
+  venv.create(tmp_path / "bare", with_pip=False)
+  bare = tmp_path / "bare" / ("Scripts/python.exe" if sys.platform == "win32" else "bin/python")
+  with pytest.raises(DeploymentError, match=r"a service cannot load OpenFurrow with .*bare.* \(ModuleNotFoundError: No module "
+                                            r"named 'openfurrow'\); OpenFurrow must be installed for that Python"):
+    serviceCode(bare)
+  with pytest.raises(DeploymentError, match=r"a service cannot run .*absent.*; OpenFurrow must be installed for that Python"):
+    serviceCode(tmp_path / "absent" / "python")
 
 
 # ---- install --------------------------------------------------------------------------

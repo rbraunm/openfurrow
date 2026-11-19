@@ -79,13 +79,16 @@ def _listed(name: str) -> subprocess.CompletedProcess:
   return subprocess.run(["launchctl", "print", f"system/{name}"], capture_output=True, text=True)
 
 
+def stateIn(listing: str) -> ServiceState:
+  """The state launchctl print shows of a loaded daemon: running, or stopped while it waits to be started."""
+  return ServiceState.running if re.search(r"^\s*state = running$", listing, re.MULTILINE) else ServiceState.stopped
+
+
 def state(name: str) -> ServiceState:
   if not daemonPath(name).exists():
     return ServiceState.notInstalled
   listing = _listed(name)
-  if listing.returncode == 0 and re.search(r"^\s*state = running$", listing.stdout, re.MULTILINE):
-    return ServiceState.running
-  return ServiceState.stopped
+  return stateIn(listing.stdout) if listing.returncode == 0 else ServiceState.stopped
 
 
 def installed(role: Role, suffix: str | None) -> Deployment | None:
@@ -133,13 +136,35 @@ def stop(name: str) -> None:
                           f"{unloading.stderr.strip()}")
 
 
-def _numbers(kind: str, key: str) -> dict[str, int]:
-  listing = run(["dscl", ".", "-list", f"/{kind}", key])
+def numbersIn(listing: str) -> dict[str, int]:
+  """The records and their numbers that dscl . -list shows, one "name number" a line."""
   return {name: int(number) for name, number in (line.rsplit(None, 1) for line in listing.splitlines() if line.strip())}
+
+
+def _numbers(kind: str, key: str) -> dict[str, int]:
+  return numbersIn(run(["dscl", ".", "-list", f"/{kind}", key]))
 
 
 def accountExists(suffix: str | None) -> bool:
   return account(suffix) in _numbers("Users", "UniqueID")
+
+
+def accountCommands(user: str, users: dict[str, int], groups: dict[str, int]) -> tuple[list[list[str]], int, int]:
+  """The commands that make the account, with a group of its name unless there is one, and the user and group
+  numbers it gets: the highest number free among users and groups, away from the low numbers macOS takes."""
+  taken = {*users.values(), *groups.values()}
+  free = [number for number in range(lastAccountNumber, firstAccountNumber - 1, -1) if number not in taken]
+  if not free:
+    raise DeploymentError(f"no account number between {firstAccountNumber} and {lastAccountNumber} is free for the "
+                          f"service account {user}")
+  makesGroup = user not in groups
+  groupID = free[0] if makesGroup else groups[user]
+  group = [[f"/Groups/{user}"], [f"/Groups/{user}", "PrimaryGroupID", str(groupID)], [f"/Groups/{user}", "Password", "*"]]
+  settings = (("UniqueID", str(free[0])), ("PrimaryGroupID", str(groupID)), ("UserShell", "/usr/bin/false"),
+              ("NFSHomeDirectory", "/var/empty"), ("Password", "*"), ("IsHidden", "1"),
+              ("RealName", accountComment + (groupNote if makesGroup else "")))
+  records = [*(group if makesGroup else []), [f"/Users/{user}"], *[[f"/Users/{user}", key, value] for key, value in settings]]
+  return [["dscl", ".", "-create", *record] for record in records], free[0], groupID
 
 
 def _makeAccount(user: str) -> tuple[int, int]:
@@ -147,24 +172,10 @@ def _makeAccount(user: str) -> tuple[int, int]:
   users = _numbers("Users", "UniqueID")
   if user in users:
     return users[user], int(run(["dscl", ".", "-read", f"/Users/{user}", "PrimaryGroupID"]).split()[1])
-  groups = _numbers("Groups", "PrimaryGroupID")
-  taken = {*users.values(), *groups.values()}
-  free = [number for number in range(lastAccountNumber, firstAccountNumber - 1, -1) if number not in taken]
-  if not free:
-    raise DeploymentError(f"no account number between {firstAccountNumber} and {lastAccountNumber} is free for the "
-                          f"service account {user}")
-  makesGroup = user not in groups
-  if makesGroup:
-    run(["dscl", ".", "-create", f"/Groups/{user}"])
-    for key, value in (("PrimaryGroupID", str(free[0])), ("Password", "*")):
-      run(["dscl", ".", "-create", f"/Groups/{user}", key, value])
-  groupID = free[0] if makesGroup else groups[user]
-  run(["dscl", ".", "-create", f"/Users/{user}"])
-  for key, value in (("UniqueID", str(free[0])), ("PrimaryGroupID", str(groupID)),
-                     ("UserShell", "/usr/bin/false"), ("NFSHomeDirectory", "/var/empty"), ("Password", "*"),
-                     ("IsHidden", "1"), ("RealName", accountComment + (groupNote if makesGroup else ""))):
-    run(["dscl", ".", "-create", f"/Users/{user}", key, value])
-  return free[0], groupID
+  commands, userID, groupID = accountCommands(user, users, _numbers("Groups", "PrimaryGroupID"))
+  for command in commands:
+    run(command)
+  return userID, groupID
 
 
 def _removeAccount(deployment: Deployment) -> None:

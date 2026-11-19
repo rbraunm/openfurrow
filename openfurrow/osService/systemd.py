@@ -124,14 +124,18 @@ def check(deployment: Deployment) -> None:
                             f"{path}; keep them elsewhere, for example under /srv or /var/lib")
 
 
+def stateNamed(word: str) -> ServiceState:
+  """The state systemctl is-active names: a unit waiting to be started again after a failure is "activating"."""
+  if word not in _states:
+    raise DeploymentError(f"systemctl is-active answered '{word}', which is no state of a unit")
+  return _states[word]
+
+
 def state(name: str) -> ServiceState:
   if not unitPath(name).exists():
     return ServiceState.notInstalled
   answer = subprocess.run(["systemctl", "is-active", f"{name}.service"], capture_output=True, text=True)
-  word = answer.stdout.strip()
-  if word not in _states:
-    raise DeploymentError(f"systemctl is-active {name}.service answered '{word}': {answer.stderr.strip()}")
-  return _states[word]
+  return stateNamed(answer.stdout.strip())
 
 
 def installed(role: Role, suffix: str | None) -> Deployment | None:
@@ -192,6 +196,13 @@ def groupExists(name: str) -> bool:
   return True
 
 
+def accountCommand(user: str, hasGroup: bool) -> list[str]:
+  """The command that makes the account: a system account that cannot log in, in the group of its name, which is
+  made with it unless there is one."""
+  group = ["--gid", user, "--comment", accountComment] if hasGroup else ["--user-group", "--comment", accountComment + groupNote]
+  return ["useradd", "--system", "--home-dir", "/nonexistent", "--no-create-home", "--shell", "/usr/sbin/nologin", *group, user]
+
+
 def accountExists(suffix: str | None) -> bool:
   return userEntry(account(suffix)) is not None
 
@@ -199,9 +210,7 @@ def accountExists(suffix: str | None) -> bool:
 def _makeAccount(user: str) -> tuple[int, int]:
   """The account's user and group numbers; the account is made when it does not exist."""
   if userEntry(user) is None:
-    run(["useradd", "--system", "--home-dir", "/nonexistent", "--no-create-home", "--shell", "/usr/sbin/nologin",
-         *(["--gid", user, "--comment", accountComment] if groupExists(user) else
-           ["--user-group", "--comment", accountComment + groupNote]), user])
+    run(accountCommand(user, groupExists(user)))
   entry = userEntry(user)
   return entry.pw_uid, entry.pw_gid
 

@@ -3,8 +3,8 @@
 
 On a throwaway store and under a random suffix, both services are installed through this
 platform's service manager, started, used, killed and found started again, stopped and
-uninstalled, and then nothing of them is left: no service, no definition, no account and
-no right on the store's folder. Whatever an assertion leaves behind, the fixture's
+uninstalled, and then nothing of them is left: no service, no definition, no account or
+profile and no right on the store's folder. Whatever an assertion leaves behind, the fixture's
 finalizer uninstalls. Only services of the test's own suffix are ever touched.
 """
 
@@ -54,6 +54,7 @@ class Throwaway:
 def throwaway(request, tmp_path):
   if not request.config.getoption("--service-install"):
     pytest.skip("installs real services: run with --service-install in an elevated shell")
+  assert manage.managerFor().isElevated(), "--service-install needs an elevated shell (root on Linux and macOS)"
   suffix = "test" + secrets.token_hex(4)
   folder = (dataRoots[sys.platform] / f"openfurrow-{suffix}" if sys.platform in dataRoots else tmp_path / "deployment").resolve()
   folder.mkdir()
@@ -120,6 +121,7 @@ def assertNothingIsLeft(throwaway):
     for path in (throwaway.folder, throwaway.environmentFile):
       rights = output("icacls", str(path))
       assert str(path) in rights and "NT SERVICE" not in rights and "S-1-5-80-" not in rights
+    assert [(Path(os.environ["SystemRoot"]) / "ServiceProfiles" / name).exists() for name in names] == [False, False]
   elif sys.platform == "linux":
     assert [systemd.unitPath(name).exists() for name in names] == [False, False]
     assert output("systemctl", "list-units", "--all", "--plain", "--no-legend", f"openfurrow-*-{throwaway.suffix}.service") == ""
@@ -137,7 +139,8 @@ def assertInstalledAsThisPlatformShould(throwaway):
   if sys.platform == "win32":
     definition = output("sc.exe", "qc", web)
     assert re.search(r"START_TYPE\s+: 2\s+AUTO_START\s+\(DELAYED\)", definition)
-    assert re.search(rf"SERVICE_START_NAME : NT SERVICE\\{web}\s", definition)
+    assert re.search(r"SERVICE_START_NAME : NT AUTHORITY\\LocalService\s", definition)
+    assert re.search(r"SERVICE_SID_TYPE:\s+UNRESTRICTED", output("sc.exe", "qsidtype", web))
     assert re.search(r"FAILURE_ACTIONS_ON_NONCRASH_FAILURES:\s+TRUE", output("sc.exe", "qfailureflag", web))
     recovery = output("sc.exe", "qfailure", web)
     assert re.findall(r"RESTART -- Delay = (\d+) milliseconds", recovery) == ["5000", "30000", "60000"]
@@ -222,7 +225,7 @@ def testTheWindowsEntryReportsWhatItCannotLoadToTheEventLog(throwaway):
   entry = Path(windows.__file__).with_name("windowsEntry.py")
   command = subprocess.list2cmdline([sys.executable, "-P", str(entry), "web", "--logs", str(throwaway.folder)])
   assert subprocess.run(["sc.exe", "create", name, "binPath=", command, "start=", "demand",
-                         "obj=", f"NT SERVICE\\{name}"], capture_output=True).returncode == 0
+                         "obj=", "NT AUTHORITY\\LocalService"], capture_output=True).returncode == 0
   try:
     subprocess.run(["sc.exe", "start", name], capture_output=True)
     stopped = until(lambda: [text for text in [output("sc.exe", "query", name)] if re.search(r"STATE\s+: 1\s", text)],

@@ -12,7 +12,7 @@ import pytest
 
 from openfurrow.osService import launchd, systemd, windows
 from openfurrow.osService.deployment import (
-  Deployment, DeploymentError, Role, checkedSuffix, deploymentOf, readEnvironmentFile, serviceName,
+  Deployment, DeploymentError, Role, ServiceState, checkedSuffix, deploymentOf, readEnvironmentFile, serviceName,
 )
 
 python = PurePosixPath("/opt/openfurrow/bin/python")
@@ -144,7 +144,89 @@ def testAUnitThatDoesNotRunOpenFurrowIsNotReadAsOne():
     systemd.deploymentOfUnit("[Service]\nExecStart=/usr/sbin/sshd -D\n")
 
 
+def testTheLinuxAccountIsASystemAccountThatCannotLogInWithAGroupOfItsName():
+  assert systemd.accountCommand("openfurrow-pilot", hasGroup=False) == [
+    "useradd", "--system", "--home-dir", "/nonexistent", "--no-create-home", "--shell", "/usr/sbin/nologin",
+    "--user-group", "--comment", "OpenFurrow service account made by openfurrow service install with its group",
+    "openfurrow-pilot"]
+  assert systemd.accountCommand("openfurrow", hasGroup=True) == [
+    "useradd", "--system", "--home-dir", "/nonexistent", "--no-create-home", "--shell", "/usr/sbin/nologin",
+    "--gid", "openfurrow", "--comment", "OpenFurrow service account made by openfurrow service install", "openfurrow"]
+
+
+def testSystemdsWordForAUnitsStateIsRead():
+  words = ("active", "reloading", "inactive", "activating", "deactivating", "failed")
+  assert [systemd.stateNamed(word) for word in words] == [
+    ServiceState.running, ServiceState.running, ServiceState.stopped, ServiceState.starting, ServiceState.stopping,
+    ServiceState.failed]
+  with pytest.raises(DeploymentError, match="answered 'maintenance', which is no state of a unit"):
+    systemd.stateNamed("maintenance")
+
+
 # ---- launchd ----------------------------------------------------------------------
+
+directoryUsers = """_amavisd                 83
+_appleevents             55
+_openfurrow-old          499
+daemon                   1
+nobody                   -2
+root                     0
+runner                   501
+"""
+daemonListing = """system/openfurrow-web = {
+	active count = 1
+	path = /Library/LaunchDaemons/openfurrow-web.plist
+	type = LaunchDaemon
+	state = running
+
+	program = /opt/openfurrow/bin/python
+	arguments = {
+		/opt/openfurrow/bin/python
+		-P
+	}
+
+	default environment = {
+		PATH => /usr/bin:/bin:/usr/sbin:/sbin
+	}
+
+	pid = 4242
+	immediate reason = speculative
+	last exit code = (never exited)
+}
+"""
+
+
+def testTheMacAccountTakesTheHighestFreeNumberIsHiddenAndCannotLogIn():
+  users = launchd.numbersIn(directoryUsers)
+  assert users == {"_amavisd": 83, "_appleevents": 55, "_openfurrow-old": 499, "daemon": 1, "nobody": -2, "root": 0, "runner": 501}
+  commands, userID, groupID = launchd.accountCommands("_openfurrow", users, {"wheel": 0, "staff": 20, "_lodger": 498})
+  assert (userID, groupID) == (497, 497)
+  assert commands == [["dscl", ".", "-create", *record] for record in (
+    ["/Groups/_openfurrow"], ["/Groups/_openfurrow", "PrimaryGroupID", "497"], ["/Groups/_openfurrow", "Password", "*"],
+    ["/Users/_openfurrow"], ["/Users/_openfurrow", "UniqueID", "497"], ["/Users/_openfurrow", "PrimaryGroupID", "497"],
+    ["/Users/_openfurrow", "UserShell", "/usr/bin/false"], ["/Users/_openfurrow", "NFSHomeDirectory", "/var/empty"],
+    ["/Users/_openfurrow", "Password", "*"], ["/Users/_openfurrow", "IsHidden", "1"],
+    ["/Users/_openfurrow", "RealName", "OpenFurrow service account made by openfurrow service install with its group"])]
+
+
+def testAMacAccountJoinsAGroupOfItsNameThatIsAlreadyThere():
+  commands, userID, groupID = launchd.accountCommands("_openfurrow", {"root": 0}, {"_openfurrow": 250})
+  assert (userID, groupID) == (499, 250)
+  assert [command[3:] for command in commands if "/Groups/" in command[3]] == []
+  assert ["/Users/_openfurrow", "PrimaryGroupID", "250"] in [command[3:] for command in commands]
+  assert commands[-1][3:] == ["/Users/_openfurrow", "RealName", "OpenFurrow service account made by openfurrow service install"]
+
+
+def testNoFreeAccountNumberIsRefusedByName():
+  with pytest.raises(DeploymentError, match="no account number between 300 and 499 is free for the service account _openfurrow"):
+    launchd.accountCommands("_openfurrow", {f"user{number}": number for number in range(300, 500)}, {})
+
+
+def testLaunchdsListingOfADaemonIsReadForItsState():
+  assert launchd.stateIn(daemonListing) is ServiceState.running
+  assert launchd.stateIn(daemonListing.replace("state = running", "state = not running")) is ServiceState.stopped
+  assert launchd.stateIn(daemonListing.replace("state = running", "state = spawn scheduled")) is ServiceState.stopped
+
 
 def testTheWebDaemonsPropertyList():
   assert launchd.propertyList(plain, Role.web).decode("utf-8") == """<?xml version="1.0" encoding="UTF-8"?>
@@ -266,18 +348,18 @@ def testTheWindowsServiceDefinitions():
     description="OpenFurrow, agricultural trial management: serves the web interface and the API of one store.",
     commandLine=f"{program} web --suffix pilot --store C:\\OpenFurrow\\trials.db --logs C:\\OpenFurrow\\logs "
                 f"--host 127.0.0.1 --port 8420 --environment-file C:\\OpenFurrow\\openfurrow.env",
-    account="NT SERVICE\\openfurrow-web-pilot", delayedStart=True, failureResetSeconds=86400,
+    account="NT AUTHORITY\\LocalService", hasOwnSID=True, delayedStart=True, failureResetSeconds=86400,
     restartDelaysMilliseconds=(5000, 30000, 60000), restartsOnExitCode=True)
   assert windows.definition(onWindows, Role.scheduler) == windows.ServiceDefinition(
     name="openfurrow-scheduler-pilot", displayName="OpenFurrow scheduler (pilot)",
     description="OpenFurrow, agricultural trial management: runs the scheduled tasks of one store.",
     commandLine=f"{program} scheduler --suffix pilot --store C:\\OpenFurrow\\trials.db --logs C:\\OpenFurrow\\logs "
                 f"--environment-file C:\\OpenFurrow\\openfurrow.env",
-    account="NT SERVICE\\openfurrow-scheduler-pilot", delayedStart=True, failureResetSeconds=86400,
+    account="NT AUTHORITY\\LocalService", hasOwnSID=True, delayedStart=True, failureResetSeconds=86400,
     restartDelaysMilliseconds=(5000, 30000, 60000), restartsOnExitCode=True)
 
 
-def testTheServiceAccountsAreGivenTheStoresFolderAndTheEnvironmentFileToReadAndNothingElse():
+def testTheServicesOwnIdentifiersAreGivenTheStoresFolderAndTheEnvironmentFileToReadAndNothingElse():
   assert windows.grantCommands(onWindows) == [
     ["icacls", "C:\\OpenFurrow", "/grant", f"*{webSID}:(OI)(CI)M", f"*{schedulerSID}:(OI)(CI)M"],
     ["icacls", "C:\\OpenFurrow\\openfurrow.env", "/inheritance:r", "/grant:r", "*S-1-5-32-544:F", "*S-1-5-18:F",
