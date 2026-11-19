@@ -77,8 +77,44 @@ openfurrow task run trials.db federationRefresh-edugain    # run one now
 
 Without it nothing scheduled happens; the web interface's Tasks page says when it last
 checked in. Schedules are five-field cron expressions read in the setting `tasks.timeZone`
-(UTC by default). Installing the web server and the scheduler as services is not built
-yet; until it is, start both by hand.
+(UTC by default).
+
+### Running as a service
+
+On a machine that serves a store all the time, the web server and the scheduler are
+installed as services of the operating system: Windows services, systemd units on Linux,
+launchd daemons on macOS. They start with the machine and are started again if they fail.
+In an elevated shell (an administrator's on Windows, `sudo` elsewhere):
+
+```bash
+openfurrow service install /srv/openfurrow/trials.db   # on Windows, say, C:\OpenFurrow\trials.db
+openfurrow service start
+openfurrow service status      # each service's state, and when the scheduler last checked in
+openfurrow service stop
+openfurrow service uninstall   # the store, its logs and the environment file stay
+```
+
+- **The store** lives in a folder of its own, because the services' accounts are given
+  that folder: `NT SERVICE\openfurrow-web` and `NT SERVICE\openfurrow-scheduler` on
+  Windows, the account `openfurrow` on Linux and `_openfurrow` on macOS, made by the
+  install and removed with it. On Linux the folder cannot be in a home directory or in
+  `/tmp`, which a service does not see; `/srv` and `/var/lib` are the usual places.
+- **The logs** are in `logs` beside the store (`--logs` puts them elsewhere): one file for
+  each service, a new one each UTC day, 90 days kept. They name routes and outcomes,
+  never a person, an address or what was typed.
+- **The environment file**, `--environment-file`, holds what the services take from their
+  environment, such as identity providers' secrets, as `NAME=value` lines; put a value
+  with a quote or a backslash in single quotes. The install closes the file to everyone
+  but administrators and the services. A PostgreSQL store's URL goes in it too, as
+  `OPENFURROW_STORE`, with `--logs` naming a folder for the logs.
+- **The address** is `--host` and `--port`, 127.0.0.1:8420 unless given.
+- **A second deployment** on the same machine takes `--suffix`: `--suffix pilot` makes
+  `openfurrow-web-pilot` and `openfurrow-scheduler-pilot`, and every other `service`
+  command then takes the same suffix.
+
+Python and OpenFurrow must be installed where a service can read them: for all users on
+Windows, outside home directories on Linux. The install refuses, saying why, when they
+are not. It does not set up HTTPS or a reverse proxy.
 
 ### Calling the API from a GitHub Actions job
 

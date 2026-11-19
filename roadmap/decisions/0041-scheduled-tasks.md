@@ -34,7 +34,7 @@ subprocess so runs never collide with each other or with the scheduler.
   the zone or its enabled flag changes; a disabled task has none. A run missed while the
   scheduler was stopped runs once when it starts, not once per missed time.
 - **The scheduler is its own process**, `openfurrow scheduler <store>`, beside the web
-  server, installed as a service by the same install command once it exists (decision
+  server, installed as a service beside it by `openfurrow service install` (decision
   0009). Every two seconds it checks in, finds the tasks that are due and the runs requested
   by hand, and starts each run as a subprocess (`python -m openfurrow.tasks.run <run>`, the
   store's location in the environment variable `OPENFURROW_STORE` rather than on the command

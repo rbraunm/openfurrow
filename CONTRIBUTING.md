@@ -85,6 +85,22 @@ each test must stand alone: its own store and files, no shared state, no fixed p
 `-n0` to run in one process, for a single test or a debugger. The workflow caches the
 packages it installs, keyed on `constraints.txt` and `pyproject.toml`.
 
+### Real services
+
+`openfurrow service install` (decision 0009) is tested up to the service manager by the
+suite on every platform. The tests that go through it are behind an option, because they
+need an elevated shell and change the machine: they install both services of a throwaway
+store under a random suffix, start them, use them, kill one and wait for the service
+manager to start it again, stop them, uninstall them and check that nothing is left; a
+finalizer uninstalls whatever a failed assertion leaves. The workflow's `service` job runs
+them on Windows, Linux (systemd) and macOS (launchd). In an elevated shell (PowerShell
+"as administrator"; with `sudo` elsewhere, where OpenFurrow must also be installed outside
+your home directory):
+
+```bash
+python -m pytest tests/testServiceInstall.py --service-install -n0
+```
+
 ### The testbed: PostgreSQL and the other fixtures
 
 The store runs on SQLite and on PostgreSQL, and the suite runs on either: `--store

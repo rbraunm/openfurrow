@@ -89,8 +89,8 @@ not by size, and any lane can run ahead of or behind the others.
 - **Gates:** (B1) a Flask app wrapping the core as an HTTP API -- the one API behind web,
   mobile, and the server; (B2) a web-GUI entry point served by or consuming that API,
   bundled with the app but a separate entry point from the CLI; (B3) a run command to
-  serve the web app locally; (B4) cross-OS service install and uninstall (a Windows
-  service via PowerShell 5.1, a systemd unit on Linux, a launchd agent on macOS) so a
+  serve the web app locally; (B4) cross-OS service install and uninstall (Windows
+  services, systemd units on Linux, launchd daemons on macOS; decision 0009) so a
   user can stand up their own local GUI or private server; (B5) authentication and
   session scaffolding, needed once it runs as a service (ties to ADR 0005).
 - **Depends on:** Lane A.
@@ -186,7 +186,7 @@ deadlines. Lanes can run ahead or behind, and reality reorders these as we learn
 Written as the next artifact (each a clean, current-state ADR):
 
 - **Service / API and entry points** -- Flask, the one API behind all surfaces, the CLI
-  and web-GUI entry points, and cross-OS service install (PowerShell 5.1 on Windows).
+  and web-GUI entry points, and cross-OS service install.
 - **Core packaging shape** -- library versus service-embedded versus on-device, kept open.
 - **Storage, sync, and the self-hostable server** -- local-first floor, the sync model,
   CloudFormation-first then Marketplace-AMI-later, encryption; realizes ADR 0005.

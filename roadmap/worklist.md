@@ -6,7 +6,7 @@ Findings, defects, checks and owner calls that the plans do not carry.
 Status tags: `fix` (a defect to correct), `build` (work to add), `check` (a suspicion to
 measure), `owner` (the owner's call), `done`.
 
-**Counts.** fix 0, build 8, check 0, owner 4, done 55; 67 in all.
+**Counts.** fix 0, build 9, check 1, owner 4, done 57; 71 in all.
 
 ## Owner decisions
 
@@ -137,6 +137,35 @@ measure), `owner` (the owner's call), `done`.
 - **PLT-6** `done` **The stated Python target.** `pyproject.toml` requires 3.13 or newer,
   while `CLAUDE.md`, `CONTRIBUTING.md`, the README and the plan said the project targets
   3.13. They now say 3.13 or newer; development runs on 3.14 and the workflow tests both.
+- **PLT-7** `done` **Running as services.** Built as decision 0009 says: `openfurrow
+  service install|uninstall|start|stop|status` for the web server and the scheduler on one
+  store, as Windows services, systemd units and launchd daemons. Run for real on Windows 11
+  with Python 3.14 from a virtual environment: both services installed under a random
+  suffix as `NT SERVICE\<name>` with delayed automatic start, started, `/health` read, the
+  scheduler's check-in seen in the store, the scheduler's process killed and started again
+  by the service manager, a web service whose port was taken stopping with the
+  service-specific exit code 1 and started again once the port was free, both stopped and
+  uninstalled, and no service or right on the store's folder left. Not done on Windows: a
+  system shutdown and a logoff, which the service answers by construction only.
+- **PLT-8** `check` **The Linux and macOS services have run nowhere yet.** The systemd and
+  launchd installs were written on Windows: their definitions are pinned to the letter and
+  everything up to the service manager is tested, but no unit or daemon has been started.
+  The workflow's `service` job is their first run, on `ubuntu-latest` and `macos-latest`;
+  until it has passed they are unproven. Assumed there and not measured: that the
+  runner's Python is readable by the services' accounts (on macOS it is in the runner's
+  home directory, which the job opens), that it runs without the job's library path, and
+  what `launchctl print` and `dscl` answer.
+- **PLT-9** `build` **A served deployment beyond one machine.** The installed web service
+  is Werkzeug's threaded server on the address it is given, in plain HTTP: `service
+  install` takes no project config, so not `service.tls` either. To build for a server
+  others reach: HTTPS (termination by a reverse proxy, or the service's own certificate),
+  a production WSGI server, the proxy's forwarded address and scheme, and the upload limit
+  and import profile a config file carries (decisions 0009, 0011).
+- **PLT-10** `build` **An installer that brings its own Python.** `service install` needs
+  a Python on the machine, installed for all users, and OpenFurrow installed into it by
+  `pip`. The readiness bar asks that it "installs on their Windows PC from a documented
+  procedure, without a developer" (USR-6): a package that carries Python and OpenFurrow,
+  puts the store in a folder of its own and installs the services.
 ## Validation and release (VAL)
 
 - **VAL-1** `done` **The validation workflow.** `.github/workflows/validate.yml` runs on
@@ -249,9 +278,8 @@ measure), `owner` (the owner's call), `done`.
   clean stop on Ctrl+C and SIGTERM; `manageTasks`, the tasks page and `openfurrow task`.
   The first kind, `federationRefresh`, reads a federation's discovery aggregate so the
   sign-in page searches every eduGAIN institution (decision 0040), checked against a signed
-  aggregate made in the test and, with `--live`, eduGAIN's own. Not yet:
-  - the scheduler is started by hand; it is installed as a service with the web server by
-    the service install (implementation plan B4, decision 0009), not built yet;
+  aggregate made in the test and, with `--live`, eduGAIN's own. The scheduler is installed
+  as a service beside the web server by `openfurrow service install` (PLT-7). Not yet:
   - adding and deleting tasks: they are made by their features or through the library;
   - a run whose scheduler died on another host of a cluster is not detected;
   - the next kinds: retention (GOV-5), reports and audit summaries.
@@ -330,7 +358,8 @@ measure), `owner` (the owner's call), `done`.
     that; against full-precision output, a relative tolerance of one in a million.
   - *A report they can print.* Printing from the browser is enough if tables, notes and
     page breaks survive.
-  - *It installs on their Windows PC* from a documented procedure, without a developer.
+  - *It installs on their Windows PC* from a documented procedure, without a developer
+    (PLT-10).
   - *Safe to use.* Save and reopen; the original data kept as received; the analysis
     settings recorded with the result.
   - *A bounded pilot.* A supervised session, and their established analysis stays the

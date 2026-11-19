@@ -295,10 +295,18 @@ when the Done-when bar is met.
   ImportError. `Workspace.open` fails loud on a missing database before binding. Tested with a
   real server started in a thread answering `/health` on an ephemeral port (a genuine bind,
   which a test client cannot show). Depends: B1.
-- [ ] **B4 -- Cross-OS service install/uninstall** (Phase 2) -- Windows service via
-  PowerShell 5.1, systemd on Linux, launchd on macOS. It installs the scheduler
-  (`openfurrow scheduler`, decision 0041) as a second service beside the web server, on the
-  same store; until then the scheduler is started by hand. Depends: B3.
+- [x] **B4 -- Cross-OS service install/uninstall** (done) -- `openfurrow service
+  install|uninstall|start|stop|status` installs the web server and the scheduler (decision
+  0041) as two services on one store: Windows services made through the service manager's
+  own calls, each under its own virtual account; systemd notify units on Linux; launchd
+  daemons on macOS (`openfurrow/osService/`, decision 0009). A deployment chooses its
+  store, address, logs folder, environment file and name suffix; the definitions are its
+  only record. One process per service reports its state to the service manager and exits
+  non-zero on failure; its log has a file a day, 90 kept, and no personal data. Tested by
+  the exact text of every definition, by the Windows statuses and controls without a
+  service manager, by refusals against an in-memory service manager, and by a real
+  install, run, kill, restart and removal behind `--service-install`, which the
+  workflow's `service` job runs on Windows, Linux and macOS. Depends: B3.
 - [ ] **B5 -- Auth + session scaffolding** (Phase 2) -- arrives with service mode; ties ADR 0005.
 
 ### Lane D -- Analyst web UI
