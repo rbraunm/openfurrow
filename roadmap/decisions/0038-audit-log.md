@@ -22,10 +22,11 @@ for changes to the record to be traceable (`governance-plan.md`, F5).
   inside it and of the trials in them; at a trial the trial's. The web interface's audit
   page shows it newest first, a page at a time, narrowed by who acted, the action (or its
   beginning), where and the days (UTC).
-- **The tool never updates or deletes an event.** The audit log is outside the trial's
-  content hash; how long it is kept is a retention setting (worklist GOV-5).
+- **The tool never updates an event.** The audit log is outside the trial's content hash;
+  how long it is kept is a retention setting, and an event leaves only when that rule lets
+  it go (decision 0044).
 
 ## Consequences
 
-- Imported values are counted, not listed, in the event; the file as received is kept by
-  retention's received-files area (REC-16).
+- Imported values are counted, not listed, in the event, which names the file as received
+  that holds them (decision 0044).

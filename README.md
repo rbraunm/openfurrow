@@ -46,6 +46,38 @@ Other commands: `list`, `info` (design, transforms, and content hash), `delete`,
 from a project config file passed with `--config`; the defaults are ARM's
 conventional alpha 0.05 and protected LSD.
 
+## What is kept, and for how long
+
+Every file an import reads is kept with the trial exactly as it came, with the columns as
+they were mapped, outside the trial's content hash (decision 0044). It can be read back
+byte for byte, and travels with the trial in a bundle: the JSON document unchanged, the
+files and a manifest beside it, in one zip archive.
+
+```bash
+openfurrow received list trials.db MY-TRIAL                  # each file, its SHA-256, mapping and counts
+openfurrow received download trials.db MY-TRIAL 1 data.csv   # the bytes as received
+openfurrow export trials.db MY-TRIAL --bundle trial.zip
+openfurrow import-bundle other.db trial.zip --place station/fungicides/wheat
+```
+
+Nothing leaves a store until a retention rule says so: every storage area -- trial records,
+received files, the audit log, sessions and tokens, task runs -- is kept by default. A rule
+is a setting, `keep`, `keepFor:<period>` or `keepUntilClosed:<period>`, with a period such
+as `P90D`, `P18M` or `P5Y`:
+
+```bash
+openfurrow retention status trials.db                        # each area's count, bytes and rule; the holds
+openfurrow setting set trials.db server retention.receivedFiles keepUntilClosed:P5Y
+openfurrow close trials.db MY-TRIAL 2026-10-31               # the day retention counts from
+openfurrow retention hold trials.db MY-TRIAL "Dispute over plot 7"   # nothing of it is pruned or deleted
+openfurrow retention preview trials.db                       # exactly what pruning now would remove
+openfurrow retention prune trials.db
+```
+
+Pruning also runs every day as a scheduled task, when the scheduler (below) is running, and
+records what went in the audit log. The web interface has the same on its Retention page
+and on each trial's page.
+
 ## The web interface
 
 ```bash
@@ -72,9 +104,9 @@ is missing and where.
 
 ### The scheduler
 
-Work on a schedule -- such as reading a research federation's list of institutions every
-six hours -- is done by the scheduler, a second process run beside the web server on the
-same store:
+Work on a schedule -- reading a research federation's list of institutions every six
+hours, pruning by the retention rules every day -- is done by the scheduler, a second
+process run beside the web server on the same store:
 
 ```bash
 openfurrow scheduler trials.db     # Ctrl+C stops it; running tasks finish or are recorded stopped

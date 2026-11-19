@@ -52,5 +52,4 @@ the standard library reads.
 
 - No schema or store change; the content hash of every trial is unchanged.
 - The configuration's `import.wide.assessmentColumns` is a mapping, no longer a list.
-- The file as received and the mapping used are not kept with the trial yet (worklist
-  REC-16).
+- The file as received and the mapping used are kept with the trial (decision 0044).

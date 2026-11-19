@@ -6,7 +6,7 @@
 
 Some work has to happen on a schedule rather than at a request: refreshing a research
 federation's aggregate (eduGAIN's is 95 MB and asks to be refetched every few hours,
-decision 0040), and in time maintenance (retention, GOV-5), reports and audit summaries for
+decision 0040), maintenance (retention, decision 0044), and in time reports and audit summaries for
 administrators. The owner (2026-11-18) asked for one scheduled-task system for all of it,
 whose schedules an administrator sees and changes in the web interface, with any task run
 at once on request; it runs in a separate scheduler process, and each run is its own
@@ -24,7 +24,9 @@ subprocess so runs never collide with each other or with the scheduler.
   need are created with their feature and name it in the data: a federation provider with a
   discovery aggregate gets the task `federationRefresh-<provider>`, owned by the provider, so
   it can be changed but is not deleted while the provider uses it, and its first run is
-  requested at once so the list is loaded without waiting for the schedule.
+  requested at once so the list is loaded without waiting for the schedule. A task a store's
+  own feature needs is made with the store and names the feature: `retentionPrune`, owned by
+  retention (decision 0044).
 - **A schedule is a five-field cron expression** (minute, hour, day of month, month, day of
   week) read in the server's time zone, the setting `tasks.timeZone` (an IANA name, UTC by
   default), as administrators know it from cron and from Windows Task Scheduler's
@@ -63,8 +65,8 @@ subprocess so runs never collide with each other or with the scheduler.
 - **Every run is recorded**: who or what asked for it (the schedule, or the account that
   pressed "run now", or the operator), when it was asked for, started and finished, its
   outcome (succeeded, failed, stopped, skipped), the one-line summary, and the last 64 KB of
-  its output, marked when earlier output was left out. Run records are kept for 90 days by
-  default, the setting `tasks.runRetentionDays`; the scheduler removes older ones.
+  its output, marked when earlier output was left out. How long run records are kept is
+  the retention rule `retention.taskRuns` (decision 0044).
 - **Rights**: a permission, `manageTasks`, at server scope, held by the administrator role,
   lets its holder see the tasks and their runs, change a schedule or time limit, enable or
   disable a task and run it now. Each change is audited (decision 0038). A run that changes

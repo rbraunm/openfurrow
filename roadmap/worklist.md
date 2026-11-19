@@ -6,7 +6,7 @@ Findings, defects, checks and owner calls that the plans do not carry.
 Status tags: `fix` (a defect to correct), `build` (work to add), `check` (a suspicion to
 measure), `owner` (the owner's call), `done`.
 
-**Counts.** fix 0, build 9, check 1, owner 4, done 58; 72 in all.
+**Counts.** fix 0, build 7, check 1, owner 4, done 60; 72 in all.
 
 ## Owner decisions
 
@@ -313,7 +313,22 @@ measure), `owner` (the owner's call), `done`.
   dataset serves every provider (names in several scripts, a user name that is not ASCII, a
   disabled account, nested groups, an account in forty groups); an account removed by
   provisioning and a person holding roles in two organizations are tested in the suite.
-- **GOV-5** `build` **Retention** (F6), with the files as received (REC-16).
+- **GOV-5** `done` **Retention.** Built as decision 0044 (`governance-plan.md`, F6), with the
+  files as received (REC-16): five storage areas with their counts and sizes (trial records,
+  received files, the audit log, sessions and tokens, task runs; none for reports and exports,
+  which are not stored); a rule per area in the settings registry, `keep` by default, `keepFor`
+  a period or `keepUntilClosed` plus a period, changed with `manageRetention`; a trial's closed
+  date, with no other effect; a preview that is exactly what pruning removes; holds; the audit
+  of what went; the daily task `retentionPrune` made with every store; the retention page,
+  `openfurrow retention` and `close`/`reopen`; store version 21. Task runs and expired
+  sessions, tokens and pending sign-ins are kept and pruned by the same rules, no longer on
+  their own. Tested on SQLite and PostgreSQL. Not yet:
+  - the rules as forms on the web: they are settings (GOV-6);
+  - retention through the API;
+  - what a closed trial refuses: edit locks are the editing policy, a later setting (F2);
+  - several holds on one trial;
+  - the retention page weighs every trial each time it is shown, which a large store will
+    want kept.
 - **GOV-7** `done` **Scheduled tasks.** Built as decision 0041: `openfurrow scheduler`
   beside the web server, task kinds in code and tasks in the store, each run a subprocess
   claimed by one conditional update, time limits, crashes and dead schedulers recorded,
@@ -325,7 +340,7 @@ measure), `owner` (the owner's call), `done`.
   aggregate made in the test and, with `--live`, eduGAIN's own. The scheduler is installed
   as a service beside the web server by `openfurrow service install` (PLT-7). Not yet:
   - a run whose scheduler died on another host of a cluster is not detected;
-  - the next kinds: retention (GOV-5), reports and audit summaries.
+  - the next kinds: reports and audit summaries (retention's is built, GOV-5).
 - **GOV-8** `done` **Trusted workloads.** Built as decision 0042: a CI or cloud job sends
   its platform's OpenID Connect token as its bearer token and acts with the roles of the one
   workload rule that accepts it. Rules by `openfurrow workload`, their roles by `openfurrow
@@ -382,7 +397,7 @@ measure), `owner` (the owner's call), `done`.
 - **USR-4** `done` **Data entry.** Built as decision 0031 says: a CSV or an `.xlsx` sheet
   (read natively) is previewed, its columns mapped by the person, imported, and reconciled
   per assessment against the plots; an import never replaces stored values. Typed entry is
-  REC-9; keeping the file and the mapping with the trial is REC-16.
+  REC-9; the file and the mapping are kept with the trial (REC-16).
 - **USR-5** `done` **A printable report.** The report page has a Print button and a print
   stylesheet: the site header, links and footer are left off, headings stay with what
   follows them and tables are not split where they fit on a page. Measured by printing the
@@ -409,7 +424,8 @@ measure), `owner` (the owner's call), `done`.
     page breaks survive.
   - *It installs on their Windows PC* from a documented procedure, without a developer
     (PLT-10).
-  - *Safe to use.* Save and reopen; the original data kept as received; the analysis
+  - *Safe to use.* Save and reopen; the original data kept as received (built: every
+    imported file is kept byte for byte with its column mapping, REC-16); the analysis
     settings recorded with the result.
   - *A bounded pilot.* A supervised session, and their established analysis stays the
     analysis of record.
@@ -541,12 +557,16 @@ sections added beside them. REC-9 needs data entry in the tool (USR-4).
   assessment's rule (a mean over those recorded, the short plots named; a sum only when
   complete); entered as a row per plot, imported long or wide. The trial form does not offer
   them yet (USR-14).
-- **REC-16** `build` **The file as received.** The readiness bar asks for "the original data
-  kept as received" and the brief for the resolved column mapping to be recorded. An import
-  keeps neither: the observations are saved, the file and the mapping are not. To keep: the
-  file's bytes and hash, the sheet, the mapping and when it was imported, exported with the
-  trial. Per the owner (2026-11-16) the received files are one storage area of the
-  retention system (`governance-plan.md`, F6).
+- **REC-16** `done` **The file as received.** Built as decision 0044: every import from a
+  file -- observations by the import page, the command line and the API, a weather log, a
+  layout uploaded as planted -- keeps the file in the store: its bytes and SHA-256, the name it
+  was sent under, the sheet, the column mapping as resolved, who imported it, when, and what
+  it produced. It is outside the content hash, listed and downloaded exactly by those who may
+  import (`openfurrow received`, the trial's page, the API), carried with the trial in a
+  bundle (`export --bundle`, `import-bundle`: the JSON document unchanged, the files and a
+  manifest beside it), removed with the trial, and one storage area of the retention system
+  (GOV-5). The largest file an import takes is the configuration's `service.maxUploadBytes`
+  on every surface.
 - **REC-9** `done` **Validation rules for data entry.** Built as decision 0023 says: an entry
   page per assessment, values checked in two strengths. What cannot be a value is refused
   and nothing saved; a value outside its limits is saved only once ticked, and the
