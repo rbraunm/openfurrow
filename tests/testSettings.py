@@ -56,6 +56,7 @@ def testTheAnalysisFollowsTheTrialsSettings(workspace):
   report = workspace.buildReport("ESV-2025-01")
   assert "analysis.significanceLevel = 0.001 (set for station/trials/study)" in report
   assert "analysis.missingPlots = refuse (default)" in report
+  assert "identity." not in report and "tasks." not in report
 
 
 @pytest.mark.parametrize("scope, key, value, message", [

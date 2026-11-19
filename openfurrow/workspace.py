@@ -541,7 +541,7 @@ class Workspace:
       )
 
   def _analysisSettings(self, trialCode: str) -> tuple[float, MeanComparison, list[EffectiveSetting]]:
-    effective = self.effectiveSettings(f"trial:{trialCode}")
+    effective = [setting for setting in self.effectiveSettings(f"trial:{trialCode}") if setting.key.startswith("analysis.")]
     values = {setting.key: setting.value for setting in effective}
     return values["analysis.significanceLevel"], values["analysis.meanComparison"], effective
 
