@@ -261,7 +261,7 @@ measure), `owner` (the owner's call), `done`.
   role assign --workload`, the audience every token must name in the setting
   `identity.workloadAudience`, the rule and the job's run in every audit event; store
   version 20. Tested on SQLite and PostgreSQL with tokens signed by the tests' stand-in
-  issuer, and in the workflow's `providers` job with a token from GitHub Actions itself.
+  issuer; the workflow's `providers` job presents a token from GitHub Actions itself.
   Not yet:
   - rule pages on the web (with GOV-6);
   - GitLab.com is named and its claims are taken from its documentation; no token of its
