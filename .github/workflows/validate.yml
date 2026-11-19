@@ -49,8 +49,8 @@ jobs:
         run: python -m pip install --constraint constraints.txt --editable ".[test,service]"
       - name: Record the installed versions
         run: python -m pip freeze
-      - name: Time the interpreter's start and the command line's (every command-line test pays them)
-        run: python -c "import subprocess, sys, time; [print(label, round(min(__import__('timeit').repeat(lambda: subprocess.run([sys.executable, '-c', code], check=True), number=1, repeat=3)), 2), 's') for label, code in (('bare start', 'pass'), ('import openfurrow.cli.main', 'import openfurrow.cli.main'))]"
+      - name: Time the interpreter's start and the command line's, which every command-line test pays
+        run: python scripts/startTimes.py
       - name: Check for unused, undefined and redefined names
         run: python -m ruff check --select F openfurrow tests scripts
       - name: Run the test suite

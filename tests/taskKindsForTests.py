@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: Apache-2.0
-"""Task kinds that exist only for the tests, registered when this module is imported: one that logs and succeeds, one
-that sleeps, one that raises, one whose process dies without a word to the store, and one that writes a lot."""
+"""Task kinds that exist only for the tests, registered when this module is imported: one that logs and succeeds, two
+that sleep (one saying in a file that it has started), one that raises, one whose process dies without a word to the store, and one that writes a lot."""
 
 import os
 import sys
@@ -23,7 +23,13 @@ class Seconds(BaseModel):
   model_config = ConfigDict(extra="forbid")
 
   seconds: float
-  startedFile: str | None = None
+
+
+class SecondsOnceStarted(BaseModel):
+  model_config = ConfigDict(extra="forbid")
+
+  seconds: float
+  startedFile: str
 
 
 class Nothing(BaseModel):
@@ -37,8 +43,13 @@ def echo(context, parameters):
 
 def sleep(context, parameters):
   context.logger.info("sleeping %s seconds", parameters.seconds)
-  if parameters.startedFile is not None:
-    Path(parameters.startedFile).write_text("sleeping", encoding="ascii")
+  time.sleep(parameters.seconds)
+  return f"slept {parameters.seconds} seconds"
+
+
+def sleepOnceStarted(context, parameters):
+  context.logger.info("sleeping %s seconds", parameters.seconds)
+  Path(parameters.startedFile).write_text("sleeping", encoding="ascii")
   time.sleep(parameters.seconds)
   return f"slept {parameters.seconds} seconds"
 
@@ -62,6 +73,7 @@ def loud(context, parameters):
 
 for kind in (TaskKind("testEcho", Message, "*/10 * * * *", 60, echo),
              TaskKind("testSleep", Seconds, "*/10 * * * *", 3600, sleep),
+             TaskKind("testSleepOnceStarted", SecondsOnceStarted, "*/10 * * * *", 3600, sleepOnceStarted),
              TaskKind("testFail", Nothing, "0 0 * * *", 60, fail),
              TaskKind("testCrash", Nothing, "0 0 * * *", 60, crash),
              TaskKind("testLoud", Nothing, "0 0 * * *", 60, loud)):

@@ -219,7 +219,7 @@ def testARunNowIsRefusedWhileOneIsWaiting(location):
 def testARunPastItsTimeLimitIsStoppedAndRecordedSo(location, schedulers, tmp_path):
   operator = Workspace.open(location)
   sleeping = tmp_path / "sleeping"
-  operator.createTask("sleeper", "testSleep", {"seconds": 120, "startedFile": str(sleeping)})
+  operator.createTask("sleeper", "testSleepOnceStarted", {"seconds": 120, "startedFile": str(sleeping)})
   operator.setTask("sleeper", timeLimitSeconds=10)
   operator.runTaskNow("sleeper")
   # The scheduler's clock stands still while the run's process starts, however long a busy machine takes over it.
