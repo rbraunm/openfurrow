@@ -6,7 +6,7 @@ Findings, defects, checks and owner calls that the plans do not carry.
 Status tags: `fix` (a defect to correct), `build` (work to add), `check` (a suspicion to
 measure), `owner` (the owner's call), `done`.
 
-**Counts.** fix 0, build 8, check 0, owner 4, done 53; 65 in all.
+**Counts.** fix 0, build 8, check 0, owner 4, done 55; 67 in all.
 
 ## Owner decisions
 
@@ -208,8 +208,9 @@ measure), `owner` (the owner's call), `done`.
   modes, local accounts, tokens, preferences), 0037 (roles and permissions checked in the
   facade) and 0038 (the audit log); tested on SQLite and PostgreSQL.
 - **GOV-6** `build` **Web pages for access and settings.** Accounts, groups, roles and their
-  assignments, and settings, are managed on the command line; the web needs pages for them,
-  and a refused permission there answers with the API's JSON rather than a page.
+  assignments, workload rules (GOV-8), and settings, are managed on the command line; the
+  web needs pages for them, and a refused permission there answers with the API's JSON
+  rather than a page.
 - **GOV-3** `build` **The sign-in library**: OpenID Connect, SAML 2.0, LDAP, SCIM 2.0,
   standard library only, verification-only cryptography -- built as its own project,
   Carnelian, under MIT (decision 0039). Done there, each tested against its specification's
@@ -254,6 +255,21 @@ measure), `owner` (the owner's call), `done`.
   - adding and deleting tasks: they are made by their features or through the library;
   - a run whose scheduler died on another host of a cluster is not detected;
   - the next kinds: retention (GOV-5), reports and audit summaries.
+- **GOV-8** `done` **Trusted workloads.** Built as decision 0042: a CI or cloud job sends
+  its platform's OpenID Connect token as its bearer token and acts with the roles of the one
+  workload rule that accepts it. Rules by `openfurrow workload`, their roles by `openfurrow
+  role assign --workload`, the audience every token must name in the setting
+  `identity.workloadAudience`, the rule and the job's run in every audit event; store
+  version 20. Tested on SQLite and PostgreSQL with tokens signed by the tests' stand-in
+  issuer, and in the workflow's `providers` job with a token from GitHub Actions itself.
+  Not yet:
+  - rule pages on the web (with GOV-6);
+  - GitLab.com is named and its claims are taken from its documentation; no token of its
+    own has been presented;
+  - the cloud providers' workload identity (AWS, Azure, Google Cloud) is reached like any
+    issuer, by address and exact claims; none is named, and none has been tried;
+  - two rules of which one accepts every token the other accepts are found only when such a
+    token arrives and is refused as ambiguous; nothing says so when the second is made.
 
 ## First real user (USR)
 

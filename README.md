@@ -58,9 +58,10 @@ read the AOV Means Table in the browser, and run the reproducibility check. Ever
 served locally with no external assets, so it works offline, and the report renders in
 any shipped locale. The same process exposes a JSON API under `/api` for scripting.
 
-It binds to loopback by default and **has no authentication yet**, so it is a local
-single-user tool: do not put it on a network. HTTPS is available as configuration
-(`service.tls`) for when that changes.
+It binds to loopback by default and, in its default open mode, **has no authentication**,
+so as installed it is a local single-user tool: do not put it on a network. Sign-in by
+accounts with roles is switched on by the setting `identity.signInMode` (decisions 0036 and
+0037), and HTTPS is configuration (`service.tls`).
 
 ### The scheduler
 
@@ -78,6 +79,39 @@ Without it nothing scheduled happens; the web interface's Tasks page says when i
 checked in. Schedules are five-field cron expressions read in the setting `tasks.timeZone`
 (UTC by default). Installing the web server and the scheduler as services is not built
 yet; until it is, start both by hand.
+
+### Calling the API from a GitHub Actions job
+
+With sign-in by accounts (the setting `identity.signInMode`), a script calls the API with
+an account's API token. A CI job needs no stored secret: it proves what it is with the
+token its platform signs for it, and acts with the roles given to the rule that trusts it
+(decision 0042). On the server, once:
+
+```bash
+openfurrow setting set trials.db server identity.workloadAudience https://trials.example.org
+openfurrow workload add trials.db nightly-weather githubActions repository_id=123456789 ref=refs/heads/main
+openfurrow role assign trials.db analyst place:station/fungicides/wheat2025 --workload nightly-weather
+```
+
+`repository_id` is the repository's number (`gh api repos/<owner>/<name> --jq .id`), which
+stays its own through a rename; a rule that names only the repository's name is refused.
+In the workflow, the job asks GitHub for a token for the server's audience and sends it:
+
+```yaml
+permissions:
+  contents: read
+  id-token: write
+steps:
+  - run: |
+      token=$(curl --fail --silent --show-error -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+        "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=https://trials.example.org" | jq -r .value)
+      curl --fail --silent --show-error -H "Authorization: Bearer $token" --data-binary @observations.csv \
+        https://trials.example.org/api/trials/WHEAT-2025-01/observations
+```
+
+The token lasts minutes and is never stored. `openfurrow audit trials.db` names the rule
+and the run behind every change the job makes. Any other OpenID Connect issuer is trusted
+the same way, by its https address and the claims its tokens must carry.
 
 ## Worked example
 
