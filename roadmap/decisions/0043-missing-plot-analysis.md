@@ -108,7 +108,8 @@ in Gomez and Gomez (1984), sections 7.1.2.1 and 7.1.2.6.
 - No schema or store change. The JSON of an analysis gains `missingPlotPolicy`,
   `missingCells`, `sumsOfSquares`, `estimation` and `meanCovariance`; a separation lists
   every pair, and its `criticalDifference` and `standardError` are null when they differ by
-  pair or by mean.
+  pair or by mean. Dunnett's result gives each comparison its own standard errors and
+  critical difference in the same way.
 - Gomez and Gomez round each estimate to the whole kg/ha before their analysis of
   variance. The error and corrected treatment lines are unmoved by that (within 1 of the
   printed figures); the replication and total lines move with it (2,188,657 here against
