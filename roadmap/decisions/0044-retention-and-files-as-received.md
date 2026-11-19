@@ -68,13 +68,19 @@ and how the audit log can be pruned without erasing the trail of its own pruning
 ### Rules
 
 - **One setting per area**, `retention.<area>`, in the registry of decision 0035:
-  - `keep` (the default everywhere: nothing leaves until someone decides);
+  - `keep`: nothing leaves until someone decides;
   - `keepFor:<period>`: a record leaves once older than the period;
   - `keepUntilClosed:<period>`: a trial's records stay while the trial is open and for the
     period after its closed date.
 
   A period is `P90D`, `P18M` or `P5Y`: days, months or years. A record is older than a period
   when its time is at or before now less the period.
+- **What an owner would miss is kept by default; what has only expired is not.** Trial
+  records, files as received and the audit log default to `keep`. Expired sessions and tokens
+  default to `keepFor:P30D` and finished task runs to `keepFor:P90D`, the ninety days the
+  scheduler kept runs before this decision, so a store nobody has configured does not grow
+  without bound with every sign-in and every run of a task. An owner who wants those kept as
+  well sets `keep`.
 - **Each area takes the rules and scopes that fit it.** Sessions and tokens and task runs are
   the server's: `keep` or `keepFor`, set at the server. Received files and the audit log take
   all three, down to the trial. A trial's record takes `keep` or `keepUntilClosed` only, down
@@ -135,35 +141,56 @@ and how the audit log can be pruned without erasing the trail of its own pruning
 ### One system
 
 - **A scheduled task, `retentionPrune`** (kind of the same name, decision 0041), is made with
-  every store and owned by it, enabled, daily at 03:15 in the server's zone. With every area
-  kept it finds nothing; its run's summary says what it pruned, by area.
+  every store and owned by it, enabled, daily at 03:15 in the server's zone. Under the default
+  rules it removes sessions and tokens thirty days after they expired and runs ninety days
+  after they finished, and nothing else; its run's summary says what it pruned, by area. It is
+  the store's own: it is disabled or given another schedule like any task, and not deleted, as
+  a task an identity provider keeps is not.
 - **Task runs come under it.** The setting `tasks.runRetentionDays` and the scheduler's own
-  removal of old runs are gone; `retention.taskRuns` takes their place and, like every area, is
-  `keep` until set.
-- **So do expired sessions, tokens and pending sign-ins.** An expired token presented again
-  was deleted on sight, and starting a sign-in swept the expired pending ones; both now stay
-  until `retention.sessionsAndTokens` lets them go.
+  removal of old runs are gone; `retention.taskRuns` takes their place.
+- **So do expired sessions and tokens.** An expired token presented again was deleted on
+  sight; it now stays until `retention.sessionsAndTokens` lets it go.
+- **Protocol state is not a record, and does not wait for a rule.** A sign-in waiting for its
+  provider is one row for each request to `/signin/with/<provider>`, which anyone can make
+  without signing in, and it lives ten minutes. Starting a sign-in sweeps those that expired
+  unanswered, as it did before this decision and whatever the rule says: growth by requests
+  nobody authenticated is not a retention choice. A message identifier used once is cleared
+  when it is presented again after its message expired, as it always was. Both are counted in
+  the sessions-and-tokens area, and a pruning removes the expired ones its rule lets go,
+  which is how the identifiers never presented again leave.
 
 ### Surfaces
 
 - **Command line**: `openfurrow retention status|preview|prune|hold|release`, `received
   list|download`, `close`, `reopen`, `export --bundle`, `import-bundle`; rules are set with
   `setting set`.
-- **Web**: a retention page for holders of `manageRetention`, linked from the masthead: the
-  areas with counts, sizes, each rule and where it was set, the scopes below the server that
-  set their own, the holds, a preview, and pruning behind a confirmation page that shows what
-  would go. The trial's page lists its received files with their downloads, and has the closed
-  date, the hold and the rules that apply to the trial. Every page works without JavaScript.
+- **Web**: Retention is a section of the administration area (worklist GOV-6), for holders of
+  `manageRetention` at the server: the areas with counts, sizes, each rule and where it comes
+  from, the scopes below the server that set their own, the holds, a preview, and pruning
+  behind a confirmation page that shows what would go. A pruning answers with the section's
+  page again, and what went is in the audit log, one link away. A person without the
+  permission gets the area's refusal page, which names it.
+- **The rules are changed on the area's settings page**, like any setting, at the server, a
+  place or a trial. That page offers each setting's form to whoever holds, at the chosen
+  scope, the permission the setting names, and tells the others which permission it takes: a
+  trial manager sees the retention rules there and cannot change them, and someone who only
+  manages retention changes those and nothing else.
+- **The trial's page** lists its received files with their downloads, and has the closed
+  date, the hold and the rules that apply to the trial, with a link to change them for whoever
+  may. Every page works without JavaScript.
 
 ## Consequences
 
 - Store version 21: the received files and holds, a trial's closed date, a task's owning
   feature.
-- With `keep` everywhere, expired sessions and sign-ins never answered accumulate, as finished
-  runs now do; a deployment that signs people in sets `retention.sessionsAndTokens` and
-  `retention.taskRuns`.
-- A trial's size is found by assembling its document, so the retention page reads every trial
-  of the store each time it is shown.
+- A store left at its defaults stays bounded in what only expires, while its scheduler runs:
+  sessions and tokens leave thirty days after they expire and finished runs after ninety. An
+  owner who sets `keep` there has chosen that growth; sign-ins never answered do not grow with
+  it.
+- A trial's size is found by assembling its document, so the Retention page reads every trial
+  of the store each time it is shown, and a preview finds the rules trial by trial. Both grow
+  in step with the number of trials; the measured cost and when to revisit it are with
+  worklist GOV-5.
 - A bundle larger than the API's request limit is imported from the command line.
-- Not built: the retention rules as forms on the web (they are settings, with worklist GOV-6);
-  retention through the API; several holds on one trial; edit locks on a closed trial.
+- Not built: retention through the API; several holds on one trial; edit locks on a closed
+  trial.

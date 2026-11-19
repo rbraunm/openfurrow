@@ -60,10 +60,11 @@ openfurrow export trials.db MY-TRIAL --bundle trial.zip
 openfurrow import-bundle other.db trial.zip --place station/fungicides/wheat
 ```
 
-Nothing leaves a store until a retention rule says so: every storage area -- trial records,
-received files, the audit log, sessions and tokens, task runs -- is kept by default. A rule
-is a setting, `keep`, `keepFor:<period>` or `keepUntilClosed:<period>`, with a period such
-as `P90D`, `P18M` or `P5Y`:
+What leaves a store, and when, is said by a retention rule for each storage area. Trial
+records, received files and the audit log are kept until someone decides otherwise; expired
+sessions and tokens leave after 30 days and the records of finished task runs after 90,
+unless their rules say `keep`. A rule is a setting, `keep`, `keepFor:<period>` or
+`keepUntilClosed:<period>`, with a period such as `P90D`, `P18M` or `P5Y`:
 
 ```bash
 openfurrow retention status trials.db                        # each area's count, bytes and rule; the holds
@@ -75,8 +76,8 @@ openfurrow retention prune trials.db
 ```
 
 Pruning also runs every day as a scheduled task, when the scheduler (below) is running, and
-records what went in the audit log. The web interface has the same on its Retention page
-and on each trial's page.
+records what went in the audit log. The web interface has the same in its administration
+area (Retention, with the rules under Settings) and on each trial's page.
 
 ## The web interface
 
@@ -98,9 +99,9 @@ accounts with roles is switched on by the setting `identity.signInMode` (decisio
 The **Administration** area, linked from the top of every page for whoever may use part of
 it, manages what the command line does: accounts, groups, roles and who holds them where,
 settings at the server, a place or a trial with where each value comes from, the sign-in
-mode, identity providers, trusted workload rules, scheduled tasks and the audit log. It
-works without JavaScript and on a phone, and a refusal is a page that says which permission
-is missing and where.
+mode, identity providers, trusted workload rules, scheduled tasks, retention and the audit
+log. It works without JavaScript and on a phone, and a refusal is a page that says which
+permission is missing and where.
 
 ### The scheduler
 

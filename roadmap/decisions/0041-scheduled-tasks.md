@@ -26,7 +26,7 @@ subprocess so runs never collide with each other or with the scheduler.
   it can be changed but is not deleted while the provider uses it, and its first run is
   requested at once so the list is loaded without waiting for the schedule. A task a store's
   own feature needs is made with the store and names the feature: `retentionPrune`, owned by
-  retention (decision 0044).
+  retention (decision 0044), and like a provider's it can be changed but is not deleted.
 - **A schedule is a five-field cron expression** (minute, hour, day of month, month, day of
   week) read in the server's time zone, the setting `tasks.timeZone` (an IANA name, UTC by
   default), as administrators know it from cron and from Windows Task Scheduler's
@@ -66,7 +66,7 @@ subprocess so runs never collide with each other or with the scheduler.
   pressed "run now", or the operator), when it was asked for, started and finished, its
   outcome (succeeded, failed, stopped, skipped), the one-line summary, and the last 64 KB of
   its output, marked when earlier output was left out. How long run records are kept is
-  the retention rule `retention.taskRuns` (decision 0044).
+  the retention rule `retention.taskRuns` (decision 0044), ninety days by default.
 - **Rights**: a permission, `manageTasks`, at server scope, held by the administrator role,
   lets its holder see the tasks and their runs, change a schedule or time limit, enable or
   disable a task and run it now. Each change is audited (decision 0038). A run that changes

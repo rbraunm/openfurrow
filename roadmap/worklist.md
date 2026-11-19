@@ -260,8 +260,8 @@ measure), `owner` (the owner's call), `done`.
   chosen scope with its value and where it comes from, the registry's values as choices),
   the sign-in mode, identity providers (a form for each kind made from its settings model, a
   SCIM token shown once, what to register at the provider), workload rules, scheduled tasks
-  (adding one of a kind and deleting one, with GOV-7's pages) and the audit log (newest
-  first, by who, action, where and when, a page at a time). Every page is thin over the
+  (adding one of a kind and deleting one, with GOV-7's pages), retention (GOV-5) and the
+  audit log (newest first, by who, action, where and when, a page at a time). Every page is thin over the
   facade, which gained what was missing with its permission and audit: deleting a group and
   a task, an account's linked identities, the task kinds, the audit log's filters, and where
   a permission is held. A refused permission on any page of the web interface is a page in
@@ -316,19 +316,28 @@ measure), `owner` (the owner's call), `done`.
 - **GOV-5** `done` **Retention.** Built as decision 0044 (`governance-plan.md`, F6), with the
   files as received (REC-16): five storage areas with their counts and sizes (trial records,
   received files, the audit log, sessions and tokens, task runs; none for reports and exports,
-  which are not stored); a rule per area in the settings registry, `keep` by default, `keepFor`
-  a period or `keepUntilClosed` plus a period, changed with `manageRetention`; a trial's closed
-  date, with no other effect; a preview that is exactly what pruning removes; holds; the audit
-  of what went; the daily task `retentionPrune` made with every store; the retention page,
-  `openfurrow retention` and `close`/`reopen`; store version 21. Task runs and expired
-  sessions, tokens and pending sign-ins are kept and pruned by the same rules, no longer on
-  their own. Tested on SQLite and PostgreSQL. Not yet:
-  - the rules as forms on the web: they are settings (GOV-6);
+  which are not stored); a rule per area in the settings registry, `keep`, `keepFor` a period
+  or `keepUntilClosed` plus a period, changed with `manageRetention`; records kept by default
+  (trial records, received files, the audit log), expired sessions and tokens for 30 days and
+  finished task runs for 90, so an unconfigured store does not grow without bound; a trial's
+  closed date, with no other effect; a preview that is exactly what pruning removes; holds;
+  the audit of what went; the daily task `retentionPrune` made with every store and not
+  deleted; the Retention section of the administration area (GOV-6), with the rules changed
+  on its settings page by whoever manages retention at the scope; `openfurrow retention` and
+  `close`/`reopen`; store version 21. Task runs and expired sessions and tokens are pruned by
+  the same rules, no longer on their own; sign-ins never answered still sweep themselves,
+  whatever the rules say. Tested on SQLite and PostgreSQL. Not yet:
   - retention through the API;
   - what a closed trial refuses: edit locks are the editing policy, a later setting (F2);
   - several holds on one trial;
-  - the retention page weighs every trial each time it is shown, which a large store will
-    want kept.
+  - a known cost: the Retention page assembles every trial's document to weigh it each time
+    it is shown, and a preview or a pruning finds the rules trial by trial. Measured on SQLite
+    with small trials (12 plots, one assessment, a 5 kB document) at 50, 200, 500 and 1 000
+    trials, the page takes about 30 ms a trial and a preview about 26 ms more, both in step
+    with the number of trials: the page passes one second at about 35 trials and three at
+    about 100, and the daily task's pruning takes half a minute at 1 000, well inside its
+    limit. Revisit before a store holds about 100 trials: keep each trial's size when the
+    trial changes, and find the rules for all trials together.
 - **GOV-7** `done` **Scheduled tasks.** Built as decision 0041: `openfurrow scheduler`
   beside the web server, task kinds in code and tasks in the store, each run a subprocess
   claimed by one conditional update, time limits, crashes and dead schedulers recorded,
