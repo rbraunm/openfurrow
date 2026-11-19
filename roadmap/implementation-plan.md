@@ -298,8 +298,9 @@ when the Done-when bar is met.
 - [x] **B4 -- Cross-OS service install/uninstall** (done) -- `openfurrow service
   install|uninstall|start|stop|status` installs the web server and the scheduler (decision
   0041) as two services on one store: Windows services made through the service manager's
-  own calls, each under its own virtual account; systemd notify units on Linux; launchd
-  daemons on macOS (`openfurrow/osService/`, decision 0009). A deployment chooses its
+  own calls, run as LocalService with their rights given to each service's own identifier;
+  systemd notify units on Linux; launchd daemons on macOS (`openfurrow/osService/`,
+  decision 0009). A deployment chooses its
   store, address, logs folder, environment file and name suffix; the definitions are its
   only record. One process per service reports its state to the service manager and exits
   non-zero on failure; its log has a file a day, 90 kept, and no personal data. Tested by

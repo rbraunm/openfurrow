@@ -61,13 +61,21 @@ makes the service the layer that exposes the core to every other surface.
     A stopped web server stops listening; a stopped scheduler lets its runs finish or
     records them stopped, as at Ctrl+C.
   - **Least privilege.** No service runs as an administrator. On Windows each service runs
-    as its own virtual account, `NT SERVICE\<service name>`: an identity Windows derives
-    from the name, with no password and nothing shared with other services, given "modify"
-    on the store's folder and "read" on the environment file. LocalService was rejected
-    because every service using it would share those rights, LocalSystem because it can do
-    anything. On Linux and macOS one unprivileged account per deployment (`openfurrow`,
-    `_openfurrow`, with the suffix), made by the install when absent, owns the store's
-    folder and the logs; an account the install did not make is never removed.
+    as LocalService, the built-in account with the fewest rights (an ordinary user's on
+    the machine, none of the machine's own on the network), and what it needs beyond that
+    is given to the service alone: each service carries an identifier of its own in its
+    token, `NT SERVICE\<service name>`, and the two identifiers, not LocalService, are
+    given "modify" on the store's folder and "read" on the environment file. A service is
+    not run as the virtual account of that name, which would keep even more to itself:
+    Windows makes a user profile for such an account at the service's first start and
+    keeps it loaded until the machine restarts (measured: deleting it answers "in use"), so
+    an uninstall would not be reversible. LocalSystem can do anything. What LocalService
+    costs is recorded as worklist PLT-11:
+    files the services make are owned by an account other services also run as, and they
+    share its folder for temporary files. On Linux and macOS one unprivileged account per
+    deployment (`openfurrow`, `_openfurrow`, with the suffix), made by the install when
+    absent, owns the store's folder and the logs; an account the install did not make is
+    never removed.
   - **Windows**: real services, made through the service manager's own calls (ctypes on
     advapi32): no PowerShell, no third-party package, no helper binary. Delayed automatic
     start; restart after 5 seconds, then 30, then every 60, on a dead process or a non-zero

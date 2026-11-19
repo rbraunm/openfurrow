@@ -6,7 +6,7 @@ Findings, defects, checks and owner calls that the plans do not carry.
 Status tags: `fix` (a defect to correct), `build` (work to add), `check` (a suspicion to
 measure), `owner` (the owner's call), `done`.
 
-**Counts.** fix 0, build 9, check 1, owner 4, done 57; 71 in all.
+**Counts.** fix 0, build 10, check 1, owner 4, done 57; 72 in all.
 
 ## Owner decisions
 
@@ -141,12 +141,17 @@ measure), `owner` (the owner's call), `done`.
   service install|uninstall|start|stop|status` for the web server and the scheduler on one
   store, as Windows services, systemd units and launchd daemons. Run for real on Windows 11
   with Python 3.14 from a virtual environment: both services installed under a random
-  suffix as `NT SERVICE\<name>` with delayed automatic start, started, `/health` read, the
-  scheduler's check-in seen in the store, the scheduler's process killed and started again
-  by the service manager, a web service whose port was taken stopping with the
-  service-specific exit code 1 and started again once the port was free, both stopped and
-  uninstalled, and no service or right on the store's folder left. Not done on Windows: a
-  system shutdown and a logoff, which the service answers by construction only.
+  suffix as LocalService with their own identifiers and delayed automatic start, started
+  (reading an environment file closed to all but administrators and the two identifiers),
+  `/health` read, the scheduler's check-in seen in the store, the scheduler's process
+  killed and started again by the service manager, a web service whose port was taken
+  stopping with the service-specific exit code 1 and started again once the port was free,
+  both stopped and uninstalled, and no service, profile or right on the store's folder
+  left. Measured on the way: a service run as its virtual account leaves a user profile
+  under `C:\Windows\ServiceProfiles` that stays loaded until restart (`DeleteProfile`
+  answers "in use", `reg unload` "access is denied"), which is why the services run as
+  LocalService. Not done on Windows: a system shutdown and a logoff, which the service
+  answers by construction only.
 - **PLT-8** `check` **The Linux and macOS services have run nowhere yet.** The systemd and
   launchd installs were written on Windows: their definitions are pinned to the letter and
   everything up to the service manager is tested, but no unit or daemon has been started.
@@ -166,6 +171,16 @@ measure), `owner` (the owner's call), `done`.
   `pip`. The readiness bar asks that it "installs on their Windows PC from a documented
   procedure, without a developer" (USR-6): a package that carries Python and OpenFurrow,
   puts the store in a folder of its own and installs the services.
+- **PLT-11** `build` **Who else on the machine can read a served store.** The install gives
+  the services their rights and takes none away from anyone: on Windows the store's folder
+  keeps what it inherits, often "read" for every local user, and on Linux and macOS its
+  mode stays as it was. On Windows the services run as LocalService, so the files they
+  make (logs, SQLite's journal) are owned by an account other services run as too, which
+  an owner may open, and documents in transit pass through LocalService's shared folder
+  for temporary files. To build: close the folder to all but administrators and the
+  services at install (and say how the operator's own commands then reach the store), take
+  the owner's rights from files the services make, and give the services a temporary
+  folder of their own.
 ## Validation and release (VAL)
 
 - **VAL-1** `done` **The validation workflow.** `.github/workflows/validate.yml` runs on

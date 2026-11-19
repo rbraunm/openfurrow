@@ -94,11 +94,12 @@ openfurrow service stop
 openfurrow service uninstall   # the store, its logs and the environment file stay
 ```
 
-- **The store** lives in a folder of its own, because the services' accounts are given
-  that folder: `NT SERVICE\openfurrow-web` and `NT SERVICE\openfurrow-scheduler` on
-  Windows, the account `openfurrow` on Linux and `_openfurrow` on macOS, made by the
-  install and removed with it. On Linux the folder cannot be in a home directory or in
-  `/tmp`, which a service does not see; `/srv` and `/var/lib` are the usual places.
+- **The store** lives in a folder of its own, because the services are given that folder.
+  On Windows they run as LocalService and the folder is given to the two services alone
+  (`NT SERVICE\openfurrow-web`, `NT SERVICE\openfurrow-scheduler`); on Linux they run as
+  the account `openfurrow` and on macOS as `_openfurrow`, made by the install and removed
+  with it. On Linux the folder cannot be in a home directory or in `/tmp`, which a service
+  does not see; `/srv` and `/var/lib` are the usual places.
 - **The logs** are in `logs` beside the store (`--logs` puts them elsewhere): one file for
   each service, a new one each UTC day, 90 days kept. They name routes and outcomes,
   never a person, an address or what was typed.
