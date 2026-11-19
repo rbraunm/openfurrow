@@ -6,7 +6,7 @@ Findings, defects, checks and owner calls that the plans do not carry.
 Status tags: `fix` (a defect to correct), `build` (work to add), `check` (a suspicion to
 measure), `owner` (the owner's call), `done`.
 
-**Counts.** fix 0, build 10, check 1, owner 4, done 57; 72 in all.
+**Counts.** fix 0, build 9, check 1, owner 4, done 58; 72 in all.
 
 ## Owner decisions
 
@@ -246,15 +246,43 @@ measure), `owner` (the owner's call), `done`.
 - **GOV-1** `done` **Hierarchy and settings.** The store runs on SQLite and PostgreSQL alike,
   tested on both (the workflow's one-time testbed and the lab's). Built as decisions 0034
   (levels as data, places by path, every trial placed) and 0035 (settings by scope, the
-  analysis and report following the trial's). Not yet: reshaping a populated hierarchy,
-  settings in the web interface (with roles).
+  analysis and report following the trial's; set and cleared on the settings page, GOV-6).
+  Not yet: reshaping a populated hierarchy.
 - **GOV-2** `done` **Identity core, roles and audit.** Built as decisions 0036 (sign-in
   modes, local accounts, tokens, preferences), 0037 (roles and permissions checked in the
   facade) and 0038 (the audit log); tested on SQLite and PostgreSQL.
-- **GOV-6** `build` **Web pages for access and settings.** Accounts, groups, roles and their
-  assignments, workload rules (GOV-8), and settings, are managed on the command line; the
-  web needs pages for them, and a refused permission there answers with the API's JSON
-  rather than a page.
+- **GOV-6** `done` **Web pages for access and settings.** The web interface has an
+  administration area, linked from the masthead for whoever may use part of it, with a
+  section for each of: accounts (add, password, deactivate and reactivate, the identities
+  linked to it, its groups and roles), groups (a mirrored one read-only), roles (the built-in
+  ones, custom ones defined, changed and deleted), role assignments (to an account, a group
+  or a workload rule, the scope chosen from the hierarchy), settings (each setting at a
+  chosen scope with its value and where it comes from, the registry's values as choices),
+  the sign-in mode, identity providers (a form for each kind made from its settings model, a
+  SCIM token shown once, what to register at the provider), workload rules, scheduled tasks
+  (adding one of a kind and deleting one, with GOV-7's pages) and the audit log (newest
+  first, by who, action, where and when, a page at a time). Every page is thin over the
+  facade, which gained what was missing with its permission and audit: deleting a group and
+  a task, an account's linked identities, the task kinds, the audit log's filters, and where
+  a permission is held. A refused permission on any page of the web interface is a page in
+  the reader's language (403) and a thing that is not there the 404 page; the API keeps its
+  JSON. Everything works without JavaScript, at a phone's width and right to left; the new
+  strings are in all five catalogs, drafts where the locale is one. The audit log read at a
+  place is the place's own events, those of the places inside it and of their trials. Not
+  yet:
+  - changing a provider's settings, removing a provider, unlinking an identity, and changing
+    an account's display name or e-mail: the facade has no such operation;
+  - revoking an API token, or listing an account's tokens: likewise;
+  - nothing refuses taking back the last administrator's role or deactivating the last
+    administrator while sign-in is by accounts; the operator's command line repairs it;
+  - the list of every role given (and so the accounts, groups and role assignment pages)
+    needs manageAccess at the server: a person who manages access at a place only has no
+    page for it;
+  - deleting a place and moving a trial are on the command line only (the places page adds);
+  - the command line has no `task add`, `task delete`, `group delete` or `role delete`,
+    which the pages now have;
+  - the pages have been looked at in Chromium only (desktop and a 360-pixel width, English
+    and Arabic); no screen reader has been run over them.
 - **GOV-3** `build` **The sign-in library**: OpenID Connect, SAML 2.0, LDAP, SCIM 2.0,
   standard library only, verification-only cryptography -- built as its own project,
   Carnelian, under MIT (decision 0039). Done there, each tested against its specification's
@@ -266,7 +294,6 @@ measure), `owner` (the owner's call), `done`.
   `/scim/<provider>/v2`, tested
   against the testbed's Keycloak and Samba in the workflow's `providers` job. Not yet:
   - a check against a live Entra ID tenant, which needs a tenant and a public HTTPS address;
-  - provider pages on the web (with GOV-6);
   - a research federation offers every institution of its discovery aggregate (all of
     eduGAIN, refreshed by its scheduled task, GOV-7) or a configured list; signing in through
     an institution found in the aggregate is tested only with the testbed's federation, whose
@@ -291,11 +318,12 @@ measure), `owner` (the owner's call), `done`.
   beside the web server, task kinds in code and tasks in the store, each run a subprocess
   claimed by one conditional update, time limits, crashes and dead schedulers recorded,
   clean stop on Ctrl+C and SIGTERM; `manageTasks`, the tasks page and `openfurrow task`.
+  A task of any kind is added on the web with a form made from the kind's parameters, and
+  deleted there unless a feature keeps it or a run of it is under way (GOV-6).
   The first kind, `federationRefresh`, reads a federation's discovery aggregate so the
   sign-in page searches every eduGAIN institution (decision 0040), checked against a signed
   aggregate made in the test and, with `--live`, eduGAIN's own. The scheduler is installed
   as a service beside the web server by `openfurrow service install` (PLT-7). Not yet:
-  - adding and deleting tasks: they are made by their features or through the library;
   - a run whose scheduler died on another host of a cluster is not detected;
   - the next kinds: retention (GOV-5), reports and audit summaries.
 - **GOV-8** `done` **Trusted workloads.** Built as decision 0042: a CI or cloud job sends
@@ -305,8 +333,7 @@ measure), `owner` (the owner's call), `done`.
   `identity.workloadAudience`, the rule and the job's run in every audit event; store
   version 20. Tested on SQLite and PostgreSQL with tokens signed by the tests' stand-in
   issuer; the workflow's `providers` job presents a token from GitHub Actions itself.
-  Not yet:
-  - rule pages on the web (with GOV-6);
+  Rules and their roles are also managed on the web (GOV-6). Not yet:
   - GitLab.com is named and its claims are taken from its documentation; no token of its
     own has been presented;
   - the cloud providers' workload identity (AWS, Azure, Google Cloud) is reached like any

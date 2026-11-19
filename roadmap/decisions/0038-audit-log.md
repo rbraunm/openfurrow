@@ -18,6 +18,10 @@ for changes to the record to be traceable (`governance-plan.md`, F5).
   names the file, the sheet and the number of values; a move names both places.
 - **Refused sign-ins are recorded**, with the user name tried and never the password.
 - **Reading it needs viewAudit** at the scope read; `openfurrow audit` shows the latest.
+  Read at the server it is every event; at a place the place's own, those of the places
+  inside it and of the trials in them; at a trial the trial's. The web interface's audit
+  page shows it newest first, a page at a time, narrowed by who acted, the action (or its
+  beginning), where and the days (UTC).
 - **The tool never updates or deletes an event.** The audit log is outside the trial's
   content hash; how long it is kept is a retention setting (worklist GOV-5).
 

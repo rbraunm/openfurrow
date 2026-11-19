@@ -47,5 +47,6 @@ project's licence never limits where it runs.
 - Store version 16.
 - Identity providers (OpenID Connect, SAML 2.0, LDAP, SCIM 2.0) are the project's own
   library, next (worklist GOV-3), with their test fixtures (GOV-4).
-- Managing accounts, groups and roles is on the command line for now; web pages for it
-  follow.
+- Accounts, groups and roles are managed on the command line and in the web interface's
+  administration area, which also switches the sign-in mode; opening the server to everyone
+  is confirmed there.

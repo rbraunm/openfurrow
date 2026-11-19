@@ -86,5 +86,7 @@ subprocess so runs never collide with each other or with the scheduler.
   scheduler last checked in, so a stopped scheduler is seen rather than silently missed.
 - A run whose scheduler died on another host is not detected: only the host's own
   scheduler can see whether the process lives.
-- Tasks are made by the features that need them, or through the library; there is no
-  command or page to add or delete one yet.
+- Tasks are made by the features that need them, through the library, or on the web: the
+  tasks page adds a task of any kind with a form made from the kind's parameters, and
+  deletes one after a confirmation page. A task its feature keeps is not deleted, nor one
+  with a run requested or running. The command line does neither yet.

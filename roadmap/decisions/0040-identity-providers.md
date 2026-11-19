@@ -15,7 +15,9 @@ would make differently is a provider setting with the strict choice as its defau
 
 - **Identity providers are configured in the store**, each with a name, a kind
   (`openIDConnect`, `saml`, `samlFederation`, `cas`, `ldap` or `scim`), its settings and an enabled flag, managed on
-  the command line by the operator. A provider's secret (an OpenID Connect client secret, an
+  the command line by the operator and, with `manageAccess`, on the web interface's provider pages: a form for each
+  kind with a field for every setting of the kind's settings model, a SCIM provider's token shown once, and what the
+  provider's own administrator has to register. A provider's secret (an OpenID Connect client secret, an
   LDAP service password) is never stored: its settings name an environment variable, read
   when the secret is needed, and a missing one is an error. A SCIM provider's bearer token
   is kept only as its SHA-256, like every other token (decision 0036).

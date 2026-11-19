@@ -65,9 +65,9 @@ given directly to that trust, as PyPI does.
   to the job that made it.
 - **Rules are managed** with `manageAccess`: `openfurrow workload add`, `list`, `show`,
   `enable`, `disable` and `remove`, and `openfurrow role assign` and `unassign` with
-  `--workload`, on the command line now and on the access pages when they come (worklist
-  GOV-6). Adding, enabling, disabling and removing a rule, and giving and taking back its
-  roles, are audited.
+  `--workload`, on the command line, and on the web interface's workload pages. Adding,
+  enabling, disabling and removing a rule, and giving and taking back its roles, are
+  audited.
 
 ## Consequences
 

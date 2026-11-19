@@ -63,6 +63,13 @@ so as installed it is a local single-user tool: do not put it on a network. Sign
 accounts with roles is switched on by the setting `identity.signInMode` (decisions 0036 and
 0037), and HTTPS is configuration (`service.tls`).
 
+The **Administration** area, linked from the top of every page for whoever may use part of
+it, manages what the command line does: accounts, groups, roles and who holds them where,
+settings at the server, a place or a trial with where each value comes from, the sign-in
+mode, identity providers, trusted workload rules, scheduled tasks and the audit log. It
+works without JavaScript and on a phone, and a refusal is a page that says which permission
+is missing and where.
+
 ### The scheduler
 
 Work on a schedule -- such as reading a research federation's list of institutions every
@@ -76,8 +83,8 @@ openfurrow task run trials.db federationRefresh-edugain    # run one now
 ```
 
 Without it nothing scheduled happens; the web interface's Tasks page says when it last
-checked in. Schedules are five-field cron expressions read in the setting `tasks.timeZone`
-(UTC by default).
+checked in, and is where a task is added, changed, run at once or deleted. Schedules are
+five-field cron expressions read in the setting `tasks.timeZone` (UTC by default).
 
 ### Running as a service
 

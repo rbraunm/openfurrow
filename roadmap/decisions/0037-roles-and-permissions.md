@@ -22,7 +22,8 @@ F4). A check written into each web route can be forgotten on the next one.
   acts on before it touches the store, so no surface can skip it. Lists show only what the
   actor may view; a trial or place the actor cannot view answers "not found", as one that
   does not exist does, so codes cannot be probed. A refused permission is its own error
-  (403 on the web and API).
+  (403 on the web and API): the API answers in JSON, a page of the web interface with a
+  page in the reader's language that names the permission and where it is missing.
 
 ## Consequences
 

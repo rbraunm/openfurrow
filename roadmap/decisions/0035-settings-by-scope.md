@@ -30,6 +30,8 @@ are settings configured per server, study or finer, not rules the project fixes
 
 ## Consequences
 
-- Who may change which setting arrives with roles (`governance-plan.md`, F4); settings are
-  not yet edited in the web interface.
+- Who may change a setting is the permission `changeSettings` at the scope it is set at
+  (decision 0037). The web interface's settings page shows every setting at a scope chosen
+  from the hierarchy, with its value and where that value comes from, and sets and clears
+  it there; a setting that takes one of a list is a choice among the registry's values.
 - Further policies (editing, retention) enter as settings.
