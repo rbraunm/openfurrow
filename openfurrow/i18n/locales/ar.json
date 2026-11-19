@@ -2658,23 +2658,23 @@
       "status": "machineDraft"
     },
     "web.administration.setting.retention.auditLog": {
-      "text": "مدة الاحتفاظ بأحداث التدقيق: keep، أو keepFor:<period> محسوبة من الحدث، أو keepUntilClosed:<period> محسوبة من تاريخ إغلاق تجربتها.",
+      "text": "مدة الاحتفاظ بأحداث التدقيق: keep، أو ⁦keepFor:<period>⁩ محسوبة من الحدث، أو ⁦keepUntilClosed:<period>⁩ محسوبة من تاريخ إغلاق تجربتها.",
       "status": "machineDraft"
     },
     "web.administration.setting.retention.receivedFiles": {
-      "text": "مدة الاحتفاظ بالملفات كما استُلمت: keep، أو keepFor:<period> محسوبة من استيرادها، أو keepUntilClosed:<period> محسوبة من تاريخ إغلاق تجربتها.",
+      "text": "مدة الاحتفاظ بالملفات كما استُلمت: keep، أو ⁦keepFor:<period>⁩ محسوبة من استيرادها، أو ⁦keepUntilClosed:<period>⁩ محسوبة من تاريخ إغلاق تجربتها.",
       "status": "machineDraft"
     },
     "web.administration.setting.retention.sessionsAndTokens": {
-      "text": "مدة الاحتفاظ بالجلسات والرموز المنتهية بعد انتهائها: keep أو keepFor:<period>.",
+      "text": "مدة الاحتفاظ بالجلسات والرموز المنتهية بعد انتهائها: keep أو ⁦keepFor:<period>⁩.",
       "status": "machineDraft"
     },
     "web.administration.setting.retention.taskRuns": {
-      "text": "مدة الاحتفاظ بسجلات تشغيلات المهام المنتهية: keep أو keepFor:<period>.",
+      "text": "مدة الاحتفاظ بسجلات تشغيلات المهام المنتهية: keep أو ⁦keepFor:<period>⁩.",
       "status": "machineDraft"
     },
     "web.administration.setting.retention.trialRecords": {
-      "text": "مدة الاحتفاظ بسجل التجربة: keep، أو keepUntilClosed:<period> لإزالة التجربة كلها بعد تلك المدة من تاريخ إغلاقها. المدة بالأيام أو الأشهر أو السنوات: P90D، P18M، P5Y.",
+      "text": "مدة الاحتفاظ بسجل التجربة: keep، أو ⁦keepUntilClosed:<period>⁩ لإزالة التجربة كلها بعد تلك المدة من تاريخ إغلاقها. المدة بالأيام أو الأشهر أو السنوات: P90D، P18M، P5Y.",
       "status": "machineDraft"
     },
     "web.administration.setting.tasks.maximumConcurrentRuns": {
@@ -3818,7 +3818,7 @@
       "status": "machineDraft"
     },
     "web.retention.settingHelp": {
-      "text": "القاعدة إعدادٌ يغيّره، من صفحة الإعدادات، من يحق له إدارة الاحتفاظ: keep أو keepFor:<period> أو keepUntilClosed:<period>، بمدة مثل P90D أو P18M أو P5Y. ويمكن أيضًا تحديد قواعد سجلات التجارب والملفات المستلمة وسجل التدقيق لمكان أو لتجربة.",
+      "text": "القاعدة إعدادٌ يغيّره، من صفحة الإعدادات، من يحق له إدارة الاحتفاظ: keep أو ⁦keepFor:<period>⁩ أو ⁦keepUntilClosed:<period>⁩، بمدة مثل P90D أو P18M أو P5Y. ويمكن أيضًا تحديد قواعد سجلات التجارب والملفات المستلمة وسجل التدقيق لمكان أو لتجربة.",
       "status": "machineDraft"
     },
     "web.retention.trial.close": {
