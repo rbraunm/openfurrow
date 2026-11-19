@@ -47,9 +47,9 @@ def testUnequalGroupsAgreeWithScipy(sizes):
   groups = [generator.normal(10 + index * 0.5, 1.0, size) for index, size in enumerate(sizes)]
   result = stats.dunnett(*groups[1:], control=groups[0], random_state=numpy.random.default_rng(1))
   loadings = [math.sqrt(size / (size + sizes[0])) for size in sizes[1:]]
-  errorDf = sum(sizes) - len(sizes)
+  errorDegreesOfFreedom = sum(sizes) - len(sizes)
   for statistic, pValue in zip(result.statistic, result.pvalue):
-    assert 1 - dunnettCdf(abs(statistic), loadings, errorDf) == pytest.approx(pValue, abs=5e-4)
+    assert 1 - dunnettCdf(abs(statistic), loadings, errorDegreesOfFreedom) == pytest.approx(pValue, abs=5e-4)
 
 
 @pytest.mark.parametrize("loadings, degreesOfFreedom", [
@@ -139,7 +139,7 @@ def testAPatternWhoseCorrelationsAreNotProductsIsRefusedByName():
 
 
 @pytest.mark.parametrize("sizes", [(4, 3, 4, 2), (2, 4, 4, 3, 4)])
-def testCrdWithUnequalReplicationAgreesWithScipy(sizes):
+def testCRDWithUnequalReplicationAgreesWithScipy(sizes):
   package, layout, observations, frame, treatments, _ = crdTrial(sizes, seed=12, check="T1")
   result = analyzeCrd("Y", package, layout, observations, MissingPlotPolicy.leastSquares)
   comparison = compareWithControl(result, package)

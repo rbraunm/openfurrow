@@ -10,16 +10,17 @@ and Gomez (1984), section 7.1.2.1, give it:
 for r blocks and t treatments, B and T the totals of the values present in the missing
 plot's block and treatment, and G the total of all values present. With several, each is
 estimated in turn by the same formula with the others at their current estimates, and
-the cycle is repeated until no estimate moves by more than `tolerance` of the largest
-value present (Gomez and Gomez, section 7.1.2.6). The start (the mean of the plot's
-treatment mean and block mean over the values present), the order (block by block, in
-treatment order) and the stopping rule are fixed, so the estimates are reproducible.
+the cycle is repeated until no estimate moves by more than `tolerance` of the spread of
+the values present, their largest departure from their mean (Gomez and Gomez, section
+7.1.2.6). The start (the mean of the plot's treatment mean and block mean over the values
+present), the order (block by block, in treatment order) and the stopping rule are fixed,
+so the estimates are reproducible.
 
 The completed table's treatment sum of squares is too large, because the estimates carry
 no error of their own. What treatments account for, adjusted for blocks, is the sum of
 squares of the values present about their block means less the error sum of squares; for
 one missing value the difference from the completed table's figure is the classical
-correction B = (B - (t - 1) X)^2 / (t (t - 1)) of the same section.
+correction for bias, (B - (t - 1) X)^2 / (t (t - 1)), of the same section.
 """
 
 from __future__ import annotations
@@ -40,12 +41,15 @@ def estimateMissingValues(values: numpy.ndarray) -> tuple[numpy.ndarray, int]:
   blockCount, treatmentCount = values.shape
   present = ~numpy.isnan(values)
   cells = [(int(block), int(treatment)) for block, treatment in zip(*numpy.nonzero(~present))]
-  treatmentMeans = numpy.nanmean(values, axis=0)
-  blockMeans = numpy.nanmean(values, axis=1)
-  completed = values.copy()
+  # Worked on departures from the mean of the values present, which the formula carries through unchanged: the
+  # stopping rule and the rounding are then relative to how much the values vary, not to how large they are.
+  centre = float(values[present].mean())
+  completed = values - centre
+  treatmentMeans = numpy.nanmean(completed, axis=0)
+  blockMeans = numpy.nanmean(completed, axis=1)
   for block, treatment in cells:
     completed[block, treatment] = (treatmentMeans[treatment] + blockMeans[block]) / 2.0
-  scale = float(numpy.abs(values[present]).max())
+  spread = float(numpy.abs(completed[present]).max())
   for cycle in range(1, maximumCycles + 1):
     largestMove = 0.0
     for block, treatment in cells:
@@ -60,8 +64,8 @@ def estimateMissingValues(values: numpy.ndarray) -> tuple[numpy.ndarray, int]:
       largestMove = max(largestMove, abs(estimate - current))
       completed[block, treatment] = estimate
     # One missing value needs no second cycle: its formula involves no other estimate.
-    if len(cells) == 1 or largestMove <= tolerance * scale:
-      return completed, cycle
+    if len(cells) == 1 or largestMove <= tolerance * spread:
+      return completed + centre, cycle
   raise AnalysisError(
     f"the missing-plot estimates did not settle within {maximumCycles} cycles "
     f"(the last cycle still moved one by {largestMove:g})"

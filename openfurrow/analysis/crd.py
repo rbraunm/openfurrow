@@ -48,7 +48,7 @@ from openfurrow.schema.trialPackage import DesignType, TrialPackage
 
 
 @dataclass(frozen=True)
-class CrdGroups:
+class CRDGroups:
   """One assessment's plot values by treatment, on the analysed scale.
 
   `values` holds each treatment's values present, in plot order; `plotNumbers` every plot
@@ -63,10 +63,10 @@ class CrdGroups:
   missing: list[tuple[int, str, None]]
 
 
-def collectCrdGroups(
+def collectCRDGroups(
   assessmentCode: str, package: TrialPackage, layout: TrialLayout, observations: list[Observation],
   missingPlots: MissingPlotPolicy,
-) -> CrdGroups:
+) -> CRDGroups:
   """A CRD assessment's values by treatment, refused unless complete or its missing plots can be handled."""
   if layout.designType is not DesignType.crd:
     raise AnalysisError(f"analyzeCrd requires a completely randomized layout, got {layout.designType.value}")
@@ -81,7 +81,7 @@ def collectCrdGroups(
   }
   present = [[number for number in numbers if number in recorded] for numbers in plotNumbers]
   scaled = iter(onAnalysedScale(assessmentCode, rating, [recorded[number] for numbers in present for number in numbers]))
-  groups = CrdGroups(
+  groups = CRDGroups(
     values=[numpy.array([next(scaled) for _ in numbers], dtype=float) for numbers in present],
     plotNumbers=plotNumbers,
     treatmentCodes=treatmentCodes,
@@ -115,7 +115,7 @@ def collectCrdGroups(
   return groups
 
 
-def fitCrdGroups(groups: CrdGroups) -> TreatmentFit:
+def fitCRDGroups(groups: CRDGroups) -> TreatmentFit:
   """The least-squares fit of the treatments to the plots of `groups` that have a value."""
   treatmentIndex = numpy.concatenate([numpy.full(values.size, index) for index, values in enumerate(groups.values)])
   return fitTreatments(numpy.concatenate(groups.values), treatmentIndex, len(groups.treatmentCodes))
@@ -126,7 +126,7 @@ def analyzeCrd(
   missingPlots: MissingPlotPolicy = MissingPlotPolicy.refuse,
 ) -> AnovaResult:
   """Run the one-way ANOVA of a completely randomized design for one numeric assessment."""
-  groups = collectCrdGroups(assessmentCode, package, layout, observations, missingPlots)
+  groups = collectCRDGroups(assessmentCode, package, layout, observations, missingPlots)
   if groups.missing:
     return _leastSquaresResult(assessmentCode, groups, layout.replications)
   matrix = numpy.array(groups.values, dtype=float).T
@@ -167,11 +167,11 @@ def analyzeCrd(
   )
 
 
-def _leastSquaresResult(assessmentCode: str, groups: CrdGroups, replicates: int) -> AnovaResult:
-  fit = fitCrdGroups(groups)
+def _leastSquaresResult(assessmentCode: str, groups: CRDGroups, replicates: int) -> AnovaResult:
+  fit = fitCRDGroups(groups)
   treatmentCount = len(groups.treatmentCodes)
-  errorDf = fit.errorDegreesOfFreedom
-  errorMeanSquare = fit.errorSumOfSquares / errorDf
+  errorDegreesOfFreedom = fit.errorDegreesOfFreedom
+  errorMeanSquare = fit.errorSumOfSquares / errorDegreesOfFreedom
   grandMean = float(fit.treatmentMeans.mean())
   requireErrorAndMean(assessmentCode, errorMeanSquare, grandMean)
   valueCount = sum(values.size for values in groups.values)
@@ -185,11 +185,11 @@ def _leastSquaresResult(assessmentCode: str, groups: CrdGroups, replicates: int)
     grandMean=grandMean,
     coefficientOfVariation=100.0 * math.sqrt(errorMeanSquare) / abs(grandMean),
     errorMeanSquare=errorMeanSquare,
-    errorDegreesOfFreedom=errorDf,
+    errorDegreesOfFreedom=errorDegreesOfFreedom,
     sumsOfSquares=SumsOfSquares.typeIII,
     table=[
-      tested("treatment", treatmentCount - 1, fit.treatmentSumOfSquares, errorMeanSquare, errorDf),
-      AnovaSource(source="error", degreesOfFreedom=errorDf, sumOfSquares=fit.errorSumOfSquares, meanSquare=errorMeanSquare),
+      tested("treatment", treatmentCount - 1, fit.treatmentSumOfSquares, errorMeanSquare, errorDegreesOfFreedom),
+      AnovaSource(source="error", degreesOfFreedom=errorDegreesOfFreedom, sumOfSquares=fit.errorSumOfSquares, meanSquare=errorMeanSquare),
       AnovaSource(source="total", degreesOfFreedom=valueCount - 1, sumOfSquares=fit.totalSumOfSquares),
     ],
     treatmentMeans=[

@@ -862,7 +862,7 @@
       "status": "source"
     },
     "report.missing.iterated": {
-      "text": "The estimates were reached by Yates' iteration in {cycles} cycles, stopping when none moved by more than {tolerance} of the largest value; the starting values and the order are fixed, so the estimates are reproducible.",
+      "text": "The estimates were reached by Yates' iteration in {cycles} cycles, stopping when none moved by more than {tolerance} of the spread of the values present (their largest departure from their mean); the starting values and the order are fixed, so the estimates are reproducible.",
       "status": "source"
     },
     "report.heading.anova": {

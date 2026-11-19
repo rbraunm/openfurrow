@@ -138,7 +138,7 @@ def testTheBiasCorrectionIsTheBooksFormula():
 
 
 @pytest.mark.parametrize("policy", [MissingPlotPolicy.estimate, MissingPlotPolicy.leastSquares])
-def testStandardErrorOfADifferenceAndItsLsdAreTheBooks(policy):
+def testStandardErrorOfADifferenceAndItsLSDAreTheBooks(policy):
   result = seedRate(oneMissing, policy)
   short = rates.index("R100")
   # s_d = sqrt(110,052 (2/4 + 6 / ((4)(3)(5)))) = 257 kg/ha for a pair with the fourth treatment.

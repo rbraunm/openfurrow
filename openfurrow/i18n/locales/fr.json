@@ -786,7 +786,7 @@
       "status": "machineDraft"
     },
     "report.missing.iterated": {
-      "text": "Les estimations ont été obtenues par l'itération de Yates en {cycles} cycles, jusqu'à ce qu'aucune ne bouge de plus de {tolerance} de la plus grande valeur; les valeurs de départ et l'ordre sont fixes, donc les estimations sont reproductibles.",
+      "text": "Les estimations ont été obtenues par l'itération de Yates en {cycles} cycles, jusqu'à ce qu'aucune ne bouge de plus de {tolerance} de la dispersion des valeurs présentes (leur plus grand écart à leur moyenne); les valeurs de départ et l'ordre sont fixes, donc les estimations sont reproductibles.",
       "status": "machineDraft"
     },
     "report.missing.leastSquares": {

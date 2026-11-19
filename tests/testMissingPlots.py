@@ -195,8 +195,8 @@ def assertBlockAnalysisMatchesStatsmodels(result, frame, treatments, blockCount,
   typeIII = statsmodelsApi.stats.anova_lm(
     statsmodelsFormula.ols("y ~ C(block, Sum) + C(treatment, Sum)", data=frame).fit(), typ=3)
   rows = {row.source: row for row in result.table}
-  errorDf = int(round(fit.df_resid))
-  assert rows["error"].degreesOfFreedom == errorDf == len(frame) - (blockCount + len(treatments) - 1)
+  errorDegreesOfFreedom = int(round(fit.df_resid))
+  assert rows["error"].degreesOfFreedom == errorDegreesOfFreedom == len(frame) - (blockCount + len(treatments) - 1)
   assert rows["error"].sumOfSquares == pytest.approx(fit.ssr, rel=1e-9)
   assert result.errorMeanSquare == pytest.approx(fit.mse_resid, rel=1e-9)
   assert rows["treatment"].degreesOfFreedom == len(treatments) - 1
@@ -430,6 +430,21 @@ def testTheEstimatesAreReproducible():
   assert first.model_dump() == second.model_dump()
 
 
+def testTheEstimatesMoveWithTheLevelOfTheValuesAndNothingElseDoes():
+  """A constant added to every value is added to every estimate; the cycles and the sums of squares stay."""
+  treatments, blockCount, cells, missing = generatedTable(7)
+  level = 1.0e6
+  raised = {cell: value + level for cell, value in cells.items()}
+  plain = analyzeRcbd("Y", *blockTrial(treatments, blockCount, cells, missing), MissingPlotPolicy.estimate)
+  shifted = analyzeRcbd("Y", *blockTrial(treatments, blockCount, raised, missing), MissingPlotPolicy.estimate)
+  assert shifted.estimation.cycles == plain.estimation.cycles
+  for low, high in zip(plain.missingCells, shifted.missingCells):
+    assert high.estimate - level == pytest.approx(low.estimate, abs=1e-8)
+  for low, high in zip(plain.table, shifted.table):
+    assert high.sumOfSquares == pytest.approx(low.sumOfSquares, rel=1e-8)
+  assert shifted.estimation.treatmentBias == pytest.approx(plain.estimation.treatmentBias, rel=1e-6)
+
+
 def testOneMissingPlotIsEstimatedInClosedForm():
   cells = stirretCells()
   package, layout, observations = stirret(matrix["M1"])
@@ -506,7 +521,7 @@ covered = "only for a single-factor RCBD and a completely randomized design, wit
 
 
 @pytest.mark.parametrize("policy", list(MissingPlotPolicy))
-def testATwoFactorRcbdRefusesAMissingPlot(policy):
+def testATwoFactorRCBDRefusesAMissingPlot(policy):
   from testFactorial import gomezInputs
   package, layout, observations = gomezInputs()
   with pytest.raises(AnalysisError) as raised:
@@ -586,7 +601,7 @@ def crdTrial(sizes, seed=4, replications=4, check=None):
 
 
 @pytest.mark.parametrize("sizes", [(4, 3, 4, 2), (3, 3, 3, 3, 4), (2, 4, 4), (4, 4, 1, 4, 3, 4)])
-def testCrdWithUnequalReplicationMatchesStatsmodels(sizes):
+def testCRDWithUnequalReplicationMatchesStatsmodels(sizes):
   package, layout, observations, frame, treatments, missing = crdTrial(sizes)
   result = analyzeCrd("Y", package, layout, observations, MissingPlotPolicy.leastSquares)
   fit = statsmodelsFormula.ols("y ~ C(treatment, levels=treatments)", data=frame).fit()
@@ -611,7 +626,7 @@ def testCrdWithUnequalReplicationMatchesStatsmodels(sizes):
   assert result.grandMean == pytest.approx(frame.groupby("treatment")["y"].mean().mean(), rel=1e-12)
 
 
-def testCrdRefusesByPolicy():
+def testCRDRefusesByPolicy():
   package, layout, observations, _, _, missing = crdTrial((4, 3, 4, 2))
   with pytest.raises(AnalysisError) as raised:
     analyzeCrd("Y", package, layout, observations)
@@ -622,7 +637,7 @@ def testCrdRefusesByPolicy():
     analyzeCrd("Y", package, layout, observations, MissingPlotPolicy.estimate)
 
 
-def testCrdNonEstimablePatternsAreRefusedWithTheirReason():
+def testCRDNonEstimablePatternsAreRefusedWithTheirReason():
   package, layout, observations, _, _, missing = crdTrial((4, 0, 4, 2))
   with pytest.raises(AnalysisError) as raised:
     analyzeCrd("Y", package, layout, observations, MissingPlotPolicy.leastSquares)
@@ -634,7 +649,7 @@ def testCrdNonEstimablePatternsAreRefusedWithTheirReason():
     analyzeCrd("Y", package, layout, observations, MissingPlotPolicy.leastSquares)
 
 
-def testCompleteCrdIsAnalysedAsBeforeUnderEveryPolicy():
+def testCompleteCRDIsAnalysedAsBeforeUnderEveryPolicy():
   package, layout, observations, _, _, _ = crdTrial((4, 4, 4))
   reference = analyzeCrd("Y", package, layout, observations)
   for policy in MissingPlotPolicy:
@@ -681,7 +696,7 @@ def testAssumptionChecksUseThePlotsPresent():
     assert assumptions.nonAdditivity.denominatorDegreesOfFreedom == int(fit.df_resid) - 1
 
 
-def testCrdAssumptionChecksUseThePlotsPresent():
+def testCRDAssumptionChecksUseThePlotsPresent():
   from scipy import stats
   package, layout, observations, frame, treatments, _ = crdTrial((4, 3, 4, 2))
   assumptions = assessAssumptions("Y", package, layout, observations, 0.05, MissingPlotPolicy.leastSquares)
@@ -695,7 +710,7 @@ def testCrdAssumptionChecksUseThePlotsPresent():
 
 # ---- separation on each pair's own standard error ---------------------------------------
 
-def testLsdUsesEachPairsOwnStandardError():
+def testLSDUsesEachPairsOwnStandardError():
   from scipy import stats
   missing = matrix["M2"]
   package, layout, observations = stirret(missing)
@@ -724,7 +739,7 @@ def testLsdUsesEachPairsOwnStandardError():
     treatments, key=lambda code: -next(m.mean for m in result.treatmentMeans if m.treatmentCode == code))
 
 
-def testProtectedLsdDeclaresNoPairWhenFIsNotSignificant():
+def testProtectedLSDDeclaresNoPairWhenFIsNotSignificant():
   treatments, blockCount, cells, _, _ = registryDatasets()["yatesOats"]
   result = analyzeRcbd("Y", *blockTrial(treatments, blockCount, cells, {("Victory", 2)}), MissingPlotPolicy.leastSquares)
   separation = separateMeans(result)

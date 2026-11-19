@@ -59,7 +59,7 @@ from openfurrow.schema.observation import Observation
 from openfurrow.schema.trialPackage import CheckArrangement, DesignType, TrialPackage
 
 
-def collectRcbdCells(
+def collectRCBDCells(
   assessmentCode: str,
   package: TrialPackage,
   layout: TrialLayout,
@@ -99,7 +99,7 @@ def collectRcbdCells(
   return cells
 
 
-def fitRcbdCells(cells: BlockTreatmentCells) -> TreatmentFit:
+def fitRCBDCells(cells: BlockTreatmentCells) -> TreatmentFit:
   """The least-squares fit of blocks and treatments to the plots of `cells` that have a value."""
   blockIndex, treatmentIndex = numpy.nonzero(~numpy.isnan(cells.values))
   return fitTreatments(
@@ -115,7 +115,7 @@ def analyzeRcbd(
   missingPlots: MissingPlotPolicy = MissingPlotPolicy.refuse,
 ) -> AnovaResult:
   """Run the RCBD ANOVA for one numeric assessment, under the missing-plot policy given."""
-  cells = collectRcbdCells(assessmentCode, package, layout, observations, missingPlots)
+  cells = collectRCBDCells(assessmentCode, package, layout, observations, missingPlots)
   if not cells.missing:
     return anovaFromMatrix(
       assessmentCode, cells.values, cells.treatmentCodes, cells.transform, cells.transformOffset, missingPlots,
@@ -158,15 +158,15 @@ def _result(
 
 
 def _leastSquaresResult(assessmentCode: str, cells: BlockTreatmentCells) -> AnovaResult:
-  fit = fitRcbdCells(cells)
-  errorDf = fit.errorDegreesOfFreedom
-  errorMeanSquare = fit.errorSumOfSquares / errorDf
+  fit = fitRCBDCells(cells)
+  errorDegreesOfFreedom = fit.errorDegreesOfFreedom
+  errorMeanSquare = fit.errorSumOfSquares / errorDegreesOfFreedom
   requireErrorAndMean(assessmentCode, errorMeanSquare, float(fit.treatmentMeans.mean()))
   valueCount = int((~numpy.isnan(cells.values)).sum())
   table = [
-    tested("block", len(cells.blocks) - 1, fit.blockSumOfSquares, errorMeanSquare, errorDf),
-    tested("treatment", len(cells.treatmentCodes) - 1, fit.treatmentSumOfSquares, errorMeanSquare, errorDf),
-    AnovaSource(source="error", degreesOfFreedom=errorDf, sumOfSquares=fit.errorSumOfSquares, meanSquare=errorMeanSquare),
+    tested("block", len(cells.blocks) - 1, fit.blockSumOfSquares, errorMeanSquare, errorDegreesOfFreedom),
+    tested("treatment", len(cells.treatmentCodes) - 1, fit.treatmentSumOfSquares, errorMeanSquare, errorDegreesOfFreedom),
+    AnovaSource(source="error", degreesOfFreedom=errorDegreesOfFreedom, sumOfSquares=fit.errorSumOfSquares, meanSquare=errorMeanSquare),
     AnovaSource(source="total", degreesOfFreedom=valueCount - 1, sumOfSquares=fit.totalSumOfSquares),
   ]
   missingCells = [
@@ -183,9 +183,9 @@ def _estimatedResult(assessmentCode: str, cells: BlockTreatmentCells) -> AnovaRe
   completed, cycles = estimateMissingValues(cells.values)
   sums = completeTableSums(completed)
   blockCount, treatmentCount = completed.shape
-  errorDf = (blockCount - 1) * (treatmentCount - 1) - len(cells.missing)
+  errorDegreesOfFreedom = (blockCount - 1) * (treatmentCount - 1) - len(cells.missing)
   errorSumOfSquares = withoutRoundingResidue(float((additiveResiduals(completed) ** 2).sum()), completed.ravel())
-  errorMeanSquare = errorSumOfSquares / errorDf
+  errorMeanSquare = errorSumOfSquares / errorDegreesOfFreedom
   requireErrorAndMean(assessmentCode, errorMeanSquare, float(sums.treatmentMeans.mean()))
   treatmentAdjusted = sumOfSquaresWithinBlocks(cells.values) - errorSumOfSquares
   blockIndex, treatmentIndex = numpy.nonzero(~numpy.isnan(cells.values))
@@ -193,8 +193,8 @@ def _estimatedResult(assessmentCode: str, cells: BlockTreatmentCells) -> AnovaRe
     AnovaSource(
       source="block", degreesOfFreedom=blockCount - 1, sumOfSquares=sums.block, meanSquare=sums.block / (blockCount - 1),
     ),
-    tested("treatment", treatmentCount - 1, treatmentAdjusted, errorMeanSquare, errorDf),
-    AnovaSource(source="error", degreesOfFreedom=errorDf, sumOfSquares=errorSumOfSquares, meanSquare=errorMeanSquare),
+    tested("treatment", treatmentCount - 1, treatmentAdjusted, errorMeanSquare, errorDegreesOfFreedom),
+    AnovaSource(source="error", degreesOfFreedom=errorDegreesOfFreedom, sumOfSquares=errorSumOfSquares, meanSquare=errorMeanSquare),
     AnovaSource(
       source="total", degreesOfFreedom=blockCount * treatmentCount - 1 - len(cells.missing),
       sumOfSquares=sums.block + treatmentAdjusted + errorSumOfSquares,

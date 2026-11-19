@@ -125,8 +125,9 @@ def testSeveralEstimatesAreReportedWithTheirIteration():
   text = report(twoMissing, "estimate", MeanComparison.tukeyHSD)
   assert "| R25 | 1 | 5421.8482 |\n" in text and "| R100 | 2 | 5244.2768 |\n" in text
   assert (
-    "The estimates were reached by Yates' iteration in 6 cycles, stopping when none moved by more than 1e-12 of the "
-    "largest value; the starting values and the order are fixed, so the estimates are reproducible."
+    "The estimates were reached by Yates' iteration in 7 cycles, stopping when none moved by more than 1e-12 of the "
+    "spread of the values present (their largest departure from their mean); the starting values and the order are "
+    "fixed, so the estimates are reproducible."
   ) in text
   assert "are each reduced by 2. The treatment sum of squares is reduced by 55487.2967," in text
   assert "| Treatment | 5 | 1196785.4254 | 239357.0851 | 2.10 | 0.1304 |\n" in text
@@ -188,7 +189,7 @@ def testDunnettTableGivesEachTreatmentsOwnCriticalDifference():
   assert "- Critical difference (Dunnett, alpha = 0.05), which differs by treatment: " in text
 
 
-def testCrdReportSaysTheTreatmentsAreUnequallyReplicated():
+def testCRDReportSaysTheTreatmentsAreUnequallyReplicated():
   package, layout, observations, _, _, missing = crdTrial((4, 3, 4, 2))
   text = buildReport(package, layout, observations, meanComparison=MeanComparison.tukeyHSD,
                      missingPlots=MissingPlotPolicy.leastSquares)

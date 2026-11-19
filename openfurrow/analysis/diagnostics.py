@@ -24,10 +24,10 @@ import numpy
 from pydantic import BaseModel, ConfigDict, Field
 
 from openfurrow.analysis.anova import additiveResiduals
-from openfurrow.analysis.crd import collectCrdGroups, fitCrdGroups
+from openfurrow.analysis.crd import collectCRDGroups, fitCRDGroups
 from openfurrow.analysis.leastSquares import TreatmentFit
 from openfurrow.analysis.missingPlots import MissingPlotPolicy
-from openfurrow.analysis.rcbd import collectRcbdCells, fitRcbdCells
+from openfurrow.analysis.rcbd import collectRCBDCells, fitRCBDCells
 from openfurrow.analysis.splitPlot import buildSplitPlotValues
 from openfurrow.analysis.distributions import fDistributionSurvival, inverseNormalCdf, normalCdf
 from openfurrow.analysis.transforms import preferredTransform
@@ -388,16 +388,16 @@ def assessAssumptions(
     normality = shapiroWilkResiduals(subResiduals, significanceLevel, "diagnostic.subPlotNormality.name")
     equalVariance = brownForsythe(matrix, significanceLevel)
   elif designType is DesignType.crd:
-    groups = collectCrdGroups(assessmentCode, package, layout, observations, missingPlots)
+    groups = collectCRDGroups(assessmentCode, package, layout, observations, missingPlots)
     if groups.missing:
-      normality = shapiroWilkResiduals(fitCrdGroups(groups).residuals, significanceLevel)
+      normality = shapiroWilkResiduals(fitCRDGroups(groups).residuals, significanceLevel)
     else:
       normality = shapiroWilkResiduals(crdResiduals(numpy.array(groups.values, dtype=float).T), significanceLevel)
     equalVariance = brownForsytheGroups(groups.values, significanceLevel)
   else:
-    cells = collectRcbdCells(assessmentCode, package, layout, observations, missingPlots)
+    cells = collectRCBDCells(assessmentCode, package, layout, observations, missingPlots)
     if cells.missing:
-      fit = fitRcbdCells(cells)
+      fit = fitRCBDCells(cells)
       blockIndex, treatmentIndex = numpy.nonzero(~numpy.isnan(cells.values))
       nonAdditivity = nonAdditivityOfFit(fit, blockIndex, treatmentIndex, significanceLevel)
       normality = shapiroWilkResiduals(fit.residuals, significanceLevel)

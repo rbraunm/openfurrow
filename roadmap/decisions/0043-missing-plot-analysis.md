@@ -74,8 +74,9 @@ in Gomez and Gomez (1984), sections 7.1.2.1 and 7.1.2.6.
   - One missing value is the closed form X = (r B + t T - G) / ((r - 1)(t - 1)). Several
     are found by cycling that formula over the missing plots, block by block in treatment
     order, from the mean of each plot's treatment and block means, until no estimate moves
-    by more than 1e-12 of the largest value present; 10,000 cycles without settling is an
-    error. Start, order and stopping rule are fixed, so the estimates are reproducible.
+    by more than 1e-12 of the spread of the values present (their largest departure from
+    their mean); 10,000 cycles without settling is an error. Start, order and stopping
+    rule are fixed, so the estimates are reproducible.
   - Error and total lose one degree of freedom for each estimate.
   - The treatment sum of squares is corrected for the estimates' upward bias: what
     treatments account for, adjusted for blocks, is the sum of squares of the values

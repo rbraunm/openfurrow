@@ -786,7 +786,7 @@
       "status": "machineDraft"
     },
     "report.missing.iterated": {
-      "text": "Las estimaciones se obtuvieron por la iteración de Yates en {cycles} ciclos, hasta que ninguna cambió en más de {tolerance} del valor mayor; los valores iniciales y el orden son fijos, por lo que las estimaciones son reproducibles.",
+      "text": "Las estimaciones se obtuvieron por la iteración de Yates en {cycles} ciclos, hasta que ninguna cambió en más de {tolerance} de la dispersión de los valores presentes (su mayor desviación respecto de su media); los valores iniciales y el orden son fijos, por lo que las estimaciones son reproducibles.",
       "status": "machineDraft"
     },
     "report.missing.leastSquares": {
