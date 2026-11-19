@@ -46,8 +46,10 @@ and how the audit log can be pruned without erasing the trail of its own pruning
   for each file's bytes, so the same bytes received twice travel once. It is written without
   compression and with fixed dates, so a trial gives the same archive on every platform.
   Importing one checks the document against the manifest's hash and every file against its
-  size and hash, refuses a member the manifest does not name, and restores each file as it was
-  recorded, the importer and the time included. `export --bundle`, `import-bundle`, the API's
+  size and hash, refuses a member the manifest does not name and a record no import could
+  have written (a name with control characters, an importer of no known kind, counts that are
+  not its kind's), and restores each file as it was recorded, the importer and the time
+  included. `export --bundle`, `import-bundle`, the API's
   `/api/trials/<code>/bundle` and `/api/bundles`, and a download on the trial's page.
 - **Removed with the trial**, or earlier by their own retention rule.
 
