@@ -56,6 +56,14 @@ and Windows with Python 3.13 and 3.14 against the newest releases, without
 `constraints.txt`, and records what it installed. It does not gate `main`: a red run there
 says a new release breaks the project, and is the cue to fix the code or hold the pin.
 
+The lower bounds follow the Scientific Python community's SPEC 0: a core dependency's
+release is supported for two years, a Python release for three, so a bound is the release
+that is two years old (or the first that runs on the oldest supported Python, when that is
+later). The validation workflow's `oldest` job proves them: `scripts/lowestConstraints.py`
+pins every direct dependency to its bound, and the suite runs on that install with the
+oldest supported Python. Raise a bound when its release passes two years, and whenever the
+code starts to need something newer; the job fails until the bound says so.
+
 ## Validation: every change is tested on Linux and Windows
 
 Every push to `claude` and every pull request into `main` runs the `validate` workflow

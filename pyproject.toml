@@ -11,39 +11,39 @@ readme = "README.md"
 requires-python = ">=3.13"
 license = "Apache-2.0"
 dependencies = [
-  "pydantic>=2",
-  "sqlalchemy>=2",
-  "numpy>=1.26",
-  "pyyaml>=6",
+  "pydantic>=2.10",
+  "sqlalchemy>=2.0.36",
+  "numpy>=2.2",
+  "pyyaml>=6.0.2",
   # Sign-in (decisions 0039, 0040).
   "carnelian[keys]>=0.3",
   # Schedules are read in a time zone (decision 0041); Windows has no zone database of its own for zoneinfo.
-  "tzdata>=2024.1; sys_platform == 'win32'",
+  "tzdata>=2024.2; sys_platform == 'win32'",
 ]
 
 [project.optional-dependencies]
 # Flask is an extra, not a core dependency: the core is usable as a plain library, and
 # decision 0010 keeps the deployment shape open. Installing the service is a choice.
 service = [
-  "flask>=3",
-  "markdown>=3.5",
+  "flask>=3.1",
+  "markdown>=3.7",
 ]
 # A PostgreSQL store needs a driver; pg8000 is pure Python under a BSD licence.
 postgresql = [
-  "pg8000>=1.31",
+  "pg8000>=1.31.2",
 ]
 test = [
-  "pytest>=8",
-  "pytest-xdist>=3.6",
-  "statsmodels>=0.14",
-  "openpyxl>=3.1",
-  "pg8000>=1.31",
-  "flask>=3",
-  "markdown>=3.5",
-  "build>=1",
+  "pytest>=8.3",
+  "pytest-xdist>=3.6.1",
+  "statsmodels>=0.14.4",
+  "openpyxl>=3.1.5",
+  "pg8000>=1.31.2",
+  "flask>=3.1",
+  "markdown>=3.7",
+  "build>=1.2.2",
   # A federation aggregate signed in the test, as a federation signs one (decision 0040).
-  "signxml>=4",
-  "lxml>=5",
+  "signxml>=4.0.2",
+  "lxml>=5.3",
 ]
 
 [project.scripts]

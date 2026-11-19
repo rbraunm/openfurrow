@@ -54,6 +54,41 @@ jobs:
       - name: Smoke-test the installed wheel
         run: python scripts/productSmoke.py
 
+  # The suite on the oldest versions pyproject.toml allows, on the oldest supported Python, so its lower bounds
+  # (set as SPEC 0 has them: two years of core dependencies, three of Python) are bounds the suite has passed on.
+  oldest:
+    name: oldest allowed versions (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v7
+      - name: Exclude the checkout, the job's temp folder and pip's cache from real-time scanning
+        if: runner.os == 'Windows'
+        run: |
+          Add-MpPreference -ExclusionPath $env:GITHUB_WORKSPACE, $env:RUNNER_TEMP, (Join-Path $env:LOCALAPPDATA "pip\Cache")
+          "TEMP=$env:RUNNER_TEMP" >> $env:GITHUB_ENV
+          "TMP=$env:RUNNER_TEMP" >> $env:GITHUB_ENV
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: pyproject.toml
+      - name: Exclude the job's Python from real-time scanning
+        if: runner.os == 'Windows'
+        run: Add-MpPreference -ExclusionPath (python -c "import sys; print(sys.base_prefix)")
+      - name: Pin every direct dependency to its lower bound
+        run: python scripts/lowestConstraints.py > lowest.txt
+      - name: Install the project on those versions
+        run: python -m pip install --constraint lowest.txt --editable ".[test,service,postgresql]"
+      - name: Record the installed versions
+        run: python -m pip freeze
+      - name: Run the test suite
+        run: python -m pytest --durations=20
+
   # The same suite on a PostgreSQL store, the testbed started for this run only.
   postgresql:
     name: test (postgresql, python ${{ matrix.python }})
