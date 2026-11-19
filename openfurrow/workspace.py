@@ -238,7 +238,6 @@ from openfurrow.store import (
   NotFoundError,
   StoreError,
   createDatabase as _createDatabase,
-  isDatabaseURL as _isDatabaseURL,
   deleteTrial as _deleteTrial,
   listTrials as _listTrials,
   loadCheckPlots as _loadCheckPlots,
@@ -361,8 +360,6 @@ class Workspace:
   @classmethod
   def open(cls, location: str, actor: Actor | None = None) -> "Workspace":
     """Open an existing store; raise if the file does not exist or the database holds none."""
-    if not _isDatabaseURL(location) and not Path(location).exists():
-      raise StoreError(f"database '{location}' does not exist; create it first")
     return cls(_createDatabase(location, create=False), actor)
 
   def actingAs(self, actor: Actor) -> "Workspace":

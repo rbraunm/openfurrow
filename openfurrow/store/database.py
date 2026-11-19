@@ -33,6 +33,7 @@ from __future__ import annotations
 
 import datetime
 import re
+from pathlib import Path
 
 from sqlalchemy import CheckConstraint, ForeignKey, Index, Text, case, column, event, inspect, select
 from sqlalchemy.engine import Engine
@@ -803,9 +804,13 @@ def createDatabase(location: str, create: bool = True) -> Engine:
   """Open the store at `location`, creating its tables in an empty database when `create`.
 
   An existing store must have been written under this schema's version; any other is
-  refused here, and so is an empty database when `create` is false. Foreign keys are
-  enforced for SQLite via a per-connection pragma; PostgreSQL enforces them itself.
+  refused here, and so are a file that does not exist and an empty database when `create`
+  is false. Foreign keys are enforced for SQLite via a per-connection pragma; PostgreSQL
+  enforces them itself.
   """
+  # SQLite makes the file it is asked to open, so a mistyped path would leave an empty one behind.
+  if not create and not isDatabaseURL(location) and not Path(location).exists():
+    raise StoreError(f"database '{location}' does not exist; create it first")
   engine = openEngine(location)
   existingTables = set(inspect(engine).get_table_names())
   if not existingTables:

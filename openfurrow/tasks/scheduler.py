@@ -316,17 +316,22 @@ class Scheduler:
     self.stop()
 
   def run(self) -> None:
-    """Poll until stopped, then wind down the running runs."""
+    """Poll until a signal stops it, then wind down the running runs."""
     signals = [signal.SIGINT, signal.SIGTERM] + ([signal.SIGBREAK] if sys.platform == "win32" else [])
     previous = {number: signal.signal(number, self._onSignal) for number in signals}
     try:
-      while not self._stopRequested.is_set():
-        self.tick()
-        self._stopRequested.wait(self.pollSeconds)
-      self.windDown()
+      self.loop()
     finally:
       for number, handler in previous.items():
         signal.signal(number, handler)
+
+  def loop(self) -> None:
+    """Poll until `stop` is called, then wind down the running runs: for a caller told to stop in its own way, as an
+    operating-system service is (decision 0009)."""
+    while not self._stopRequested.is_set():
+      self.tick()
+      self._stopRequested.wait(self.pollSeconds)
+    self.windDown()
 
   def windDown(self) -> None:
     """Claim nothing more; wait up to stopGraceSeconds for the running runs, then stop and record those still going."""

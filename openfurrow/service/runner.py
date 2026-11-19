@@ -3,7 +3,8 @@
 
 Kept separate from the app itself: `createApp` builds something a test client (or a
 WSGI server) can drive without ever binding a socket, and this module is the only place
-that binds one. Unit B3's `serve` command calls `runService`.
+that binds one. Unit B3's `serve` command calls `runService`; an installed service
+(decision 0009) takes the server from `makeServer`, so it can end it when told to stop.
 
 HTTPS is opt-in (`service.tls.enabled`). It is off by default because the first target
 is a local single-user tool on loopback, where TLS buys nothing; it becomes necessary
@@ -17,17 +18,22 @@ internet-facing self-hostable server (decision 0011), and nothing here blocks it
 ACME-obtained certificate is just a certificate and key pointed at by the same two
 settings.
 
-The development server is Flask's own. A production self-hosted deployment should sit
-behind a real WSGI server; that is part of the server unit, not this one.
+The server is Werkzeug's, one thread per request. A production self-hosted deployment
+should sit behind a real WSGI server; that is part of the server unit, not this one.
 """
 
 from __future__ import annotations
 
+import socket
+import sys
 from pathlib import Path
 
 from flask import Flask
+from werkzeug.serving import BaseWSGIServer, ThreadedWSGIServer, WSGIRequestHandler, get_sockaddr, select_address_family
 
 from openfurrow.config import OpenFurrowConfig, defaultConfig
+
+listenBacklog = 128
 
 
 class ServiceError(RuntimeError):
@@ -36,12 +42,41 @@ class ServiceError(RuntimeError):
 
 def runService(application: Flask, config: OpenFurrowConfig | None = None) -> None:
   """Bind and serve `application` per the config's service settings."""
-  settings = (config or defaultConfig()).service
-  application.run(
-    host=settings.host,
-    port=settings.port,
-    ssl_context=tlsContext(config or defaultConfig()),
-  )
+  makeServer(application, config).serve_forever()
+
+
+def makeServer(application: Flask, config: OpenFurrowConfig | None = None,
+               server: type[BaseWSGIServer] = ThreadedWSGIServer,
+               requestHandler: type[WSGIRequestHandler] | None = None) -> BaseWSGIServer:
+  """The server, bound per the config's service settings and not yet serving: `serve_forever()` serves, and
+  `shutdown()` from another thread ends it."""
+  settings = config or defaultConfig()
+  certificate = tlsContext(settings)
+  listener = listen(settings.service.host, settings.service.port)
+  try:
+    return server(settings.service.host, settings.service.port, application, requestHandler,
+                  ssl_context=certificate, fd=listener.fileno())
+  finally:
+    listener.close()
+
+
+def listen(host: str, port: int) -> socket.socket:
+  """A socket listening on the address, which no other socket shares; an address that is taken is refused by name."""
+  family = select_address_family(host, port)
+  listener = socket.socket(family, socket.SOCK_STREAM)
+  try:
+    # Windows lets a second socket bind an address in use unless the first asked for it alone; elsewhere the
+    # reuse option only lets a restarted server take its own address back without waiting.
+    if sys.platform == "win32":
+      listener.setsockopt(socket.SOL_SOCKET, socket.SO_EXCLUSIVEADDRUSE, 1)
+    else:
+      listener.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    listener.bind(get_sockaddr(host, port, family))
+    listener.listen(listenBacklog)
+  except OSError as error:
+    listener.close()
+    raise ServiceError(f"cannot listen on {host}:{port}: {error.strerror or error}") from error
+  return listener
 
 
 def tlsContext(config: OpenFurrowConfig) -> tuple[str, str] | None:
