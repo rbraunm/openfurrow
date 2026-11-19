@@ -14,7 +14,7 @@ are settings configured per server, study or finer, not rules the project fixes
 - **One registry in code** defines every setting: its key, its type, its default, and the
   scopes it may be set at (server, place, trial). The first settings are
   `analysis.significanceLevel` (0.05), `analysis.meanComparison` (protected LSD) and
-  `analysis.missingPlots` (refuse; the only policy built so far).
+  `analysis.missingPlots` (refuse; estimate and least squares are decision 0043).
 - **Values are stored by scope**: the server, a place (`place:<path>`) or a trial
   (`trial:<code>`). The nearest applies -- the trial, its places from the innermost out, the
   server, then the default -- and each effective value carries where it came from.
@@ -32,4 +32,4 @@ are settings configured per server, study or finer, not rules the project fixes
 
 - Who may change which setting arrives with roles (`governance-plan.md`, F4); settings are
   not yet edited in the web interface.
-- Further policies (editing, retention, the missing-plot methods) enter as settings.
+- Further policies (editing, retention) enter as settings.

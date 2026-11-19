@@ -59,8 +59,8 @@ show where its value came from.
 - **The configuration file moves in.** Today's project file (significance level,
   comparison test, import profile) becomes server-level values of the same registry.
 - **First policy settings:**
-  - missing plots: refuse, estimate, or least squares (the methods are built behind the
-    setting);
+  - missing plots: refuse, estimate, or least squares (built behind the setting,
+    decision 0043);
   - editing, per area of the record;
   - retention, per storage area.
 
@@ -126,7 +126,7 @@ Storage areas, each with its size and count on a monitoring page:
 
 With F1 to F6 in place:
 - the record forms (USR-14), under the edit permissions and settings;
-- the missing-plot methods behind their setting (USR-3);
+- the missing-plot methods behind their setting (USR-3; built, decision 0043);
 - field collection by link (USR-9);
 - the server deployment the pilot runs on (decision 0011).
 

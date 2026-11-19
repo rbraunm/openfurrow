@@ -173,7 +173,7 @@ deadlines. Lanes can run ahead or behind, and reality reorders these as we learn
 
 - ADR 0001 (SQLite canonical store) -- the Lane C local floor.
 - ADR 0002 (own the math; oracles validate) -- the Lane A invariant.
-- ADR 0003 (reject missing data) -- core behavior.
+- ADR 0003 (missing data: refused by default, analysed by choice of a setting) -- core behavior.
 - ADR 0004 (registry and hierarchy) -- informs the data model as it grows.
 - ADR 0005 (configurable privacy / IAM) -- the Lane C server and team mode.
 - ADR 0006 (diagnostics and transforms) -- core analysis.

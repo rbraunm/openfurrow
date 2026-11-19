@@ -163,6 +163,13 @@ variation, and Fisher's Protected LSD with a compact letter display. The F and t
 distributions are computed natively (no SciPy at runtime); the results are validated
 in the test suite against the Yates oats published table and against statsmodels.
 
+A table with missing plots is refused by default, naming the plots. The setting
+`analysis.missingPlots` analyses it instead, by least squares on the plots present
+(adjusted means, each pair compared on its own standard error) or with Yates' estimates,
+for a single-factor randomized complete block or completely randomized design; the report
+records the policy and how each missing plot was handled
+([decision 0043](roadmap/decisions/0043-missing-plot-analysis.md)).
+
 ## Reproducibility and ownership
 
 - A trial's **input hash** (over the package, the field layout and the observations)

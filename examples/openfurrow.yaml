@@ -42,9 +42,9 @@ import:
     # no matter which convention its source data used.
     decimalSeparator: "."
 
-    # Cell values that mark "not recorded". Missing observations are rejected rather
-    # than imputed (decision 0003) -- an incomplete assessment fails the analysis
-    # loudly instead of being quietly filled in.
+    # Cell values that mark "not recorded". What an analysis does with a missing
+    # observation is the setting analysis.missingPlots (decisions 0003 and 0043): refuse
+    # (the default), estimate or leastSquares. It is never quietly filled in.
     naTokens:
       - ""
       - "NA"

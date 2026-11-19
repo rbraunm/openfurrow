@@ -341,10 +341,17 @@ measure), `owner` (the owner's call), `done`.
   control (decision 0022), and the split-plot and factorial RCBD designs (decisions 0020,
   0025), the completely randomized design (decision 0027) and Tukey's HSD for all pairs
   (decision 0028), Dunnett against the untreated check (decision 0029) and an explicit
-  policy for the check in each assessment's analysis (decision 0030). Still to come:
-  missing plots (the analysis refuses an incomplete table, decision 0003), and with them
-  Dunnett with unequal replication, which only a missing plot can bring about. The policy
-  for missing plots is a setting (`governance-plan.md`, F2); the methods are built behind it.
+  policy for the check in each assessment's analysis (decision 0030), and missing plots
+  for the single-factor RCBD and the completely randomized design (decision 0043): the
+  setting `analysis.missingPlots` is refuse, estimate (Yates) or least squares, recorded
+  with every result; pairs are compared on their own standard errors (LSD, Tukey-Kramer),
+  and Dunnett's test is computed with unequal replication where the comparisons'
+  correlations are products of one loading per treatment. Still to come: missing plots in
+  a two-factor RCBD, a split plot, a trial with checks beside its plots and an assessment
+  with subsamples, each refused by name meanwhile; Dunnett's test for the patterns of
+  several missing plots in blocks whose correlations are not of that form (a general
+  multivariate t), also refused by name; and a comparison with ARM's own table for a
+  trial with a missing plot, which could not be had.
 - **USR-4** `done` **Data entry.** Built as decision 0031 says: a CSV or an `.xlsx` sheet
   (read natively) is previewed, its columns mapped by the person, imported, and reconciled
   per assessment against the plots; an import never replaces stored values. Typed entry is

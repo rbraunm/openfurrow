@@ -401,8 +401,9 @@ core. Each is oracle-validated against `research/test-data.md`.
 - [ ] Transform offsets slice (log(y+c), empirical logit, the count-denominator question) --
       the deferred part of ADR 0006.
 - [ ] Bartlett's test (needs a native incomplete gamma).
-- [ ] Unbalanced analysis: least-squares adjusted means (ARM parity) and the Yates
-      missing-plot successor to ADR 0003.
+- [x] Unbalanced analysis: least-squares adjusted means (ARM parity) and Yates'
+      missing-plot estimates, behind the setting `analysis.missingPlots` (ADR 0043), for
+      the single-factor RCBD and the completely randomized design.
 - [ ] GLMs (Poisson / negative-binomial / binomial) -- a separate future track (ADR 0006).
 
 ---

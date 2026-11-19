@@ -78,8 +78,9 @@ studies, as a separate institution that the tool feeds -- is recorded in `vision
 
 **Analysis breadth**
 - [ ] Factorial, split-plot, and multi-environment designs (see `research/test-data.md`).
-- [ ] Unbalanced analysis: least-squares adjusted means for ARM parity; Yates missing-plot
-      (the decision-0003 successor).
+- [x] Unbalanced analysis: least-squares adjusted means for ARM parity; Yates missing-plot
+      (decision 0043), for the single-factor RCBD and the completely randomized design.
+      Other designs refuse a missing plot (worklist USR-3).
 - [ ] Additional mean-comparison tests (Duncan's MRT, Student-Newman-Keuls, Tukey's,
       Waller-Duncan, Dunnett's).
 
