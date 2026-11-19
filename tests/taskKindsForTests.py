@@ -5,6 +5,7 @@ that sleeps, one that raises, one whose process dies without a word to the store
 import os
 import sys
 import time
+from pathlib import Path
 
 from pydantic import BaseModel, ConfigDict
 
@@ -22,6 +23,7 @@ class Seconds(BaseModel):
   model_config = ConfigDict(extra="forbid")
 
   seconds: float
+  startedFile: str | None = None
 
 
 class Nothing(BaseModel):
@@ -35,6 +37,8 @@ def echo(context, parameters):
 
 def sleep(context, parameters):
   context.logger.info("sleeping %s seconds", parameters.seconds)
+  if parameters.startedFile is not None:
+    Path(parameters.startedFile).write_text("sleeping", encoding="ascii")
   time.sleep(parameters.seconds)
   return f"slept {parameters.seconds} seconds"
 

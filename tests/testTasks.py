@@ -32,10 +32,13 @@ password = "correct horse battery"
 
 class Clock:
   def __init__(self, moment=None):
-    self.moment = moment
+    self.moment, self.ahead = moment, datetime.timedelta()
 
   def __call__(self):
-    return self.moment if self.moment is not None else datetime.datetime.now(datetime.UTC)
+    return self.moment if self.moment is not None else datetime.datetime.now(datetime.UTC) + self.ahead
+
+  def runOnFrom(self, moment):
+    self.ahead, self.moment = moment - datetime.datetime.now(datetime.UTC), None
 
 
 @pytest.fixture
@@ -213,18 +216,31 @@ def testARunNowIsRefusedWhileOneIsWaiting(location):
     operator.runTaskNow("echo")
 
 
-def testARunPastItsTimeLimitIsStoppedAndRecordedSo(location, schedulers):
+def testARunPastItsTimeLimitIsStoppedAndRecordedSo(location, schedulers, tmp_path):
   operator = Workspace.open(location)
-  operator.createTask("sleeper", "testSleep", {"seconds": 120})
+  sleeping = tmp_path / "sleeping"
+  operator.createTask("sleeper", "testSleep", {"seconds": 120, "startedFile": str(sleeping)})
   operator.setTask("sleeper", timeLimitSeconds=10)
   operator.runTaskNow("sleeper")
-  scheduler = schedulers()
-  started = time.monotonic()
+  # The scheduler's clock stands still while the run's process starts, however long a busy machine takes over it.
+  begun = datetime.datetime.now(datetime.UTC)
+  clock = Clock(begun)
+  scheduler = schedulers(clock)
+  deadline = time.monotonic() + 180
+  while not sleeping.exists():
+    assert time.monotonic() < deadline, f"the run did not start: {operator.taskRuns('sleeper')}"
+    scheduler.tick()
+    time.sleep(0.1)
+  scheduler.tick()
+  assert operator.taskRuns("sleeper")[0].state is RunState.running
+  clock.moment = begun + datetime.timedelta(seconds=10)
+  scheduler.tick()
+  assert operator.taskRuns("sleeper")[0].state is RunState.running
+  clock.runOnFrom(begun + datetime.timedelta(seconds=11))
   runs = untilSettled(scheduler, operator, "sleeper", 60)
-  assert time.monotonic() - started < 60
   assert runs[0].state is RunState.stopped and runs[0].summary == "stopped at its time limit of 10 seconds"
   assert "sleeping 120.0 seconds" in runs[0].output
-  assert (runs[0].finishedAt - runs[0].startedAt).total_seconds() >= 10
+  assert 11 <= (runs[0].finishedAt - runs[0].startedAt).total_seconds() < 60
 
 
 def testARunThatRaisesIsRecordedFailedWithItsTraceback(location, schedulers):
