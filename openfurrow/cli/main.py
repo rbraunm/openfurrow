@@ -33,6 +33,7 @@ from openfurrow.identity import Actor, IdentityError, Permission, RoleAssignment
 from openfurrow.identity.providers import Provider, ProviderKind
 from openfurrow.identity.workloads import namedIssuers
 from openfurrow.importers.weatherCsv import WeatherFileError
+from openfurrow.osService.deployment import DeploymentError, Role, ServiceState, serviceName
 from openfurrow.workspace import (
   AnalysisError,
   ExchangeError,
@@ -61,7 +62,7 @@ def main(argv: list[str] | None = None) -> int:
   except (
     StoreError, ExchangeError, ObservationImportError, AnalysisError, MessageError,
     ValidationError, OSError, json.JSONDecodeError, WeatherFileError, SettingError, ScopeError, IdentityError,
-    NotPermitted, TaskError,
+    NotPermitted, TaskError, DeploymentError,
   ) as error:
     print(f"error: {error}", file=sys.stderr)
     return 1
@@ -375,6 +376,34 @@ def _buildParser() -> argparse.ArgumentParser:
   serveParser.add_argument("--host", help="bind address (overrides config; default from config)")
   serveParser.add_argument("--port", type=int, help="bind port (overrides config)")
   serveParser.set_defaults(handler=_commandServe)
+
+  serviceParser = sub.add_parser(
+    "service", help="the web server and the scheduler as operating-system services (decision 0009)",
+    epilog="A deployment is two services on one store: openfurrow-web and openfurrow-scheduler, with -<suffix> "
+           "after each name when a suffix is given. Installing, uninstalling, starting and stopping need an "
+           "elevated shell.",
+  )
+  serviceSub = serviceParser.add_subparsers(dest="serviceCommand", required=True)
+  serviceInstall = serviceSub.add_parser("install", help="install both services on a store, to start with the machine")
+  serviceInstall.add_argument("database", help="the store: a file in a folder of its own, or a PostgreSQL URL that "
+                                               "the environment file also holds as OPENFURROW_STORE")
+  serviceInstall.add_argument("--host", help="the address the web server listens on (default 127.0.0.1)")
+  serviceInstall.add_argument("--port", type=int, help="the port the web server listens on (default 8420)")
+  serviceInstall.add_argument("--suffix", help="set this deployment's services apart from another's on this machine")
+  serviceInstall.add_argument("--environment-file", dest="environmentFile",
+                              help="a file of NAME=value lines the services take their environment from: "
+                                   "identity providers' secrets and the like")
+  serviceInstall.add_argument("--logs", help="the folder for the services' logs (default: logs beside the store)")
+  serviceInstall.set_defaults(handler=_commandServiceInstall)
+  for name, handler, text in (
+    ("uninstall", _commandServiceUninstall, "stop and remove both services; the store, its logs and the environment file stay"),
+    ("start", _commandServiceStart, "start both services now"),
+    ("stop", _commandServiceStop, "stop both services, the scheduler first; its running tasks finish or are recorded stopped"),
+    ("status", _commandServiceStatus, "each service's state, and when the scheduler last checked in"),
+  ):
+    serviceAction = serviceSub.add_parser(name, help=text)
+    serviceAction.add_argument("--suffix", help="the suffix the deployment was installed with")
+    serviceAction.set_defaults(handler=handler)
 
   return parser
 
@@ -711,9 +740,14 @@ def _commandTaskShow(args) -> int:
   if task.lastRun is not None:
     print(f"Last run: {task.lastRun.runID} {task.lastRun.state.value} {_when(task.lastRun.finishedAt)} "
           f"{task.lastRun.summary or ''}".rstrip())
-  print("Scheduler: never checked in" if heartbeat is None else
-        f"Scheduler: last checked in {_when(heartbeat.lastSeenAt)} from {heartbeat.host} (process {heartbeat.processID})")
+  print(_heartbeatLine(heartbeat))
   return 0
+
+
+def _heartbeatLine(heartbeat) -> str:
+  if heartbeat is None:
+    return "Scheduler: never checked in"
+  return f"Scheduler: last checked in {_when(heartbeat.lastSeenAt)} from {heartbeat.host} (process {heartbeat.processID})"
 
 
 def _commandTaskSet(args) -> int:
@@ -980,6 +1014,60 @@ def _commandServe(args) -> int:
   application = createApp(args.database, config)
   print(f"Serving OpenFurrow on {serviceUrl(config)} (Ctrl-C to stop)")
   runService(application, config)
+  return 0
+
+
+def _serviceSuffixHint(suffix: str | None) -> str:
+  return f" --suffix {suffix}" if suffix else ""
+
+
+def _commandServiceInstall(args) -> int:
+  from openfurrow.osService import manage
+  service = defaultConfig().service
+  deployment = manage.install(args.database, args.host or service.host, service.port if args.port is None else args.port,
+                              args.suffix, args.environmentFile, args.logs)
+  print(f"Installed {deployment.name(Role.web)} and {deployment.name(Role.scheduler)}; they start with the machine")
+  print(f"Web server: http://{deployment.host}:{deployment.port}")
+  print(f"Logs: {deployment.logsFolder}")
+  print(f"Start them now with: openfurrow service start{_serviceSuffixHint(deployment.suffix)}")
+  return 0
+
+
+def _commandServiceUninstall(args) -> int:
+  from openfurrow.osService import manage
+  removed = manage.uninstall(args.suffix)
+  print(f"Uninstalled {' and '.join(removed)}; the store, its logs and the environment file are left as they are")
+  return 0
+
+
+def _commandServiceStart(args) -> int:
+  from openfurrow.osService import manage
+  deployment = manage.start(args.suffix)
+  print(f"Started {deployment.name(Role.web)} on http://{deployment.host}:{deployment.port} and "
+        f"{deployment.name(Role.scheduler)}")
+  return 0
+
+
+def _commandServiceStop(args) -> int:
+  from openfurrow.osService import manage
+  deployment = manage.stop(args.suffix)
+  print(f"Stopped {deployment.name(Role.scheduler)} and {deployment.name(Role.web)}")
+  return 0
+
+
+def _commandServiceStatus(args) -> int:
+  from openfurrow.osService import manage
+  status = manage.status(args.suffix)
+  for role, state in status.states.items():
+    name = serviceName(role, args.suffix)
+    if state is ServiceState.notInstalled:
+      print(f"{name}\t{state.value}")
+    elif role is Role.web:
+      print(f"{name}\tinstalled\t{state.value}\thttp://{status.deployment.host}:{status.deployment.port}")
+    else:
+      print(f"{name}\tinstalled\t{state.value}")
+  if status.states[Role.scheduler] is not ServiceState.notInstalled:
+    print(_heartbeatLine(_operator(status.deployment.storeLocation()).schedulerHeartbeat()))
   return 0
 
 

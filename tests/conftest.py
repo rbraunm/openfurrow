@@ -24,6 +24,9 @@ def pytest_addoption(parser):
                                      "the sign-in tests run against its identity providers")
   parser.addoption("--directory", action="store_true", help="the Carnelian testbed's Samba directory is running too")
   parser.addoption("--live", action="store_true", help="also read real federations' published aggregates over the internet")
+  parser.addoption("--service-install", action="store_true",
+                   help="also install, run and remove real operating-system services under throwaway names; "
+                        "needs an elevated shell (root on Linux and macOS)")
 
 
 def pytest_configure(config):
