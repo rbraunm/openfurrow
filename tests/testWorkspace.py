@@ -186,9 +186,10 @@ def testReportMatchesPrimitive(trial):
   package = workspace.loadPackage("WS-1")
   layout = workspace.layoutFor("WS-1")
   observations = workspace.loadObservations("WS-1")
+  analysisSettings = [setting for setting in workspace.effectiveSettings("trial:WS-1") if setting.key.startswith("analysis.")]
   expected = buildReport(
     package, layout, observations, significanceLevel=0.05, meanComparison=MeanComparison.protectedLSD,
-    settingsUsed=workspace.effectiveSettings("trial:WS-1"),
+    settingsUsed=analysisSettings,
   )
   assert workspace.buildReport("WS-1") == expected
   assert "analysis.significanceLevel = 0.05 (default)" in expected
