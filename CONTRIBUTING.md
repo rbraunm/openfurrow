@@ -111,6 +111,11 @@ LDAP) are [Carnelian](https://github.com/rbraunm/carnelian)'s testbed: its
 python -m pytest tests/testProviders.py "--testbed=<carnelian>/testbed/generated/testbed.json" --directory
 ```
 
+Trusted workloads (decision 0042) are tested with tokens signed by the suite's own stand-in
+issuer (`tests/openIDConnectStandIn.py`), on every platform. One test needs a token only a
+running GitHub Actions job can ask for: the `providers` job asks for its own, puts it in
+`OPENFURROW_GITHUB_TOKEN`, and presents it to the API; anywhere else that test is skipped.
+
 ## Oracles: every reported number is validated
 
 OpenFurrow never presents an unvalidated statistic as a fact. Each analysis result is

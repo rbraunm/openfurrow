@@ -123,10 +123,13 @@ jobs:
         run: docker compose -f testbed/compose.yaml down --volumes
 
   # Signing in through real identity providers: Carnelian's testbed, at the release OpenFurrow installs,
-  # prepared and started for this run only.
+  # prepared and started for this run only. And a trusted workload: this job's own token from GitHub Actions.
   providers:
     name: providers (python ${{ matrix.python }})
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
     timeout-minutes: 30
     strategy:
       fail-fast: false
@@ -158,6 +161,14 @@ jobs:
           python testbed/prepare.py --host localhost --wait --directory
       - name: Run the sign-in tests against them
         run: python -m pytest tests/testProviders.py "--testbed=$RUNNER_TEMP/carnelian/testbed/generated/testbed.json" --directory
+      # The token lasts minutes, so it is asked for right before the tests that present it.
+      - name: Ask GitHub for a workload token, which the trusted-workload tests present to the API
+        run: |
+          token=$(curl --fail --silent --show-error -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=openfurrow-ci" | python -c "import json, sys; print(json.load(sys.stdin)['value'])")
+          echo "::add-mask::$token"
+          echo "OPENFURROW_GITHUB_TOKEN=$token" >> "$GITHUB_ENV"
+      - name: Run the trusted-workload tests with it
+        run: python -m pytest tests/testWorkloads.py
       - name: Show the providers' logs
         if: failure()
         working-directory: ${{ runner.temp }}/carnelian
